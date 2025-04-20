@@ -1,0 +1,55 @@
+[0.224s] Invoking command in '/home/jezzy/yolobot/build/yolobot_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/yolobot/install/yolov8_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_recognition -- -j4 -l4
+[0.257s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.485s] -- Found rclpy: 3.3.16 (/opt/ros/humble/share/rclpy/cmake)
+[0.495s] -- Found sensor_msgs: 4.8.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[0.844s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.860s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.883s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.913s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.957s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.111s] -- Found cv_bridge: 3.2.1 (/opt/ros/humble/share/cv_bridge/cmake)
+[1.138s] -- Found yolov8_msgs: 0.0.0 (/home/jezzy/yolobot/install/yolov8_msgs/share/yolov8_msgs/cmake)
+[1.160s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[1.281s] -- Added test 'copyright' to check source files copyright and LICENSE
+[1.284s] -- Added test 'flake8' to check Python code syntax and style conventions
+[1.285s] -- Added test 'lint_cmake' to check CMake code style
+[1.286s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[1.287s] -- Added test 'xmllint' to check XML markup files
+[1.289s] -- Configuring done
+[1.296s] -- Generating done
+[1.300s] -- Build files have been written to: /home/jezzy/yolobot/build/yolobot_recognition
+[1.336s] Invoked command in '/home/jezzy/yolobot/build/yolobot_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/yolobot/install/yolov8_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_recognition -- -j4 -l4
+[1.339s] Invoking command in '/home/jezzy/yolobot/build/yolobot_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/yolobot/install/yolov8_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_recognition
+[1.351s] -- Install configuration: ""
+[1.351s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts
+[1.352s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8_stitcher_node.py
+[1.352s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8_ros2_subscriber.py
+[1.353s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/.gitignore
+[1.353s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/.gitattributes
+[1.353s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8_ros2_pt.py
+[1.353s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolo11n.pt
+[1.362s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8_inference_listener.py
+[1.363s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/.dockerignore
+[1.363s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8_panorama_inference.py
+[1.363s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//scripts/yolov8n.pt
+[1.364s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//launch
+[1.364s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition//launch/launch_yolov8.launch.py
+[1.364s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/lib/yolobot_recognition/yolov8_ros2_pt.py
+[1.364s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/lib/yolobot_recognition/yolov8_ros2_subscriber.py
+[1.365s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/lib/yolobot_recognition/launch_yolov8.launch.py
+[1.365s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/ament_index/resource_index/package_run_dependencies/yolobot_recognition
+[1.365s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/ament_index/resource_index/parent_prefix_path/yolobot_recognition
+[1.366s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/environment/ament_prefix_path.sh
+[1.366s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/environment/ament_prefix_path.dsv
+[1.366s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/environment/path.sh
+[1.367s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/environment/path.dsv
+[1.367s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/local_setup.bash
+[1.367s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/local_setup.sh
+[1.367s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/local_setup.zsh
+[1.367s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/local_setup.dsv
+[1.368s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/package.dsv
+[1.368s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/ament_index/resource_index/packages/yolobot_recognition
+[1.368s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/cmake/yolobot_recognitionConfig.cmake
+[1.368s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/cmake/yolobot_recognitionConfig-version.cmake
+[1.368s] -- Installing: /home/jezzy/yolobot/install/yolobot_recognition/share/yolobot_recognition/package.xml
+[1.371s] Invoked command in '/home/jezzy/yolobot/build/yolobot_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/yolobot/install/yolov8_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_recognition
