@@ -16,6 +16,7 @@ bridge = CvBridge()
 import threading
 
 vel_msg = Twist()
+vel_lock = threading.Lock()  # Tambahkan lock untuk mencegah race condition
 
 class Commander(Node):
 
@@ -27,7 +28,8 @@ class Commander(Node):
 
     def timer_callback(self):
         global vel_msg
-        self.publisher_.publish(vel_msg)
+        with vel_lock:
+            self.publisher_.publish(vel_msg)
 
 class Joy_subscriber(Node):
 
@@ -42,9 +44,15 @@ class Joy_subscriber(Node):
 
     def listener_callback(self, data):
         global vel_msg
-        vel_msg.linear.x = data.axes[1]
-        vel_msg.linear.y = 0.0
-        vel_msg.angular.z = data.axes[0]   
+        with vel_lock:
+            # Gunakan mapping joystick yang benar untuk Twist
+            # Misal: axes[1] untuk maju-mundur, axes[0] untuk belok kiri-kanan
+            vel_msg.linear.x = float(data.axes[1])  # Forward/backward
+            vel_msg.linear.y = 0.0
+            vel_msg.linear.z = 0.0
+            vel_msg.angular.x = 0.0
+            vel_msg.angular.y = 0.0
+            vel_msg.angular.z = float(data.axes[0])  # Turn
 
 if __name__ == '__main__':
     rclpy.init(args=None)
@@ -67,4 +75,3 @@ if __name__ == '__main__':
     
     rclpy.shutdown()
     executor_thread.join()
-

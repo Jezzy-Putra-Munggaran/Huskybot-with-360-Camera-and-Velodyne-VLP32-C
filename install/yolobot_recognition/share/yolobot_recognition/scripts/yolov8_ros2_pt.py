@@ -50,7 +50,7 @@ class Camera_subscriber(Node):
         yolov8_inference.header.frame_id = cam_name
         yolov8_inference.header.stamp = self.get_clock().now().to_msg()
         # Jika ingin menambah info asal kamera, pastikan ada field di msg
-        # yolov8_inference.camera_name = cam_name
+        yolov8_inference.camera_name = cam_name
 
         for r in results:
             boxes = r.boxes
