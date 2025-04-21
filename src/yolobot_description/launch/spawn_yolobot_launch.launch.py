@@ -15,18 +15,26 @@ def generate_launch_description():
     with open(urdf, 'r') as infp:
         robot_desc = infp.read()
 
+    spawn_entity = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=[
+            '-entity', 'yolobot',
+            '-file', urdf,
+            '-x', '0',
+            '-y', '0',
+            '-z', '0.05'
+        ],
+        output='screen'
+    )
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='false',
             description='Use simulation (Gazebo) clock if true'),
         # Pastikan robot selalu spawn di tengah (x=0, y=0, z=0.05)
-        Node(
-            package='gazebo_ros',
-            executable='spawn_entity.py',
-            arguments=['-entity', 'yolobot', '-file', urdf, '-x', '0', '-y', '0', '-z', '0.05'],
-            output='screen'
-        ),
+        spawn_entity,
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',

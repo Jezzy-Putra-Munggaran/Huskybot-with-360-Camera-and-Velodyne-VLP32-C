@@ -10,6 +10,7 @@ from cv_bridge import CvBridge
 from yolov8_msgs.msg import Yolov8Inference
 
 bridge = CvBridge()
+img = None  # Inisialisasi awal img agar tidak error
 
 class Camera_subscriber(Node):
 
@@ -45,15 +46,18 @@ class Yolo_subscriber(Node):
 
     def yolo_callback(self, data):
         global img
+        if img is None:
+            self.get_logger().warn("Belum ada gambar dari kamera, skip publish inference result.")
+            return
         for r in data.yolov8_inference:
-        
             class_name = r.class_name
             top = r.top
             left = r.left
             bottom = r.bottom
             right = r.right
-            yolo_subscriber.get_logger().info(f"{self.cnt} {class_name} : {top}, {left}, {bottom}, {right}")
-            cv2.rectangle(img, (top, left), (bottom, right), (255, 255, 0))
+            self.get_logger().info(f"{self.cnt} {class_name} : {top}, {left}, {bottom}, {right}")
+            # OpenCV: (x1, y1) = (left, top), (x2, y2) = (right, bottom)
+            cv2.rectangle(img, (left, top), (right, bottom), (255, 255, 0), 2)
             self.cnt += 1
 
         self.cnt = 0

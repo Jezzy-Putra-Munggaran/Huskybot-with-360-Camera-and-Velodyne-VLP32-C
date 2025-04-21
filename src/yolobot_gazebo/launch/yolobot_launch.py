@@ -11,7 +11,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-
 def generate_launch_description():
 
     pkg_yolobot_gazebo = get_package_share_directory('yolobot_gazebo')
@@ -19,15 +18,24 @@ def generate_launch_description():
     pkg_yolobot_control = get_package_share_directory('yolobot_control')
     pkg_yolobot_recognition = get_package_share_directory('yolobot_recognition')
 
+    # Set default GUI ke true (full Gazebo GUI)
+    gui_arg = DeclareLaunchArgument(
+        'gui',
+        default_value='true',
+        description='Enable Gazebo GUI (set to true for GUI, false for headless)'
+    )
+
     joy_node = Node(
         package = "joy",
         executable = "joy_node"
     )
 
+    # Forward argumen gui ke start_world_launch.py
     start_world = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_yolobot_gazebo, 'launch', 'start_world_launch.py'),
-        )
+        ),
+        launch_arguments={'gui': LaunchConfiguration('gui')}.items()
     )
 
     spawn_robot_world = IncludeLaunchDescription(
@@ -42,7 +50,6 @@ def generate_launch_description():
         )
     )  
 
-    # Jalankan node recognition langsung (opsional, jika ingin eksplisit)
     yolov8_node = Node(
         package='yolobot_recognition',
         executable='yolov8_ros2_pt.py',
@@ -60,9 +67,8 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Jika launch_yolov8.launch.py sudah menjalankan node ini, tidak perlu spawn_yolo lagi.
-    # Jika ingin eksplisit, bisa pakai yolov8_node saja.
     return LaunchDescription([
+        gui_arg,  # <-- Argumen gui tetap bisa diubah saat launch, tapi default sekarang true (GUI aktif)
         joy_node,
         start_world,
         spawn_robot_world,
@@ -71,3 +77,10 @@ def generate_launch_description():
         yolov8_stitcher_node,
         yolov8_panorama_inference_node,
     ])
+
+# ---------------------------
+# CATATAN:
+# - Sekarang default GUI aktif (full Gazebo GUI).
+# - Untuk headless, jalankan: ros2 launch yolobot_gazebo yolobot_launch.py gui:=false
+# - Untuk GUI, cukup: ros2 launch yolobot_gazebo yolobot_launch.py
+# ---------------------------

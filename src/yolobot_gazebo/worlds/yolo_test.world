@@ -44,214 +44,66 @@
       <pose>3.5 -7 0 0 0 -3.1</pose>
     </include> 
 
-    <!-- Objek mengelilingi robot di radius 5 meter -->
-    <include>
-      <name>object_0</name>
-      <uri>model://person_standing</uri>
-      <static>true</static>
-      <pose>5 0 0 0 0 0</pose>
-    </include>
-    <include>
-      <name>object_1</name>
-      <uri>model://suv</uri>
-      <static>true</static>
-      <pose>2.5 4.33 0 0 0 1.0472</pose> <!-- 60° -->
-    </include>
-    <include>
-      <name>object_2</name>
-      <uri>model://stop_sign</uri>
-      <static>true</static>
-      <pose>-2.5 4.33 0 0 0 2.0944</pose> <!-- 120° -->
-    </include>
-    <include>
-      <name>object_3</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>-5 0 0 0 0 3.1416</pose> <!-- 180° -->
-    </include>
-    <include>
-      <name>object_4</name>
-      <uri>model://bus</uri>
-      <static>true</static>
-      <pose>-2.5 -4.33 0 0 0 4.1888</pose> <!-- 240° -->
-    </include>
-    <include>
-      <name>object_5</name>
-      <uri>model://postbox</uri>
-      <static>true</static>
-      <pose>2.5 -4.33 0 0 0 5.2360</pose> <!-- 300° -->
-    </include>
-
-    <!-- 12 objek mengelilingi robot di radius 15 meter -->
+    <!-- 10 objek mengelilingi robot di radius 50 meter, tidak ada yang tepat di atas robot (y=50, x=0) -->
     <include>
       <name>circle_obj_0</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>15 0 0 0 0 0</pose>
+      <pose>50 0 0 0 0 0</pose>
     </include>
     <include>
       <name>circle_obj_1</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>12.99 7.5 0 0 0 0.5236</pose>
+      <pose>40.45 29.39 0 0 0 0.6</pose>
     </include>
     <include>
       <name>circle_obj_2</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
-      <pose>7.5 12.99 0 0 0 1.0472</pose>
+      <pose>15.45 47.55 0 0 0 1.25</pose>
     </include>
     <include>
       <name>circle_obj_3</name>
       <uri>model://prius_hybrid</uri>
       <static>true</static>
-      <pose>0 15 0 0 0 1.5708</pose>
+      <pose>-15.45 47.55 0 0 0 1.88</pose>
     </include>
     <include>
       <name>circle_obj_4</name>
       <uri>model://bus</uri>
       <static>true</static>
-      <pose>-7.5 12.99 0 0 0 2.0944</pose>
+      <pose>-40.45 29.39 0 0 0 2.51</pose>
     </include>
     <include>
       <name>circle_obj_5</name>
       <uri>model://postbox</uri>
       <static>true</static>
-      <pose>-12.99 7.5 0 0 0 2.6180</pose>
+      <pose>-50 0 0 0 0 3.14</pose>
     </include>
     <include>
       <name>circle_obj_6</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>-15 0 0 0 0 3.1416</pose>
+      <pose>-40.45 -29.39 0 0 0 3.77</pose>
     </include>
     <include>
       <name>circle_obj_7</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>-12.99 -7.5 0 0 0 3.6652</pose>
+      <pose>-15.45 -47.55 0 0 0 4.40</pose>
     </include>
     <include>
       <name>circle_obj_8</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
-      <pose>-7.5 -12.99 0 0 0 4.1888</pose>
+      <pose>15.45 -47.55 0 0 0 5.03</pose>
     </include>
     <include>
       <name>circle_obj_9</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>0 -15 0 0 0 4.7124</pose>
-    </include>
-    <include>
-      <name>circle_obj_10</name>
       <uri>model://bus</uri>
       <static>true</static>
-      <pose>7.5 -12.99 0 0 0 5.2360</pose>
-    </include>
-    <include>
-      <name>circle_obj_11</name>
-      <uri>model://postbox</uri>
-      <static>true</static>
-      <pose>12.99 -7.5 0 0 0 5.7596</pose>
-    </include>
-
-    <!-- 16 objek random mengelilingi robot di radius sekitar 40 meter -->
-    <include>
-      <name>circle_obj_0</name>
-      <uri>model://person_standing</uri>
-      <static>true</static>
-      <pose>40 0 0 0 0 0</pose>
-    </include>
-    <include>
-      <name>circle_obj_1</name>
-      <uri>model://suv</uri>
-      <static>true</static>
-      <pose>38.2 15.3 0 0 0 0.5</pose>
-    </include>
-    <include>
-      <name>circle_obj_2</name>
-      <uri>model://stop_sign</uri>
-      <static>true</static>
-      <pose>32.4 24.2 0 0 0 1.1</pose>
-    </include>
-    <include>
-      <name>circle_obj_3</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>27.3 29.5 0 0 0 1.7</pose>
-    </include>
-    <include>
-      <name>circle_obj_4</name>
-      <uri>model://bus</uri>
-      <static>true</static>
-      <pose>15.3 38.2 0 0 0 2.2</pose>
-    </include>
-    <include>
-      <name>circle_obj_5</name>
-      <uri>model://postbox</uri>
-      <static>true</static>
-      <pose>0 40 0 0 0 2.7</pose>
-    </include>
-    <include>
-      <name>circle_obj_6</name>
-      <uri>model://person_standing</uri>
-      <static>true</static>
-      <pose>-16.5 37.1 0 0 0 3.1</pose>
-    </include>
-    <include>
-      <name>circle_obj_7</name>
-      <uri>model://suv</uri>
-      <static>true</static>
-      <pose>-28.3 29.2 0 0 0 3.6</pose>
-    </include>
-    <include>
-      <name>circle_obj_8</name>
-      <uri>model://stop_sign</uri>
-      <static>true</static>
-      <pose>-36.7 17.1 0 0 0 4.1</pose>
-    </include>
-    <include>
-      <name>circle_obj_9</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>-40 0 0 0 0 4.7</pose>
-    </include>
-    <include>
-      <name>circle_obj_10</name>
-      <uri>model://bus</uri>
-      <static>true</static>
-      <pose>-36.7 -17.1 0 0 0 5.2</pose>
-    </include>
-    <include>
-      <name>circle_obj_11</name>
-      <uri>model://postbox</uri>
-      <static>true</static>
-      <pose>-28.3 -29.2 0 0 0 5.7</pose>
-    </include>
-    <include>
-      <name>circle_obj_12</name>
-      <uri>model://person_standing</uri>
-      <static>true</static>
-      <pose>-16.5 -37.1 0 0 0 6.1</pose>
-    </include>
-    <include>
-      <name>circle_obj_13</name>
-      <uri>model://suv</uri>
-      <static>true</static>
-      <pose>0 -40 0 0 0 6.6</pose>
-    </include>
-    <include>
-      <name>circle_obj_14</name>
-      <uri>model://stop_sign</uri>
-      <static>true</static>
-      <pose>15.3 -38.2 0 0 0 7.1</pose>
-    </include>
-    <include>
-      <name>circle_obj_15</name>
-      <uri>model://bus</uri>
-      <static>true</static>
-      <pose>27.3 -29.5 0 0 0 7.6</pose>
+      <pose>40.45 -29.39 0 0 0 5.66</pose>
     </include>
   </world>
 </sdf>
