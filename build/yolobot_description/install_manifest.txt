@@ -1,5 +1,6 @@
 /home/jezzy/yolobot/install/yolobot_description/share/yolobot_description//launch/spawn_yolobot_launch.launch.py
 /home/jezzy/yolobot/install/yolobot_description/share/yolobot_description//launch/spawn_yolobot.py
+/home/jezzy/yolobot/install/yolobot_description/share/yolobot_description//robot/husky_with_cameras.xacro
 /home/jezzy/yolobot/install/yolobot_description/share/yolobot_description//robot/yolobot.urdf
 /home/jezzy/yolobot/install/yolobot_description/lib/yolobot_description/spawn_yolobot.py
 /home/jezzy/yolobot/install/yolobot_description/share/ament_index/resource_index/package_run_dependencies/yolobot_description

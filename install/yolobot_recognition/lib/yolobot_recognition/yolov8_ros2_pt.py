@@ -21,14 +21,14 @@ class Camera_subscriber(Node):
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)
 
-        # Daftar topic kamera dan label
+        # Daftar topic kamera dan label (disesuaikan dengan Xacro Husky 6 kamera)
         self.camera_topics = {
-            'cam_front':        '/cam_front/image_raw',
-            'cam_front_right':  '/cam_front_right/image_raw',
-            'cam_back_right':   '/cam_back_right/image_raw',
-            'cam_back':         '/cam_back/image_raw',
-            'cam_back_left':    '/cam_back_left/image_raw',
-            'cam_front_left':   '/cam_front_left/image_raw'
+            'camera_front':        '/camera_front/image_raw',
+            'camera_front_left':   '/camera_front_left/image_raw',
+            'camera_left':         '/camera_left/image_raw',
+            'camera_rear':         '/camera_rear/image_raw',
+            'camera_rear_right':   '/camera_rear_right/image_raw',
+            'camera_right':        '/camera_right/image_raw'
         }
 
         # Ganti nama variabel agar tidak bentrok dengan property Node

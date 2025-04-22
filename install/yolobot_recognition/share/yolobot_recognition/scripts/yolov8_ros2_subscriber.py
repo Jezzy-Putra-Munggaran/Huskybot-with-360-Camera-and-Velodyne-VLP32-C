@@ -17,9 +17,10 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
+        # Ganti subscribe ke salah satu kamera Husky, misal kamera depan
         self.subscription = self.create_subscription(
             Image,
-            'rgb_cam/image_raw',
+            '/camera_front/image_raw',  # Ganti sesuai kamera yang diinginkan
             self.camera_callback,
             10)
         self.subscription 
