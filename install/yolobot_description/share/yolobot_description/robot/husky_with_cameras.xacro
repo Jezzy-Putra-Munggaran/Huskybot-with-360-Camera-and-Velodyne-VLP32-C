@@ -2,8 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras">
 
   <!-- Include Husky base from husky_customization -->
-  <xacro:include filename="$(find husky_custom_description)/urdf/husky_custom.urdf.xacro"/>
-  <xacro:husky_custom/>
+  <xacro:include filename="$(find husky_custom_description)/urdf/custom_description.urdf.xacro"/>
 
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
   <link name="orin_box_link">
