@@ -1,0 +1,51 @@
+[0.070s] Invoking command in '/home/jezzy/yolobot/build/yolobot_gazebo': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/yolobot/src/yolobot_gazebo -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/yolobot_gazebo
+[0.978s] -- The C compiler identification is GNU 11.4.0
+[3.938s] -- The CXX compiler identification is GNU 11.4.0
+[5.695s] -- Detecting C compiler ABI info
+[6.575s] -- Detecting C compiler ABI info - done
+[6.613s] -- Check for working C compiler: /usr/bin/cc - skipped
+[6.614s] -- Detecting C compile features
+[6.615s] -- Detecting C compile features - done
+[6.636s] -- Detecting CXX compiler ABI info
+[7.693s] -- Detecting CXX compiler ABI info - done
+[7.776s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[7.777s] -- Detecting CXX compile features
+[7.784s] -- Detecting CXX compile features - done
+[7.816s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[8.835s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[9.610s] -- Found rclpy: 3.3.16 (/opt/ros/humble/share/rclpy/cmake)
+[9.624s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[10.219s] -- Added test 'copyright' to check source files copyright and LICENSE
+[10.236s] -- Added test 'flake8' to check Python code syntax and style conventions
+[10.241s] -- Added test 'lint_cmake' to check CMake code style
+[10.250s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[10.255s] -- Added test 'xmllint' to check XML markup files
+[10.270s] -- Configuring done
+[10.291s] -- Generating done
+[10.309s] -- Build files have been written to: /home/jezzy/yolobot/build/yolobot_gazebo
+[10.343s] Invoked command in '/home/jezzy/yolobot/build/yolobot_gazebo' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/yolobot/src/yolobot_gazebo -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/yolobot_gazebo
+[10.347s] Invoking command in '/home/jezzy/yolobot/build/yolobot_gazebo': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_gazebo -- -j4 -l4
+[10.512s] Invoked command in '/home/jezzy/yolobot/build/yolobot_gazebo' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_gazebo -- -j4 -l4
+[10.517s] Invoking command in '/home/jezzy/yolobot/build/yolobot_gazebo': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_gazebo
+[10.540s] -- Install configuration: ""
+[10.541s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo//launch
+[10.542s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo//launch/yolobot_launch.py
+[10.543s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo//launch/start_world_launch.py
+[10.543s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo//worlds
+[10.544s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo//worlds/yolo_test.world
+[10.544s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/ament_index/resource_index/package_run_dependencies/yolobot_gazebo
+[10.545s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/ament_index/resource_index/parent_prefix_path/yolobot_gazebo
+[10.546s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/environment/ament_prefix_path.sh
+[10.547s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/environment/ament_prefix_path.dsv
+[10.547s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/environment/path.sh
+[10.548s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/environment/path.dsv
+[10.549s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/local_setup.bash
+[10.549s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/local_setup.sh
+[10.559s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/local_setup.zsh
+[10.579s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/local_setup.dsv
+[10.580s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/package.dsv
+[10.580s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/ament_index/resource_index/packages/yolobot_gazebo
+[10.581s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/cmake/yolobot_gazeboConfig.cmake
+[10.581s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/cmake/yolobot_gazeboConfig-version.cmake
+[10.581s] -- Installing: /home/jezzy/yolobot/install/yolobot_gazebo/share/yolobot_gazebo/package.xml
+[10.589s] Invoked command in '/home/jezzy/yolobot/build/yolobot_gazebo' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_gazebo
