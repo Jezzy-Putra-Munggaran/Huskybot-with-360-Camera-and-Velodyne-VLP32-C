@@ -16,7 +16,7 @@ class PanoramaDetection(Node):
         self.img_pub = self.create_publisher(Image, '/panorama/inference_result', 1)
         self.sub = self.create_subscription(
             Image,
-            '/panorama/detection_input',
+            '/panorama/detection_input',  # Sudah sesuai, ini hasil stitching, bukan kamera fisik
             self.callback,
             10
         )

@@ -13,21 +13,22 @@ class PanoramaStitcher(Node):
         super().__init__('panorama_stitcher')
         self.bridge = CvBridge()
 
+        # Daftar kamera dan mapping topic sesuai Xacro Husky 6 kamera
         self.camera_topics = [
-            'cam_front',
-            'cam_front_right',
-            'cam_back_right',
-            'cam_back',
-            'cam_back_left',
-            'cam_front_left'
+            'camera_front',
+            'camera_front_left',
+            'camera_left',
+            'camera_rear',
+            'camera_rear_right',
+            'camera_right'
         ]
         self.topic_map = {
-            'cam_front':        '/cam_front/image_raw',
-            'cam_front_right':  '/cam_front_right/image_raw',
-            'cam_back_right':   '/cam_back_right/image_raw',
-            'cam_back':         '/cam_back/image_raw',
-            'cam_back_left':    '/cam_back_left/image_raw',
-            'cam_front_left':   '/cam_front_left/image_raw'
+            'camera_front':      '/camera_front/image_raw',
+            'camera_front_left': '/camera_front_left/image_raw',
+            'camera_left':       '/camera_left/image_raw',
+            'camera_rear':       '/camera_rear/image_raw',
+            'camera_rear_right': '/camera_rear_right/image_raw',
+            'camera_right':      '/camera_right/image_raw'
         }
 
         self.latest_images = {}
@@ -69,8 +70,7 @@ class PanoramaStitcher(Node):
             images = []
             for name in self.camera_topics:
                 im = self.latest_images[name]
-                if name == 'cam_back':
-                    im = cv2.rotate(im, cv2.ROTATE_180)
+                # Tidak perlu rotate untuk Husky, hapus jika tidak perlu
                 if im.shape[:2] != base_shape:
                     im = cv2.resize(im, (base_shape[1], base_shape[0]))
                 images.append(im)
