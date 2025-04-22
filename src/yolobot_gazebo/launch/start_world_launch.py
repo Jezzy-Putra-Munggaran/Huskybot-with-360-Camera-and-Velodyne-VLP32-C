@@ -21,7 +21,8 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py'),
-        )
+        ),
+        launch_arguments={'world': LaunchConfiguration('world')}.items()
     )    
 
     return LaunchDescription([

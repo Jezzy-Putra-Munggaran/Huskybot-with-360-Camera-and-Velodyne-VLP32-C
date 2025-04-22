@@ -1,0 +1,50 @@
+# yolobot_navigation
+
+[![Build Status](https://github.com/yourusername/yolobot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/yolobot/actions)
+
+Node dan konfigurasi untuk obstacle avoidance dan path planning berbasis 3D map dan hasil fusion objek.
+
+---
+
+## Fitur
+- Integrasi dengan Nav2 (Navigation2) ROS2.
+- Custom costmap layer untuk obstacle 3D dari hasil fusion.
+- Path planning dan obstacle avoidance.
+
+---
+
+## Struktur Folder
+- `scripts/` : Node navigation (custom, jika ada).
+- `launch/` : Launch file navigation.
+- `config/` : Konfigurasi Nav2/costmap.
+
+---
+
+## Cara Pakai
+
+**Jalankan navigation:**
+```sh
+ros2 launch yolobot_navigation navigation.launch.py
+```
+
+**Parameter penting:**
+- `planner_type`: Jenis planner (DWB, TEB, custom 3D).
+- `costmap_params`: Path ke file parameter costmap.
+
+---
+
+## Contoh Command Visualisasi
+```sh
+rviz2 -d yolobot_navigation/rviz/navigation.rviz
+```
+
+---
+
+## Saran CI
+- Tambahkan test launch file navigation.
+- Gunakan [pytest](https://docs.pytest.org/en/stable/) untuk test Python.
+
+---
+
+## Catatan
+Pastikan input dari `/map` (Cartographer) dan `/fusion/objects3d` sudah tersedia.
