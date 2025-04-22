@@ -4,6 +4,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
 from launch.substitutions import LaunchConfiguration, Command
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
 
@@ -15,7 +16,10 @@ def generate_launch_description():
         'husky_with_cameras.xacro'
     )
 
-    robot_description = Command(['xacro ', urdf_file])
+    robot_description = ParameterValue(
+        Command(['xacro ', urdf_file]),
+        value_type=str
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument(

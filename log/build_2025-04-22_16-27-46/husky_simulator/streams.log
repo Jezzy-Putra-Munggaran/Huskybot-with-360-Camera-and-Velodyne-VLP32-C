@@ -1,0 +1,33 @@
+[0.099s] Invoking command in '/home/jezzy/yolobot/build/husky_simulator': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_simulator -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_simulator
+[0.771s] -- The C compiler identification is GNU 11.4.0
+[3.211s] -- The CXX compiler identification is GNU 11.4.0
+[4.414s] -- Detecting C compiler ABI info
+[4.914s] -- Detecting C compiler ABI info - done
+[4.973s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.974s] -- Detecting C compile features
+[4.976s] -- Detecting C compile features - done
+[4.990s] -- Detecting CXX compiler ABI info
+[5.444s] -- Detecting CXX compiler ABI info - done
+[5.469s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.469s] -- Detecting CXX compile features
+[5.471s] -- Detecting CXX compile features - done
+[10.490s] [31mCMake Error at CMakeLists.txt:3 (find_package):
+[10.490s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[10.490s]   asked CMake to find a package configuration file provided by "catkin", but
+[10.491s]   CMake did not find one.
+[10.491s] 
+[10.491s]   Could not find a package configuration file provided by "catkin" with any
+[10.491s]   of the following names:
+[10.491s] 
+[10.491s]     catkinConfig.cmake
+[10.492s]     catkin-config.cmake
+[10.492s] 
+[10.492s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[10.492s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[10.492s]   provides a separate development package or SDK, be sure it has been
+[10.492s]   installed.
+[10.493s] 
+[10.493s] [0m
+[10.493s] -- Configuring incomplete, errors occurred!
+[10.493s] See also "/home/jezzy/yolobot/build/husky_simulator/CMakeFiles/CMakeOutput.log".
+[10.501s] Invoked command in '/home/jezzy/yolobot/build/husky_simulator' returned '1': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_simulator -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_simulator

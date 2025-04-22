@@ -1,0 +1,23 @@
+[0.093s] Invoking command in '/home/jezzy/yolobot/build/yolov8_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/yolov8_msgs -- -j4 -l4
+[0.382s] [  2%] Built target yolov8_msgs__cpp
+[0.447s] [ 12%] Built target yolov8_msgs__rosidl_generator_c
+[0.532s] [ 12%] Built target ament_cmake_python_copy_yolov8_msgs
+[0.616s] [ 23%] Built target yolov8_msgs__rosidl_typesupport_cpp
+[0.656s] [ 33%] Built target yolov8_msgs__rosidl_typesupport_fastrtps_cpp
+[0.738s] [ 43%] Built target yolov8_msgs__rosidl_typesupport_introspection_cpp
+[0.801s] [ 53%] Built target yolov8_msgs__rosidl_typesupport_introspection_c
+[0.814s] [ 64%] Built target yolov8_msgs__rosidl_typesupport_fastrtps_c
+[0.849s] [ 74%] Built target yolov8_msgs__rosidl_typesupport_c
+[0.985s] [ 74%] Built target yolov8_msgs
+[1.107s] [ 76%] Built target yolov8_msgs__py
+[1.231s] [ 84%] Built target yolov8_msgs__rosidl_generator_py
+[1.401s] [ 89%] Built target yolov8_msgs__rosidl_typesupport_fastrtps_c__pyext
+[1.456s] [ 94%] Built target yolov8_msgs__rosidl_typesupport_c__pyext
+[1.466s] [100%] Built target yolov8_msgs__rosidl_typesupport_introspection_c__pyext
+[2.704s] running egg_info
+[2.706s] writing yolov8_msgs.egg-info/PKG-INFO
+[2.706s] writing dependency_links to yolov8_msgs.egg-info/dependency_links.txt
+[2.706s] writing top-level names to yolov8_msgs.egg-info/top_level.txt
+[2.715s] reading manifest file 'yolov8_msgs.egg-info/SOURCES.txt'
+[2.717s] writing manifest file 'yolov8_msgs.egg-info/SOURCES.txt'
+[2.781s] [100%] Built target ament_cmake_python_build_yolov8_msgs_egg

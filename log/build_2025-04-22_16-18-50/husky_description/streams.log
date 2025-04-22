@@ -1,0 +1,32 @@
+[0.104s] Invoking command in '/home/jezzy/yolobot/build/husky_description': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_description -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_description
+[0.918s] -- The C compiler identification is GNU 11.4.0
+[3.702s] -- The CXX compiler identification is GNU 11.4.0
+[5.531s] -- Detecting C compiler ABI info
+[6.234s] -- Detecting C compiler ABI info - done
+[6.295s] -- Check for working C compiler: /usr/bin/cc - skipped
+[6.297s] -- Detecting C compile features
+[6.300s] -- Detecting C compile features - done
+[6.319s] -- Detecting CXX compiler ABI info
+[7.238s] -- Detecting CXX compiler ABI info - done
+[7.343s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[7.351s] -- Detecting CXX compile features
+[7.362s] -- Detecting CXX compile features - done
+[13.641s] [31mCMake Error at CMakeLists.txt:4 (find_package):
+[13.642s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[13.642s]   asked CMake to find a package configuration file provided by "catkin", but
+[13.643s]   CMake did not find one.
+[13.643s] 
+[13.643s]   Could not find a package configuration file provided by "catkin" with any
+[13.643s]   of the following names:
+[13.643s] 
+[13.643s]     catkinConfig.cmake
+[13.644s]     catkin-config.cmake
+[13.644s] 
+[13.644s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[13.644s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[13.644s]   provides a separate development package or SDK, be sure it has been
+[13.645s]   installed.
+[13.645s] 
+[13.645s] [0m
+[13.645s] -- Configuring incomplete, errors occurred!
+[13.645s] See also "/home/jezzy/yolobot/build/husky_description/CMakeFiles/CMakeOutput.log".

@@ -1,0 +1,33 @@
+[0.098s] Invoking command in '/home/jezzy/yolobot/build/husky_gazebo': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_gazebo -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_gazebo
+[0.844s] -- The C compiler identification is GNU 11.4.0
+[3.937s] -- The CXX compiler identification is GNU 11.4.0
+[6.011s] -- Detecting C compiler ABI info
+[7.160s] -- Detecting C compiler ABI info - done
+[7.217s] -- Check for working C compiler: /usr/bin/cc - skipped
+[7.222s] -- Detecting C compile features
+[7.222s] -- Detecting C compile features - done
+[7.237s] -- Detecting CXX compiler ABI info
+[8.030s] -- Detecting CXX compiler ABI info - done
+[8.061s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[8.061s] -- Detecting CXX compile features
+[8.064s] -- Detecting CXX compile features - done
+[10.272s] [31mCMake Error at CMakeLists.txt:4 (find_package):
+[10.273s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[10.273s]   asked CMake to find a package configuration file provided by "catkin", but
+[10.274s]   CMake did not find one.
+[10.274s] 
+[10.274s]   Could not find a package configuration file provided by "catkin" with any
+[10.275s]   of the following names:
+[10.275s] 
+[10.275s]     catkinConfig.cmake
+[10.275s]     catkin-config.cmake
+[10.276s] 
+[10.276s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[10.276s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[10.276s]   provides a separate development package or SDK, be sure it has been
+[10.276s]   installed.
+[10.276s] 
+[10.277s] [0m
+[10.277s] -- Configuring incomplete, errors occurred!
+[10.277s] See also "/home/jezzy/yolobot/build/husky_gazebo/CMakeFiles/CMakeOutput.log".
+[10.282s] Invoked command in '/home/jezzy/yolobot/build/husky_gazebo' returned '1': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_gazebo -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_gazebo
