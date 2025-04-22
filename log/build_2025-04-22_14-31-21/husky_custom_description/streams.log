@@ -1,0 +1,41 @@
+[0.068s] Invoking command in '/home/jezzy/yolobot/build/husky_custom_description': /usr/bin/cmake /home/jezzy/yolobot/src/husky_customization/husky_custom_description -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_custom_description
+[0.101s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.101s]   Compatibility with CMake < 2.8.12 will be removed from a future version of
+[0.101s]   CMake.
+[0.101s] 
+[0.102s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.102s]   CMake that the project does not need compatibility with older versions.
+[0.102s] 
+[0.102s] [0m
+[1.082s] -- The C compiler identification is GNU 11.4.0
+[3.079s] -- The CXX compiler identification is GNU 11.4.0
+[4.519s] -- Detecting C compiler ABI info
+[5.037s] -- Detecting C compiler ABI info - done
+[5.084s] -- Check for working C compiler: /usr/bin/cc - skipped
+[5.084s] -- Detecting C compile features
+[5.092s] -- Detecting C compile features - done
+[5.099s] -- Detecting CXX compiler ABI info
+[5.596s] -- Detecting CXX compiler ABI info - done
+[5.624s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.625s] -- Detecting CXX compile features
+[5.628s] -- Detecting CXX compile features - done
+[7.993s] [31mCMake Error at CMakeLists.txt:4 (find_package):
+[7.994s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[7.996s]   asked CMake to find a package configuration file provided by "catkin", but
+[7.997s]   CMake did not find one.
+[7.997s] 
+[7.997s]   Could not find a package configuration file provided by "catkin" with any
+[7.998s]   of the following names:
+[7.998s] 
+[7.998s]     catkinConfig.cmake
+[7.998s]     catkin-config.cmake
+[7.998s] 
+[7.999s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[7.999s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[7.999s]   provides a separate development package or SDK, be sure it has been
+[7.999s]   installed.
+[8.000s] 
+[8.000s] [0m
+[8.000s] -- Configuring incomplete, errors occurred!
+[8.001s] See also "/home/jezzy/yolobot/build/husky_custom_description/CMakeFiles/CMakeOutput.log".
+[8.007s] Invoked command in '/home/jezzy/yolobot/build/husky_custom_description' returned '1': /usr/bin/cmake /home/jezzy/yolobot/src/husky_customization/husky_custom_description -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_custom_description

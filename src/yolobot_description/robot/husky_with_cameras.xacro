@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras">
 
-  <!-- Include Husky base description -->
-  <!-- <xacro:include filename="$(find husky_description)/urdf/description.urdf.xacro"/>
-  <xacro:husky_description/> -->
+  <!-- Include Husky base from husky_customization -->
+  <xacro:include filename="$(find husky_custom_description)/urdf/husky_custom.urdf.xacro"/>
+  <xacro:husky_custom/>
 
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
   <link name="orin_box_link">
@@ -14,24 +14,24 @@
       <material name="black">
         <color rgba="0 0 0 1"/>
       </material>
-      <origin xyz="0.28 0 0.57" rpy="0 0 0"/>
+      <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
     </visual>
     <collision>
       <geometry>
         <box size="0.25 0.18 0.09"/>
       </geometry>
-      <origin xyz="0.28 0 0.57" rpy="0 0 0"/>
+      <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
     </collision>
     <inertial>
       <mass value="2.0"/>
-      <origin xyz="0.28 0 0.57"/>
+      <origin xyz="0.0 0 0.045"/>
       <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
     </inertial>
   </link>
   <joint name="orin_box_joint" type="fixed">
-    <parent link="base_link"/>
+    <parent link="top_plate_link"/>
     <child link="orin_box_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.03" rpy="0 0 0"/>
   </joint>
 
   <!-- 2. Tower Hexagonal (prisma segi enam, warna hitam) -->
@@ -43,7 +43,6 @@
       <material name="black">
         <color rgba="0 0 0 1"/>
       </material>
-      <!-- Pastikan mesh orientasi sumbu X menghadap depan robot -->
       <origin xyz="0 0 0.07" rpy="0 0 0"/>
     </visual>
     <collision>

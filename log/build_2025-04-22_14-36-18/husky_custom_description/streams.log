@@ -1,0 +1,29 @@
+[0.114s] Invoking command in '/home/jezzy/yolobot/build/husky_custom_description': /usr/bin/cmake /home/jezzy/yolobot/src/husky_customization/husky_custom_description -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_custom_description
+[0.149s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.149s]   Compatibility with CMake < 2.8.12 will be removed from a future version of
+[0.149s]   CMake.
+[0.150s] 
+[0.150s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.150s]   CMake that the project does not need compatibility with older versions.
+[0.150s] 
+[0.151s] [0m
+[3.239s] [31mCMake Error at CMakeLists.txt:4 (find_package):
+[3.239s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[3.239s]   asked CMake to find a package configuration file provided by "catkin", but
+[3.240s]   CMake did not find one.
+[3.240s] 
+[3.240s]   Could not find a package configuration file provided by "catkin" with any
+[3.240s]   of the following names:
+[3.240s] 
+[3.241s]     catkinConfig.cmake
+[3.241s]     catkin-config.cmake
+[3.241s] 
+[3.241s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[3.242s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[3.246s]   provides a separate development package or SDK, be sure it has been
+[3.252s]   installed.
+[3.253s] 
+[3.254s] [0m
+[3.254s] -- Configuring incomplete, errors occurred!
+[3.255s] See also "/home/jezzy/yolobot/build/husky_custom_description/CMakeFiles/CMakeOutput.log".
+[3.265s] Invoked command in '/home/jezzy/yolobot/build/husky_custom_description' returned '1': /usr/bin/cmake /home/jezzy/yolobot/src/husky_customization/husky_custom_description -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_custom_description
