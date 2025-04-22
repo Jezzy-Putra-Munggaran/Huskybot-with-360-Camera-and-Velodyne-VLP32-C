@@ -13,14 +13,14 @@ class PanoramaStitcher(Node):
         super().__init__('panorama_stitcher')
         self.bridge = CvBridge()
 
-        # Daftar kamera dan mapping topic sesuai Xacro Husky 6 kamera
+        # Urutan kamera diurutkan sesuai arah fisik heksagonal (searah jarum jam)
         self.camera_topics = [
-            'camera_front',
-            'camera_front_left',
-            'camera_left',
-            'camera_rear',
-            'camera_rear_right',
-            'camera_right'
+            'camera_front',        # 0 derajat (depan)
+            'camera_front_left',   # 60 derajat (kiri depan)
+            'camera_left',         # 120 derajat (kiri)
+            'camera_rear',         # 180 derajat (belakang)
+            'camera_rear_right',   # 240 derajat (kanan belakang)
+            'camera_right'         # 300 derajat (kanan)
         ]
         self.topic_map = {
             'camera_front':      '/camera_front/image_raw',
@@ -67,6 +67,7 @@ class PanoramaStitcher(Node):
                 return
 
             base_shape = self.latest_images[self.camera_topics[0]].shape[:2]
+            # Urutan stitching mengikuti urutan kamera fisik
             images = []
             for name in self.camera_topics:
                 im = self.latest_images[name]
@@ -88,7 +89,10 @@ class PanoramaStitcher(Node):
                 cv2.imwrite(filename, pano)
                 self.save_count += 1
             else:
-                self.get_logger().warn(f"Stitching gagal, kode error: {status}")
+                self.get_logger().warn(
+                    f"Stitching gagal, kode error: {status}. "
+                    "Pastikan orientasi mesh tower dan yaw kamera di Xacro sudah benar (kamera menghadap keluar sisi heksagonal)."
+                )
 
 def main(args=None):
     rclpy.init(args=args)

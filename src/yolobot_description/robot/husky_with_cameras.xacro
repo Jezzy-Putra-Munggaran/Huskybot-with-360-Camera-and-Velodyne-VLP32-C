@@ -43,6 +43,7 @@
       <material name="black">
         <color rgba="0 0 0 1"/>
       </material>
+      <!-- Pastikan mesh orientasi sumbu X menghadap depan robot -->
       <origin xyz="0 0 0.07" rpy="0 0 0"/>
     </visual>
     <collision>
@@ -159,17 +160,27 @@
     </sensor>
   </gazebo>
 
-  <!-- Macro untuk kamera di sisi tower heksagonal -->
+  <!-- Macro untuk kamera di sisi tower heksagonal, visual mirip Arducam (box kecil hitam) -->
   <xacro:macro name="hex_camera" params="idx yaw_deg">
     <link name="camera_${idx}_link">
       <visual>
         <geometry>
-          <cylinder length="0.05" radius="0.025"/>
+          <box size="0.045 0.045 0.025"/>
         </geometry>
         <material name="black">
           <color rgba="0 0 0 1"/>
         </material>
         <origin xyz="0 0 0" rpy="0 0 0"/>
+      </visual>
+      <!-- Tambahkan lensa kamera (cylinder kecil di depan box) -->
+      <visual>
+        <geometry>
+          <cylinder length="0.015" radius="0.012"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.3 0.3 0.3 1"/>
+        </material>
+        <origin xyz="0.03 0 0" rpy="0 1.5708 0"/>
       </visual>
     </link>
     <joint name="camera_${idx}_joint" type="fixed">
