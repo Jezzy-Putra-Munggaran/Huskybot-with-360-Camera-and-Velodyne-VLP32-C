@@ -48,3 +48,42 @@ rviz2 -d yolobot_fusion/rviz/fusion.rviz
 
 ## Catatan
 Pastikan file kalibrasi kamera-LiDAR sudah benar untuk hasil fusion yang akurat.
+
+## Diagram Arsitektur Fusion
+
+```
+[YOLOv8 Deteksi 2D]      [Velodyne PointCloud]
+         |                       |
+         +----------+------------+
+                    |
+             [Fusion Node]
+                    |
+         [Deteksi Objek 3D /fusion/objects3d]
+```
+
+## Contoh Dataset Fusion
+
+```
+fusion_logs/
+  fusion_20250423_1.json
+  fusion_20250423_2.json
+  ...
+```
+
+**Contoh isi fusion_20250423_1.json:**
+```json
+[
+  {"label": "person", "center": [1.2, 0.5, 0.8], "size": [0.5, 0.5, 1.7], "confidence": 0.92},
+  ...
+]
+```
+
+## Penjelasan Parameter
+
+- `calibration_file`: Path ke file kalibrasi extrinsic.
+- `fusion_method`: nearest/iou/centroid.
+
+## Troubleshooting
+
+- Jika objek 3D tidak muncul, cek sinkronisasi topic dan kalibrasi.
+- Jika hasil fusion tidak akurat, cek parameter kalibrasi dan proyeksi.

@@ -14,6 +14,9 @@ import cv2
 bridge = CvBridge()
 
 import threading
+from sensor_msgs.msg import LaserScan
+
+SAFE_DISTANCE = 0.5  # meter
 
 vel_msg = Twist()
 vel_lock = threading.Lock()  # Tambahkan lock untuk mencegah race condition
@@ -54,21 +57,46 @@ class Joy_subscriber(Node):
             vel_msg.angular.y = 0.0
             vel_msg.angular.z = float(data.axes[0])  # Turn
 
+class SafetyMonitor(Node):
+    def __init__(self):
+        super().__init__('safety_monitor')
+        self.subscription = self.create_subscription(
+            LaserScan,
+            '/scan',  # ganti sesuai topic sensor Anda
+            self.scan_callback,
+            10)
+        self.subscription
+        self.safety_stop = False
+
+    def scan_callback(self, msg):
+        if min(msg.ranges) < SAFE_DISTANCE:
+            self.get_logger().warn("Obstacle too close! Stopping robot.")
+            self.safety_stop = True
+        else:
+            self.safety_stop = False
+
 if __name__ == '__main__':
     rclpy.init(args=None)
     
     commander = Commander()
     joy_subscriber = Joy_subscriber()
+    safety_monitor = SafetyMonitor()
 
     executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(commander)
     executor.add_node(joy_subscriber)
+    executor.add_node(safety_monitor)
 
     executor_thread = threading.Thread(target=executor.spin, daemon=True)
     executor_thread.start()
     rate = commander.create_rate(2)
     try:
         while rclpy.ok():
+            # Jika safety stop aktif, set kecepatan 0
+            if safety_monitor.safety_stop:
+                with vel_lock:
+                    vel_msg.linear.x = 0.0
+                    vel_msg.angular.z = 0.0
             rate.sleep()
     except KeyboardInterrupt:
         pass

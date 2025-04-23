@@ -52,3 +52,27 @@ InferenceResult:
 
 ## Catatan
 Pastikan message ini digunakan konsisten di node recognition dan fusion.
+
+## Contoh Dataset Message
+
+```yaml
+header:
+  stamp: ...
+  frame_id: "panorama"
+yolov8_inference:
+  - class_name: "person"
+    confidence: 0.95
+    left: 100
+    top: 50
+    right: 200
+    bottom: 300
+camera_name: "panorama"
+```
+
+## Penjelasan Parameter
+
+- Semua field di message wajib diisi sesuai tipe.
+
+## Troubleshooting
+
+- Jika message tidak bisa diimport, pastikan sudah build dan source environment.

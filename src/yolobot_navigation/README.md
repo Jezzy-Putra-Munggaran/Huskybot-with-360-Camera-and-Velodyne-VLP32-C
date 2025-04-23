@@ -48,3 +48,27 @@ rviz2 -d yolobot_navigation/rviz/navigation.rviz
 
 ## Catatan
 Pastikan input dari `/map` (Cartographer) dan `/fusion/objects3d` sudah tersedia.
+
+## Diagram Alur Navigasi
+
+```
+/map + /fusion/objects3d --> [Nav2/Custom Navigation] --> /cmd_vel
+```
+
+## Contoh Parameter Costmap
+
+```yaml
+obstacle_layer:
+  enabled: true
+  observation_sources: fusion_objects
+  fusion_objects:
+    topic: /fusion/objects3d
+    data_type: PointCloud2
+    marking: true
+    clearing: false
+```
+
+## Troubleshooting
+
+- Jika robot tidak menghindar obstacle, cek input costmap dan topic fusion.
+- Jika path tidak muncul, cek planner dan goal pose.

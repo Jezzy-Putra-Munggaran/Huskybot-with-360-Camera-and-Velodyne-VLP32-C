@@ -40,3 +40,33 @@ ros2 launch yolobot_control teleop.launch.py
 
 ## Catatan
 Pastikan node ini berjalan bersamaan dengan mapping dan navigation untuk autonomous mode.
+
+## Diagram Alur Kontrol
+
+```
+[Joystick/Planner] --> [yolobot_control] --> /cmd_vel --> [Robot/Gazebo]
+```
+
+## Contoh Parameter YAML
+
+```yaml
+max_speed: 1.0
+safety_stop: true
+```
+
+## Troubleshooting
+
+- Jika robot tidak bergerak, cek topic `/cmd_vel` dan remapping.
+- Jika safety stop aktif terus, cek sensor obstacle.
+
+## Mapping Joystick ke Perintah Gerak
+
+- **Arah maju/mundur:** Stick kiri atas/bawah → `linear.x`
+- **Belok kiri/kanan:** Stick kiri kiri/kanan → `angular.z`
+- **Tombol lain:** (tambahkan sesuai kebutuhan)
+
+Contoh di kode:
+```python
+vel_msg.linear.x = float(data.axes[1])  # maju/mundur
+vel_msg.angular.z = float(data.axes[0]) # belok kiri/kanan
+```

@@ -93,14 +93,14 @@
     <origin xyz="0 0 0.19" rpy="0 0 0"/>
   </joint>
 
-  <!-- 4. Velodyne VLP-32C (simulasi, bentuk cylinder, warna hitam) -->
+  <!-- 4. Velodyne VLP-32C (simulasi, gunakan mesh realistik jika ada) -->
   <link name="velodyne_link">
     <visual>
       <geometry>
-        <cylinder length="0.09" radius="0.06"/>
+        <mesh filename="package://yolobot_description/meshes/velodyne_vlp32c.dae" scale="1 1 1"/>
       </geometry>
-      <material name="black">
-        <color rgba="0 0 0 1"/>
+      <material name="grey">
+        <color rgba="0.3 0.3 0.3 1"/>
       </material>
       <origin xyz="0 0 0.06" rpy="0 0 0"/>
     </visual>
@@ -122,7 +122,7 @@
     <origin xyz="0 0 0.065" rpy="0 0 0"/>
   </joint>
 
-  <!-- Gazebo plugin Velodyne (simulasi point cloud, bisa diganti plugin sesuai kebutuhan) -->
+  <!-- Gazebo plugin Velodyne -->
   <gazebo reference="velodyne_link">
     <sensor type="gpu_ray" name="velodyne">
       <pose>0 0 0 0 0 0</pose>
@@ -160,33 +160,22 @@
     </sensor>
   </gazebo>
 
-  <!-- Macro untuk kamera di sisi tower heksagonal, visual mirip Arducam (box kecil hitam) -->
+  <!-- Macro untuk kamera di sisi tower heksagonal -->
   <xacro:macro name="hex_camera" params="idx yaw_deg">
     <link name="camera_${idx}_link">
       <visual>
         <geometry>
-          <box size="0.045 0.045 0.025"/>
+          <mesh filename="package://yolobot_description/meshes/arducam_imx477.dae" scale="1 1 1"/>
         </geometry>
         <material name="black">
           <color rgba="0 0 0 1"/>
         </material>
         <origin xyz="0 0 0" rpy="0 0 0"/>
       </visual>
-      <!-- Tambahkan lensa kamera (cylinder kecil di depan box) -->
-      <visual>
-        <geometry>
-          <cylinder length="0.015" radius="0.012"/>
-        </geometry>
-        <material name="grey">
-          <color rgba="0.3 0.3 0.3 1"/>
-        </material>
-        <origin xyz="0.03 0 0" rpy="0 1.5708 0"/>
-      </visual>
     </link>
     <joint name="camera_${idx}_joint" type="fixed">
       <parent link="hex_tower_link"/>
       <child link="camera_${idx}_link"/>
-      <!-- Kamera menempel di sisi prisma, offset dari pusat prisma -->
       <origin xyz="${0.11 * cos(yaw_deg * 3.14159 / 180)} ${0.11 * sin(yaw_deg * 3.14159 / 180)} 0.09"
               rpy="0 0 ${yaw_deg * 3.14159 / 180}"/>
     </joint>
@@ -195,7 +184,7 @@
         <pose>0 0 0 0 0 0</pose>
         <update_rate>30</update_rate>
         <camera>
-          <horizontal_fov>1.3962634</horizontal_fov>
+          <horizontal_fov>1.3962634</horizontal_fov> <!-- 80 derajat -->
           <image>
             <width>640</width>
             <height>480</height>
@@ -225,5 +214,16 @@
   <xacro:hex_camera idx="rear"     yaw_deg="180"/>
   <xacro:hex_camera idx="rear_right"  yaw_deg="240"/>
   <xacro:hex_camera idx="right"    yaw_deg="300"/>
+
+  <!--
+    Kalibrasi extrinsic kamera-LiDAR:
+    Simpan file transformasi di calibration/extrinsic_lidar_to_camera.yaml
+    Contoh format:
+      T_lidar_camera:
+        rows: 4
+        cols: 4
+        data: [ ... 16 nilai matriks ... ]
+    Dokumentasikan transformasi ini di README dan gunakan untuk fusion 2D-3D.
+  -->
 
 </robot>

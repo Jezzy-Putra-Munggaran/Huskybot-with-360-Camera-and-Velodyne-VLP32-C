@@ -54,3 +54,31 @@ ros2 launch yolobot_gazebo yolobot_launch.py
 
 ## Catatan
 Gunakan argumen `use_sim_time` untuk sinkronisasi waktu simulasi.
+
+## Diagram Arsitektur Simulasi
+
+```
+[Gazebo World]
+    |
+    +-- [Husky A200 + Velodyne + 6xCamera]
+           |
+           +-- Plugin Velodyne (publish /velodyne_points)
+           +-- Plugin Camera (publish /camera_X/image_raw)
+```
+
+## Contoh Dataset Simulasi
+
+- World file: `worlds/yolo_test.world`
+- Model file: `models/husky_with_sensors/model.sdf`
+
+## Parameter Penting di Launch
+
+```yaml
+world: worlds/yolo_test.world
+use_sim_time: true
+```
+
+## Troubleshooting
+
+- Jika sensor tidak publish, cek plugin di URDF/Xacro.
+- Jika robot tidak muncul, cek path model dan dependency.

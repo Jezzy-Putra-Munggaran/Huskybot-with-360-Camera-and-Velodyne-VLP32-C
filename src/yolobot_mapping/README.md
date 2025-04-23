@@ -48,3 +48,26 @@ rviz2 -d yolobot_mapping/rviz/mapping.rviz
 
 ## Catatan
 Pastikan topic point cloud dan frame konsisten dengan URDF dan node lain.
+
+## Diagram Pipeline Mapping
+
+```
+[Velodyne PointCloud] --> [Cartographer Node] --> /map
+```
+
+## Contoh Dataset Map
+
+- Map hasil SLAM: `map_20250423.pcd` (bisa disimpan dengan service Cartographer)
+
+## Penjelasan Parameter Config
+
+```lua
+TRAJECTORY_BUILDER_3D.min_range = 1.0
+TRAJECTORY_BUILDER_3D.max_range = 100.0
+tracking_frame = "base_link"
+```
+
+## Troubleshooting
+
+- Jika map tidak bertambah, cek topic point cloud dan frame.
+- Jika map "melayang", cek IMU dan parameter SLAM.

@@ -40,3 +40,28 @@ ros2 launch yolobot_recognition panorama_inference.launch.py
 
 ## Catatan
 Pastikan hasil deteksi publish ke topic yang konsisten untuk node fusion.
+
+## Diagram Alur Deteksi
+
+```
+[6xCamera] --> [Stitcher] --> [YOLOv8] --> /panorama/yolov8_inference
+```
+
+## Contoh Dataset Gambar
+
+```
+dataset/
+  panorama_0001.jpg
+  panorama_0002.jpg
+  ...
+```
+
+## Penjelasan Parameter
+
+- `model_path`: Path ke file YOLOv8.
+- `confidence_threshold`: 0.5 (default).
+
+## Troubleshooting
+
+- Jika deteksi kosong, cek threshold dan model path.
+- Jika stitcher error, cek urutan dan sinkronisasi kamera.
