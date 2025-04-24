@@ -11,7 +11,7 @@ class PanoramaDetection(Node):
     def __init__(self):
         super().__init__('panorama_detection')
         self.bridge = CvBridge()
-        self.model = YOLO('~/yolobot/src/yolobot_recognition/scripts/yolo11n.pt')
+        self.model = YOLO('~/yolobot/src/yolobot_recognition/scripts/yolo12n.pt')
         self.pub = self.create_publisher(Yolov8Inference, '/panorama/yolov8_inference', 1)
         self.img_pub = self.create_publisher(Image, '/panorama/inference_result', 1)
         self.sub = self.create_subscription(

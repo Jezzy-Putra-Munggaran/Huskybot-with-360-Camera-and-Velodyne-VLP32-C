@@ -16,7 +16,7 @@ class Camera_subscriber(Node):
     def __init__(self):
         super().__init__('camera_subscriber')
 
-        self.model = YOLO('~/yolobot/src/yolobot_recognition/scripts/yolo11n.pt')
+        self.model = YOLO('~/yolobot/src/yolobot_recognition/scripts/yolo12n.pt')
 
         self.yolov8_pub = self.create_publisher(Yolov8Inference, "/Yolov8_Inference", 1)
         self.img_pub = self.create_publisher(Image, "/inference_result", 1)

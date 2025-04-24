@@ -1,2 +1,0 @@
-Invoking command in '/home/jezzy/yolobot/build/husky_control': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_control -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_control
-Invoked command in '/home/jezzy/yolobot/build/husky_control' returned '1': /usr/bin/cmake /home/jezzy/yolobot/src/husky/husky_control -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/husky_control

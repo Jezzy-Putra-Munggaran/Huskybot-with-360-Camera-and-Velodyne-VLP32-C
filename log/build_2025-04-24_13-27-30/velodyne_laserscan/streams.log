@@ -1,0 +1,93 @@
+[0.057s] Invoking command in '/home/jezzy/yolobot/build/velodyne_laserscan': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/yolobot/src/velodyne/velodyne_laserscan -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/velodyne_laserscan
+[0.439s] -- The C compiler identification is GNU 11.4.0
+[2.116s] -- The CXX compiler identification is GNU 11.4.0
+[3.418s] -- Detecting C compiler ABI info
+[3.931s] -- Detecting C compiler ABI info - done
+[3.983s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.984s] -- Detecting C compile features
+[3.985s] -- Detecting C compile features - done
+[3.997s] -- Detecting CXX compiler ABI info
+[4.621s] -- Detecting CXX compiler ABI info - done
+[4.653s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[4.654s] -- Detecting CXX compile features
+[4.655s] -- Detecting CXX compile features - done
+[4.666s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[5.251s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[5.674s] -- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)
+[6.473s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[6.505s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[6.560s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[6.623s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.705s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[6.913s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[6.958s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[13.265s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[19.988s] -- Found FastRTPS: /opt/ros/humble/include  
+[32.645s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[32.858s] -- Looking for pthread.h
+[33.900s] -- Looking for pthread.h - found
+[33.900s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[35.291s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[35.308s] -- Found Threads: TRUE  
+[36.081s] -- Found rclcpp_components: 16.0.12 (/opt/ros/humble/share/rclcpp_components/cmake)
+[36.274s] -- Found sensor_msgs: 4.8.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[36.520s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[37.103s] -- Added test 'copyright' to check source files copyright and LICENSE
+[37.113s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[37.113s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/jezzy/yolobot/src/velodyne/velodyne_laserscan/include>
+[37.114s] -- Configured cppcheck exclude dirs and/or files: 
+[37.121s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[37.122s] -- Configured cpplint exclude dirs and/or files: 
+[37.125s] -- Added test 'flake8' to check Python code syntax and style conventions
+[37.139s] -- Added test 'lint_cmake' to check CMake code style
+[37.141s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[37.157s] -- Added test 'uncrustify' to check C / C++ code style
+[37.158s] -- Configured uncrustify additional arguments: 
+[37.160s] -- Added test 'xmllint' to check XML markup files
+[37.182s] -- Configuring done
+[37.271s] -- Generating done
+[37.336s] -- Build files have been written to: /home/jezzy/yolobot/build/velodyne_laserscan
+[37.383s] Invoked command in '/home/jezzy/yolobot/build/velodyne_laserscan' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/yolobot/src/velodyne/velodyne_laserscan -DCMAKE_INSTALL_PREFIX=/home/jezzy/yolobot/install/velodyne_laserscan
+[37.390s] Invoking command in '/home/jezzy/yolobot/build/velodyne_laserscan': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/velodyne_laserscan -- -j4 -l4
+[37.638s] [ 25%] [32mBuilding CXX object CMakeFiles/velodyne_laserscan.dir/src/velodyne_laserscan.cpp.o[0m
+[98.544s] [ 50%] [32m[1mLinking CXX shared library libvelodyne_laserscan.so[0m
+[100.983s] [ 50%] Built target velodyne_laserscan
+[101.037s] [ 75%] [32mBuilding CXX object CMakeFiles/velodyne_laserscan_node.dir/src/node.cpp.o[0m
+[113.798s] [100%] [32m[1mLinking CXX executable velodyne_laserscan_node[0m
+[114.979s] [100%] Built target velodyne_laserscan_node
+[115.029s] Invoked command in '/home/jezzy/yolobot/build/velodyne_laserscan' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/velodyne_laserscan -- -j4 -l4
+[115.030s] Invoking command in '/home/jezzy/yolobot/build/velodyne_laserscan': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/velodyne_laserscan
+[115.056s] -- Install configuration: ""
+[115.065s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/lib/libvelodyne_laserscan.so
+[115.085s] -- Set runtime path of "/home/jezzy/yolobot/install/velodyne_laserscan/lib/libvelodyne_laserscan.so" to ""
+[115.085s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/lib/velodyne_laserscan/velodyne_laserscan_node
+[115.086s] -- Set runtime path of "/home/jezzy/yolobot/install/velodyne_laserscan/lib/velodyne_laserscan/velodyne_laserscan_node" to ""
+[115.086s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/include/velodyne_laserscan
+[115.087s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/include/velodyne_laserscan/velodyne_laserscan.hpp
+[115.087s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/config
+[115.089s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/config/default-velodyne_laserscan_node-params.yaml
+[115.089s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/launch
+[115.089s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/launch/velodyne_laserscan_node-composed-launch.py
+[115.090s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/launch/velodyne_laserscan_node-launch.py
+[115.094s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/ament_index/resource_index/package_run_dependencies/velodyne_laserscan
+[115.095s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/ament_index/resource_index/parent_prefix_path/velodyne_laserscan
+[115.095s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/environment/ament_prefix_path.sh
+[115.095s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/environment/ament_prefix_path.dsv
+[115.095s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/environment/path.sh
+[115.099s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/environment/path.dsv
+[115.100s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/local_setup.bash
+[115.101s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/local_setup.sh
+[115.101s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/local_setup.zsh
+[115.102s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/local_setup.dsv
+[115.102s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/package.dsv
+[115.102s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/ament_index/resource_index/packages/velodyne_laserscan
+[115.102s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/ament_index/resource_index/rclcpp_components/velodyne_laserscan
+[115.103s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/velodyne_laserscanExport.cmake
+[115.103s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/velodyne_laserscanExport-noconfig.cmake
+[115.104s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/ament_cmake_export_include_directories-extras.cmake
+[115.110s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/ament_cmake_export_targets-extras.cmake
+[115.110s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/ament_cmake_export_dependencies-extras.cmake
+[115.111s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/velodyne_laserscanConfig.cmake
+[115.111s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/cmake/velodyne_laserscanConfig-version.cmake
+[115.111s] -- Installing: /home/jezzy/yolobot/install/velodyne_laserscan/share/velodyne_laserscan/package.xml
+[115.131s] Invoked command in '/home/jezzy/yolobot/build/velodyne_laserscan' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/velodyne_laserscan

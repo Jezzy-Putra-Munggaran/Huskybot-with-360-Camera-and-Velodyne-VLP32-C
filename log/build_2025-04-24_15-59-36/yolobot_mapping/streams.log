@@ -1,0 +1,41 @@
+[0.068s] Invoking command in '/home/jezzy/yolobot/build/yolobot_mapping': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_mapping -- -j4 -l4
+[0.215s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.006s] -- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)
+[1.600s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.622s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.658s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.712s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.784s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.013s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.029s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[28.892s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[29.434s] -- Found sensor_msgs: 4.8.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[29.698s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[30.270s] -- Added test 'flake8' to check Python code syntax and style conventions
+[30.275s] -- Added test 'lint_cmake' to check CMake code style
+[30.278s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[30.286s] -- Added test 'xmllint' to check XML markup files
+[30.300s] -- Configuring done
+[30.318s] -- Generating done
+[30.326s] -- Build files have been written to: /home/jezzy/yolobot/build/yolobot_mapping
+[30.437s] Invoked command in '/home/jezzy/yolobot/build/yolobot_mapping' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/yolobot/build/yolobot_mapping -- -j4 -l4
+[30.444s] Invoking command in '/home/jezzy/yolobot/build/yolobot_mapping': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_mapping
+[30.477s] -- Install configuration: ""
+[30.477s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/launch
+[30.477s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/launch/mapping.launch.py
+[30.477s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/ament_index/resource_index/package_run_dependencies/yolobot_mapping
+[30.479s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/ament_index/resource_index/parent_prefix_path/yolobot_mapping
+[30.479s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/environment/ament_prefix_path.sh
+[30.479s] -- Installing: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/environment/ament_prefix_path.dsv
+[30.480s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/environment/path.sh
+[30.480s] -- Installing: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/environment/path.dsv
+[30.480s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/local_setup.bash
+[30.480s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/local_setup.sh
+[30.480s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/local_setup.zsh
+[30.481s] -- Installing: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/local_setup.dsv
+[30.481s] -- Installing: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/package.dsv
+[30.481s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/ament_index/resource_index/packages/yolobot_mapping
+[30.481s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/cmake/yolobot_mappingConfig.cmake
+[30.482s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/cmake/yolobot_mappingConfig-version.cmake
+[30.482s] -- Up-to-date: /home/jezzy/yolobot/install/yolobot_mapping/share/yolobot_mapping/package.xml
+[30.496s] Invoked command in '/home/jezzy/yolobot/build/yolobot_mapping' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/yolobot/install/yolobot_fusion:/home/jezzy/yolobot/install/yolobot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/yolobot/build/yolobot_mapping
