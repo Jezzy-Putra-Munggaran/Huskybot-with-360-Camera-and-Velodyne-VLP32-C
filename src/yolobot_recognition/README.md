@@ -2,14 +2,14 @@
 
 [![Build Status](https://github.com/yourusername/yolobot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/yolobot/actions)
 
-Node deteksi objek berbasis YOLOv8 dari kamera 360° (6 Arducam IMX477) dan panorama stitcher.
+Node deteksi objek berbasis YOLOv12 dari kamera 360° (6 Arducam IMX477) dan panorama stitcher.
 
 ---
 
 ## Fitur
 - Subscribe ke 6 kamera, stitch panorama.
-- Deteksi objek dengan YOLOv8.
-- Publish hasil ke `/panorama/yolov8_inference`.
+- Deteksi objek dengan YOLOv12.
+- Publish hasil ke `/panorama/yolov12_inference`.
 
 ---
 
@@ -27,7 +27,7 @@ ros2 launch yolobot_recognition panorama_inference.launch.py
 ```
 
 **Parameter penting:**
-- `model_path`: Path ke model YOLOv8.
+- `model_path`: Path ke model YOLOv12.
 - `confidence_threshold`: Threshold confidence deteksi.
 
 ---
@@ -44,7 +44,7 @@ Pastikan hasil deteksi publish ke topic yang konsisten untuk node fusion.
 ## Diagram Alur Deteksi
 
 ```
-[6xCamera] --> [Stitcher] --> [YOLOv8] --> /panorama/yolov8_inference
+[6xCamera] --> [Stitcher] --> [YOLOv12] --> /panorama/yolov12_inference
 ```
 
 ## Contoh Dataset Gambar
@@ -58,7 +58,7 @@ dataset/
 
 ## Penjelasan Parameter
 
-- `model_path`: Path ke file YOLOv8.
+- `model_path`: Path ke file YOLOv12.
 - `confidence_threshold`: 0.5 (default).
 
 ## Troubleshooting

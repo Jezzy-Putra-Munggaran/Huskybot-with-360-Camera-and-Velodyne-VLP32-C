@@ -51,11 +51,11 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/yolobot_recognition" TYPE PROGRAM FILES
-    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov8_ros2_pt.py"
-    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov8_ros2_subscriber.py"
-    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov8_stitcher_node.py"
-    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov8_panorama_inference.py"
-    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov8_inference_listener.py"
+    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov12_ros2_pt.py"
+    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov12_ros2_subscriber.py"
+    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov12_stitcher_node.py"
+    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov12_panorama_inference.py"
+    "/home/jezzy/yolobot/src/yolobot_recognition/scripts/yolov12_inference_listener.py"
     )
 endif()
 

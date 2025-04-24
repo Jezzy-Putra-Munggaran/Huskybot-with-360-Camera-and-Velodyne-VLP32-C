@@ -50,20 +50,20 @@ def generate_launch_description():
         )
     )  
 
-    yolov8_node = Node(
+    yolov12_node = Node(
         package='yolobot_recognition',
-        executable='yolov8_ros2_pt.py',
+        executable='yolov12_ros2_pt.py',
         output='screen'
     )
 
-    yolov8_stitcher_node = Node(
+    yolov12_stitcher_node = Node(
         package='yolobot_recognition',
-        executable='yolov8_stitcher_node.py',
+        executable='yolov12_stitcher_node.py',
         output='screen'
     )
-    yolov8_panorama_inference_node = Node(
+    yolov12_panorama_inference_node = Node(
         package='yolobot_recognition',
-        executable='yolov8_panorama_inference.py',
+        executable='yolov12_panorama_inference.py',
         output='screen'
     )
 
@@ -73,9 +73,9 @@ def generate_launch_description():
         start_world,
         spawn_robot_world,
         spawn_robot_control,
-        yolov8_node,
-        yolov8_stitcher_node,
-        yolov8_panorama_inference_node,
+        yolov12_node,
+        yolov12_stitcher_node,
+        yolov12_panorama_inference_node,
     ])
 
 # ---------------------------
