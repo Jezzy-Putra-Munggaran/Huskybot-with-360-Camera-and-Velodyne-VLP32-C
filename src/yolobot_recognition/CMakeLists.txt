@@ -20,7 +20,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(yolov8_msgs REQUIRED)
+find_package(yolov12_msgs REQUIRED)
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
@@ -47,11 +47,11 @@ install(
 
 install(
   PROGRAMS
-    scripts/yolov8_ros2_pt.py
-    scripts/yolov8_ros2_subscriber.py
-    scripts/yolov8_stitcher_node.py
-    scripts/yolov8_panorama_inference.py
-    scripts/yolov8_inference_listener.py
+    scripts/yolov12_ros2_pt.py
+    scripts/yolov12_ros2_subscriber.py
+    scripts/yolov12_stitcher_node.py
+    scripts/yolov12_panorama_inference.py
+    scripts/yolov12_inference_listener.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -7,7 +7,7 @@ Node fusion data deteksi objek kamera 360° (YOLO) dan point cloud Velodyne VLP-
 ---
 
 ## Fitur
-- Subscribe ke `/velodyne_points` dan `/panorama/yolov8_inference`.
+- Subscribe ke `/velodyne_points` dan `/panorama/yolov12_inference`.
 - Proyeksi bounding box 2D ke 3D (menggunakan kalibrasi).
 - Publish hasil deteksi objek 3D ke `/fusion/objects3d`.
 
@@ -52,7 +52,7 @@ Pastikan file kalibrasi kamera-LiDAR sudah benar untuk hasil fusion yang akurat.
 ## Diagram Arsitektur Fusion
 
 ```
-[YOLOv8 Deteksi 2D]      [Velodyne PointCloud]
+[YOLOv12 Deteksi 2D]      [Velodyne PointCloud]
          |                       |
          +----------+------------+
                     |

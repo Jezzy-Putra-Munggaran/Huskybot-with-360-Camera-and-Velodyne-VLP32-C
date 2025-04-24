@@ -1,0 +1,20 @@
+[3.745s] Invoking command in '/home/jezzy/yolobot/src/yolobot_navigation': PYTHONPATH=/home/jezzy/yolobot/build/yolobot_navigation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/yolobot/install/yolobot_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/yolobot_navigation build --build-base /home/jezzy/yolobot/build/yolobot_navigation/build install --record /home/jezzy/yolobot/build/yolobot_navigation/install.log --single-version-externally-managed install_data
+[4.674s] running egg_info
+[4.676s] writing ../../build/yolobot_navigation/yolobot_navigation.egg-info/PKG-INFO
+[4.677s] writing dependency_links to ../../build/yolobot_navigation/yolobot_navigation.egg-info/dependency_links.txt
+[4.677s] writing entry points to ../../build/yolobot_navigation/yolobot_navigation.egg-info/entry_points.txt
+[4.678s] writing requirements to ../../build/yolobot_navigation/yolobot_navigation.egg-info/requires.txt
+[4.679s] writing top-level names to ../../build/yolobot_navigation/yolobot_navigation.egg-info/top_level.txt
+[4.685s] reading manifest file '../../build/yolobot_navigation/yolobot_navigation.egg-info/SOURCES.txt'
+[4.688s] writing manifest file '../../build/yolobot_navigation/yolobot_navigation.egg-info/SOURCES.txt'
+[4.689s] running build
+[4.689s] running build_py
+[4.689s] running install
+[4.690s] running install_lib
+[4.693s] running install_data
+[4.693s] running install_egg_info
+[4.697s] removing '/home/jezzy/yolobot/install/yolobot_navigation/lib/python3.10/site-packages/yolobot_navigation-0.0.0-py3.10.egg-info' (and everything under it)
+[4.697s] Copying ../../build/yolobot_navigation/yolobot_navigation.egg-info to /home/jezzy/yolobot/install/yolobot_navigation/lib/python3.10/site-packages/yolobot_navigation-0.0.0-py3.10.egg-info
+[4.700s] running install_scripts
+[4.748s] writing list of installed files to '/home/jezzy/yolobot/build/yolobot_navigation/install.log'
+[4.803s] Invoked command in '/home/jezzy/yolobot/src/yolobot_navigation' returned '0': PYTHONPATH=/home/jezzy/yolobot/build/yolobot_navigation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/yolobot/install/yolobot_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/yolobot_navigation build --build-base /home/jezzy/yolobot/build/yolobot_navigation/build install --record /home/jezzy/yolobot/build/yolobot_navigation/install.log --single-version-externally-managed install_data

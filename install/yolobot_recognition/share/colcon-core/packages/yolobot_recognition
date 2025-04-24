@@ -1,1 +1,1 @@
-cv_bridge:rclpy:sensor_msgs:yolov8_msgs
+cv_bridge:rclpy:sensor_msgs:yolov12_msgs

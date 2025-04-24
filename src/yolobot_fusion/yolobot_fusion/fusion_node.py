@@ -3,7 +3,7 @@
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
 from sensor_msgs.msg import PointCloud2  # Message point cloud dari Velodyne
-from yolov8_msgs.msg import Yolov8Inference  # Message hasil deteksi YOLOv8 (dari kamera 360°)
+from yolov12_msgs.msg import Yolov12Inference  # Message hasil deteksi YOLOv12 (dari kamera 360°)
 from yolobot_fusion.msg import Object3D  # Custom message untuk hasil deteksi objek 3D
 import message_filters  # Untuk sinkronisasi data multi sensor (kamera & lidar)
 import numpy as np  # Untuk pemrosesan data numerik/array
@@ -15,9 +15,9 @@ class FusionNode(Node):
     def __init__(self):
         super().__init__('fusion_node')
 
-        # Sinkronisasi message: PointCloud2 (LiDAR) dan Yolov8Inference (kamera 360°)
+        # Sinkronisasi message: PointCloud2 (LiDAR) dan Yolov12Inference (kamera 360°)
         self.lidar_sub = message_filters.Subscriber(self, PointCloud2, '/velodyne_points')
-        self.yolo_sub = message_filters.Subscriber(self, Yolov8Inference, '/panorama/yolov8_inference')
+        self.yolo_sub = message_filters.Subscriber(self, Yolov12Inference, '/panorama/yolov12_inference')
 
         # ApproximateTimeSynchronizer untuk sinkronisasi data yang timestamp-nya tidak persis sama
         self.ts = message_filters.ApproximateTimeSynchronizer(
@@ -31,13 +31,13 @@ class FusionNode(Node):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
-        self.get_logger().info("FusionNode started: listening to /velodyne_points and /panorama/yolov8_inference")
+        self.get_logger().info("FusionNode started: listening to /velodyne_points and /panorama/yolov12_inference")
 
     def fusion_callback(self, lidar_msg, yolo_msg):
         """
         Fungsi utama untuk menggabungkan hasil deteksi kamera 360° (YOLO) dan point cloud LiDAR.
         - lidar_msg: sensor_msgs/PointCloud2 (output dari Velodyne VLP-32C)
-        - yolo_msg: yolov8_msgs/Yolov8Inference (output deteksi objek panorama kamera 360°)
+        - yolo_msg: yolov12_msgs/Yolov12Inference (output deteksi objek panorama kamera 360°)
         """
         # 1. Parse point cloud dari LiDAR
         points = self.pointcloud2_to_xyz(lidar_msg)

@@ -6,7 +6,7 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
-        "/home/jezzy/yolobot/install/yolov8_msgs/include/**",
+        "/home/jezzy/yolobot/install/yolov12_msgs/include/**",
         "/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node/include/**",
         "/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/include/**",
         "/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo/include/**",
