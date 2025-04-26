@@ -44,7 +44,7 @@ Proyek ini bertujuan mengembangkan sistem deteksi halangan menggunakan kombinasi
 - **RVIZ2**
 - **Visual Studio Code**
 - **Roboflow**
-- **YOLOv8/YOLOv12**
+- **YOLOv12**
 - **Python 3.10+**
 - **libpcap-dev** (untuk Velodyne)
 - **OpenCV, numpy, PyYAML, cv_bridge, dll** (lihat requirements.txt jika ada)
@@ -55,7 +55,15 @@ Proyek ini bertujuan mengembangkan sistem deteksi halangan menggunakan kombinasi
 
 ### 1. **Install Ubuntu 22.04.5 LTS**
 
-### 2. **Install ROS2 Humble**
+### 2. **Update Sistem**
+```sh
+sudo apt update
+sudo apt upgrade -y
+sudo apt install --only-upgrade libsystemd0 systemd udev libudev1 -y
+```
+
+### 3. **Install ROS2 Humble**
+Ikuti panduan resmi di [ROS2 Humble Documentation](https://docs.ros.org/en/humble/index.html):
 ```sh
 sudo apt update && sudo apt upgrade
 sudo apt install locales
@@ -74,27 +82,63 @@ sudo rosdep init
 rosdep update
 ```
 
-### 3. **Install Gazebo 11**
+### 4. **Install Gazebo 11**
+Ikuti panduan resmi di [Gazebo Documentation](https://gazebosim.org/docs/latest/ros_installation):
 ```sh
 sudo apt install gazebo11 libgazebo11-dev
 ```
 
-### 4. **Install Dependency Lain**
+### 5. **Install Dependency Lain**
 ```sh
 sudo apt install python3-pip python3-colcon-common-extensions python3-vcstool python3-opencv python3-numpy python3-yaml python3-pyqt5 libpcap-dev
-pip3 install opencv-python roboflow
+pip3 install opencv-python roboflow PyQt6 PySide6
 ```
 
-### 5. **Clone Repo Ini**
+### 6. **Install C++ Tools**
+```sh
+sudo apt install build-essential gdb
+g++ --version
+```
+
+### 7. **Install Terminator**
+```sh
+sudo apt install terminator
+```
+
+### 8. **Install Visual Studio Code**
+```sh
+sudo snap install code --classic
+sudo snap install --classic code
+```
+Tambahkan ekstensi:
+- ROS Extensions
+- CMake Extensions
+
+### 9. **Set GitHub SSH**
+Ikuti panduan di [GitHub SSH Documentation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
+
+### 10. **Install Ultralytics**
+Ikuti panduan di [Ultralytics Documentation](https://docs.ultralytics.com/quickstart/).
+
+### 11. **Clone Repo Ini**
 ```sh
 git clone https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C.git
 cd Yolobot-with-360-Camera-and-Velodyne-VLP32-C
 ```
 
-### 6. **Source ROS2**
+### 12. **Source ROS2**
 ```sh
 source /opt/ros/humble/setup.bash
 ```
+
+### 13. **Install Husky Dependencies**
+Ikuti panduan di [Husky Documentation](http://wiki.ros.org/Robots/Husky).
+
+### 14. **Install Velodyne Dependencies**
+Ikuti panduan di [Velodyne ROS2 Driver](https://github.com/ros-drivers/velodyne).
+
+### 15. **Install LIO-SAM Dependencies**
+Ikuti panduan di [LIO-SAM Documentation](https://github.com/TixiaoShan/LIO-SAM).
 
 ---
 
@@ -115,11 +159,11 @@ src/
   yolobot_description/      # URDF/Xacro robot, mesh, kalibrasi
   yolobot_gazebo/          # Launch file simulasi Gazebo
   yolobot_control/         # Node kontrol & safety
-  yolobot_recognition/     # Stitcher panorama & YOLOv8 inference
+  yolobot_recognition/     # Stitcher panorama & YOLOv12 inference
   yolobot_fusion/          # Fusion 2D-3D (kamera-LiDAR)
-  yolobot_mapping/         # Mapping (Cartographer)
+  yolobot_mapping/         # Mapping (LIO-SAM)
   yolobot_navigation/      # Navigation & obstacle avoidance
-  yolov8_msgs/             # Custom message YOLOv8
+  yolov12_msgs/            # Custom message YOLOv12
   velodyne/                # Driver & pointcloud Velodyne
 ```
 
@@ -139,14 +183,14 @@ ros2 launch yolobot_mapping mapping.launch.py
 
 ### 3. **Jalankan Node Stitcher (Panorama 360°)**
 ```sh
-ros2 run yolobot_recognition yolov8_stitcher_node.py
+ros2 run yolobot_recognition yolov12_stitcher_node.py
 # atau jika ada launch file:
 ros2 launch yolobot_recognition panorama_stitcher.launch.py
 ```
 
-### 4. **Jalankan Node Deteksi YOLOv8 (Object Detection 360°)**
+### 4. **Jalankan Node Deteksi YOLOv12 (Object Detection 360°)**
 ```sh
-ros2 launch yolobot_recognition launch_yolov8.launch.py
+ros2 launch yolobot_recognition launch_yolov12.launch.py
 ```
 
 ### 5. **Jalankan Node Fusion (2D-3D Kamera & LiDAR)**
@@ -177,7 +221,7 @@ rviz2
 | Target Penelitian                        | Status | Node/Launch File                                      |
 |------------------------------------------|:------:|-------------------------------------------------------|
 | 3D Mapping                              |   ✅   | `yolobot_mapping/mapping.launch.py`                   |
-| Model Deteksi Halangan (YOLOv8)          |   ✅   | `yolobot_recognition/launch_yolov8.launch.py`         |
+| Model Deteksi Halangan (YOLOv12)         |   ✅   | `yolobot_recognition/launch_yolov12.launch.py`        |
 | Obstacle Avoidance                       |   ✅   | `yolobot_navigation/navigation.launch.py`             |
 | Algoritma Pengukuran Jarak (2D-3D)       |   ✅   | `yolobot_fusion/fusion.launch.py`                     |
 | Algoritma Penghitungan Koordinat Posisi  |   ✅   | `yolobot_fusion/fusion.launch.py`                     |
