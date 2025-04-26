@@ -1,9 +1,9 @@
 #!/bin/bash
-# filepath: ~/yolobot/rename_yolov8_to_yolov12.sh
+# filepath: ~/huskybot/rename_yolov8_to_yolov12.sh
 
 set -e
 
-cd ~/yolobot/src
+cd ~/huskybot/src
 
 echo "=== Rename folder dan file ==="
 # Rename folder
@@ -11,13 +11,13 @@ if [ -d yolov8_msgs ]; then
     mv yolov8_msgs yolov12_msgs
 fi
 
-# Rename file dan folder di yolobot_recognition
-find yolobot_recognition -type f -name '*yolov8*' | while read f; do
+# Rename file dan folder di huskybot_recognition
+find huskybot_recognition -type f -name '*yolov8*' | while read f; do
     newf=$(echo "$f" | sed 's/yolov8/yolov12/g')
     mv "$f" "$newf"
 done
 
-find yolobot_recognition -type d -name '*yolov8*' | while read d; do
+find huskybot_recognition -type d -name '*yolov8*' | while read d; do
     newd=$(echo "$d" | sed 's/yolov8/yolov12/g')
     mv "$d" "$newd"
 done

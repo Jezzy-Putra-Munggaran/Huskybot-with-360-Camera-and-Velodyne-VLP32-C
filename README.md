@@ -1,6 +1,6 @@
-# Yolobot: Sistem Deteksi Halangan 360° + 3D LiDAR untuk Kendaraan Otonom
+# huskybot: Sistem Deteksi Halangan 360° + 3D LiDAR untuk Kendaraan Otonom
 
-[![Build Status](https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C/actions/workflows/ci.yml/badge.svg)](https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C/actions)
+[![Build Status](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions/workflows/ci.yml/badge.svg)](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions)
 
 ---
 
@@ -122,8 +122,8 @@ Ikuti panduan di [Ultralytics Documentation](https://docs.ultralytics.com/quicks
 
 ### 11. **Clone Repo Ini**
 ```sh
-git clone https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C.git
-cd Yolobot-with-360-Camera-and-Velodyne-VLP32-C
+git clone https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C.git
+cd huskybot-with-360-Camera-and-Velodyne-VLP32-C
 ```
 
 ### 12. **Source ROS2**
@@ -145,7 +145,7 @@ Ikuti panduan di [LIO-SAM Documentation](https://github.com/TixiaoShan/LIO-SAM).
 ## Build Workspace
 
 ```sh
-cd Yolobot-with-360-Camera-and-Velodyne-VLP32-C
+cd huskybot-with-360-Camera-and-Velodyne-VLP32-C
 colcon build
 source install/setup.bash
 ```
@@ -156,13 +156,13 @@ source install/setup.bash
 
 ```
 src/
-  yolobot_description/      # URDF/Xacro robot, mesh, kalibrasi
-  yolobot_gazebo/          # Launch file simulasi Gazebo
-  yolobot_control/         # Node kontrol & safety
-  yolobot_recognition/     # Stitcher panorama & YOLOv12 inference
-  yolobot_fusion/          # Fusion 2D-3D (kamera-LiDAR)
-  yolobot_mapping/         # Mapping (LIO-SAM)
-  yolobot_navigation/      # Navigation & obstacle avoidance
+  huskybot_description/      # URDF/Xacro robot, mesh, kalibrasi
+  huskybot_gazebo/          # Launch file simulasi Gazebo
+  huskybot_control/         # Node kontrol & safety
+  huskybot_recognition/     # Stitcher panorama & YOLOv12 inference
+  huskybot_fusion/          # Fusion 2D-3D (kamera-LiDAR)
+  huskybot_mapping/         # Mapping (LIO-SAM)
+  huskybot_navigation/      # Navigation & obstacle avoidance
   yolov12_msgs/            # Custom message YOLOv12
   velodyne/                # Driver & pointcloud Velodyne
 ```
@@ -173,39 +173,39 @@ src/
 
 ### 1. **Jalankan Gazebo + Robot + Sensor**
 ```sh
-ros2 launch yolobot_gazebo yolobot_launch.py
+ros2 launch huskybot_gazebo huskybot_launch.py
 ```
 
 ### 2. **Jalankan Node Mapping (3D Mapping dengan LiDAR)**
 ```sh
-ros2 launch yolobot_mapping mapping.launch.py
+ros2 launch huskybot_mapping mapping.launch.py
 ```
 
 ### 3. **Jalankan Node Stitcher (Panorama 360°)**
 ```sh
-ros2 run yolobot_recognition yolov12_stitcher_node.py
+ros2 run huskybot_recognition yolov12_stitcher_node.py
 # atau jika ada launch file:
-ros2 launch yolobot_recognition panorama_stitcher.launch.py
+ros2 launch huskybot_recognition panorama_stitcher.launch.py
 ```
 
 ### 4. **Jalankan Node Deteksi YOLOv12 (Object Detection 360°)**
 ```sh
-ros2 launch yolobot_recognition launch_yolov12.launch.py
+ros2 launch huskybot_recognition launch_yolov12.launch.py
 ```
 
 ### 5. **Jalankan Node Fusion (2D-3D Kamera & LiDAR)**
 ```sh
-ros2 launch yolobot_fusion fusion.launch.py
+ros2 launch huskybot_fusion fusion.launch.py
 ```
 
 ### 6. **Jalankan Node Navigation (Obstacle Avoidance & Path Planning)**
 ```sh
-ros2 launch yolobot_navigation navigation.launch.py
+ros2 launch huskybot_navigation navigation.launch.py
 ```
 
 ### 7. **Jalankan Node Kontrol Robot (Joystick/Safety)**
 ```sh
-ros2 launch yolobot_control yolobot_control.launch.py
+ros2 launch huskybot_control huskybot_control.launch.py
 ```
 
 ### 8. **Visualisasi di RViz2**
@@ -220,11 +220,11 @@ rviz2
 
 | Target Penelitian                        | Status | Node/Launch File                                      |
 |------------------------------------------|:------:|-------------------------------------------------------|
-| 3D Mapping                              |   ✅   | `yolobot_mapping/mapping.launch.py`                   |
-| Model Deteksi Halangan (YOLOv12)         |   ✅   | `yolobot_recognition/launch_yolov12.launch.py`        |
-| Obstacle Avoidance                       |   ✅   | `yolobot_navigation/navigation.launch.py`             |
-| Algoritma Pengukuran Jarak (2D-3D)       |   ✅   | `yolobot_fusion/fusion.launch.py`                     |
-| Algoritma Penghitungan Koordinat Posisi  |   ✅   | `yolobot_fusion/fusion.launch.py`                     |
+| 3D Mapping                              |   ✅   | `huskybot_mapping/mapping.launch.py`                   |
+| Model Deteksi Halangan (YOLOv12)         |   ✅   | `huskybot_recognition/launch_yolov12.launch.py`        |
+| Obstacle Avoidance                       |   ✅   | `huskybot_navigation/navigation.launch.py`             |
+| Algoritma Pengukuran Jarak (2D-3D)       |   ✅   | `huskybot_fusion/fusion.launch.py`                     |
+| Algoritma Penghitungan Koordinat Posisi  |   ✅   | `huskybot_fusion/fusion.launch.py`                     |
 
 ---
 
@@ -261,8 +261,8 @@ MIT License
 
 ---
 
-**Repo ini: [https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C](https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C)**
+**Repo ini: [https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C)**
 
 ---
 
-> Untuk pertanyaan, kontribusi, atau kolaborasi, silakan buka [Issues](https://github.com/Jezzy-Putra-Munggaran/Yolobot-with-360-Camera-and-Velodyne-VLP32-C/issues) di repo ini.
+> Untuk pertanyaan, kontribusi, atau kolaborasi, silakan buka [Issues](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues) di repo ini.

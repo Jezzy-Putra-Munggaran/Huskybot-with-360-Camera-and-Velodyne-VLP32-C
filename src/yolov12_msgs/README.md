@@ -1,6 +1,6 @@
 # yolov12_msgs
 
-[![Build Status](https://github.com/yourusername/yolobot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/yolobot/actions)
+[![Build Status](https://github.com/yourusername/huskybot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/huskybot/actions)
 
 Custom message untuk hasil deteksi YOLOv12 dan inference panorama.
 
