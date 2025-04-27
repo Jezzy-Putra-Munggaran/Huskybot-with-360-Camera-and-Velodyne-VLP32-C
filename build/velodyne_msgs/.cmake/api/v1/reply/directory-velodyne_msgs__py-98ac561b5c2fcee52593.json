@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "velodyne_msgs__py",
+		"source" : "/home/jezzy/huskybot/build/velodyne_msgs/velodyne_msgs__py"
+	}
+}

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/husky_custom_description
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/husky_custom_description
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/husky_custom_description
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/husky_custom_description
 
 # Utility rule file for husky_custom_description_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/husky_custom_description_uninstall.dir/compiler_depend.make
 include CMakeFiles/husky_custom_description_uninstall.dir/progress.make
 
 CMakeFiles/husky_custom_description_uninstall:
-	/usr/bin/cmake -P /home/jezzy/yolobot/build/husky_custom_description/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/jezzy/huskybot/build/husky_custom_description/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 husky_custom_description_uninstall: CMakeFiles/husky_custom_description_uninstall
 husky_custom_description_uninstall: CMakeFiles/husky_custom_description_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/husky_custom_description_uninstall.dir/clean:
 .PHONY : CMakeFiles/husky_custom_description_uninstall.dir/clean
 
 CMakeFiles/husky_custom_description_uninstall.dir/depend:
-	cd /home/jezzy/yolobot/build/husky_custom_description && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/husky_custom_description /home/jezzy/yolobot/src/husky_custom_description /home/jezzy/yolobot/build/husky_custom_description /home/jezzy/yolobot/build/husky_custom_description /home/jezzy/yolobot/build/husky_custom_description/CMakeFiles/husky_custom_description_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/husky_custom_description && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/husky_custom_description /home/jezzy/huskybot/src/husky_custom_description /home/jezzy/huskybot/build/husky_custom_description /home/jezzy/huskybot/build/husky_custom_description /home/jezzy/huskybot/build/husky_custom_description/CMakeFiles/husky_custom_description_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/husky_custom_description_uninstall.dir/depend
 

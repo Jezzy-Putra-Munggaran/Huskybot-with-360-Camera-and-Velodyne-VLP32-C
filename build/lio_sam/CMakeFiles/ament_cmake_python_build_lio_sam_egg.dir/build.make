@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/LIO-SAM
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/LIO-SAM
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/lio_sam
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/lio_sam
 
 # Utility rule file for ament_cmake_python_build_lio_sam_egg.
 
@@ -67,7 +67,7 @@ include CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/compiler_depend.make
 include CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/progress.make
 
 CMakeFiles/ament_cmake_python_build_lio_sam_egg:
-	cd /home/jezzy/yolobot/build/lio_sam/ament_cmake_python/lio_sam && /usr/bin/python3 setup.py egg_info
+	cd /home/jezzy/huskybot/build/lio_sam/ament_cmake_python/lio_sam && /usr/bin/python3 setup.py egg_info
 
 ament_cmake_python_build_lio_sam_egg: CMakeFiles/ament_cmake_python_build_lio_sam_egg
 ament_cmake_python_build_lio_sam_egg: CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/clean:
 .PHONY : CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/clean
 
 CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/depend:
-	cd /home/jezzy/yolobot/build/lio_sam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/LIO-SAM /home/jezzy/yolobot/src/LIO-SAM /home/jezzy/yolobot/build/lio_sam /home/jezzy/yolobot/build/lio_sam /home/jezzy/yolobot/build/lio_sam/CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/lio_sam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/LIO-SAM /home/jezzy/huskybot/src/LIO-SAM /home/jezzy/huskybot/build/lio_sam /home/jezzy/huskybot/build/lio_sam /home/jezzy/huskybot/build/lio_sam/CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ament_cmake_python_build_lio_sam_egg.dir/depend
 

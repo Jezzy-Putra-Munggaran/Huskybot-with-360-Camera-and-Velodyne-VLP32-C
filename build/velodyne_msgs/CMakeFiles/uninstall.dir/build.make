@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/velodyne/velodyne_msgs
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/velodyne/velodyne_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/velodyne_msgs
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/velodyne_msgs
 
 # Utility rule file for uninstall.
 
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/jezzy/yolobot/build/velodyne_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/velodyne/velodyne_msgs /home/jezzy/yolobot/src/velodyne/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/velodyne_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/velodyne/velodyne_msgs /home/jezzy/huskybot/src/velodyne/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

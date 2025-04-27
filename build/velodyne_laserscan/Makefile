@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/velodyne/velodyne_laserscan
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/velodyne/velodyne_laserscan
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/velodyne_laserscan
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/velodyne_laserscan
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -142,9 +142,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jezzy/yolobot/build/velodyne_laserscan/CMakeFiles /home/jezzy/yolobot/build/velodyne_laserscan//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jezzy/huskybot/build/velodyne_laserscan/CMakeFiles /home/jezzy/huskybot/build/velodyne_laserscan//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jezzy/yolobot/build/velodyne_laserscan/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jezzy/huskybot/build/velodyne_laserscan/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

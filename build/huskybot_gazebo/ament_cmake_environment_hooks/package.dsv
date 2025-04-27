@@ -1,0 +1,4 @@
+source;share/huskybot_gazebo/local_setup.bash
+source;share/huskybot_gazebo/local_setup.dsv
+source;share/huskybot_gazebo/local_setup.sh
+source;share/huskybot_gazebo/local_setup.zsh

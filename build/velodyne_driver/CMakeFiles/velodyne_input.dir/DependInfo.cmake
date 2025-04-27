@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jezzy/yolobot/src/velodyne/velodyne_driver/src/lib/input.cpp" "CMakeFiles/velodyne_input.dir/src/lib/input.cpp.o" "gcc" "CMakeFiles/velodyne_input.dir/src/lib/input.cpp.o.d"
+  "/home/jezzy/huskybot/src/velodyne/velodyne_driver/src/lib/input.cpp" "CMakeFiles/velodyne_input.dir/src/lib/input.cpp.o" "gcc" "CMakeFiles/velodyne_input.dir/src/lib/input.cpp.o.d"
   )
 
 # Targets to which this target links.

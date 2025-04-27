@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "yolov12_msgs__py",
+		"source" : "/home/jezzy/huskybot/build/yolov12_msgs/yolov12_msgs__py"
+	}
+}

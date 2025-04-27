@@ -1,8 +1,8 @@
-# Install script for directory: /home/jezzy/yolobot/build/lio_sam/lio_sam__py
+# Install script for directory: /home/jezzy/huskybot/build/lio_sam/lio_sam__py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/jezzy/yolobot/install/lio_sam")
+  set(CMAKE_INSTALL_PREFIX "/home/jezzy/huskybot/install/lio_sam")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

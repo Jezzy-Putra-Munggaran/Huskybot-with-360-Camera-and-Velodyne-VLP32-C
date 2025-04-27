@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/yolov12_msgs
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/yolov12_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/yolov12_msgs
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/yolov12_msgs
 
 # Utility rule file for yolov12_msgs.
 
@@ -66,8 +66,8 @@ include CMakeFiles/yolov12_msgs.dir/compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles/yolov12_msgs.dir/progress.make
 
-CMakeFiles/yolov12_msgs: /home/jezzy/yolobot/src/yolov12_msgs/msg/InferenceResult.msg
-CMakeFiles/yolov12_msgs: /home/jezzy/yolobot/src/yolov12_msgs/msg/Yolov12Inference.msg
+CMakeFiles/yolov12_msgs: /home/jezzy/huskybot/src/yolov12_msgs/msg/InferenceResult.msg
+CMakeFiles/yolov12_msgs: /home/jezzy/huskybot/src/yolov12_msgs/msg/Yolov12Inference.msg
 CMakeFiles/yolov12_msgs: /opt/ros/humble/share/std_msgs/msg/Bool.idl
 CMakeFiles/yolov12_msgs: /opt/ros/humble/share/std_msgs/msg/Byte.idl
 CMakeFiles/yolov12_msgs: /opt/ros/humble/share/std_msgs/msg/ByteMultiArray.idl
@@ -112,6 +112,6 @@ CMakeFiles/yolov12_msgs.dir/clean:
 .PHONY : CMakeFiles/yolov12_msgs.dir/clean
 
 CMakeFiles/yolov12_msgs.dir/depend:
-	cd /home/jezzy/yolobot/build/yolov12_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/yolov12_msgs /home/jezzy/yolobot/src/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs/CMakeFiles/yolov12_msgs.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/yolov12_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/yolov12_msgs /home/jezzy/huskybot/src/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs/CMakeFiles/yolov12_msgs.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/yolov12_msgs.dir/depend
 

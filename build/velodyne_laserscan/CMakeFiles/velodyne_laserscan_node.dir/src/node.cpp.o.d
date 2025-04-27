@@ -1,5 +1,5 @@
 CMakeFiles/velodyne_laserscan_node.dir/src/node.cpp.o: \
- /home/jezzy/yolobot/src/velodyne/velodyne_laserscan/src/node.cpp \
+ /home/jezzy/huskybot/src/velodyne/velodyne_laserscan/src/node.cpp \
  /usr/include/stdc-predef.h /usr/include/c++/11/memory \
  /usr/include/c++/11/bits/stl_algobase.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
@@ -618,7 +618,7 @@ CMakeFiles/velodyne_laserscan_node.dir/src/node.cpp.o: \
  /opt/ros/humble/include/rclcpp/rclcpp/wait_set_policies/thread_safe_synchronization.hpp \
  /opt/ros/humble/include/rclcpp/rclcpp/wait_set_policies/detail/write_preferring_read_write_lock.hpp \
  /opt/ros/humble/include/rclcpp/rclcpp/wait_set_template.hpp \
- /home/jezzy/yolobot/src/velodyne/velodyne_laserscan/include/velodyne_laserscan/velodyne_laserscan.hpp \
+ /home/jezzy/huskybot/src/velodyne/velodyne_laserscan/include/velodyne_laserscan/velodyne_laserscan.hpp \
  /opt/ros/humble/include/sensor_msgs/sensor_msgs/msg/laser_scan.hpp \
  /opt/ros/humble/include/sensor_msgs/sensor_msgs/msg/detail/laser_scan__struct.hpp \
  /opt/ros/humble/include/std_msgs/std_msgs/msg/detail/header__struct.hpp \

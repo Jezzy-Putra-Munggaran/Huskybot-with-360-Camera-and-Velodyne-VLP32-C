@@ -1,8 +1,8 @@
-# Install script for directory: /home/jezzy/yolobot/build/yolov12_msgs/yolov12_msgs__py
+# Install script for directory: /home/jezzy/huskybot/build/yolov12_msgs/yolov12_msgs__py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/jezzy/yolobot/install/yolov12_msgs")
+  set(CMAKE_INSTALL_PREFIX "/home/jezzy/huskybot/install/yolov12_msgs")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

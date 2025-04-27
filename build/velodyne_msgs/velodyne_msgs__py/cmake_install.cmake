@@ -1,8 +1,8 @@
-# Install script for directory: /home/jezzy/yolobot/build/velodyne_msgs/velodyne_msgs__py
+# Install script for directory: /home/jezzy/huskybot/build/velodyne_msgs/velodyne_msgs__py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/jezzy/yolobot/install/velodyne_msgs")
+  set(CMAKE_INSTALL_PREFIX "/home/jezzy/huskybot/install/velodyne_msgs")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

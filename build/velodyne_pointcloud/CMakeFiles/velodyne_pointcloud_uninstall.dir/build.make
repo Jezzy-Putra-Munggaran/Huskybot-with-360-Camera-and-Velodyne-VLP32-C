@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/velodyne/velodyne_pointcloud
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/velodyne/velodyne_pointcloud
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/velodyne_pointcloud
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/velodyne_pointcloud
 
 # Utility rule file for velodyne_pointcloud_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/velodyne_pointcloud_uninstall.dir/compiler_depend.make
 include CMakeFiles/velodyne_pointcloud_uninstall.dir/progress.make
 
 CMakeFiles/velodyne_pointcloud_uninstall:
-	/usr/bin/cmake -P /home/jezzy/yolobot/build/velodyne_pointcloud/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/jezzy/huskybot/build/velodyne_pointcloud/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 velodyne_pointcloud_uninstall: CMakeFiles/velodyne_pointcloud_uninstall
 velodyne_pointcloud_uninstall: CMakeFiles/velodyne_pointcloud_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/velodyne_pointcloud_uninstall.dir/clean:
 .PHONY : CMakeFiles/velodyne_pointcloud_uninstall.dir/clean
 
 CMakeFiles/velodyne_pointcloud_uninstall.dir/depend:
-	cd /home/jezzy/yolobot/build/velodyne_pointcloud && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/velodyne/velodyne_pointcloud /home/jezzy/yolobot/src/velodyne/velodyne_pointcloud /home/jezzy/yolobot/build/velodyne_pointcloud /home/jezzy/yolobot/build/velodyne_pointcloud /home/jezzy/yolobot/build/velodyne_pointcloud/CMakeFiles/velodyne_pointcloud_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/velodyne_pointcloud && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/velodyne/velodyne_pointcloud /home/jezzy/huskybot/src/velodyne/velodyne_pointcloud /home/jezzy/huskybot/build/velodyne_pointcloud /home/jezzy/huskybot/build/velodyne_pointcloud /home/jezzy/huskybot/build/velodyne_pointcloud/CMakeFiles/velodyne_pointcloud_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/velodyne_pointcloud_uninstall.dir/depend
 
