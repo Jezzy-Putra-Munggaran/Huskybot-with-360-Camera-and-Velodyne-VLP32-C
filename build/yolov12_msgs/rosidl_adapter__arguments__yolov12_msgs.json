@@ -1,7 +1,7 @@
 {
   "package_name": "yolov12_msgs",
   "non_idl_tuples": [
-    "/home/jezzy/yolobot/src/yolov12_msgs:msg/InferenceResult.msg",
-    "/home/jezzy/yolobot/src/yolov12_msgs:msg/Yolov12Inference.msg"
+    "/home/jezzy/huskybot/src/yolov12_msgs:msg/InferenceResult.msg",
+    "/home/jezzy/huskybot/src/yolov12_msgs:msg/Yolov12Inference.msg"
   ]
 }

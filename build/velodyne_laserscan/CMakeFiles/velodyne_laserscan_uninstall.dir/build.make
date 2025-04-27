@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/velodyne/velodyne_laserscan
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/velodyne/velodyne_laserscan
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/velodyne_laserscan
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/velodyne_laserscan
 
 # Utility rule file for velodyne_laserscan_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/velodyne_laserscan_uninstall.dir/compiler_depend.make
 include CMakeFiles/velodyne_laserscan_uninstall.dir/progress.make
 
 CMakeFiles/velodyne_laserscan_uninstall:
-	/usr/bin/cmake -P /home/jezzy/yolobot/build/velodyne_laserscan/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/jezzy/huskybot/build/velodyne_laserscan/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 velodyne_laserscan_uninstall: CMakeFiles/velodyne_laserscan_uninstall
 velodyne_laserscan_uninstall: CMakeFiles/velodyne_laserscan_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/velodyne_laserscan_uninstall.dir/clean:
 .PHONY : CMakeFiles/velodyne_laserscan_uninstall.dir/clean
 
 CMakeFiles/velodyne_laserscan_uninstall.dir/depend:
-	cd /home/jezzy/yolobot/build/velodyne_laserscan && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/velodyne/velodyne_laserscan /home/jezzy/yolobot/src/velodyne/velodyne_laserscan /home/jezzy/yolobot/build/velodyne_laserscan /home/jezzy/yolobot/build/velodyne_laserscan /home/jezzy/yolobot/build/velodyne_laserscan/CMakeFiles/velodyne_laserscan_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/velodyne_laserscan && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/velodyne/velodyne_laserscan /home/jezzy/huskybot/src/velodyne/velodyne_laserscan /home/jezzy/huskybot/build/velodyne_laserscan /home/jezzy/huskybot/build/velodyne_laserscan /home/jezzy/huskybot/build/velodyne_laserscan/CMakeFiles/velodyne_laserscan_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/velodyne_laserscan_uninstall.dir/depend
 

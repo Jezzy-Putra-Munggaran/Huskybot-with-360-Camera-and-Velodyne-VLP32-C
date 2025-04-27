@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/LIO-SAM
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/LIO-SAM
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/lio_sam
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/lio_sam
 
 # Utility rule file for lio_sam.
 
@@ -66,8 +66,8 @@ include CMakeFiles/lio_sam.dir/compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles/lio_sam.dir/progress.make
 
-CMakeFiles/lio_sam: /home/jezzy/yolobot/src/LIO-SAM/msg/CloudInfo.msg
-CMakeFiles/lio_sam: /home/jezzy/yolobot/src/LIO-SAM/srv/SaveMap.srv
+CMakeFiles/lio_sam: /home/jezzy/huskybot/src/LIO-SAM/msg/CloudInfo.msg
+CMakeFiles/lio_sam: /home/jezzy/huskybot/src/LIO-SAM/srv/SaveMap.srv
 CMakeFiles/lio_sam: rosidl_cmake/srv/SaveMap_Request.msg
 CMakeFiles/lio_sam: rosidl_cmake/srv/SaveMap_Response.msg
 CMakeFiles/lio_sam: /opt/ros/humble/share/std_msgs/msg/Bool.idl
@@ -142,6 +142,6 @@ CMakeFiles/lio_sam.dir/clean:
 .PHONY : CMakeFiles/lio_sam.dir/clean
 
 CMakeFiles/lio_sam.dir/depend:
-	cd /home/jezzy/yolobot/build/lio_sam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/LIO-SAM /home/jezzy/yolobot/src/LIO-SAM /home/jezzy/yolobot/build/lio_sam /home/jezzy/yolobot/build/lio_sam /home/jezzy/yolobot/build/lio_sam/CMakeFiles/lio_sam.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/lio_sam && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/LIO-SAM /home/jezzy/huskybot/src/LIO-SAM /home/jezzy/huskybot/build/lio_sam /home/jezzy/huskybot/build/lio_sam /home/jezzy/huskybot/build/lio_sam/CMakeFiles/lio_sam.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/lio_sam.dir/depend
 

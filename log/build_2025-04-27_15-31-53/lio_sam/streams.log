@@ -1,0 +1,409 @@
+[0.044s] Invoking command in '/home/jezzy/huskybot/build/lio_sam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/LIO-SAM -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/lio_sam
+[0.520s] -- The C compiler identification is GNU 11.4.0
+[2.714s] -- The CXX compiler identification is GNU 11.4.0
+[4.031s] -- Detecting C compiler ABI info
+[4.514s] -- Detecting C compiler ABI info - done
+[4.555s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.559s] -- Detecting C compile features
+[4.561s] -- Detecting C compile features - done
+[4.573s] -- Detecting CXX compiler ABI info
+[5.092s] -- Detecting CXX compiler ABI info - done
+[5.114s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.116s] -- Detecting CXX compile features
+[5.119s] -- Detecting CXX compile features - done
+[5.132s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[5.681s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[6.055s] -- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[6.088s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.136s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[6.652s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[6.797s] -- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)
+[7.013s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[7.028s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[11.766s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[16.894s] -- Found FastRTPS: /opt/ros/humble/include  
+[27.223s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[27.302s] -- Looking for pthread.h
+[28.482s] -- Looking for pthread.h - found
+[28.482s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[28.992s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[28.992s] -- Found Threads: TRUE  
+[29.251s] -- Found rclpy: 3.3.16 (/opt/ros/humble/share/rclpy/cmake)
+[29.262s] -- Found cv_bridge: 3.2.1 (/opt/ros/humble/share/cv_bridge/cmake)
+[29.520s] -- Found nav_msgs: 4.8.0 (/opt/ros/humble/share/nav_msgs/cmake)
+[29.663s] -- Found visualization_msgs: 4.8.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[29.777s] -- Found pcl_conversions: 2.4.5 (/opt/ros/humble/share/pcl_conversions/cmake)
+[29.934s] -- Checking for module 'eigen3'
+[29.982s] --   Found eigen3, version 3.4.0
+[30.065s] -- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1") 
+[30.066s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[34.006s] -- Checking for module 'flann'
+[34.038s] --   Found flann, version 1.9.1
+[35.349s] -- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so  
+[35.350s] -- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+[51.913s] -- Checking for module 'libusb-1.0'
+[51.958s] --   Found libusb-1.0, version 1.0.25
+[52.293s] -- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so  
+[52.296s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[52.901s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[59.558s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[59.572s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[59.589s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[67.855s] -- Found Qhull version 8.0.2
+[75.587s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[82.063s] -- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so  
+[82.066s] -- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so  
+[82.068s] -- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so  
+[82.071s] -- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so  
+[82.074s] -- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so  
+[82.076s] -- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so  
+[82.078s] -- Found PCL_2D: /usr/include/pcl-1.12  
+[82.079s] -- Found PCL_GEOMETRY: /usr/include/pcl-1.12  
+[82.081s] -- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so  
+[82.084s] -- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so  
+[82.086s] -- Found PCL_ML: /usr/lib/x86_64-linux-gnu/libpcl_ml.so  
+[82.088s] -- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so  
+[82.091s] -- Found PCL_VISUALIZATION: /usr/lib/x86_64-linux-gnu/libpcl_visualization.so  
+[82.093s] -- Found PCL_SURFACE: /usr/lib/x86_64-linux-gnu/libpcl_surface.so  
+[82.096s] -- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so  
+[82.099s] -- Found PCL_KEYPOINTS: /usr/lib/x86_64-linux-gnu/libpcl_keypoints.so  
+[82.101s] -- Found PCL_TRACKING: /usr/lib/x86_64-linux-gnu/libpcl_tracking.so  
+[82.103s] -- Found PCL_RECOGNITION: /usr/lib/x86_64-linux-gnu/libpcl_recognition.so  
+[82.106s] -- Found PCL_STEREO: /usr/lib/x86_64-linux-gnu/libpcl_stereo.so  
+[82.108s] -- Found PCL_APPS: /usr/lib/x86_64-linux-gnu/libpcl_apps.so  
+[82.110s] -- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.12  
+[82.111s] -- Found PCL_MODELER: /usr/include/pcl-1.12  
+[82.113s] -- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.12  
+[82.116s] -- Found PCL_OUTOFCORE: /usr/lib/x86_64-linux-gnu/libpcl_outofcore.so  
+[82.120s] -- Found PCL_PEOPLE: /usr/lib/x86_64-linux-gnu/libpcl_people.so  
+[82.130s] -- Found tf2: 0.25.12 (/opt/ros/humble/share/tf2/cmake)
+[82.166s] -- Found tf2_geometry_msgs: 0.25.12 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)
+[82.336s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[82.342s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[82.343s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[82.683s] -- Found tf2_sensor_msgs: 0.25.12 (/opt/ros/humble/share/tf2_sensor_msgs/cmake)
+[82.699s] -- Found tf2_eigen: 0.25.12 (/opt/ros/humble/share/tf2_eigen/cmake)
+[82.725s] -- Found OpenCV: /usr (found version "4.5.4") 
+[82.842s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found suitable version "1.74.0", minimum required is "1.65") found components: serialization system filesystem thread program_options date_time timer chrono regex 
+[82.849s] -- GTSAM include directory:  /opt/ros/humble/lib/cmake/GTSAM/../../../include
+[82.866s] -- Found Eigen: /usr/include/eigen3  
+[82.867s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[84.570s] -- Found OpenMP_C: -fopenmp (found version "4.5") 
+[85.050s] -- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+[85.057s] -- Found OpenMP: TRUE (found version "4.5")  
+[86.011s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[86.880s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[88.087s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[88.502s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[88.510s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[89.698s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[89.705s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[89.705s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[89.705s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[89.759s] -- Found PythonExtra: .so  
+[90.416s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[90.496s] -- Added test 'copyright' to check source files copyright and LICENSE
+[90.504s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[90.510s] -- Configured cppcheck include dirs: /home/jezzy/huskybot/src/LIO-SAM/include/lio_sam
+[90.510s] -- Configured cppcheck exclude dirs and/or files: 
+[90.522s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[90.522s] -- Configured cpplint exclude dirs and/or files: 
+[90.525s] -- Added test 'flake8' to check Python code syntax and style conventions
+[90.529s] -- Added test 'lint_cmake' to check CMake code style
+[90.532s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[90.539s] -- Added test 'uncrustify' to check C / C++ code style
+[90.539s] -- Configured uncrustify additional arguments: 
+[90.542s] -- Added test 'xmllint' to check XML markup files
+[90.554s] -- Configuring done
+[91.151s] -- Generating done
+[91.291s] -- Build files have been written to: /home/jezzy/huskybot/build/lio_sam
+[91.350s] Invoked command in '/home/jezzy/huskybot/build/lio_sam' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/LIO-SAM -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/lio_sam
+[91.354s] Invoking command in '/home/jezzy/huskybot/build/lio_sam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/lio_sam -- -j4 -l4
+[91.459s] [  2%] [34m[1mGenerating C code for ROS interfaces[0m
+[91.501s] [  4%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[93.018s] [  6%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_generator_c.dir/rosidl_generator_c/lio_sam/msg/detail/cloud_info__functions.c.o[0m
+[93.036s] [  8%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_generator_c.dir/rosidl_generator_c/lio_sam/srv/detail/save_map__functions.c.o[0m
+[93.252s] [  8%] Built target lio_sam__cpp
+[93.329s] [  8%] Built target ament_cmake_python_copy_lio_sam
+[93.354s] [ 10%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[93.579s] [ 12%] [32m[1mLinking C shared library liblio_sam__rosidl_generator_c.so[0m
+[93.940s] [ 12%] Built target lio_sam__rosidl_generator_c
+[93.967s] [ 14%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[94.666s] [ 17%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lio_sam/msg/cloud_info__type_support.cpp.o[0m
+[95.354s] [ 19%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lio_sam/msg/detail/cloud_info__type_support.cpp.o[0m
+[95.501s] [ 21%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lio_sam/srv/save_map__type_support.cpp.o[0m
+[96.409s] [ 23%] [32m[1mLinking CXX shared library liblio_sam__rosidl_typesupport_cpp.so[0m
+[96.801s] [ 23%] Built target lio_sam__rosidl_typesupport_cpp
+[96.828s] [ 25%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lio_sam/srv/detail/save_map__type_support.cpp.o[0m
+[97.478s] [ 27%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[97.992s] running egg_info
+[97.995s] creating lio_sam.egg-info
+[97.997s] writing lio_sam.egg-info/PKG-INFO
+[97.999s] writing dependency_links to lio_sam.egg-info/dependency_links.txt
+[98.001s] writing top-level names to lio_sam.egg-info/top_level.txt
+[98.003s] writing manifest file 'lio_sam.egg-info/SOURCES.txt'
+[98.009s] reading manifest file 'lio_sam.egg-info/SOURCES.txt'
+[98.014s] writing manifest file 'lio_sam.egg-info/SOURCES.txt'
+[98.101s] [ 27%] Built target ament_cmake_python_build_lio_sam_egg
+[98.125s] [ 29%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[98.159s] [ 31%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[98.622s] [ 34%] [32m[1mLinking CXX shared library liblio_sam__rosidl_typesupport_introspection_cpp.so[0m
+[99.166s] [ 34%] Built target lio_sam__rosidl_typesupport_introspection_cpp
+[99.478s] [ 36%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lio_sam/msg/detail/cloud_info__type_support_c.cpp.o[0m
+[99.914s] [ 38%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lio_sam/msg/detail/cloud_info__type_support.c.o[0m
+[100.123s] [ 40%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lio_sam/srv/detail/save_map__type_support.c.o[0m
+[100.240s] [ 42%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lio_sam/msg/detail/dds_fastrtps/cloud_info__type_support.cpp.o[0m
+[100.246s] [ 44%] [32m[1mLinking C shared library liblio_sam__rosidl_typesupport_introspection_c.so[0m
+[100.678s] [ 44%] Built target lio_sam__rosidl_typesupport_introspection_c
+[101.056s] [ 46%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lio_sam/srv/detail/save_map__type_support_c.cpp.o[0m
+[102.082s] [ 48%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lio_sam/srv/detail/dds_fastrtps/save_map__type_support.cpp.o[0m
+[102.263s] [ 51%] [32m[1mLinking CXX shared library liblio_sam__rosidl_typesupport_fastrtps_c.so[0m
+[102.980s] [ 51%] Built target lio_sam__rosidl_typesupport_fastrtps_c
+[103.560s] [ 53%] [32m[1mLinking CXX shared library liblio_sam__rosidl_typesupport_fastrtps_cpp.so[0m
+[103.979s] [ 53%] Built target lio_sam__rosidl_typesupport_fastrtps_cpp
+[104.015s] [ 55%] [32mBuilding CXX object CMakeFiles/lio_sam_imageProjection.dir/src/imageProjection.cpp.o[0m
+[106.060s] [ 57%] [32mBuilding CXX object CMakeFiles/lio_sam_imuPreintegration.dir/src/imuPreintegration.cpp.o[0m
+[107.083s] [ 59%] [32mBuilding CXX object CMakeFiles/lio_sam_featureExtraction.dir/src/featureExtraction.cpp.o[0m
+[109.100s] [ 61%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[110.745s] [ 63%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_c.dir/rosidl_typesupport_c/lio_sam/msg/cloud_info__type_support.cpp.o[0m
+[111.012s] [ 65%] [32mBuilding CXX object CMakeFiles/lio_sam__rosidl_typesupport_c.dir/rosidl_typesupport_c/lio_sam/srv/save_map__type_support.cpp.o[0m
+[111.183s] [ 68%] [32m[1mLinking CXX shared library liblio_sam__rosidl_typesupport_c.so[0m
+[111.712s] [ 68%] Built target lio_sam__rosidl_typesupport_c
+[111.857s] [ 70%] [32mBuilding CXX object CMakeFiles/lio_sam_mapOptimization.dir/src/mapOptmization.cpp.o[0m
+[271.023s] [ 72%] [32m[1mLinking CXX executable lio_sam_featureExtraction[0m
+[283.292s] [ 72%] Built target lio_sam_featureExtraction
+[299.870s] [ 74%] [32m[1mLinking CXX executable lio_sam_imageProjection[0m
+[303.284s] [ 74%] Built target lio_sam_imageProjection
+[341.731s] [ 76%] [32m[1mLinking CXX executable lio_sam_imuPreintegration[0m
+[348.052s] [ 76%] Built target lio_sam_imuPreintegration
+[348.836s] [ 76%] Built target lio_sam
+[349.088s] [ 78%] [34m[1mGenerating Python code for ROS interfaces[0m
+[357.212s] [ 78%] Built target lio_sam__py
+[357.419s] [ 80%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_generator_py.dir/rosidl_generator_py/lio_sam/msg/_cloud_info_s.c.o[0m
+[357.446s] [ 82%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_generator_py.dir/rosidl_generator_py/lio_sam/srv/_save_map_s.c.o[0m
+[359.967s] [ 85%] [32m[1mLinking C shared library rosidl_generator_py/lio_sam/liblio_sam__rosidl_generator_py.so[0m
+[360.769s] [ 85%] Built target lio_sam__rosidl_generator_py
+[360.866s] [ 87%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/lio_sam/_lio_sam_s.ep.rosidl_typesupport_c.c.o[0m
+[360.896s] [ 89%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/lio_sam/_lio_sam_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[360.934s] [ 91%] [32mBuilding C object CMakeFiles/lio_sam__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/lio_sam/_lio_sam_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[361.668s] [ 93%] [32m[1mLinking C shared library rosidl_generator_py/lio_sam/lio_sam_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[361.696s] [ 95%] [32m[1mLinking C shared library rosidl_generator_py/lio_sam/lio_sam_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[361.731s] [ 97%] [32m[1mLinking C shared library rosidl_generator_py/lio_sam/lio_sam_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[362.372s] [ 97%] Built target lio_sam__rosidl_typesupport_c__pyext
+[362.393s] [ 97%] Built target lio_sam__rosidl_typesupport_fastrtps_c__pyext
+[362.519s] [ 97%] Built target lio_sam__rosidl_typesupport_introspection_c__pyext
+[422.940s] [100%] [32m[1mLinking CXX executable lio_sam_mapOptimization[0m
+[424.710s] /usr/bin/ld: warning: libtbb.so.2, needed by /usr/lib/x86_64-linux-gnu/libopencv_core.so.4.5.4d, may conflict with libtbb.so.12
+[425.557s] [100%] Built target lio_sam_mapOptimization
+[425.610s] Invoked command in '/home/jezzy/huskybot/build/lio_sam' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/lio_sam -- -j4 -l4
+[425.619s] Invoking command in '/home/jezzy/huskybot/build/lio_sam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/lio_sam
+[425.645s] -- Install configuration: "Release"
+[425.651s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/ament_index/resource_index/rosidl_interfaces/lio_sam
+[425.655s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.657s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.658s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/rosidl_generator_c__visibility_control.h
+[425.658s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.659s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__type_support.h
+[425.659s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__functions.h
+[425.659s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__functions.c
+[425.661s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__struct.h
+[425.661s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/cloud_info.h
+[425.664s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.671s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.672s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__functions.c
+[425.672s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__struct.h
+[425.672s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__type_support.h
+[425.673s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__functions.h
+[425.673s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/save_map.h
+[425.676s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/library_path.sh
+[425.677s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/library_path.dsv
+[425.680s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_generator_c.so
+[425.687s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_generator_c.so" to ""
+[425.687s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.687s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.688s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.688s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__rosidl_typesupport_fastrtps_c.h
+[425.689s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[425.690s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.690s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.690s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__rosidl_typesupport_fastrtps_c.h
+[425.692s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_fastrtps_c.so
+[425.693s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_fastrtps_c.so" to ""
+[425.693s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.694s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.694s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[425.695s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.695s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__rosidl_typesupport_introspection_c.h
+[425.696s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__type_support.c
+[425.702s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.702s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.702s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__rosidl_typesupport_introspection_c.h
+[425.705s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__type_support.c
+[425.706s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_introspection_c.so
+[425.708s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_introspection_c.so" to ""
+[425.718s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_c.so
+[425.721s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_c.so" to ""
+[425.723s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.723s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.723s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.724s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__traits.hpp
+[425.724s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__type_support.hpp
+[425.724s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__builder.hpp
+[425.724s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__struct.hpp
+[425.724s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/cloud_info.hpp
+[425.725s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/rosidl_generator_cpp__visibility_control.hpp
+[425.725s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.725s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.725s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__builder.hpp
+[425.725s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__traits.hpp
+[425.725s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__struct.hpp
+[425.726s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__type_support.hpp
+[425.726s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/save_map.hpp
+[425.729s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.729s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.732s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[425.738s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.738s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/dds_fastrtps
+[425.740s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__rosidl_typesupport_fastrtps_cpp.hpp
+[425.741s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.741s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.742s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__rosidl_typesupport_fastrtps_cpp.hpp
+[425.742s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/dds_fastrtps
+[425.743s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_fastrtps_cpp.so
+[425.746s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_fastrtps_cpp.so" to ""
+[425.747s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam
+[425.747s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg
+[425.747s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail
+[425.748s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__rosidl_typesupport_introspection_cpp.hpp
+[425.751s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/msg/detail/cloud_info__type_support.cpp
+[425.755s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv
+[425.755s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail
+[425.755s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__type_support.cpp
+[425.757s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/lio_sam/srv/detail/save_map__rosidl_typesupport_introspection_cpp.hpp
+[425.758s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_introspection_cpp.so
+[425.759s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_introspection_cpp.so" to ""
+[425.761s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_cpp.so
+[425.768s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_typesupport_cpp.so" to ""
+[425.769s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/pythonpath.sh
+[425.769s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/pythonpath.dsv
+[425.772s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam-1.0.0-py3.10.egg-info
+[425.773s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam-1.0.0-py3.10.egg-info/top_level.txt
+[425.776s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam-1.0.0-py3.10.egg-info/SOURCES.txt
+[425.776s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam-1.0.0-py3.10.egg-info/dependency_links.txt
+[425.778s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam-1.0.0-py3.10.egg-info/PKG-INFO
+[425.782s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam
+[425.784s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[425.784s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/_lio_sam_s.ep.rosidl_typesupport_introspection_c.c
+[425.788s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg
+[425.788s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg/_cloud_info_s.c
+[425.789s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg/__init__.py
+[425.789s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg/_cloud_info.py
+[425.789s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/liblio_sam__rosidl_generator_py.so
+[425.789s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[425.790s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/_lio_sam_s.ep.rosidl_typesupport_fastrtps_c.c
+[425.792s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[425.792s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/_lio_sam_s.ep.rosidl_typesupport_c.c
+[425.793s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv
+[425.793s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv/_save_map_s.c
+[425.793s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv/__init__.py
+[425.793s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv/_save_map.py
+[425.793s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/__init__.py
+[425.950s] Listing '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam'...
+[425.950s] Compiling '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/__init__.py'...
+[425.951s] Listing '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg'...
+[425.951s] Compiling '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg/__init__.py'...
+[425.951s] Compiling '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/msg/_cloud_info.py'...
+[425.951s] Listing '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv'...
+[425.952s] Compiling '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv/__init__.py'...
+[425.952s] Compiling '/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/srv/_save_map.py'...
+[425.965s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[425.966s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+[425.966s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[425.967s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+[425.968s] -- Installing: /home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[425.969s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/local/lib/python3.10/dist-packages/lio_sam/lio_sam_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+[425.969s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_generator_py.so
+[425.970s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/liblio_sam__rosidl_generator_py.so" to ""
+[425.972s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/msg/CloudInfo.idl
+[425.973s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/srv/SaveMap.idl
+[425.977s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/msg/CloudInfo.msg
+[425.984s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/srv/SaveMap.srv
+[425.984s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/srv/SaveMap_Request.msg
+[425.986s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/srv/SaveMap_Response.msg
+[425.986s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//launch
+[425.987s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//launch/run.launch.py
+[425.987s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config
+[425.989s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc
+[425.994s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/device-jackal.png
+[425.998s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/ouster-device.jpg
+[426.007s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/kitti-map.png
+[426.013s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/loop-closure.gif
+[426.089s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/imu-transform.png
+[426.103s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/system.png
+[426.112s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/device-hand-2.png
+[426.116s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/ouster-demo.gif
+[426.154s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/paper.pdf
+[426.186s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/kitti-demo.gif
+[426.265s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/gps-demo.gif
+[426.324s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/device-hand.png
+[426.326s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/device-boat.png
+[426.342s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/loop-closure-2.gif
+[426.485s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/kitti2bag
+[426.487s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/kitti2bag/README.md
+[426.488s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/kitti2bag/kitti2bag.py
+[426.489s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/demo.gif
+[426.536s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/doc/imu-debug.gif
+[426.559s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/params.yaml
+[426.560s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/rviz2.rviz
+[426.560s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam//config/robot.urdf.xacro
+[426.562s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_imageProjection
+[426.565s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_imageProjection" to ""
+[426.566s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_imuPreintegration
+[426.569s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_imuPreintegration" to ""
+[426.569s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_featureExtraction
+[426.572s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_featureExtraction" to ""
+[426.572s] -- Installing: /home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_mapOptimization
+[426.577s] -- Set runtime path of "/home/jezzy/huskybot/install/lio_sam/lib/lio_sam/lio_sam_mapOptimization" to ""
+[426.577s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include
+[426.577s] -- Up-to-date: /home/jezzy/huskybot/install/lio_sam/include/lio_sam
+[426.577s] -- Installing: /home/jezzy/huskybot/install/lio_sam/include/lio_sam/utility.hpp
+[426.582s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/ament_index/resource_index/package_run_dependencies/lio_sam
+[426.584s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/ament_index/resource_index/parent_prefix_path/lio_sam
+[426.586s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/ament_prefix_path.sh
+[426.587s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/ament_prefix_path.dsv
+[426.588s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/path.sh
+[426.589s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/environment/path.dsv
+[426.590s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/local_setup.bash
+[426.591s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/local_setup.sh
+[426.592s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/local_setup.zsh
+[426.593s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/local_setup.dsv
+[426.594s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/package.dsv
+[426.596s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/ament_index/resource_index/packages/lio_sam
+[426.599s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_generator_cExport.cmake
+[426.600s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_generator_cExport-release.cmake
+[426.600s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_typesupport_fastrtps_cExport.cmake
+[426.601s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_typesupport_fastrtps_cExport-release.cmake
+[426.602s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_introspection_cExport.cmake
+[426.602s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_introspection_cExport-release.cmake
+[426.603s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_cExport.cmake
+[426.604s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_cExport-release.cmake
+[426.604s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_generator_cppExport.cmake
+[426.605s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_typesupport_fastrtps_cppExport.cmake
+[426.605s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_typesupport_fastrtps_cppExport-release.cmake
+[426.606s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_introspection_cppExport.cmake
+[426.607s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_introspection_cppExport-release.cmake
+[426.607s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_cppExport.cmake
+[426.608s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_sam__rosidl_typesupport_cppExport-release.cmake
+[426.608s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_generator_pyExport.cmake
+[426.609s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/export_lio_sam__rosidl_generator_pyExport-release.cmake
+[426.610s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/rosidl_cmake-extras.cmake
+[426.611s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/ament_cmake_export_dependencies-extras.cmake
+[426.612s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/ament_cmake_export_include_directories-extras.cmake
+[426.612s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/ament_cmake_export_libraries-extras.cmake
+[426.613s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/ament_cmake_export_targets-extras.cmake
+[426.614s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[426.614s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[426.615s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_samConfig.cmake
+[426.616s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/cmake/lio_samConfig-version.cmake
+[426.616s] -- Installing: /home/jezzy/huskybot/install/lio_sam/share/lio_sam/package.xml
+[426.620s] Invoked command in '/home/jezzy/huskybot/build/lio_sam' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/lio_sam

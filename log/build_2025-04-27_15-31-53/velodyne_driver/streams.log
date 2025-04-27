@@ -1,0 +1,118 @@
+[0.475s] Invoking command in '/home/jezzy/huskybot/build/velodyne_driver': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_driver -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_driver
+[1.105s] -- The C compiler identification is GNU 11.4.0
+[2.605s] -- The CXX compiler identification is GNU 11.4.0
+[3.649s] -- Detecting C compiler ABI info
+[4.143s] -- Detecting C compiler ABI info - done
+[4.160s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.162s] -- Detecting C compile features
+[4.165s] -- Detecting C compile features - done
+[4.177s] -- Detecting CXX compiler ABI info
+[4.733s] -- Detecting CXX compiler ABI info - done
+[4.773s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[4.774s] -- Detecting CXX compile features
+[4.775s] -- Detecting CXX compile features - done
+[4.787s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[5.727s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[6.582s] -- Found diagnostic_updater: 4.0.3 (/opt/ros/humble/share/diagnostic_updater/cmake)
+[7.407s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[7.448s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[7.496s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[7.566s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[7.710s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[8.325s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[8.356s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[14.494s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[20.549s] -- Found FastRTPS: /opt/ros/humble/include  
+[33.766s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[33.820s] -- Looking for pthread.h
+[34.380s] -- Looking for pthread.h - found
+[34.380s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[34.943s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[34.946s] -- Found Threads: TRUE  
+[35.198s] -- Found rclcpp_components: 16.0.12 (/opt/ros/humble/share/rclcpp_components/cmake)
+[35.383s] -- Found tf2_ros: 0.25.12 (/opt/ros/humble/share/tf2_ros/cmake)
+[35.959s] -- Found velodyne_msgs: 2.5.1 (/home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake)
+[36.067s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[36.482s] -- Found gtest sources under '/opt/ros/humble/src/gtest_vendor': C++ tests using 'Google Test' will be built
+[36.518s] -- Added test 'copyright' to check source files copyright and LICENSE
+[36.529s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[36.531s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/jezzy/huskybot/src/velodyne/velodyne_driver/include>
+[36.531s] -- Configured cppcheck exclude dirs and/or files: 
+[36.541s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[36.542s] -- Configured cpplint exclude dirs and/or files: 
+[36.547s] -- Added test 'flake8' to check Python code syntax and style conventions
+[36.551s] -- Added test 'lint_cmake' to check CMake code style
+[36.554s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[36.564s] -- Added test 'uncrustify' to check C / C++ code style
+[36.564s] -- Configured uncrustify additional arguments: 
+[36.567s] -- Added test 'xmllint' to check XML markup files
+[36.587s] -- Configuring done
+[36.692s] -- Generating done
+[36.726s] -- Build files have been written to: /home/jezzy/huskybot/build/velodyne_driver
+[36.762s] Invoked command in '/home/jezzy/huskybot/build/velodyne_driver' returned '0': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_driver -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_driver
+[36.766s] Invoking command in '/home/jezzy/huskybot/build/velodyne_driver': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/jezzy/huskybot/build/velodyne_driver -- -j4 -l4
+[36.903s] [  8%] [32mBuilding CXX object CMakeFiles/velodyne_input.dir/src/lib/input.cpp.o[0m
+[47.629s] [ 16%] [32m[1mLinking CXX shared library libvelodyne_input.so[0m
+[48.350s] [ 16%] Built target velodyne_input
+[48.419s] [ 25%] [32mBuilding CXX object gtest/CMakeFiles/gtest.dir/src/gtest-all.cc.o[0m
+[60.321s] [ 33%] [32m[1mLinking CXX static library libgtest.a[0m
+[60.555s] [ 33%] Built target gtest
+[60.638s] [ 41%] [32mBuilding CXX object CMakeFiles/velodyne_driver.dir/src/driver/driver.cpp.o[0m
+[96.235s] [ 50%] [32m[1mLinking CXX shared library libvelodyne_driver.so[0m
+[98.336s] [ 50%] Built target velodyne_driver
+[98.388s] [ 58%] [32mBuilding CXX object CMakeFiles/velodyne_driver_node.dir/src/driver/velodyne_node.cpp.o[0m
+[98.406s] [ 66%] [32mBuilding CXX object gtest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o[0m
+[101.296s] [ 75%] [32m[1mLinking CXX static library libgtest_main.a[0m
+[101.391s] [ 75%] Built target gtest_main
+[101.455s] [ 83%] [32mBuilding CXX object CMakeFiles/time_test.dir/tests/timeconversiontest.cpp.o[0m
+[112.201s] [ 91%] [32m[1mLinking CXX executable velodyne_driver_node[0m
+[113.754s] [ 91%] Built target velodyne_driver_node
+[115.760s] [100%] [32m[1mLinking CXX executable time_test[0m
+[116.747s] [100%] Built target time_test
+[116.776s] Invoked command in '/home/jezzy/huskybot/build/velodyne_driver' returned '0': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/jezzy/huskybot/build/velodyne_driver -- -j4 -l4
+[116.778s] Invoking command in '/home/jezzy/huskybot/build/velodyne_driver': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/jezzy/huskybot/build/velodyne_driver
+[116.790s] -- Install configuration: ""
+[116.791s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/lib/libvelodyne_input.so
+[116.792s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_driver/lib/libvelodyne_input.so" to ""
+[116.792s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/lib/libvelodyne_driver.so
+[116.810s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_driver/lib/libvelodyne_driver.so" to ""
+[116.812s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/lib/velodyne_driver/velodyne_driver_node
+[116.814s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_driver/lib/velodyne_driver/velodyne_driver_node" to ""
+[116.815s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/include/velodyne_driver
+[116.815s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/include/velodyne_driver/time_conversion.hpp
+[116.816s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/include/velodyne_driver/input.hpp
+[116.816s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/include/velodyne_driver/driver.hpp
+[116.816s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/config
+[116.817s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/config/VLP16-velodyne_driver_node-params.yaml
+[116.819s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/config/VLS128-velodyne_driver_node-params.yaml
+[116.820s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/config/VLP32C-velodyne_driver_node-params.yaml
+[116.822s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch
+[116.823s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLP16-composed-launch.py
+[116.823s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLS128-composed-launch.py
+[116.824s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLP32C-launch.py
+[116.825s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLP16-launch.py
+[116.826s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLP32C-composed-launch.py
+[116.827s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/launch/velodyne_driver_node-VLS128-launch.py
+[116.827s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/lib/velodyne_driver/vdump
+[116.828s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/ament_index/resource_index/package_run_dependencies/velodyne_driver
+[116.828s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/ament_index/resource_index/parent_prefix_path/velodyne_driver
+[116.831s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/environment/ament_prefix_path.sh
+[116.831s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/environment/ament_prefix_path.dsv
+[116.831s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/environment/path.sh
+[116.832s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/environment/path.dsv
+[116.832s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/local_setup.bash
+[116.833s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/local_setup.sh
+[116.833s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/local_setup.zsh
+[116.833s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/local_setup.dsv
+[116.834s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/package.dsv
+[116.835s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/ament_index/resource_index/packages/velodyne_driver
+[116.836s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/ament_index/resource_index/rclcpp_components/velodyne_driver
+[116.837s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/velodyne_driverExport.cmake
+[116.838s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/velodyne_driverExport-noconfig.cmake
+[116.838s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/ament_cmake_export_include_directories-extras.cmake
+[116.839s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/ament_cmake_export_targets-extras.cmake
+[116.839s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/ament_cmake_export_dependencies-extras.cmake
+[116.840s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/velodyne_driverConfig.cmake
+[116.840s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/cmake/velodyne_driverConfig-version.cmake
+[116.841s] -- Installing: /home/jezzy/huskybot/install/velodyne_driver/share/velodyne_driver/package.xml
+[116.846s] Invoked command in '/home/jezzy/huskybot/build/velodyne_driver' returned '0': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/velodyne_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_simulations:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_bringup:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_navigation2:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_fake_node:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_gazebo:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_description:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_cartographer:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_examples:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble LD_LIBRARY_PATH=/home/jezzy/huskybot/install/velodyne_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_msgs/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk_custom_interfaces/lib:/home/jezzy/husky_ws/turtlebot3/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/jezzy/huskybot/build/velodyne_driver

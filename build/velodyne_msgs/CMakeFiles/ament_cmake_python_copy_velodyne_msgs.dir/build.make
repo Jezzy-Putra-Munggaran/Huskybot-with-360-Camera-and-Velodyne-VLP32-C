@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/velodyne/velodyne_msgs
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/velodyne/velodyne_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/velodyne_msgs
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/velodyne_msgs
 
 # Utility rule file for ament_cmake_python_copy_velodyne_msgs.
 
@@ -67,7 +67,7 @@ include CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/compiler_depend.mak
 include CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/progress.make
 
 CMakeFiles/ament_cmake_python_copy_velodyne_msgs:
-	/usr/bin/cmake -E copy_directory /home/jezzy/yolobot/build/velodyne_msgs/rosidl_generator_py/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs/ament_cmake_python/velodyne_msgs/velodyne_msgs
+	/usr/bin/cmake -E copy_directory /home/jezzy/huskybot/build/velodyne_msgs/rosidl_generator_py/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs/ament_cmake_python/velodyne_msgs/velodyne_msgs
 
 ament_cmake_python_copy_velodyne_msgs: CMakeFiles/ament_cmake_python_copy_velodyne_msgs
 ament_cmake_python_copy_velodyne_msgs: CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/clean:
 .PHONY : CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/clean
 
 CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/depend:
-	cd /home/jezzy/yolobot/build/velodyne_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/velodyne/velodyne_msgs /home/jezzy/yolobot/src/velodyne/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs /home/jezzy/yolobot/build/velodyne_msgs/CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/velodyne_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/velodyne/velodyne_msgs /home/jezzy/huskybot/src/velodyne/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs /home/jezzy/huskybot/build/velodyne_msgs/CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ament_cmake_python_copy_velodyne_msgs.dir/depend
 

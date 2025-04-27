@@ -1,0 +1,233 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-b0b1faec0e20f09a9d7a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				},
+				{
+					"build" : "velodyne_msgs__py",
+					"jsonFile" : "directory-velodyne_msgs__py-98ac561b5c2fcee52593.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/jezzy/huskybot/build/velodyne_msgs/velodyne_msgs__py",
+					"targetIndexes" : 
+					[
+						5
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "velodyne_msgs",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_velodyne_msgs_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_velodyne_msgs_egg-ac0bf4d9dbd926e67fb4.json",
+					"name" : "ament_cmake_python_build_velodyne_msgs_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_velodyne_msgs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_velodyne_msgs-4dd0f9cd78e6c030db61.json",
+					"name" : "ament_cmake_python_copy_velodyne_msgs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-f60012972154106b0307.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs-22c3932eb2471514ddf9.json",
+					"name" : "velodyne_msgs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__cpp-81e28f58345f5d7e5784.json",
+					"name" : "velodyne_msgs__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "velodyne_msgs__py::@5458681479641a736de4",
+					"jsonFile" : "target-velodyne_msgs__py-4989099f7c0d9df854a6.json",
+					"name" : "velodyne_msgs__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_generator_c-65669125255d0e3dc12b.json",
+					"name" : "velodyne_msgs__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_generator_py-94f28d95807dd3a580fb.json",
+					"name" : "velodyne_msgs__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_c-36c100e83b4d7231581a.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_c__pyext-23bc0b9fee40f8104224.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_cpp-41e68278131fb757826a.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_fastrtps_c-8a238844109797f105a3.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext-954850a7d9e5686790cd.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_fastrtps_cpp-9e139e38de143305849e.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_introspection_c-1364078351c9ee789682.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_introspection_c__pyext-8b24bcbae6fdfa4c690f.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs__rosidl_typesupport_introspection_cpp-f9f1d5206004ea3e2de2.json",
+					"name" : "velodyne_msgs__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "velodyne_msgs_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-velodyne_msgs_uninstall-9218a7eaba731a6d7a77.json",
+					"name" : "velodyne_msgs_uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/jezzy/huskybot/build/velodyne_msgs",
+		"source" : "/home/jezzy/huskybot/src/velodyne/velodyne_msgs"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

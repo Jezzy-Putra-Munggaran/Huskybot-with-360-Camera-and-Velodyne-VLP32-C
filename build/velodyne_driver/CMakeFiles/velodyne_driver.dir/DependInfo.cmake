@@ -8,12 +8,12 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jezzy/yolobot/src/velodyne/velodyne_driver/src/driver/driver.cpp" "CMakeFiles/velodyne_driver.dir/src/driver/driver.cpp.o" "gcc" "CMakeFiles/velodyne_driver.dir/src/driver/driver.cpp.o.d"
+  "/home/jezzy/huskybot/src/velodyne/velodyne_driver/src/driver/driver.cpp" "CMakeFiles/velodyne_driver.dir/src/driver/driver.cpp.o" "gcc" "CMakeFiles/velodyne_driver.dir/src/driver/driver.cpp.o.d"
   )
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/jezzy/yolobot/build/velodyne_driver/CMakeFiles/velodyne_input.dir/DependInfo.cmake"
+  "/home/jezzy/huskybot/build/velodyne_driver/CMakeFiles/velodyne_input.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

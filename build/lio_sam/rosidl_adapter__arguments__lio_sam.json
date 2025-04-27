@@ -1,7 +1,7 @@
 {
   "package_name": "lio_sam",
   "non_idl_tuples": [
-    "/home/jezzy/yolobot/src/LIO-SAM:msg/CloudInfo.msg",
-    "/home/jezzy/yolobot/src/LIO-SAM:srv/SaveMap.srv"
+    "/home/jezzy/huskybot/src/LIO-SAM:msg/CloudInfo.msg",
+    "/home/jezzy/huskybot/src/LIO-SAM:srv/SaveMap.srv"
   ]
 }

@@ -1,7 +1,7 @@
 CMakeFiles/velodyne_laserscan.dir/src/velodyne_laserscan.cpp.o: \
- /home/jezzy/yolobot/src/velodyne/velodyne_laserscan/src/velodyne_laserscan.cpp \
+ /home/jezzy/huskybot/src/velodyne/velodyne_laserscan/src/velodyne_laserscan.cpp \
  /usr/include/stdc-predef.h \
- /home/jezzy/yolobot/src/velodyne/velodyne_laserscan/include/velodyne_laserscan/velodyne_laserscan.hpp \
+ /home/jezzy/huskybot/src/velodyne/velodyne_laserscan/include/velodyne_laserscan/velodyne_laserscan.hpp \
  /opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp \
  /usr/include/c++/11/csignal \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \

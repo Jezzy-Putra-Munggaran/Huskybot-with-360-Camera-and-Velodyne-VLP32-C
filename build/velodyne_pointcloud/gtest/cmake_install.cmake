@@ -2,7 +2,7 @@
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/jezzy/yolobot/install/velodyne_pointcloud")
+  set(CMAKE_INSTALL_PREFIX "/home/jezzy/huskybot/install/velodyne_pointcloud")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jezzy/yolobot/src/yolov12_msgs
+CMAKE_SOURCE_DIR = /home/jezzy/huskybot/src/yolov12_msgs
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jezzy/yolobot/build/yolov12_msgs
+CMAKE_BINARY_DIR = /home/jezzy/huskybot/build/yolov12_msgs
 
 # Utility rule file for yolov12_msgs_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/yolov12_msgs_uninstall.dir/compiler_depend.make
 include CMakeFiles/yolov12_msgs_uninstall.dir/progress.make
 
 CMakeFiles/yolov12_msgs_uninstall:
-	/usr/bin/cmake -P /home/jezzy/yolobot/build/yolov12_msgs/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/jezzy/huskybot/build/yolov12_msgs/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 yolov12_msgs_uninstall: CMakeFiles/yolov12_msgs_uninstall
 yolov12_msgs_uninstall: CMakeFiles/yolov12_msgs_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/yolov12_msgs_uninstall.dir/clean:
 .PHONY : CMakeFiles/yolov12_msgs_uninstall.dir/clean
 
 CMakeFiles/yolov12_msgs_uninstall.dir/depend:
-	cd /home/jezzy/yolobot/build/yolov12_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/yolobot/src/yolov12_msgs /home/jezzy/yolobot/src/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs /home/jezzy/yolobot/build/yolov12_msgs/CMakeFiles/yolov12_msgs_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jezzy/huskybot/build/yolov12_msgs && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jezzy/huskybot/src/yolov12_msgs /home/jezzy/huskybot/src/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs /home/jezzy/huskybot/build/yolov12_msgs/CMakeFiles/yolov12_msgs_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/yolov12_msgs_uninstall.dir/depend
 

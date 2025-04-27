@@ -8,14 +8,14 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jezzy/yolobot/src/velodyne/velodyne_pointcloud/tests/test_calibration.cpp" "tests/CMakeFiles/test_calibration.dir/test_calibration.cpp.o" "gcc" "tests/CMakeFiles/test_calibration.dir/test_calibration.cpp.o.d"
+  "/home/jezzy/huskybot/src/velodyne/velodyne_pointcloud/tests/test_calibration.cpp" "tests/CMakeFiles/test_calibration.dir/test_calibration.cpp.o" "gcc" "tests/CMakeFiles/test_calibration.dir/test_calibration.cpp.o.d"
   )
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/jezzy/yolobot/build/velodyne_pointcloud/gtest/CMakeFiles/gtest_main.dir/DependInfo.cmake"
-  "/home/jezzy/yolobot/build/velodyne_pointcloud/gtest/CMakeFiles/gtest.dir/DependInfo.cmake"
-  "/home/jezzy/yolobot/build/velodyne_pointcloud/CMakeFiles/velodyne_rawdata.dir/DependInfo.cmake"
+  "/home/jezzy/huskybot/build/velodyne_pointcloud/gtest/CMakeFiles/gtest_main.dir/DependInfo.cmake"
+  "/home/jezzy/huskybot/build/velodyne_pointcloud/gtest/CMakeFiles/gtest.dir/DependInfo.cmake"
+  "/home/jezzy/huskybot/build/velodyne_pointcloud/CMakeFiles/velodyne_rawdata.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

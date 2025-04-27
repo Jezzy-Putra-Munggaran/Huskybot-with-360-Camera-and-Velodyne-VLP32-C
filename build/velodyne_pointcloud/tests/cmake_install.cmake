@@ -1,8 +1,8 @@
-# Install script for directory: /home/jezzy/yolobot/src/velodyne/velodyne_pointcloud/tests
+# Install script for directory: /home/jezzy/huskybot/src/velodyne/velodyne_pointcloud/tests
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/jezzy/yolobot/install/velodyne_pointcloud")
+  set(CMAKE_INSTALL_PREFIX "/home/jezzy/huskybot/install/velodyne_pointcloud")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/jezzy/yolobot/build/velodyne_pointcloud/gtest/cmake_install.cmake")
+  include("/home/jezzy/huskybot/build/velodyne_pointcloud/gtest/cmake_install.cmake")
 
 endif()
 
