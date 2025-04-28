@@ -38,9 +38,10 @@ Proyek ini bertujuan mengembangkan sistem deteksi halangan menggunakan kombinasi
 
 ## Software & Dependency
 
-- **OS:** Ubuntu 22.04.5 LTS
+- **OS:** Ubuntu 22.04.5 LTS (WSL2/Native)
 - **ROS2:** Humble Hawksbill
-- **Gazebo:** versi 11
+- **Gazebo:** Classic 11 (default ROS2 Humble)  
+  (Jika ingin Fortress/Harmonic, lihat [panduan Gazebo ROS2](https://gazebosim.org/docs/latest/ros_installation/))
 - **RVIZ2**
 - **Visual Studio Code**
 - **Roboflow**
@@ -48,12 +49,15 @@ Proyek ini bertujuan mengembangkan sistem deteksi halangan menggunakan kombinasi
 - **Python 3.10+**
 - **libpcap-dev** (untuk Velodyne)
 - **OpenCV, numpy, PyYAML, cv_bridge, dll** (lihat requirements.txt jika ada)
+- **GTSAM** (build from source, wajib untuk LIO-SAM)
+- **colcon, rosdep, vcstool, pip, build-essential, gdb, terminator**
 
 ---
 
 ## Instalasi & Setup
 
-### 1. **Install Ubuntu 22.04.5 LTS**
+### 1. **Install Ubuntu 22.04.5 LTS**  
+  (WSL2 dari Microsoft Store atau native)
 
 ### 2. **Update Sistem**
 ```sh
@@ -62,90 +66,130 @@ sudo apt upgrade -y
 sudo apt install --only-upgrade libsystemd0 systemd udev libudev1 -y
 ```
 
-### 3. **Install ROS2 Humble**
-Ikuti panduan resmi di [ROS2 Humble Documentation](https://docs.ros.org/en/humble/index.html):
+### 3. **Set Locale**
 ```sh
-sudo apt update && sudo apt upgrade
 sudo apt install locales
 sudo locale-gen en_US en_US.UTF-8
 sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 export LANG=en_US.UTF-8
+```
 
-sudo apt install software-properties-common
+### 4. **Tambahkan Repository ROS2**
+```sh
+sudo apt install software-properties-common curl gnupg2 lsb-release -y
 sudo add-apt-repository universe
-sudo apt update && sudo apt install curl -y
-sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2.list'
 sudo apt update
-sudo apt install ros-humble-desktop python3-rosdep python3-colcon-common-extensions
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+sudo apt update
+```
+
+### 5. **Import GPG Key Gazebo (Jika Perlu)**
+```sh
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://packages.osrfoundation.org/gazebo.key | sudo tee /etc/apt/keyrings/gazebo-archive-keyring.gpg > /dev/null
+# Edit /etc/apt/sources.list.d/gazebo-latest.list agar menggunakan:
+# deb [signed-by=/etc/apt/keyrings/gazebo-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable jammy main
+sudo apt update
+```
+
+### 6. **Install ROS2 Humble Desktop (Full)**
+```sh
+sudo apt install ros-humble-desktop -y
+```
+
+Tambahkan ke `~/.bashrc`:
+```sh
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 7. **Install ROS Tools & Build Tools**
+```sh
+sudo apt install python3-colcon-common-extensions python3-rosdep python3-vcstool python3-pip -y
+```
+
+### 8. **Inisialisasi rosdep**
+```sh
 sudo rosdep init
 rosdep update
 ```
 
-### 4. **Install Gazebo 11**
-Ikuti panduan resmi di [Gazebo Documentation](https://gazebosim.org/docs/latest/ros_installation):
+### 9. **Install Gazebo Classic 11 (default ROS2 Humble)**
 ```sh
-sudo apt install gazebo11 libgazebo11-dev
+sudo apt install ros-humble-gazebo-* -y
+```
+> Gazebo 11 adalah pairing default untuk ROS2 Humble di Ubuntu 22.04.
+
+### 10. **Install Dependency Lain**
+```sh
+sudo apt install python3-opencv python3-numpy python3-yaml python3-pyqt5 libpcap-dev terminator build-essential gdb
+pip3 install opencv-python roboflow PyQt6 PySide6 ultralytics
 ```
 
-### 5. **Install Dependency Lain**
+### 11. **Install Visual Studio Code**
 ```sh
-sudo apt install python3-pip python3-colcon-common-extensions python3-vcstool python3-opencv python3-numpy python3-yaml python3-pyqt5 libpcap-dev
-pip3 install opencv-python roboflow PyQt6 PySide6
-```
-
-### 6. **Install C++ Tools**
-```sh
-sudo apt install build-essential gdb
-g++ --version
-```
-
-### 7. **Install Terminator**
-```sh
-sudo apt install terminator
-```
-
-### 8. **Install Visual Studio Code**
-```sh
-sudo snap install code --classic
 sudo snap install --classic code
 ```
-Tambahkan ekstensi:
-- ROS Extensions
-- CMake Extensions
+Tambahkan ekstensi: ROS, CMake, Python, dsb.
 
-### 9. **Set GitHub SSH**
-Ikuti panduan di [GitHub SSH Documentation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
-
-### 10. **Install Ultralytics**
-Ikuti panduan di [Ultralytics Documentation](https://docs.ultralytics.com/quickstart/).
-
-### 11. **Clone Repo Ini**
+### 12. **Install GTSAM (Build from Source)**
 ```sh
-git clone https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C.git
-cd huskybot-with-360-Camera-and-Velodyne-VLP32-C
+sudo apt install git cmake build-essential libboost-all-dev libtbb-dev libeigen3-dev libmetis-dev
+cd ~
+git clone https://github.com/borglab/gtsam.git
+cd gtsam
+git checkout 4.2.0
+rm -rf build
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+```
+Jika workspace tidak menemukan GTSAM, tambahkan ke environment:
+```sh
+echo 'export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/cmake/GTSAM' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-### 12. **Source ROS2**
+### 13. **Clone Repo Ini**
+```sh
+git clone https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C.git huskybot
+cd huskybot
+```
+
+### 14. **Source ROS2**
 ```sh
 source /opt/ros/humble/setup.bash
 ```
 
-### 13. **Install Husky Dependencies**
-Ikuti panduan di [Husky Documentation](http://wiki.ros.org/Robots/Husky).
+### 15. **Build Workspace**
+```sh
+rm -rf build/ install/ log/
+colcon build
+source install/setup.bash
+```
+Tambahkan ke `~/.bashrc` jika ingin otomatis:
+```sh
+echo "source ~/huskybot/install/setup.bash" >> ~/.bashrc
+```
 
-### 14. **Install Velodyne Dependencies**
-Ikuti panduan di [Velodyne ROS2 Driver](https://github.com/ros-drivers/velodyne).
-
-### 15. **Install LIO-SAM Dependencies**
-Ikuti panduan di [LIO-SAM Documentation](https://github.com/TixiaoShan/LIO-SAM).
+### 16. **Install Dependency Husky, Velodyne, LIO-SAM**
+- **Husky:**  
+  Tidak tersedia di ROS2 Humble binary, gunakan package dari [https://github.com/husky/husky](https://github.com/husky/husky) jika butuh.
+- **Velodyne:**  
+  ```sh
+  sudo apt install ros-humble-velodyne* -y
+  ```
+- **LIO-SAM:**  
+  Ikuti instruksi build dari [https://github.com/TixiaoShan/LIO-SAM](https://github.com/TixiaoShan/LIO-SAM) (pastikan dependency GTSAM sudah terinstall).
 
 ---
 
 ## Build Workspace
 
 ```sh
-cd huskybot-with-360-Camera-and-Velodyne-VLP32-C
+cd huskybot
 colcon build
 source install/setup.bash
 ```
@@ -163,8 +207,8 @@ src/
   huskybot_fusion/          # Fusion 2D-3D (kamera-LiDAR)
   huskybot_mapping/         # Mapping (LIO-SAM)
   huskybot_navigation/      # Navigation & obstacle avoidance
-  yolov12_msgs/            # Custom message YOLOv12
-  velodyne/                # Driver & pointcloud Velodyne
+  yolov12_msgs/             # Custom message YOLOv12
+  velodyne/                 # Driver & pointcloud Velodyne
 ```
 
 ---
@@ -240,6 +284,16 @@ rviz2
   Install `libpcap-dev`.
 - **Topic tidak muncul:**  
   Cek dengan `ros2 topic list` dan pastikan semua node sudah jalan.
+- **GTSAM tidak ditemukan:**  
+  Build dan install GTSAM dari source, pastikan `CMAKE_PREFIX_PATH` sudah benar.
+- **Gazebo error GPG key:**  
+  Import ulang key Gazebo dan pastikan repo pakai `[signed-by=...]`.
+- **Build error dependency:**  
+  Jalankan `rosdep install --from-paths src --ignore-src -r -y`.
+- **Husky package tidak ada di ROS2:**  
+  Build dari source, atau gunakan custom package di repo ini.
+- **RViz2 tidak muncul:**  
+  Pastikan `rviz2` sudah terinstall dan tidak ada error library.
 
 ---
 

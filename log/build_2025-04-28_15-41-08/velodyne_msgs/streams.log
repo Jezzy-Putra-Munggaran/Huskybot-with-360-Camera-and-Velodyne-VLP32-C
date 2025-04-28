@@ -1,0 +1,110 @@
+[0.052s] Invoking command in '/home/jezzy/huskybot/build/velodyne_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_msgs
+[0.451s] -- The C compiler identification is GNU 11.4.0
+[1.788s] -- The CXX compiler identification is GNU 11.4.0
+[2.550s] -- Detecting C compiler ABI info
+[3.032s] -- Detecting C compiler ABI info - done
+[3.062s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.063s] -- Detecting C compile features
+[3.064s] -- Detecting C compile features - done
+[3.075s] -- Detecting CXX compiler ABI info
+[3.693s] -- Detecting CXX compiler ABI info - done
+[3.719s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[3.721s] -- Detecting CXX compile features
+[3.723s] -- Detecting CXX compile features - done
+[3.739s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[4.275s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[4.590s] -- Found builtin_interfaces: 1.2.1 (/opt/ros/humble/share/builtin_interfaces/cmake)
+[5.195s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[5.216s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[5.257s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[5.310s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[5.372s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[5.430s] -- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[5.468s] -- Found std_msgs: 4.8.0 (/opt/ros/humble/share/std_msgs/cmake)
+[6.653s] -- Found ament_cmake_cppcheck: 0.12.12 (/opt/ros/humble/share/ament_cmake_cppcheck/cmake)
+[6.672s] -- Found ament_cmake_cpplint: 0.12.12 (/opt/ros/humble/share/ament_cmake_cpplint/cmake)
+[6.693s] -- Found ament_cmake_uncrustify: 0.12.12 (/opt/ros/humble/share/ament_cmake_uncrustify/cmake)
+[6.712s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[8.428s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[9.109s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[9.603s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[9.612s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[11.012s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[11.013s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[11.013s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[11.013s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[11.103s] -- Found PythonExtra: .so  
+[11.505s] -- Found ament_cmake_flake8: 0.12.12 (/opt/ros/humble/share/ament_cmake_flake8/cmake)
+[11.521s] -- Found ament_cmake_pep257: 0.12.12 (/opt/ros/humble/share/ament_cmake_pep257/cmake)
+[11.537s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[11.602s] -- Added test 'copyright' to check source files copyright and LICENSE
+[11.606s] -- Added test 'lint_cmake' to check CMake code style
+[11.610s] -- Added test 'xmllint' to check XML markup files
+[11.625s] -- Configuring done
+[11.782s] -- Generating done
+[11.838s] -- Build files have been written to: /home/jezzy/huskybot/build/velodyne_msgs
+[11.866s] Invoked command in '/home/jezzy/huskybot/build/velodyne_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_msgs
+[11.875s] Invoking command in '/home/jezzy/huskybot/build/velodyne_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/velodyne_msgs -- -j4 -l4
+[12.035s] [  2%] [34m[1mGenerating C code for ROS interfaces[0m
+[12.088s] [  5%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[12.161s] [  5%] Built target ament_cmake_python_copy_velodyne_msgs
+[14.115s] running egg_info
+[14.120s] creating velodyne_msgs.egg-info
+[14.123s] writing velodyne_msgs.egg-info/PKG-INFO
+[14.129s] writing dependency_links to velodyne_msgs.egg-info/dependency_links.txt
+[14.131s] writing top-level names to velodyne_msgs.egg-info/top_level.txt
+[14.133s] writing manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[14.155s] reading manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[14.166s] writing manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[14.441s] [  5%] Built target ament_cmake_python_build_velodyne_msgs_egg
+[15.186s] [  7%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_c.dir/rosidl_generator_c/velodyne_msgs/msg/detail/velodyne_packet__functions.c.o[0m
+[15.198s] [ 10%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_c.dir/rosidl_generator_c/velodyne_msgs/msg/detail/velodyne_scan__functions.c.o[0m
+[15.585s] [ 12%] [32m[1mLinking C shared library libvelodyne_msgs__rosidl_generator_c.so[0m
+[15.683s] [ 12%] Built target velodyne_msgs__cpp
+[15.799s] [ 15%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[15.804s] [ 17%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[15.808s] [ 20%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[16.213s] [ 20%] Built target velodyne_msgs__rosidl_generator_c
+[16.243s] [ 23%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[19.790s] [ 25%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/velodyne_msgs/msg/detail/velodyne_packet__type_support.cpp.o[0m
+[20.011s] [ 28%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/velodyne_msgs/msg/detail/velodyne_packet__type_support_c.cpp.o[0m
+[20.036s] [ 30%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/velodyne_msgs/msg/detail/dds_fastrtps/velodyne_packet__type_support.cpp.o[0m
+[20.473s] [ 33%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/velodyne_msgs/msg/velodyne_packet__type_support.cpp.o[0m
+[23.443s] [ 35%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/velodyne_msgs/msg/detail/velodyne_scan__type_support_c.cpp.o[0m
+[23.496s] [ 38%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/velodyne_msgs/msg/velodyne_scan__type_support.cpp.o[0m
+[24.433s] [ 41%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/velodyne_msgs/msg/detail/dds_fastrtps/velodyne_scan__type_support.cpp.o[0m
+[24.472s] [ 43%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/velodyne_msgs/msg/detail/velodyne_scan__type_support.cpp.o[0m
+[26.537s] [ 46%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_cpp.so[0m
+[27.236s] [ 46%] Built target velodyne_msgs__rosidl_typesupport_cpp
+[27.326s] [ 48%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[27.484s] [ 51%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_fastrtps_c.so[0m
+[28.701s] [ 51%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_c
+[28.816s] [ 53%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[28.957s] [ 56%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_introspection_cpp.so[0m
+[29.577s] [ 58%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_fastrtps_cpp.so[0m
+[29.915s] [ 58%] Built target velodyne_msgs__rosidl_typesupport_introspection_cpp
+[30.460s] [ 58%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_cpp
+[30.513s] [ 61%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/velodyne_msgs/msg/detail/velodyne_scan__type_support.c.o[0m
+[30.524s] [ 64%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/velodyne_msgs/msg/detail/velodyne_packet__type_support.c.o[0m
+[30.752s] [ 66%] [32m[1mLinking C shared library libvelodyne_msgs__rosidl_typesupport_introspection_c.so[0m
+[31.201s] [ 66%] Built target velodyne_msgs__rosidl_typesupport_introspection_c
+[31.348s] [ 69%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/velodyne_msgs/msg/velodyne_packet__type_support.cpp.o[0m
+[31.358s] [ 71%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/velodyne_msgs/msg/velodyne_scan__type_support.cpp.o[0m
+[31.470s] [ 74%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_c.so[0m
+[31.891s] [ 74%] Built target velodyne_msgs__rosidl_typesupport_c
+[31.945s] [ 74%] Built target velodyne_msgs
+[32.001s] [ 76%] [34m[1mGenerating Python code for ROS interfaces[0m
+[34.028s] [ 76%] Built target velodyne_msgs__py
+[34.076s] [ 79%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_py.dir/rosidl_generator_py/velodyne_msgs/msg/_velodyne_packet_s.c.o[0m
+[34.078s] [ 82%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_py.dir/rosidl_generator_py/velodyne_msgs/msg/_velodyne_scan_s.c.o[0m
+[34.449s] [ 84%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/libvelodyne_msgs__rosidl_generator_py.so[0m
+[34.903s] [ 84%] Built target velodyne_msgs__rosidl_generator_py
+[34.993s] [ 87%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[35.029s] [ 89%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[35.035s] [ 92%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_c.c.o[0m
+[35.353s] [ 94%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[35.370s] [ 97%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[35.425s] [100%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[35.752s] [100%] Built target velodyne_msgs__rosidl_typesupport_introspection_c__pyext
+[35.760s] [100%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext
+[35.807s] [100%] Built target velodyne_msgs__rosidl_typesupport_c__pyext
