@@ -1,0 +1,9 @@
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/uninstall.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/huskybot_recognition_uninstall.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/test.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/edit_cache.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/rebuild_cache.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/list_install_components.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/install.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/install/local.dir
+/home/jezzy/huskybot/build/huskybot_recognition/CMakeFiles/install/strip.dir
