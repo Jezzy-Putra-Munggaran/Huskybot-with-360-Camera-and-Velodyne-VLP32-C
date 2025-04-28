@@ -1,0 +1,56 @@
+[0.062s] Invoking command in '/home/jezzy/huskybot/build/husky_custom_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/husky_custom_description -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/husky_custom_description
+[0.476s] -- The C compiler identification is GNU 11.4.0
+[1.773s] -- The CXX compiler identification is GNU 11.4.0
+[2.753s] -- Detecting C compiler ABI info
+[3.342s] -- Detecting C compiler ABI info - done
+[3.365s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.366s] -- Detecting C compile features
+[3.370s] -- Detecting C compile features - done
+[3.385s] -- Detecting CXX compiler ABI info
+[3.977s] -- Detecting CXX compiler ABI info - done
+[4.009s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[4.009s] -- Detecting CXX compile features
+[4.010s] -- Detecting CXX compile features - done
+[4.028s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[4.529s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[4.955s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[5.328s] -- Added test 'lint_cmake' to check CMake code style
+[5.338s] -- Added test 'xmllint' to check XML markup files
+[5.355s] -- Configuring done
+[5.365s] -- Generating done
+[5.370s] -- Build files have been written to: /home/jezzy/huskybot/build/husky_custom_description
+[5.388s] Invoked command in '/home/jezzy/huskybot/build/husky_custom_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/husky_custom_description -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/husky_custom_description
+[5.389s] Invoking command in '/home/jezzy/huskybot/build/husky_custom_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/husky_custom_description -- -j4 -l4
+[5.474s] Invoked command in '/home/jezzy/huskybot/build/husky_custom_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/husky_custom_description -- -j4 -l4
+[5.492s] Invoking command in '/home/jezzy/huskybot/build/husky_custom_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/husky_custom_description
+[5.512s] -- Install configuration: ""
+[5.512s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf
+[5.514s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/custom_description.urdf.xacro
+[5.516s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/empty.urdf
+[5.518s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/wheel.urdf.xacro
+[5.520s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/husky.urdf.xacro
+[5.523s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/decorations.urdf.xacro
+[5.524s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/pacs.urdf.xacro
+[5.524s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories
+[5.524s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/hokuyo_ust10.urdf.xacro
+[5.524s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/flir_blackfly_mount.urdf.xacro
+[5.525s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/sick_lms1xx_mount.urdf.xacro
+[5.525s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/intel_realsense.urdf.xacro
+[5.525s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/vlp16_mount.urdf.xacro
+[5.526s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description//urdf/accessories/sensor_arch.urdf.xacro
+[5.526s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/ament_index/resource_index/package_run_dependencies/husky_custom_description
+[5.527s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/ament_index/resource_index/parent_prefix_path/husky_custom_description
+[5.527s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/environment/ament_prefix_path.sh
+[5.528s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/environment/ament_prefix_path.dsv
+[5.528s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/environment/path.sh
+[5.528s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/environment/path.dsv
+[5.529s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/local_setup.bash
+[5.529s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/local_setup.sh
+[5.529s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/local_setup.zsh
+[5.530s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/local_setup.dsv
+[5.530s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/package.dsv
+[5.531s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/ament_index/resource_index/packages/husky_custom_description
+[5.531s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/cmake/husky_custom_descriptionConfig.cmake
+[5.532s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/cmake/husky_custom_descriptionConfig-version.cmake
+[5.532s] -- Installing: /home/jezzy/huskybot/install/husky_custom_description/share/husky_custom_description/package.xml
+[5.556s] Invoked command in '/home/jezzy/huskybot/build/husky_custom_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/husky_custom_description

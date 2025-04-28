@@ -1,3 +1,0 @@
-[console_scripts]
-fusion_node.py = huskybot_fusion.fusion_node:main
-
