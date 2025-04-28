@@ -1,0 +1,4 @@
+msg/InferenceResult.idl
+msg/InferenceResult.msg
+msg/Yolov12Inference.idl
+msg/Yolov12Inference.msg

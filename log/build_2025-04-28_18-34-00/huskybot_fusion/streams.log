@@ -1,0 +1,24 @@
+[9.577s] Invoking command in '/home/jezzy/huskybot/src/huskybot_fusion': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/yolov12_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/yolov12_msgs:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/jezzy/huskybot/install/yolov12_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jezzy/huskybot/build/huskybot_fusion/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages:/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/huskybot_fusion build --build-base /home/jezzy/huskybot/build/huskybot_fusion/build install --record /home/jezzy/huskybot/build/huskybot_fusion/install.log --single-version-externally-managed install_data
+[10.422s] running egg_info
+[10.426s] writing ../../build/huskybot_fusion/huskybot_fusion.egg-info/PKG-INFO
+[10.428s] writing dependency_links to ../../build/huskybot_fusion/huskybot_fusion.egg-info/dependency_links.txt
+[10.428s] writing entry points to ../../build/huskybot_fusion/huskybot_fusion.egg-info/entry_points.txt
+[10.429s] writing requirements to ../../build/huskybot_fusion/huskybot_fusion.egg-info/requires.txt
+[10.430s] writing top-level names to ../../build/huskybot_fusion/huskybot_fusion.egg-info/top_level.txt
+[10.438s] reading manifest file '../../build/huskybot_fusion/huskybot_fusion.egg-info/SOURCES.txt'
+[10.442s] writing manifest file '../../build/huskybot_fusion/huskybot_fusion.egg-info/SOURCES.txt'
+[10.442s] running build
+[10.442s] running build_py
+[10.443s] copying huskybot_fusion/fusion_node.py -> /home/jezzy/huskybot/build/huskybot_fusion/build/lib/huskybot_fusion
+[10.444s] running install
+[10.445s] running install_lib
+[10.448s] copying /home/jezzy/huskybot/build/huskybot_fusion/build/lib/huskybot_fusion/fusion_node.py -> /home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages/huskybot_fusion
+[10.450s] byte-compiling /home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages/huskybot_fusion/fusion_node.py to fusion_node.cpython-310.pyc
+[10.453s] running install_data
+[10.453s] running install_egg_info
+[10.459s] removing '/home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages/huskybot_fusion-0.0.0-py3.10.egg-info' (and everything under it)
+[10.460s] Copying ../../build/huskybot_fusion/huskybot_fusion.egg-info to /home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages/huskybot_fusion-0.0.0-py3.10.egg-info
+[10.463s] running install_scripts
+[10.521s] Installing fusion_node.py script to /home/jezzy/huskybot/install/huskybot_fusion/lib/huskybot_fusion
+[10.522s] writing list of installed files to '/home/jezzy/huskybot/build/huskybot_fusion/install.log'
+[10.585s] Invoked command in '/home/jezzy/huskybot/src/huskybot_fusion' returned '0': AMENT_PREFIX_PATH=/home/jezzy/huskybot/install/yolov12_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/jezzy/huskybot/install/yolov12_msgs:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/jezzy/huskybot/install/yolov12_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/jezzy/huskybot/build/huskybot_fusion/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/huskybot/install/huskybot_fusion/lib/python3.10/site-packages:/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/huskybot_fusion build --build-base /home/jezzy/huskybot/build/huskybot_fusion/build install --record /home/jezzy/huskybot/build/huskybot_fusion/install.log --single-version-externally-managed install_data
