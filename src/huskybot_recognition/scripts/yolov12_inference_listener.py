@@ -20,7 +20,7 @@ class Yolov12InferenceListener(Node):  # Definisi class node listener deteksi YO
         )
         for det in msg.yolov12_inference:  # Loop semua hasil deteksi pada pesan
             self.get_logger().info(  # Log info setiap deteksi
-                f'  Class: {det.class_name}, Box: ({det.top}, {det.left}, {det.bottom}, {det.right})'  # Tampilkan info bounding box
+                f'  Class: {det.class_name}, Confidence: {det.confidence:.2f}, Box: ({det.top}, {det.left}, {det.bottom}, {det.right})'  # Tampilkan info bounding box dan confidence
             )
 
 def main(args=None):  # Fungsi utama untuk menjalankan node

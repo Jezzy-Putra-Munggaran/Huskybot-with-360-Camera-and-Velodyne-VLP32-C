@@ -33,6 +33,7 @@ class PanoramaDetection(Node):  # Definisi class node deteksi panorama
                 c = box.cls  # Ambil index kelas deteksi
                 inference_result = InferenceResult()  # Buat pesan hasil deteksi individual
                 inference_result.class_name = self.model.names[int(c)]  # Nama kelas objek terdeteksi
+                inference_result.confidence = float(box.conf)  # Tambahkan baris ini untuk confidence
                 inference_result.top = int(b[0])  # Koordinat atas bounding box
                 inference_result.left = int(b[1])  # Koordinat kiri bounding box
                 inference_result.bottom = int(b[2])  # Koordinat bawah bounding box

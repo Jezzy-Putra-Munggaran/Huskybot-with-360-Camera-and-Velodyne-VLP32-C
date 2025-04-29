@@ -56,6 +56,7 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera
                 b = box.xyxy[0].to('cpu').detach().numpy().copy()  # Ambil koordinat bounding box (x1, y1, x2, y2)
                 c = box.cls  # Ambil index kelas deteksi
                 inference_result.class_name = self.model.names[int(c)]  # Nama kelas objek terdeteksi
+                inference_result.confidence = float(box.conf)  # Tambahkan baris ini untuk confidence
                 inference_result.top = int(b[0])  # Koordinat atas bounding box
                 inference_result.left = int(b[1])  # Koordinat kiri bounding box
                 inference_result.bottom = int(b[2])  # Koordinat bawah bounding box

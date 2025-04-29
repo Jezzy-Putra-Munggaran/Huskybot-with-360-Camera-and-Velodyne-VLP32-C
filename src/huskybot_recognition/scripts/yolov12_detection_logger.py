@@ -19,7 +19,7 @@ class Yolov12DetectionLogger(Node):  # Definisi class node logger deteksi YOLOv1
         os.makedirs(save_dir, exist_ok=True)  # Membuat folder jika belum ada
         self.csvfile = open(os.path.join(save_dir, 'detections.csv'), 'w', newline='')  # Membuka file CSV untuk ditulis
         self.writer = csv.writer(self.csvfile)  # Membuat writer CSV
-        self.writer.writerow(['stamp', 'camera', 'class', 'top', 'left', 'bottom', 'right'])  # Header kolom CSV
+        self.writer.writerow(['stamp', 'camera', 'class', 'confidence', 'top', 'left', 'bottom', 'right'])  # Header kolom CSV
 
     def listener_callback(self, msg):  # Fungsi callback saat pesan deteksi diterima
         stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9  # Mengambil timestamp deteksi (detik float)
@@ -29,6 +29,7 @@ class Yolov12DetectionLogger(Node):  # Definisi class node logger deteksi YOLOv1
                 stamp,  # Timestamp deteksi
                 camera,  # Nama kamera/panorama
                 det.class_name,  # Nama kelas objek terdeteksi (harus ada di InferenceResult.msg)
+                det.confidence,  # Tambahkan confidence ke log
                 det.top,  # Koordinat bounding box atas
                 det.left,  # Koordinat bounding box kiri
                 det.bottom,  # Koordinat bounding box bawah
