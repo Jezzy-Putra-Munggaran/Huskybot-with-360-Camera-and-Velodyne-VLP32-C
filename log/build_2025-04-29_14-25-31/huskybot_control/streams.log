@@ -1,0 +1,51 @@
+[0.031s] Invoking command in '/home/jezzy/huskybot/build/huskybot_control': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/huskybot_control -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/huskybot_control
+[0.503s] -- The C compiler identification is GNU 11.4.0
+[2.527s] -- The CXX compiler identification is GNU 11.4.0
+[3.689s] -- Detecting C compiler ABI info
+[4.299s] -- Detecting C compiler ABI info - done
+[4.337s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.338s] -- Detecting C compile features
+[4.340s] -- Detecting C compile features - done
+[4.359s] -- Detecting CXX compiler ABI info
+[5.023s] -- Detecting CXX compiler ABI info - done
+[5.081s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.082s] -- Detecting CXX compile features
+[5.082s] -- Detecting CXX compile features - done
+[5.109s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[5.895s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[6.411s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[6.851s] -- Added test 'copyright' to check source files copyright and LICENSE
+[6.858s] -- Added test 'flake8' to check Python code syntax and style conventions
+[6.862s] -- Added test 'lint_cmake' to check CMake code style
+[6.869s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[6.876s] -- Added test 'xmllint' to check XML markup files
+[6.902s] -- Configuring done
+[6.950s] -- Generating done
+[6.966s] -- Build files have been written to: /home/jezzy/huskybot/build/huskybot_control
+[6.986s] Invoked command in '/home/jezzy/huskybot/build/huskybot_control' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/huskybot_control -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/huskybot_control
+[6.987s] Invoking command in '/home/jezzy/huskybot/build/huskybot_control': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/huskybot_control -- -j4 -l4
+[7.141s] Invoked command in '/home/jezzy/huskybot/build/huskybot_control' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/huskybot_control -- -j4 -l4
+[7.158s] Invoking command in '/home/jezzy/huskybot/build/huskybot_control': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/huskybot_control
+[7.185s] -- Install configuration: ""
+[7.186s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control//scripts
+[7.190s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control//scripts/robot_control.py
+[7.193s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control//launch
+[7.194s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control//launch/huskybot_control.launch.py
+[7.197s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/lib/huskybot_control/robot_control.py
+[7.200s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/lib/huskybot_control/huskybot_control.launch.py
+[7.204s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/ament_index/resource_index/package_run_dependencies/huskybot_control
+[7.208s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/ament_index/resource_index/parent_prefix_path/huskybot_control
+[7.209s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/environment/ament_prefix_path.sh
+[7.210s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/environment/ament_prefix_path.dsv
+[7.211s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/environment/path.sh
+[7.211s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/environment/path.dsv
+[7.212s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/local_setup.bash
+[7.212s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/local_setup.sh
+[7.212s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/local_setup.zsh
+[7.213s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/local_setup.dsv
+[7.213s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/package.dsv
+[7.213s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/ament_index/resource_index/packages/huskybot_control
+[7.213s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/cmake/huskybot_controlConfig.cmake
+[7.214s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/cmake/huskybot_controlConfig-version.cmake
+[7.214s] -- Installing: /home/jezzy/huskybot/install/huskybot_control/share/huskybot_control/package.xml
+[7.222s] Invoked command in '/home/jezzy/huskybot/build/huskybot_control' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/huskybot_control
