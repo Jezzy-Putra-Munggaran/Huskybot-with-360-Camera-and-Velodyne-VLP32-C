@@ -50,11 +50,14 @@ class Yolo_subscriber(Node):  # Node subscriber untuk hasil deteksi YOLOv12
             return
         for r in data.yolov12_inference:  # Loop semua hasil deteksi pada pesan
             class_name = r.class_name  # Nama kelas objek terdeteksi
+            confidence = r.confidence  # Confidence deteksi
             top = r.top  # Koordinat atas bounding box
             left = r.left  # Koordinat kiri bounding box
             bottom = r.bottom  # Koordinat bawah bounding box
             right = r.right  # Koordinat kanan bounding box
-            self.get_logger().info(f"{self.cnt} {class_name} : {top}, {left}, {bottom}, {right}")  # Log info deteksi
+            self.get_logger().info(
+                f"{self.cnt} {class_name} ({confidence:.2f}) : {top}, {left}, {bottom}, {right}"
+                )  # Log info deteksi
             # OpenCV: (x1, y1) = (left, top), (x2, y2) = (right, bottom)
             cv2.rectangle(img, (left, top), (right, bottom), (255, 255, 0), 2)  # Gambar bounding box pada gambar
             self.cnt += 1  # Increment counter
