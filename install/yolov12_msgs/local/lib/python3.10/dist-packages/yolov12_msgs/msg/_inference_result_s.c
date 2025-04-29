@@ -68,6 +68,15 @@ bool yolov12_msgs__msg__inference_result__convert_from_py(PyObject * _pymsg, voi
     Py_DECREF(encoded_field);
     Py_DECREF(field);
   }
+  {  // confidence
+    PyObject * field = PyObject_GetAttrString(_pymsg, "confidence");
+    if (!field) {
+      return false;
+    }
+    assert(PyFloat_Check(field));
+    ros_message->confidence = (float)PyFloat_AS_DOUBLE(field);
+    Py_DECREF(field);
+  }
   {  // top
     PyObject * field = PyObject_GetAttrString(_pymsg, "top");
     if (!field) {
@@ -137,6 +146,17 @@ PyObject * yolov12_msgs__msg__inference_result__convert_to_py(void * raw_ros_mes
     }
     {
       int rc = PyObject_SetAttrString(_pymessage, "class_name", field);
+      Py_DECREF(field);
+      if (rc) {
+        return NULL;
+      }
+    }
+  }
+  {  // confidence
+    PyObject * field = NULL;
+    field = PyFloat_FromDouble(ros_message->confidence);
+    {
+      int rc = PyObject_SetAttrString(_pymessage, "confidence", field);
       Py_DECREF(field);
       if (rc) {
         return NULL;

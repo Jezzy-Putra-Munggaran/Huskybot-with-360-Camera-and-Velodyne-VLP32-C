@@ -26,6 +26,7 @@ yolov12_msgs__msg__InferenceResult__init(yolov12_msgs__msg__InferenceResult * ms
     yolov12_msgs__msg__InferenceResult__fini(msg);
     return false;
   }
+  // confidence
   // top
   // left
   // bottom
@@ -41,6 +42,7 @@ yolov12_msgs__msg__InferenceResult__fini(yolov12_msgs__msg__InferenceResult * ms
   }
   // class_name
   rosidl_runtime_c__String__fini(&msg->class_name);
+  // confidence
   // top
   // left
   // bottom
@@ -57,6 +59,10 @@ yolov12_msgs__msg__InferenceResult__are_equal(const yolov12_msgs__msg__Inference
   if (!rosidl_runtime_c__String__are_equal(
       &(lhs->class_name), &(rhs->class_name)))
   {
+    return false;
+  }
+  // confidence
+  if (lhs->confidence != rhs->confidence) {
     return false;
   }
   // top
@@ -92,6 +98,8 @@ yolov12_msgs__msg__InferenceResult__copy(
   {
     return false;
   }
+  // confidence
+  output->confidence = input->confidence;
   // top
   output->top = input->top;
   // left

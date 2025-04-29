@@ -1,22 +1,22 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
 
 # Import library ROS2 Python client
-import rclpy
-from rclpy.node import Node
+import rclpy  # Modul utama ROS2 Python
+from rclpy.node import Node  # Base class Node untuk membuat node ROS2
 # Import pesan Image dari ROS2 sensor_msgs
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image  # Message standar ROS2 untuk gambar
 # Import bridge untuk konversi ROS Image <-> OpenCV
-from cv_bridge import CvBridge
+from cv_bridge import CvBridge  # Untuk konversi antara ROS Image dan OpenCV
 # Import OpenCV untuk image processing
-import cv2
+import cv2  # Library utama untuk image processing dan stitching
 # Import os untuk operasi file dan path
-import os
+import os  # Untuk operasi file dan folder
 # Import yaml untuk membaca file kalibrasi YAML
-import yaml
+import yaml  # Untuk membaca file YAML kalibrasi kamera
 # Import numpy untuk operasi array/matrix
-import numpy as np
+import numpy as np  # Untuk operasi matrix dan array
 # Import time untuk monitoring
-import time
+import time  # Untuk monitoring waktu dan sinkronisasi
 
 # Definisikan node ROS2 untuk stitching panorama
 class PanoramaStitcher(Node):
@@ -26,64 +26,64 @@ class PanoramaStitcher(Node):
 
         # Daftar urutan kamera sesuai fisik pemasangan (hexagonal, searah jarum jam)
         self.camera_topics = [
-            'camera_front',
-            'camera_front_left',
-            'camera_left',
-            'camera_rear',
-            'camera_rear_right',
-            'camera_right'
+            'camera_front',         # Kamera depan (0° yaw)
+            'camera_front_left',    # Kamera depan kiri (+60° CCW)
+            'camera_left',          # Kamera kiri (+120° CCW)
+            'camera_rear',          # Kamera belakang (180° yaw)
+            'camera_rear_right',    # Kamera belakang kanan (-120° CW)
+            'camera_right'          # Kamera kanan (-60° CW)
         ]
         # Mapping nama kamera ke topic ROS2
         self.topic_map = {
-            'camera_front':      '/camera_front/image_raw',
-            'camera_front_left': '/camera_front_left/image_raw',
-            'camera_left':       '/camera_left/image_raw',
-            'camera_rear':       '/camera_rear/image_raw',
-            'camera_rear_right': '/camera_rear_right/image_raw',
-            'camera_right':      '/camera_right/image_raw'
+            'camera_front':      '/camera_front/image_raw',        # Topic kamera depan
+            'camera_front_left': '/camera_front_left/image_raw',   # Topic kamera depan kiri
+            'camera_left':       '/camera_left/image_raw',         # Topic kamera kiri
+            'camera_rear':       '/camera_rear/image_raw',         # Topic kamera belakang
+            'camera_rear_right': '/camera_rear_right/image_raw',   # Topic kamera belakang kanan
+            'camera_right':      '/camera_right/image_raw'         # Topic kamera kanan
         }
 
         # Load parameter intrinsic (K) dan distortion (D) dari file YAML untuk setiap kamera
-        self.K = {}
-        self.D = {}
-        calib_dir = os.path.expanduser("~/huskybot/src/huskybot_description/calibration")
+        self.K = {}  # Dictionary matrix intrinsic kamera
+        self.D = {}  # Dictionary koefisien distorsi kamera
+        calib_dir = os.path.expanduser("~/huskybot/src/huskybot_description/calibration")  # Folder kalibrasi
         for cam in self.camera_topics:
-            calib_file = os.path.join(calib_dir, f"intrinsic_{cam}.yaml")
+            calib_file = os.path.join(calib_dir, f"intrinsic_{cam}.yaml")  # Path file kalibrasi
             with open(calib_file, 'r') as f:
-                calib = yaml.safe_load(f)
-                self.K[cam] = np.array(calib['camera_matrix']['data']).reshape(3, 3)
-                self.D[cam] = np.array(calib['distortion_coefficients']['data'])
+                calib = yaml.safe_load(f)  # Baca file YAML
+                self.K[cam] = np.array(calib['camera_matrix']['data']).reshape(3, 3)  # Matrix intrinsic
+                self.D[cam] = np.array(calib['distortion_coefficients']['data'])      # Koefisien distorsi
 
         # Dictionary untuk menyimpan image dan timestamp terbaru dari setiap kamera
-        self.latest_images = {}
-        self.latest_stamps = {}
+        self.latest_images = {}  # Menyimpan image terbaru per kamera
+        self.latest_stamps = {}  # Menyimpan timestamp terbaru per kamera
         # List subscription untuk setiap kamera
         self._my_subscriptions = []
         for cam_name, topic in self.topic_map.items():
             # Subscribe ke setiap topic kamera, gunakan lambda agar cam_name tetap
             sub = self.create_subscription(
-                Image,
-                topic,
-                lambda msg, cam=cam_name: self.image_callback(msg, cam),
-                10
+                Image,  # Tipe message yang disubscribe
+                topic,  # Nama topic kamera
+                lambda msg, cam=cam_name: self.image_callback(msg, cam),  # Callback dengan binding nama kamera
+                10  # Queue size
             )
-            self._my_subscriptions.append(sub)
+            self._my_subscriptions.append(sub)  # Simpan subscription agar tidak di-GC
 
         # Publisher untuk panorama hasil stitching
-        self.panorama_pub = self.create_publisher(Image, '/panorama/image_raw', 1)
+        self.panorama_pub = self.create_publisher(Image, '/panorama/image_raw', 1)  # Publish panorama ke topic ini
         # Publisher untuk panorama yang akan dideteksi objek (bisa sama dengan panorama_pub)
-        self.panorama_det_pub = self.create_publisher(Image, '/panorama/detection_input', 1)
+        self.panorama_det_pub = self.create_publisher(Image, '/panorama/detection_input', 1)  # Untuk pipeline deteksi
         # Inisialisasi OpenCV Stitcher
-        self.stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA)
+        self.stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA)  # Inisialisasi objek stitcher OpenCV
 
         # Folder untuk menyimpan hasil panorama sebagai file gambar
-        self.save_dir = os.path.expanduser("~/panorama_results")
-        os.makedirs(self.save_dir, exist_ok=True)
+        self.save_dir = os.path.expanduser("~/panorama_results")  # Folder hasil panorama
+        os.makedirs(self.save_dir, exist_ok=True)  # Buat folder jika belum ada
         self.save_count = 0  # Counter untuk penamaan file hasil
 
         # Monitoring dan fallback
-        self.last_monitor_time = time.time()
-        self.monitor_interval = 2.0  # detik
+        self.last_monitor_time = time.time()  # Waktu monitoring terakhir
+        self.monitor_interval = 2.0  # detik, interval monitoring
         self.max_frame_age = 1.0     # detik, fallback jika frame kamera terlalu lama
 
     # Callback untuk setiap pesan image dari kamera
@@ -106,11 +106,11 @@ class PanoramaStitcher(Node):
         if time.time() - self.last_monitor_time > self.monitor_interval:
             for cam in self.camera_topics:
                 if cam not in self.latest_images:
-                    self.get_logger().warn(f"Kamera {cam} belum pernah publish frame!")
+                    self.get_logger().warn(f"Kamera {cam} belum pernah publish frame!")  # Warning jika kamera belum pernah publish
                 else:
                     age = now - self.latest_stamps[cam]
                     if age > self.max_frame_age:
-                        self.get_logger().warn(f"Frame kamera {cam} sudah lama ({age:.2f}s), kemungkinan delay atau drop!")
+                        self.get_logger().warn(f"Frame kamera {cam} sudah lama ({age:.2f}s), kemungkinan delay atau drop!")  # Warning jika frame lama
             self.last_monitor_time = time.time()
 
         # Sinkronisasi sederhana: fallback jika ada kamera delay
@@ -150,11 +150,11 @@ class PanoramaStitcher(Node):
 
 # Fungsi utama untuk menjalankan node ROS2
 def main(args=None):
-    rclpy.init(args=args)
-    node = PanoramaStitcher()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    rclpy.init(args=args)  # Inisialisasi ROS2 Python
+    node = PanoramaStitcher()  # Buat instance node panorama stitcher
+    rclpy.spin(node)  # Jalankan node hingga Ctrl+C
+    node.destroy_node()  # Cleanup saat node selesai
+    rclpy.shutdown()  # Shutdown ROS2
 
 if __name__ == '__main__':
-    main()
+    main()  # Panggil fungsi main

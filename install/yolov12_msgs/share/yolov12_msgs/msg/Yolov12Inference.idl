@@ -8,10 +8,16 @@
 module yolov12_msgs {
   module msg {
     struct Yolov12Inference {
+      @verbatim (language="comment", text=
+        "Header ROS2 (timestamp dan frame_id, untuk sinkronisasi waktu dan referensi frame)")
       std_msgs::msg::Header header;
 
+      @verbatim (language="comment", text=
+        "Array hasil deteksi (list bounding box dan class, satu frame bisa banyak deteksi)")
       sequence<yolov12_msgs::msg::InferenceResult> yolov12_inference;
 
+      @verbatim (language="comment", text=
+        "Nama kamera sumber deteksi (misal: \"camera_front\", \"panorama\", dsb)")
       string camera_name;
     };
   };
