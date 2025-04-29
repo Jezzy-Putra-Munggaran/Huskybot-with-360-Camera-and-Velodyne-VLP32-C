@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
+#!/usr/bin/env python3
 
 import rclpy  # Import modul utama ROS2 Python
 from rclpy.node import Node  # Import base class Node untuk membuat node ROS2

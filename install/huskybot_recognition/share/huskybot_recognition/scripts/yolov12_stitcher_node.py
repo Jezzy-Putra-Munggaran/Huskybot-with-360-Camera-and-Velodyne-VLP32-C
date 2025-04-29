@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
+#!/usr/bin/env python3
 
 # Import library ROS2 Python client
 import rclpy  # Modul utama ROS2 Python

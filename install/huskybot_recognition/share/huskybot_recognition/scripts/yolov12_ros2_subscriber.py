@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
+#!/usr/bin/env python3
 
 import cv2  # Import OpenCV untuk visualisasi bounding box pada gambar
 import threading  # Untuk menjalankan multi-threaded executor ROS2
