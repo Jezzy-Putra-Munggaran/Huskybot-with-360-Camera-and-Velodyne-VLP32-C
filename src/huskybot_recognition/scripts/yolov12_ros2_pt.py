@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
+#!/usr/bin/env python3
 
 from ultralytics import YOLO  # Import library YOLO (pastikan sudah diinstall di environment Python)
 import rclpy  # Import modul utama ROS2 Python
