@@ -32,6 +32,13 @@ inline void to_flow_style_yaml(
     out << ", ";
   }
 
+  // member: confidence
+  {
+    out << "confidence: ";
+    rosidl_generator_traits::value_to_yaml(msg.confidence, out);
+    out << ", ";
+  }
+
   // member: top
   {
     out << "top: ";
@@ -72,6 +79,16 @@ inline void to_block_style_yaml(
     }
     out << "class_name: ";
     rosidl_generator_traits::value_to_yaml(msg.class_name, out);
+    out << "\n";
+  }
+
+  // member: confidence
+  {
+    if (indentation > 0) {
+      out << std::string(indentation, ' ');
+    }
+    out << "confidence: ";
+    rosidl_generator_traits::value_to_yaml(msg.confidence, out);
     out << "\n";
   }
 

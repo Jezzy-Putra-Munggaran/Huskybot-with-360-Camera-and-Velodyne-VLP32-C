@@ -9,6 +9,7 @@
 /home/jezzy/huskybot/install/huskybot_recognition/share/huskybot_recognition//scripts/yolov12_ros2_pt.py
 /home/jezzy/huskybot/install/huskybot_recognition/share/huskybot_recognition//scripts/yolov12_stitcher_node.py
 /home/jezzy/huskybot/install/huskybot_recognition/share/huskybot_recognition//scripts/yolov12_ros2_subscriber.py
+/home/jezzy/huskybot/install/huskybot_recognition/share/huskybot_recognition//scripts/__init__.py
 /home/jezzy/huskybot/install/huskybot_recognition/share/huskybot_recognition//launch/launch_yolov12.launch.py
 /home/jezzy/huskybot/install/huskybot_recognition/lib/huskybot_recognition/yolov12_ros2_pt.py
 /home/jezzy/huskybot/install/huskybot_recognition/lib/huskybot_recognition/yolov12_ros2_subscriber.py

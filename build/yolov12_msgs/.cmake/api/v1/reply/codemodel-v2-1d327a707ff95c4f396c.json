@@ -1,0 +1,233 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-7e968886d9bd67e48178.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				},
+				{
+					"build" : "yolov12_msgs__py",
+					"jsonFile" : "directory-yolov12_msgs__py-ca609a6acd1b0c840b34.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/jezzy/huskybot/build/yolov12_msgs/yolov12_msgs__py",
+					"targetIndexes" : 
+					[
+						5
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "yolov12_msgs",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_yolov12_msgs_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_yolov12_msgs_egg-476bee7923892491b679.json",
+					"name" : "ament_cmake_python_build_yolov12_msgs_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_yolov12_msgs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_yolov12_msgs-1fcc73001a343ece7465.json",
+					"name" : "ament_cmake_python_copy_yolov12_msgs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-3adea7c0cd7619f54d5c.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs-96d3b27b1ccaf3e8ade7.json",
+					"name" : "yolov12_msgs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__cpp-1f8920cfd0ab0dad9d62.json",
+					"name" : "yolov12_msgs__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "yolov12_msgs__py::@df4d93c8e93374f9d687",
+					"jsonFile" : "target-yolov12_msgs__py-26ce647c309e92c10ac2.json",
+					"name" : "yolov12_msgs__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_generator_c-5c7c7ca1aff0372d9c9e.json",
+					"name" : "yolov12_msgs__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_generator_py-cac9b68a66c5d01e444b.json",
+					"name" : "yolov12_msgs__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_c-c2d894230d557bd234ce.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_c__pyext-63593c6c0a067999f30e.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_cpp-8d948353f90ff7dfcb69.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_fastrtps_c-09e757670270dcbf1a00.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_fastrtps_c__pyext-c88c4d79ac7cfb8963b6.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_fastrtps_cpp-0ae06e0ead62dc62ce3c.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_introspection_c-c1d9242e785d04ae2e01.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_introspection_c__pyext-a8bbfd51a8e6470babbc.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs__rosidl_typesupport_introspection_cpp-0d84cdee9e3c65ae9258.json",
+					"name" : "yolov12_msgs__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolov12_msgs_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolov12_msgs_uninstall-3966ab67cee6a82b8ebe.json",
+					"name" : "yolov12_msgs_uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/jezzy/huskybot/build/yolov12_msgs",
+		"source" : "/home/jezzy/huskybot/src/yolov12_msgs"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

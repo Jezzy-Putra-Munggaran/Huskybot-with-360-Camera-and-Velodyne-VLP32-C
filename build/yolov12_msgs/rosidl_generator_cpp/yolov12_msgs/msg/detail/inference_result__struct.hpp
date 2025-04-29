@@ -39,6 +39,7 @@ struct InferenceResult_
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
       this->class_name = "";
+      this->confidence = 0.0f;
       this->top = 0ll;
       this->left = 0ll;
       this->bottom = 0ll;
@@ -53,6 +54,7 @@ struct InferenceResult_
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
       this->class_name = "";
+      this->confidence = 0.0f;
       this->top = 0ll;
       this->left = 0ll;
       this->bottom = 0ll;
@@ -64,6 +66,9 @@ struct InferenceResult_
   using _class_name_type =
     std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>;
   _class_name_type class_name;
+  using _confidence_type =
+    float;
+  _confidence_type confidence;
   using _top_type =
     int64_t;
   _top_type top;
@@ -82,6 +87,12 @@ struct InferenceResult_
     const std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> & _arg)
   {
     this->class_name = _arg;
+    return *this;
+  }
+  Type & set__confidence(
+    const float & _arg)
+  {
+    this->confidence = _arg;
     return *this;
   }
   Type & set__top(
@@ -152,6 +163,9 @@ struct InferenceResult_
   bool operator==(const InferenceResult_ & other) const
   {
     if (this->class_name != other.class_name) {
+      return false;
+    }
+    if (this->confidence != other.confidence) {
       return false;
     }
     if (this->top != other.top) {

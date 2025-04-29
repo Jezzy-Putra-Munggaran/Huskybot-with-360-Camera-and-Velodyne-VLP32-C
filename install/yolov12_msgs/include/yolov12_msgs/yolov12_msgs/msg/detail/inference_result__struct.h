@@ -24,10 +24,17 @@ extern "C"
 /// Struct defined in msg/InferenceResult in the package yolov12_msgs.
 typedef struct yolov12_msgs__msg__InferenceResult
 {
+  /// Nama kelas objek hasil deteksi (misal: "person", "car", "dog", dst)
   rosidl_runtime_c__String class_name;
+  /// Skor confidence deteksi (0.0 - 1.0)
+  float confidence;
+  /// Koordinat atas bounding box (pixel, biasanya y1)
   int64_t top;
+  /// Koordinat kiri bounding box (pixel, biasanya x1)
   int64_t left;
+  /// Koordinat bawah bounding box (pixel, biasanya y2)
   int64_t bottom;
+  /// Koordinat kanan bounding box (pixel, biasanya x2)
   int64_t right;
 } yolov12_msgs__msg__InferenceResult;
 

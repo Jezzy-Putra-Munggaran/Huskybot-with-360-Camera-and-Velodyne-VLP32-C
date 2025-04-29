@@ -7,6 +7,8 @@
 
 import builtins  # noqa: E402, I100
 
+import math  # noqa: E402, I100
+
 import rosidl_parser.definition  # noqa: E402, I100
 
 
@@ -56,6 +58,7 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
 
     __slots__ = [
         '_class_name',
+        '_confidence',
         '_top',
         '_left',
         '_bottom',
@@ -64,6 +67,7 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
 
     _fields_and_field_types = {
         'class_name': 'string',
+        'confidence': 'float',
         'top': 'int64',
         'left': 'int64',
         'bottom': 'int64',
@@ -72,6 +76,7 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
 
     SLOT_TYPES = (
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
+        rosidl_parser.definition.BasicType('float'),  # noqa: E501
         rosidl_parser.definition.BasicType('int64'),  # noqa: E501
         rosidl_parser.definition.BasicType('int64'),  # noqa: E501
         rosidl_parser.definition.BasicType('int64'),  # noqa: E501
@@ -83,6 +88,7 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
             'Invalid arguments passed to constructor: %s' % \
             ', '.join(sorted(k for k in kwargs.keys() if '_' + k not in self.__slots__))
         self.class_name = kwargs.get('class_name', str())
+        self.confidence = kwargs.get('confidence', float())
         self.top = kwargs.get('top', int())
         self.left = kwargs.get('left', int())
         self.bottom = kwargs.get('bottom', int())
@@ -119,6 +125,8 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
             return False
         if self.class_name != other.class_name:
             return False
+        if self.confidence != other.confidence:
+            return False
         if self.top != other.top:
             return False
         if self.left != other.left:
@@ -146,6 +154,21 @@ class InferenceResult(metaclass=Metaclass_InferenceResult):
                 isinstance(value, str), \
                 "The 'class_name' field must be of type 'str'"
         self._class_name = value
+
+    @builtins.property
+    def confidence(self):
+        """Message field 'confidence'."""
+        return self._confidence
+
+    @confidence.setter
+    def confidence(self, value):
+        if __debug__:
+            assert \
+                isinstance(value, float), \
+                "The 'confidence' field must be of type 'float'"
+            assert not (value < -3.402823466e+38 or value > 3.402823466e+38) or math.isinf(value), \
+                "The 'confidence' field must be a float in [-3.402823466e+38, 3.402823466e+38]"
+        self._confidence = value
 
     @builtins.property
     def top(self):

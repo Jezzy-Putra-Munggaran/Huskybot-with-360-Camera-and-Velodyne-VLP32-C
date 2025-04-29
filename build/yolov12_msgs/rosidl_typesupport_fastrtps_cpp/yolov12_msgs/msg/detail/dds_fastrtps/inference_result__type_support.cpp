@@ -34,6 +34,8 @@ cdr_serialize(
 {
   // Member: class_name
   cdr << ros_message.class_name;
+  // Member: confidence
+  cdr << ros_message.confidence;
   // Member: top
   cdr << ros_message.top;
   // Member: left
@@ -53,6 +55,9 @@ cdr_deserialize(
 {
   // Member: class_name
   cdr >> ros_message.class_name;
+
+  // Member: confidence
+  cdr >> ros_message.confidence;
 
   // Member: top
   cdr >> ros_message.top;
@@ -86,6 +91,12 @@ get_serialized_size(
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
     (ros_message.class_name.size() + 1);
+  // Member: confidence
+  {
+    size_t item_size = sizeof(ros_message.confidence);
+    current_alignment += item_size +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
+  }
   // Member: top
   {
     size_t item_size = sizeof(ros_message.top);
@@ -145,6 +156,15 @@ max_serialized_size_InferenceResult(
         eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
         1;
     }
+  }
+
+  // Member: confidence
+  {
+    size_t array_size = 1;
+
+    last_member_size = array_size * sizeof(uint32_t);
+    current_alignment += array_size * sizeof(uint32_t) +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
 
   // Member: top

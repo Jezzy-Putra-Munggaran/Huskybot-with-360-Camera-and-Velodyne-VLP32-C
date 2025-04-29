@@ -35,7 +35,7 @@ void yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__Inf
   yolov12_msgs__msg__InferenceResult__fini(message_memory);
 }
 
-static rosidl_typesupport_introspection_c__MessageMember yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__InferenceResult_message_member_array[5] = {
+static rosidl_typesupport_introspection_c__MessageMember yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__InferenceResult_message_member_array[6] = {
   {
     "class_name",  // name
     rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
@@ -45,6 +45,23 @@ static rosidl_typesupport_introspection_c__MessageMember yolov12_msgs__msg__Infe
     0,  // array size
     false,  // is upper bound
     offsetof(yolov12_msgs__msg__InferenceResult, class_name),  // bytes offset in struct
+    NULL,  // default value
+    NULL,  // size() function pointer
+    NULL,  // get_const(index) function pointer
+    NULL,  // get(index) function pointer
+    NULL,  // fetch(index, &value) function pointer
+    NULL,  // assign(index, value) function pointer
+    NULL  // resize(index) function pointer
+  },
+  {
+    "confidence",  // name
+    rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT,  // type
+    0,  // upper bound of string
+    NULL,  // members of sub message
+    false,  // is array
+    0,  // array size
+    false,  // is upper bound
+    offsetof(yolov12_msgs__msg__InferenceResult, confidence),  // bytes offset in struct
     NULL,  // default value
     NULL,  // size() function pointer
     NULL,  // get_const(index) function pointer
@@ -126,7 +143,7 @@ static rosidl_typesupport_introspection_c__MessageMember yolov12_msgs__msg__Infe
 static const rosidl_typesupport_introspection_c__MessageMembers yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__InferenceResult_message_members = {
   "yolov12_msgs__msg",  // message namespace
   "InferenceResult",  // message name
-  5,  // number of fields
+  6,  // number of fields
   sizeof(yolov12_msgs__msg__InferenceResult),
   yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__InferenceResult_message_member_array,  // message members
   yolov12_msgs__msg__InferenceResult__rosidl_typesupport_introspection_c__InferenceResult_init_function,  // function to initialize message memory (memory has to be allocated)

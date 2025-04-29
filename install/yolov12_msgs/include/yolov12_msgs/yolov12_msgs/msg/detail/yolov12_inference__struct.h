@@ -28,8 +28,11 @@ extern "C"
 /// Struct defined in msg/Yolov12Inference in the package yolov12_msgs.
 typedef struct yolov12_msgs__msg__Yolov12Inference
 {
+  /// Header ROS2 (timestamp dan frame_id, untuk sinkronisasi waktu dan referensi frame)
   std_msgs__msg__Header header;
+  /// Array hasil deteksi (list bounding box dan class, satu frame bisa banyak deteksi)
   yolov12_msgs__msg__InferenceResult__Sequence yolov12_inference;
+  /// Nama kamera sumber deteksi (misal: "camera_front", "panorama", dsb)
   rosidl_runtime_c__String camera_name;
 } yolov12_msgs__msg__Yolov12Inference;
 

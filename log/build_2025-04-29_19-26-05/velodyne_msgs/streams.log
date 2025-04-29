@@ -1,0 +1,266 @@
+[0.067s] Invoking command in '/home/jezzy/huskybot/build/velodyne_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_msgs
+[0.834s] -- The C compiler identification is GNU 11.4.0
+[2.603s] -- The CXX compiler identification is GNU 11.4.0
+[3.819s] -- Detecting C compiler ABI info
+[4.410s] -- Detecting C compiler ABI info - done
+[4.441s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.442s] -- Detecting C compile features
+[4.443s] -- Detecting C compile features - done
+[4.460s] -- Detecting CXX compiler ABI info
+[5.147s] -- Detecting CXX compiler ABI info - done
+[5.176s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.178s] -- Detecting CXX compile features
+[5.179s] -- Detecting CXX compile features - done
+[5.196s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[5.690s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[6.077s] -- Found builtin_interfaces: 1.2.1 (/opt/ros/humble/share/builtin_interfaces/cmake)
+[6.768s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[6.792s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[6.837s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[6.910s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.993s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[7.066s] -- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[7.127s] -- Found std_msgs: 4.8.0 (/opt/ros/humble/share/std_msgs/cmake)
+[8.387s] -- Found ament_cmake_cppcheck: 0.12.12 (/opt/ros/humble/share/ament_cmake_cppcheck/cmake)
+[8.405s] -- Found ament_cmake_cpplint: 0.12.12 (/opt/ros/humble/share/ament_cmake_cpplint/cmake)
+[8.421s] -- Found ament_cmake_uncrustify: 0.12.12 (/opt/ros/humble/share/ament_cmake_uncrustify/cmake)
+[8.442s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[10.445s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[11.120s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[11.664s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[11.675s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[13.291s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[13.292s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[13.292s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[13.293s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[13.372s] -- Found PythonExtra: .so  
+[13.889s] -- Found ament_cmake_flake8: 0.12.12 (/opt/ros/humble/share/ament_cmake_flake8/cmake)
+[13.909s] -- Found ament_cmake_pep257: 0.12.12 (/opt/ros/humble/share/ament_cmake_pep257/cmake)
+[13.933s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[14.015s] -- Added test 'copyright' to check source files copyright and LICENSE
+[14.020s] -- Added test 'lint_cmake' to check CMake code style
+[14.023s] -- Added test 'xmllint' to check XML markup files
+[14.042s] -- Configuring done
+[14.295s] -- Generating done
+[14.357s] -- Build files have been written to: /home/jezzy/huskybot/build/velodyne_msgs
+[14.403s] Invoked command in '/home/jezzy/huskybot/build/velodyne_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/velodyne/velodyne_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/velodyne_msgs
+[14.405s] Invoking command in '/home/jezzy/huskybot/build/velodyne_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/velodyne_msgs -- -j4 -l4
+[14.727s] [  2%] [34m[1mGenerating C code for ROS interfaces[0m
+[14.880s] [  2%] Built target ament_cmake_python_copy_velodyne_msgs
+[14.924s] [  5%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[18.119s] running egg_info
+[18.122s] creating velodyne_msgs.egg-info
+[18.123s] writing velodyne_msgs.egg-info/PKG-INFO
+[18.124s] writing dependency_links to velodyne_msgs.egg-info/dependency_links.txt
+[18.125s] writing top-level names to velodyne_msgs.egg-info/top_level.txt
+[18.126s] writing manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[18.133s] reading manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[18.149s] writing manifest file 'velodyne_msgs.egg-info/SOURCES.txt'
+[18.392s] [  5%] Built target ament_cmake_python_build_velodyne_msgs_egg
+[18.585s] [  5%] Built target velodyne_msgs__cpp
+[18.709s] [  7%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[18.808s] [ 10%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[18.818s] [ 12%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_c.dir/rosidl_generator_c/velodyne_msgs/msg/detail/velodyne_packet__functions.c.o[0m
+[18.819s] [ 15%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[19.195s] [ 17%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_c.dir/rosidl_generator_c/velodyne_msgs/msg/detail/velodyne_scan__functions.c.o[0m
+[19.701s] [ 20%] [32m[1mLinking C shared library libvelodyne_msgs__rosidl_generator_c.so[0m
+[20.382s] [ 20%] Built target velodyne_msgs__rosidl_generator_c
+[20.530s] [ 23%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[22.744s] [ 25%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/velodyne_msgs/msg/velodyne_packet__type_support.cpp.o[0m
+[23.319s] [ 28%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/velodyne_msgs/msg/detail/velodyne_packet__type_support.cpp.o[0m
+[23.359s] [ 30%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/velodyne_msgs/msg/detail/dds_fastrtps/velodyne_packet__type_support.cpp.o[0m
+[25.283s] [ 33%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/velodyne_msgs/msg/detail/velodyne_packet__type_support_c.cpp.o[0m
+[25.708s] [ 35%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/velodyne_msgs/msg/velodyne_scan__type_support.cpp.o[0m
+[27.588s] [ 38%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/velodyne_msgs/msg/detail/dds_fastrtps/velodyne_scan__type_support.cpp.o[0m
+[28.193s] [ 41%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/velodyne_msgs/msg/detail/velodyne_scan__type_support.cpp.o[0m
+[28.889s] [ 43%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_cpp.so[0m
+[29.707s] [ 43%] Built target velodyne_msgs__rosidl_typesupport_cpp
+[29.841s] [ 46%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[29.940s] [ 48%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/velodyne_msgs/msg/detail/velodyne_scan__type_support_c.cpp.o[0m
+[32.525s] [ 51%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_fastrtps_cpp.so[0m
+[33.099s] [ 53%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_introspection_cpp.so[0m
+[33.503s] [ 56%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_fastrtps_c.so[0m
+[33.574s] [ 56%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_cpp
+[33.725s] [ 58%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[34.055s] [ 58%] Built target velodyne_msgs__rosidl_typesupport_introspection_cpp
+[34.336s] [ 61%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/velodyne_msgs/msg/detail/velodyne_packet__type_support.c.o[0m
+[34.386s] [ 64%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/velodyne_msgs/msg/detail/velodyne_scan__type_support.c.o[0m
+[34.447s] [ 64%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_c
+[34.703s] [ 66%] [32m[1mLinking C shared library libvelodyne_msgs__rosidl_typesupport_introspection_c.so[0m
+[35.150s] [ 66%] Built target velodyne_msgs__rosidl_typesupport_introspection_c
+[35.987s] [ 69%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/velodyne_msgs/msg/velodyne_packet__type_support.cpp.o[0m
+[35.993s] [ 71%] [32mBuilding CXX object CMakeFiles/velodyne_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/velodyne_msgs/msg/velodyne_scan__type_support.cpp.o[0m
+[36.121s] [ 74%] [32m[1mLinking CXX shared library libvelodyne_msgs__rosidl_typesupport_c.so[0m
+[36.630s] [ 74%] Built target velodyne_msgs__rosidl_typesupport_c
+[36.693s] [ 74%] Built target velodyne_msgs
+[36.754s] [ 76%] [34m[1mGenerating Python code for ROS interfaces[0m
+[38.844s] [ 76%] Built target velodyne_msgs__py
+[38.919s] [ 79%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_py.dir/rosidl_generator_py/velodyne_msgs/msg/_velodyne_packet_s.c.o[0m
+[38.922s] [ 82%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_generator_py.dir/rosidl_generator_py/velodyne_msgs/msg/_velodyne_scan_s.c.o[0m
+[39.364s] [ 84%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/libvelodyne_msgs__rosidl_generator_py.so[0m
+[39.766s] [ 84%] Built target velodyne_msgs__rosidl_generator_py
+[39.857s] [ 87%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[39.886s] [ 89%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[40.171s] [ 92%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[40.373s] [ 94%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[40.742s] [ 94%] Built target velodyne_msgs__rosidl_typesupport_introspection_c__pyext
+[40.832s] [ 97%] [32mBuilding C object CMakeFiles/velodyne_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_c.c.o[0m
+[40.891s] [ 97%] Built target velodyne_msgs__rosidl_typesupport_fastrtps_c__pyext
+[41.330s] [100%] [32m[1mLinking C shared library rosidl_generator_py/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[41.953s] [100%] Built target velodyne_msgs__rosidl_typesupport_c__pyext
+[41.999s] Invoked command in '/home/jezzy/huskybot/build/velodyne_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/velodyne_msgs -- -j4 -l4
+[42.002s] Invoking command in '/home/jezzy/huskybot/build/velodyne_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/velodyne_msgs
+[42.038s] -- Install configuration: ""
+[42.040s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/ament_index/resource_index/rosidl_interfaces/velodyne_msgs
+[42.043s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.043s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.043s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/velodyne_scan.h
+[42.044s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/rosidl_generator_c__visibility_control.h
+[42.047s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/velodyne_packet.h
+[42.047s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.049s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__struct.h
+[42.050s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__type_support.h
+[42.051s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__functions.h
+[42.053s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__type_support.h
+[42.054s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__struct.h
+[42.055s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__functions.h
+[42.056s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__functions.c
+[42.057s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__functions.c
+[42.062s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/library_path.sh
+[42.063s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/library_path.dsv
+[42.063s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_generator_c.so
+[42.066s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_generator_c.so" to ""
+[42.067s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.067s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.067s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.068s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__rosidl_typesupport_fastrtps_c.h
+[42.069s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__rosidl_typesupport_fastrtps_c.h
+[42.070s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[42.072s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_fastrtps_c.so
+[42.074s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_fastrtps_c.so" to ""
+[42.075s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.075s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.075s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.076s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__traits.hpp
+[42.076s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__struct.hpp
+[42.077s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__traits.hpp
+[42.078s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__builder.hpp
+[42.079s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__builder.hpp
+[42.080s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__type_support.hpp
+[42.080s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__struct.hpp
+[42.081s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__type_support.hpp
+[42.082s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/velodyne_packet.hpp
+[42.083s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/rosidl_generator_cpp__visibility_control.hpp
+[42.086s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/velodyne_scan.hpp
+[42.087s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.088s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.088s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[42.089s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.089s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__rosidl_typesupport_fastrtps_cpp.hpp
+[42.091s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__rosidl_typesupport_fastrtps_cpp.hpp
+[42.091s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/dds_fastrtps
+[42.096s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_fastrtps_cpp.so
+[42.096s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_fastrtps_cpp.so" to ""
+[42.096s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.096s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.097s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[42.097s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.097s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__type_support.c
+[42.097s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__rosidl_typesupport_introspection_c.h
+[42.098s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__type_support.c
+[42.098s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__rosidl_typesupport_introspection_c.h
+[42.098s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_introspection_c.so
+[42.098s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_introspection_c.so" to ""
+[42.099s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_c.so
+[42.103s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_c.so" to ""
+[42.103s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs
+[42.104s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg
+[42.104s] -- Up-to-date: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail
+[42.105s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__rosidl_typesupport_introspection_cpp.hpp
+[42.105s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__type_support.cpp
+[42.106s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_packet__type_support.cpp
+[42.106s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/include/velodyne_msgs/velodyne_msgs/msg/detail/velodyne_scan__rosidl_typesupport_introspection_cpp.hpp
+[42.106s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_introspection_cpp.so
+[42.107s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_introspection_cpp.so" to ""
+[42.107s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_cpp.so
+[42.107s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_typesupport_cpp.so" to ""
+[42.107s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/pythonpath.sh
+[42.108s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/pythonpath.dsv
+[42.108s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs-2.5.1-py3.10.egg-info
+[42.108s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs-2.5.1-py3.10.egg-info/top_level.txt
+[42.108s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs-2.5.1-py3.10.egg-info/SOURCES.txt
+[42.109s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs-2.5.1-py3.10.egg-info/dependency_links.txt
+[42.109s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs-2.5.1-py3.10.egg-info/PKG-INFO
+[42.116s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs
+[42.116s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_introspection_c.c
+[42.118s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_fastrtps_c.c
+[42.119s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[42.120s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg
+[42.120s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_scan.py
+[42.121s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_scan_s.c
+[42.121s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_packet_s.c
+[42.121s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/__init__.py
+[42.121s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_packet.py
+[42.122s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[42.122s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/_velodyne_msgs_s.ep.rosidl_typesupport_c.c
+[42.122s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[42.122s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/libvelodyne_msgs__rosidl_generator_py.so
+[42.123s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/__init__.py
+[42.286s] Listing '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs'...
+[42.286s] Compiling '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/__init__.py'...
+[42.286s] Listing '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg'...
+[42.286s] Compiling '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/__init__.py'...
+[42.287s] Compiling '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_packet.py'...
+[42.287s] Compiling '/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/msg/_velodyne_scan.py'...
+[42.305s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[42.306s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+[42.306s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[42.307s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+[42.308s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[42.309s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/local/lib/python3.10/dist-packages/velodyne_msgs/velodyne_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+[42.313s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_generator_py.so
+[42.314s] -- Set runtime path of "/home/jezzy/huskybot/install/velodyne_msgs/lib/libvelodyne_msgs__rosidl_generator_py.so" to ""
+[42.315s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/msg/VelodynePacket.idl
+[42.315s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/msg/VelodyneScan.idl
+[42.315s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/msg/VelodynePacket.msg
+[42.316s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/msg/VelodyneScan.msg
+[42.316s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/ament_index/resource_index/package_run_dependencies/velodyne_msgs
+[42.317s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/ament_index/resource_index/parent_prefix_path/velodyne_msgs
+[42.318s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/ament_prefix_path.sh
+[42.319s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/ament_prefix_path.dsv
+[42.319s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/path.sh
+[42.321s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/environment/path.dsv
+[42.321s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/local_setup.bash
+[42.322s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/local_setup.sh
+[42.323s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/local_setup.zsh
+[42.324s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/local_setup.dsv
+[42.324s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/package.dsv
+[42.325s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/ament_index/resource_index/packages/velodyne_msgs
+[42.328s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_generator_cExport.cmake
+[42.330s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_generator_cExport-noconfig.cmake
+[42.334s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_typesupport_fastrtps_cExport.cmake
+[42.334s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[42.334s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_generator_cppExport.cmake
+[42.335s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_typesupport_fastrtps_cppExport.cmake
+[42.335s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[42.336s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_introspection_cExport.cmake
+[42.336s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[42.336s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_cExport.cmake
+[42.337s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_cExport-noconfig.cmake
+[42.337s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_introspection_cppExport.cmake
+[42.338s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[42.338s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_cppExport.cmake
+[42.338s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgs__rosidl_typesupport_cppExport-noconfig.cmake
+[42.339s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_generator_pyExport.cmake
+[42.339s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/export_velodyne_msgs__rosidl_generator_pyExport-noconfig.cmake
+[42.340s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/rosidl_cmake-extras.cmake
+[42.342s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/ament_cmake_export_dependencies-extras.cmake
+[42.344s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/ament_cmake_export_include_directories-extras.cmake
+[42.345s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/ament_cmake_export_libraries-extras.cmake
+[42.348s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/ament_cmake_export_targets-extras.cmake
+[42.351s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[42.352s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[42.353s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgsConfig.cmake
+[42.354s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/cmake/velodyne_msgsConfig-version.cmake
+[42.354s] -- Installing: /home/jezzy/huskybot/install/velodyne_msgs/share/velodyne_msgs/package.xml
+[42.355s] Invoked command in '/home/jezzy/huskybot/build/velodyne_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/velodyne_msgs

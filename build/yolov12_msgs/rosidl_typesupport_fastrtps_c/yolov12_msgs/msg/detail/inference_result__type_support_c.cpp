@@ -65,6 +65,11 @@ static bool _InferenceResult__cdr_serialize(
     cdr << str->data;
   }
 
+  // Field name: confidence
+  {
+    cdr << ros_message->confidence;
+  }
+
   // Field name: top
   {
     cdr << ros_message->top;
@@ -113,6 +118,11 @@ static bool _InferenceResult__cdr_deserialize(
     }
   }
 
+  // Field name: confidence
+  {
+    cdr >> ros_message->confidence;
+  }
+
   // Field name: top
   {
     cdr >> ros_message->top;
@@ -154,6 +164,12 @@ size_t get_serialized_size_yolov12_msgs__msg__InferenceResult(
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
     (ros_message->class_name.size + 1);
+  // field.name confidence
+  {
+    size_t item_size = sizeof(ros_message->confidence);
+    current_alignment += item_size +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
+  }
   // field.name top
   {
     size_t item_size = sizeof(ros_message->top);
@@ -218,6 +234,14 @@ size_t max_serialized_size_yolov12_msgs__msg__InferenceResult(
         eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
         1;
     }
+  }
+  // member: confidence
+  {
+    size_t array_size = 1;
+
+    last_member_size = array_size * sizeof(uint32_t);
+    current_alignment += array_size * sizeof(uint32_t) +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
   // member: top
   {

@@ -85,16 +85,32 @@ private:
   ::yolov12_msgs::msg::InferenceResult msg_;
 };
 
+class Init_InferenceResult_confidence
+{
+public:
+  explicit Init_InferenceResult_confidence(::yolov12_msgs::msg::InferenceResult & msg)
+  : msg_(msg)
+  {}
+  Init_InferenceResult_top confidence(::yolov12_msgs::msg::InferenceResult::_confidence_type arg)
+  {
+    msg_.confidence = std::move(arg);
+    return Init_InferenceResult_top(msg_);
+  }
+
+private:
+  ::yolov12_msgs::msg::InferenceResult msg_;
+};
+
 class Init_InferenceResult_class_name
 {
 public:
   Init_InferenceResult_class_name()
   : msg_(::rosidl_runtime_cpp::MessageInitialization::SKIP)
   {}
-  Init_InferenceResult_top class_name(::yolov12_msgs::msg::InferenceResult::_class_name_type arg)
+  Init_InferenceResult_confidence class_name(::yolov12_msgs::msg::InferenceResult::_class_name_type arg)
   {
     msg_.class_name = std::move(arg);
-    return Init_InferenceResult_top(msg_);
+    return Init_InferenceResult_confidence(msg_);
   }
 
 private:
