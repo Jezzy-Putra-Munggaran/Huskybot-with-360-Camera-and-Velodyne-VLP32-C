@@ -27,4 +27,8 @@ setup(
             'fusion_node.py = huskybot_fusion.fusion_node:main',
         ],
     },
+    # Tambahkan ini agar ROS2 mengenali message interface
+    package_data={
+        '': ['msg/*.msg'],
+    },
 )

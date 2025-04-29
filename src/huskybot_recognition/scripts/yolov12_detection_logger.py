@@ -1,8 +1,8 @@
-#!/usr/bin/env python3  # Shebang agar bisa dieksekusi langsung di terminal Linux
+#!/usr/bin/env python3  # Shebang agar file bisa dieksekusi langsung di terminal Linux
 
 import rclpy  # Import modul utama ROS2 Python
 from rclpy.node import Node  # Import base class Node untuk membuat node ROS2
-from yolov12_msgs.msg import Yolov12Inference  # Import custom message hasil deteksi YOLOv12
+from yolov12_msgs.msg import Yolov12Inference  # Import custom message hasil deteksi YOLOv12 (harus sudah di-build di workspace)
 import csv  # Untuk menulis file CSV
 import os  # Untuk operasi file dan path
 
@@ -11,7 +11,7 @@ class Yolov12DetectionLogger(Node):  # Definisi class node logger deteksi YOLOv1
         super().__init__('yolov12_detection_logger')  # Inisialisasi node dengan nama 'yolov12_detection_logger'
         self.subscription = self.create_subscription(  # Membuat subscriber ROS2
             Yolov12Inference,  # Tipe message yang disubscribe (hasil deteksi YOLOv12)
-            '/panorama/yolov12_inference',  # Nama topic yang disubscribe (ganti jika topic Anda berbeda)
+            '/panorama/yolov12_inference',  # Nama topic yang disubscribe (harus sama dengan publisher deteksi YOLOv12 di workspace)
             self.listener_callback,  # Fungsi callback saat pesan diterima
             10  # Queue size
         )
@@ -28,7 +28,7 @@ class Yolov12DetectionLogger(Node):  # Definisi class node logger deteksi YOLOv1
             self.writer.writerow([  # Tulis satu baris ke CSV untuk setiap deteksi
                 stamp,  # Timestamp deteksi
                 camera,  # Nama kamera/panorama
-                det.class_name,  # Nama kelas objek terdeteksi
+                det.class_name,  # Nama kelas objek terdeteksi (harus ada di InferenceResult.msg)
                 det.top,  # Koordinat bounding box atas
                 det.left,  # Koordinat bounding box kiri
                 det.bottom,  # Koordinat bounding box bawah
