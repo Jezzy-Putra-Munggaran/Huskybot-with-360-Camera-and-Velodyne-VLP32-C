@@ -4,3 +4,6 @@ yolov12_msgs.egg-info/PKG-INFO
 yolov12_msgs.egg-info/SOURCES.txt
 yolov12_msgs.egg-info/dependency_links.txt
 yolov12_msgs.egg-info/top_level.txt
+yolov12_msgs/msg/__init__.py
+yolov12_msgs/msg/_inference_result.py
+yolov12_msgs/msg/_yolov12_inference.py

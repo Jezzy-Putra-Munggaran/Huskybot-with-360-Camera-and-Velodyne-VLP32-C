@@ -1,0 +1,260 @@
+[0.097s] Invoking command in '/home/jezzy/huskybot/build/yolov12_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/yolov12_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/yolov12_msgs
+[0.679s] -- The C compiler identification is GNU 11.4.0
+[2.456s] -- The CXX compiler identification is GNU 11.4.0
+[3.497s] -- Detecting C compiler ABI info
+[4.336s] -- Detecting C compiler ABI info - done
+[4.389s] -- Check for working C compiler: /usr/bin/cc - skipped
+[4.390s] -- Detecting C compile features
+[4.390s] -- Detecting C compile features - done
+[4.402s] -- Detecting CXX compiler ABI info
+[5.479s] -- Detecting CXX compiler ABI info - done
+[5.544s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.544s] -- Detecting CXX compile features
+[5.549s] -- Detecting CXX compile features - done
+[5.559s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[6.517s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[7.264s] -- Found std_msgs: 4.8.0 (/opt/ros/humble/share/std_msgs/cmake)
+[8.275s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[8.321s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[8.364s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[8.496s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[8.599s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[8.809s] -- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[10.563s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[12.727s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[13.652s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[14.397s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[14.414s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[16.767s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[16.768s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[16.768s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[16.768s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[16.918s] -- Found PythonExtra: .so  
+[17.575s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[17.754s] -- Added test 'copyright' to check source files copyright and LICENSE
+[17.766s] -- Added test 'lint_cmake' to check CMake code style
+[17.774s] -- Added test 'xmllint' to check XML markup files
+[17.795s] -- Configuring done
+[17.962s] -- Generating done
+[18.007s] -- Build files have been written to: /home/jezzy/huskybot/build/yolov12_msgs
+[18.030s] Invoked command in '/home/jezzy/huskybot/build/yolov12_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake /home/jezzy/huskybot/src/yolov12_msgs -DCMAKE_INSTALL_PREFIX=/home/jezzy/huskybot/install/yolov12_msgs
+[18.035s] Invoking command in '/home/jezzy/huskybot/build/yolov12_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/yolov12_msgs -- -j4 -l4
+[18.316s] [  2%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[18.324s] [  5%] [34m[1mGenerating C code for ROS interfaces[0m
+[18.346s] [  5%] Built target ament_cmake_python_copy_yolov12_msgs
+[21.420s] running egg_info
+[21.424s] creating yolov12_msgs.egg-info
+[21.429s] writing yolov12_msgs.egg-info/PKG-INFO
+[21.430s] writing dependency_links to yolov12_msgs.egg-info/dependency_links.txt
+[21.438s] writing top-level names to yolov12_msgs.egg-info/top_level.txt
+[21.440s] writing manifest file 'yolov12_msgs.egg-info/SOURCES.txt'
+[21.449s] reading manifest file 'yolov12_msgs.egg-info/SOURCES.txt'
+[21.454s] writing manifest file 'yolov12_msgs.egg-info/SOURCES.txt'
+[21.651s] [  5%] Built target ament_cmake_python_build_yolov12_msgs_egg
+[23.643s] [  5%] Built target yolov12_msgs__cpp
+[23.814s] [  7%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[23.816s] [ 10%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[23.898s] [ 12%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[25.071s] [ 15%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_generator_c.dir/rosidl_generator_c/yolov12_msgs/msg/detail/inference_result__functions.c.o[0m
+[25.586s] [ 17%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_generator_c.dir/rosidl_generator_c/yolov12_msgs/msg/detail/yolov12_inference__functions.c.o[0m
+[26.107s] [ 20%] [32m[1mLinking C shared library libyolov12_msgs__rosidl_generator_c.so[0m
+[27.206s] [ 20%] Built target yolov12_msgs__rosidl_generator_c
+[27.343s] [ 23%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[28.646s] [ 25%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/yolov12_msgs/msg/inference_result__type_support.cpp.o[0m
+[28.892s] [ 28%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/yolov12_msgs/msg/detail/inference_result__type_support.cpp.o[0m
+[29.317s] [ 30%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/yolov12_msgs/msg/detail/dds_fastrtps/inference_result__type_support.cpp.o[0m
+[32.152s] [ 33%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/yolov12_msgs/msg/yolov12_inference__type_support.cpp.o[0m
+[33.532s] [ 35%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/yolov12_msgs/msg/detail/inference_result__type_support_c.cpp.o[0m
+[34.616s] [ 38%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/yolov12_msgs/msg/detail/yolov12_inference__type_support.cpp.o[0m
+[35.652s] [ 41%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/yolov12_msgs/msg/detail/dds_fastrtps/yolov12_inference__type_support.cpp.o[0m
+[36.042s] [ 43%] [32m[1mLinking CXX shared library libyolov12_msgs__rosidl_typesupport_cpp.so[0m
+[37.042s] [ 43%] Built target yolov12_msgs__rosidl_typesupport_cpp
+[37.906s] [ 46%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/yolov12_msgs/msg/detail/yolov12_inference__type_support_c.cpp.o[0m
+[39.809s] [ 48%] [32m[1mLinking CXX shared library libyolov12_msgs__rosidl_typesupport_introspection_cpp.so[0m
+[40.591s] [ 51%] [32m[1mLinking CXX shared library libyolov12_msgs__rosidl_typesupport_fastrtps_cpp.so[0m
+[40.851s] [ 53%] [32m[1mLinking CXX shared library libyolov12_msgs__rosidl_typesupport_fastrtps_c.so[0m
+[40.852s] [ 53%] Built target yolov12_msgs__rosidl_typesupport_introspection_cpp
+[41.747s] [ 53%] Built target yolov12_msgs__rosidl_typesupport_fastrtps_cpp
+[41.937s] [ 53%] Built target yolov12_msgs__rosidl_typesupport_fastrtps_c
+[41.974s] [ 56%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[43.845s] [ 58%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/yolov12_msgs/msg/inference_result__type_support.cpp.o[0m
+[43.992s] [ 61%] [32mBuilding CXX object CMakeFiles/yolov12_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/yolov12_msgs/msg/yolov12_inference__type_support.cpp.o[0m
+[44.231s] [ 64%] [32m[1mLinking CXX shared library libyolov12_msgs__rosidl_typesupport_c.so[0m
+[44.910s] [ 64%] Built target yolov12_msgs__rosidl_typesupport_c
+[44.946s] [ 66%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[46.733s] [ 69%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/yolov12_msgs/msg/detail/inference_result__type_support.c.o[0m
+[46.877s] [ 71%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/yolov12_msgs/msg/detail/yolov12_inference__type_support.c.o[0m
+[47.008s] [ 74%] [32m[1mLinking C shared library libyolov12_msgs__rosidl_typesupport_introspection_c.so[0m
+[47.769s] [ 74%] Built target yolov12_msgs__rosidl_typesupport_introspection_c
+[47.855s] [ 74%] Built target yolov12_msgs
+[47.939s] [ 76%] [34m[1mGenerating Python code for ROS interfaces[0m
+[51.503s] [ 76%] Built target yolov12_msgs__py
+[51.602s] [ 79%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_generator_py.dir/rosidl_generator_py/yolov12_msgs/msg/_inference_result_s.c.o[0m
+[52.201s] [ 82%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_generator_py.dir/rosidl_generator_py/yolov12_msgs/msg/_yolov12_inference_s.c.o[0m
+[52.739s] [ 84%] [32m[1mLinking C shared library rosidl_generator_py/yolov12_msgs/libyolov12_msgs__rosidl_generator_py.so[0m
+[53.479s] [ 84%] Built target yolov12_msgs__rosidl_generator_py
+[53.580s] [ 87%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[54.160s] [ 89%] [32m[1mLinking C shared library rosidl_generator_py/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[54.863s] [ 89%] Built target yolov12_msgs__rosidl_typesupport_fastrtps_c__pyext
+[54.946s] [ 92%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_c.c.o[0m
+[55.508s] [ 94%] [32m[1mLinking C shared library rosidl_generator_py/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[56.296s] [ 94%] Built target yolov12_msgs__rosidl_typesupport_c__pyext
+[56.388s] [ 97%] [32mBuilding C object CMakeFiles/yolov12_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[56.818s] [100%] [32m[1mLinking C shared library rosidl_generator_py/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[57.375s] [100%] Built target yolov12_msgs__rosidl_typesupport_introspection_c__pyext
+[57.439s] Invoked command in '/home/jezzy/huskybot/build/yolov12_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/yolov12_msgs -- -j4 -l4
+[57.453s] Invoking command in '/home/jezzy/huskybot/build/yolov12_msgs': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/yolov12_msgs
+[57.472s] -- Install configuration: ""
+[57.474s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/ament_index/resource_index/rosidl_interfaces/yolov12_msgs
+[57.477s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.480s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.481s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/rosidl_generator_c__visibility_control.h
+[57.484s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.485s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__type_support.h
+[57.487s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__functions.h
+[57.487s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__struct.h
+[57.488s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__struct.h
+[57.488s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__functions.c
+[57.488s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__functions.c
+[57.489s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__functions.h
+[57.489s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__type_support.h
+[57.490s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/inference_result.h
+[57.491s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/yolov12_inference.h
+[57.507s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/library_path.sh
+[57.508s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/library_path.dsv
+[57.508s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_generator_c.so
+[57.509s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_generator_c.so" to ""
+[57.509s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.510s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.510s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.510s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__rosidl_typesupport_fastrtps_c.h
+[57.511s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__rosidl_typesupport_fastrtps_c.h
+[57.511s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[57.511s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_fastrtps_c.so
+[57.516s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_fastrtps_c.so" to ""
+[57.517s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.518s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.522s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.523s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__struct.hpp
+[57.523s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__builder.hpp
+[57.523s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__struct.hpp
+[57.524s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__traits.hpp
+[57.524s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__traits.hpp
+[57.525s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__type_support.hpp
+[57.525s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__builder.hpp
+[57.526s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__type_support.hpp
+[57.526s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/inference_result.hpp
+[57.527s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/rosidl_generator_cpp__visibility_control.hpp
+[57.528s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/yolov12_inference.hpp
+[57.528s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.528s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.529s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[57.530s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.531s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__rosidl_typesupport_fastrtps_cpp.hpp
+[57.531s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/dds_fastrtps
+[57.533s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__rosidl_typesupport_fastrtps_cpp.hpp
+[57.533s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_fastrtps_cpp.so
+[57.534s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_fastrtps_cpp.so" to ""
+[57.540s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.540s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.541s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[57.541s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.541s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__rosidl_typesupport_introspection_c.h
+[57.542s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__rosidl_typesupport_introspection_c.h
+[57.542s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__type_support.c
+[57.542s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__type_support.c
+[57.543s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_introspection_c.so
+[57.554s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_introspection_c.so" to ""
+[57.554s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_c.so
+[57.562s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_c.so" to ""
+[57.562s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs
+[57.570s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg
+[57.571s] -- Up-to-date: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail
+[57.574s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__rosidl_typesupport_introspection_cpp.hpp
+[57.574s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__type_support.cpp
+[57.574s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/inference_result__rosidl_typesupport_introspection_cpp.hpp
+[57.574s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/include/yolov12_msgs/yolov12_msgs/msg/detail/yolov12_inference__type_support.cpp
+[57.577s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_introspection_cpp.so
+[57.579s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_introspection_cpp.so" to ""
+[57.580s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_cpp.so
+[57.582s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_typesupport_cpp.so" to ""
+[57.583s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/pythonpath.sh
+[57.584s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/pythonpath.dsv
+[57.588s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs-0.0.0-py3.10.egg-info
+[57.598s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs-0.0.0-py3.10.egg-info/top_level.txt
+[57.598s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs-0.0.0-py3.10.egg-info/SOURCES.txt
+[57.599s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs-0.0.0-py3.10.egg-info/dependency_links.txt
+[57.600s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs-0.0.0-py3.10.egg-info/PKG-INFO
+[57.601s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs
+[57.601s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/libyolov12_msgs__rosidl_generator_py.so
+[57.602s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_introspection_c.c
+[57.603s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_fastrtps_c.c
+[57.604s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/_yolov12_msgs_s.ep.rosidl_typesupport_c.c
+[57.605s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[57.609s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg
+[57.610s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_inference_result_s.c
+[57.611s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_inference_result.py
+[57.611s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_yolov12_inference_s.c
+[57.614s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_yolov12_inference.py
+[57.615s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/__init__.py
+[57.615s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[57.616s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[57.617s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/__init__.py
+[57.800s] Listing '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs'...
+[57.800s] Compiling '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/__init__.py'...
+[57.800s] Listing '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg'...
+[57.801s] Compiling '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/__init__.py'...
+[57.801s] Compiling '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_inference_result.py'...
+[57.803s] Compiling '/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/msg/_yolov12_inference.py'...
+[57.815s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[57.818s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+[57.819s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[57.828s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+[57.828s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[57.828s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/local/lib/python3.10/dist-packages/yolov12_msgs/yolov12_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+[57.828s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_generator_py.so
+[57.829s] -- Set runtime path of "/home/jezzy/huskybot/install/yolov12_msgs/lib/libyolov12_msgs__rosidl_generator_py.so" to ""
+[57.829s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/msg/InferenceResult.idl
+[57.831s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/msg/Yolov12Inference.idl
+[57.832s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/msg/InferenceResult.msg
+[57.835s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/msg/Yolov12Inference.msg
+[57.835s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/ament_index/resource_index/package_run_dependencies/yolov12_msgs
+[57.836s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/ament_index/resource_index/parent_prefix_path/yolov12_msgs
+[57.836s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/ament_prefix_path.sh
+[57.836s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/ament_prefix_path.dsv
+[57.837s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/path.sh
+[57.837s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/environment/path.dsv
+[57.837s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/local_setup.bash
+[57.838s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/local_setup.sh
+[57.838s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/local_setup.zsh
+[57.845s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/local_setup.dsv
+[57.847s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/package.dsv
+[57.848s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/ament_index/resource_index/packages/yolov12_msgs
+[57.849s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_generator_cExport.cmake
+[57.850s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_generator_cExport-noconfig.cmake
+[57.851s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_typesupport_fastrtps_cExport.cmake
+[57.852s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[57.852s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_generator_cppExport.cmake
+[57.854s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_typesupport_fastrtps_cppExport.cmake
+[57.856s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[57.856s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_introspection_cExport.cmake
+[57.856s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[57.857s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_cExport.cmake
+[57.860s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_cExport-noconfig.cmake
+[57.860s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_introspection_cppExport.cmake
+[57.867s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[57.868s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_cppExport.cmake
+[57.869s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgs__rosidl_typesupport_cppExport-noconfig.cmake
+[57.869s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_generator_pyExport.cmake
+[57.869s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/export_yolov12_msgs__rosidl_generator_pyExport-noconfig.cmake
+[57.870s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/rosidl_cmake-extras.cmake
+[57.870s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/ament_cmake_export_dependencies-extras.cmake
+[57.871s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/ament_cmake_export_include_directories-extras.cmake
+[57.871s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/ament_cmake_export_libraries-extras.cmake
+[57.871s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/ament_cmake_export_targets-extras.cmake
+[57.873s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[57.874s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[57.874s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgsConfig.cmake
+[57.876s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/cmake/yolov12_msgsConfig-version.cmake
+[57.878s] -- Installing: /home/jezzy/huskybot/install/yolov12_msgs/share/yolov12_msgs/package.xml
+[57.878s] Invoked command in '/home/jezzy/huskybot/build/yolov12_msgs' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/yolov12_msgs
