@@ -1,0 +1,27 @@
+[0.076s] Invoking command in '/home/jezzy/huskybot/build/huskybot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/huskybot_description -- -j4 -l4
+[0.344s] Invoked command in '/home/jezzy/huskybot/build/huskybot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --build /home/jezzy/huskybot/build/huskybot_description -- -j4 -l4
+[0.345s] Invoking command in '/home/jezzy/huskybot/build/huskybot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/huskybot_description
+[0.420s] -- Install configuration: ""
+[0.421s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//launch
+[0.422s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//launch/spawn_huskybot_launch.launch.py
+[0.424s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//launch/spawn_huskybot.py
+[0.424s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//robot
+[0.424s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//robot/huskybot.urdf
+[0.424s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description//robot/husky_with_cameras.xacro
+[0.425s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/lib/huskybot_description/spawn_huskybot.py
+[0.425s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/ament_index/resource_index/package_run_dependencies/huskybot_description
+[0.426s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/ament_index/resource_index/parent_prefix_path/huskybot_description
+[0.426s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/environment/ament_prefix_path.sh
+[0.426s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/environment/ament_prefix_path.dsv
+[0.427s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/environment/path.sh
+[0.427s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/environment/path.dsv
+[0.427s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/local_setup.bash
+[0.427s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/local_setup.sh
+[0.428s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/local_setup.zsh
+[0.428s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/local_setup.dsv
+[0.428s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/package.dsv
+[0.428s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/ament_index/resource_index/packages/huskybot_description
+[0.433s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/cmake/huskybot_descriptionConfig.cmake
+[0.435s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/cmake/huskybot_descriptionConfig-version.cmake
+[0.452s] -- Up-to-date: /home/jezzy/huskybot/install/huskybot_description/share/huskybot_description/package.xml
+[0.452s] Invoked command in '/home/jezzy/huskybot/build/huskybot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/jezzy/huskybot/install/huskybot_fusion:/home/jezzy/huskybot/install/huskybot_navigation:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_teleop:/home/jezzy/husky_ws/turtlebot3/install/turtlebot3_example:/home/jezzy/husky_ws/turtlebot3/install/segtect:/home/jezzy/husky_ws/turtlebot3/install/autonomous_exploration:/home/jezzy/husky_ws/lintic/install/yolosed:/home/jezzy/husky_ws/lintic/install/visual:/home/jezzy/husky_ws/lintic/install/segnet:/opt/ros/humble /usr/bin/cmake --install /home/jezzy/huskybot/build/huskybot_description

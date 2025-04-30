@@ -1,0 +1,36 @@
+[4.187s] Invoking command in '/home/jezzy/huskybot/src/huskybot_navigation': PYTHONPATH=/home/jezzy/huskybot/build/huskybot_navigation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/huskybot_navigation build --build-base /home/jezzy/huskybot/build/huskybot_navigation/build install --record /home/jezzy/huskybot/build/huskybot_navigation/install.log --single-version-externally-managed install_data
+[5.996s] running egg_info
+[5.997s] creating ../../build/huskybot_navigation/huskybot_navigation.egg-info
+[5.998s] writing ../../build/huskybot_navigation/huskybot_navigation.egg-info/PKG-INFO
+[6.003s] writing dependency_links to ../../build/huskybot_navigation/huskybot_navigation.egg-info/dependency_links.txt
+[6.003s] writing entry points to ../../build/huskybot_navigation/huskybot_navigation.egg-info/entry_points.txt
+[6.003s] writing requirements to ../../build/huskybot_navigation/huskybot_navigation.egg-info/requires.txt
+[6.004s] writing top-level names to ../../build/huskybot_navigation/huskybot_navigation.egg-info/top_level.txt
+[6.004s] writing manifest file '../../build/huskybot_navigation/huskybot_navigation.egg-info/SOURCES.txt'
+[6.013s] reading manifest file '../../build/huskybot_navigation/huskybot_navigation.egg-info/SOURCES.txt'
+[6.016s] writing manifest file '../../build/huskybot_navigation/huskybot_navigation.egg-info/SOURCES.txt'
+[6.016s] running build
+[6.016s] running build_py
+[6.017s] creating /home/jezzy/huskybot/build/huskybot_navigation/build
+[6.018s] creating /home/jezzy/huskybot/build/huskybot_navigation/build/lib
+[6.019s] creating /home/jezzy/huskybot/build/huskybot_navigation/build/lib/huskybot_navigation
+[6.023s] copying huskybot_navigation/navigation_node.py -> /home/jezzy/huskybot/build/huskybot_navigation/build/lib/huskybot_navigation
+[6.023s] copying huskybot_navigation/__init__.py -> /home/jezzy/huskybot/build/huskybot_navigation/build/lib/huskybot_navigation
+[6.025s] running install
+[6.025s] running install_lib
+[6.041s] creating /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation
+[6.041s] copying /home/jezzy/huskybot/build/huskybot_navigation/build/lib/huskybot_navigation/navigation_node.py -> /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation
+[6.042s] copying /home/jezzy/huskybot/build/huskybot_navigation/build/lib/huskybot_navigation/__init__.py -> /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation
+[6.046s] byte-compiling /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation/navigation_node.py to navigation_node.cpython-310.pyc
+[6.051s] byte-compiling /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation/__init__.py to __init__.cpython-310.pyc
+[6.060s] running install_data
+[6.060s] creating /home/jezzy/huskybot/install/huskybot_navigation/share/ament_index
+[6.061s] creating /home/jezzy/huskybot/install/huskybot_navigation/share/ament_index/resource_index
+[6.061s] creating /home/jezzy/huskybot/install/huskybot_navigation/share/ament_index/resource_index/packages
+[6.061s] copying resource/huskybot_navigation -> /home/jezzy/huskybot/install/huskybot_navigation/share/ament_index/resource_index/packages
+[6.062s] copying package.xml -> /home/jezzy/huskybot/install/huskybot_navigation/share/huskybot_navigation
+[6.062s] running install_egg_info
+[6.067s] Copying ../../build/huskybot_navigation/huskybot_navigation.egg-info to /home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages/huskybot_navigation-0.0.0-py3.10.egg-info
+[6.085s] running install_scripts
+[6.218s] writing list of installed files to '/home/jezzy/huskybot/build/huskybot_navigation/install.log'
+[6.335s] Invoked command in '/home/jezzy/huskybot/src/huskybot_navigation' returned '0': PYTHONPATH=/home/jezzy/huskybot/build/huskybot_navigation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/jezzy/huskybot/install/huskybot_navigation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/huskybot_navigation build --build-base /home/jezzy/huskybot/build/huskybot_navigation/build install --record /home/jezzy/huskybot/build/huskybot_navigation/install.log --single-version-externally-managed install_data
