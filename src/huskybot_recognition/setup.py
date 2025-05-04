@@ -15,8 +15,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='jezzy',
-    maintainer_email='your@email.com',
+    maintainer='Jezzy Putra Munggaran',
+    maintainer_email='mungguran.jezzy.putra@gmail.com',
     description='Recognition node for Huskybot',
     license='MIT',
     tests_require=['pytest'],
@@ -24,8 +24,8 @@ setup(
         'console_scripts': [
             # Daftarkan semua script yang ingin bisa dijalankan via ros2 run/launch
             'yolov12_ros2_pt.py = huskybot_recognition.scripts.yolov12_ros2_pt:main',
-            'yolov12_panorama_inference.py = huskybot_recognition.scripts.yolov12_panorama_inference:main',
             'yolov12_stitcher_node.py = huskybot_recognition.scripts.yolov12_stitcher_node:main',
+            'yolov12_panorama_inference.py = huskybot_recognition.scripts.yolov12_panorama_inference:main',
             # Tambahkan script lain jika perlu
         ],
     },
