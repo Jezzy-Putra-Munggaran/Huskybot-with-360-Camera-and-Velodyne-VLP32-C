@@ -2,160 +2,155 @@
 <sdf version="1.6">
   <world name="yolo_test_world">
     <include>
-      <uri>model://sun</uri>
+      <uri>model://sun</uri>                <!-- Pencahayaan -->
     </include>
     <include>
-      <uri>model://ground_plane</uri>
+      <uri>model://ground_plane</uri>       <!-- Ground plane -->
     </include>
 
-    <!-- 24 objek random mengelilingi robot, radius 55 meter, tidak ada di (0,0) -->
-    <!-- Sudut awal 7.5 derajat agar tidak ada objek tepat di sumbu X (depan robot) -->
-    <!-- Model diacak dari daftar: person_standing, suv, stop_sign, prius_hybrid, bus, postbox -->
-    <!-- Tidak ada dua objek di posisi yang sama (tidak tumpang tindih) -->
+    <!-- 20 objek: kecil di radius 20m, besar di radius 25m -->
+    <!-- Sudut antar objek: 18 derajat (360/20) -->
+    <!-- Penempatan: urut kecil-besar-kecil-besar dst -->
 
+    <!-- 0 deg -->
     <include>
-      <name>circle_obj_0</name>
+      <name>obj_0</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>54.02 7.18 0 0 0 0.13</pose>
+      <pose>20 0 0 0 0 0</pose>
     </include>
+    <!-- 18 deg -->
     <include>
-      <name>circle_obj_1</name>
+      <name>obj_1</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>51.23 21.41 0 0 0 0.39</pose>
+      <pose>23.79 7.73 0 0 0 0.31</pose>
     </include>
+    <!-- 36 deg -->
     <include>
-      <name>circle_obj_2</name>
+      <name>obj_2</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
-      <pose>45.13 34.01 0 0 0 0.65</pose>
+      <pose>16.18 11.76 0 0 0 0.63</pose>
     </include>
+    <!-- 54 deg -->
     <include>
-      <name>circle_obj_3</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>36.13 44.53 0 0 0 0.92</pose>
-    </include>
-    <include>
-      <name>circle_obj_4</name>
+      <name>obj_3</name>
       <uri>model://bus</uri>
       <static>true</static>
-      <pose>24.85 52.46 0 0 0 1.18</pose>
+      <pose>14.71 20.24 0 0 0 0.94</pose>
     </include>
+    <!-- 72 deg -->
     <include>
-      <name>circle_obj_5</name>
+      <name>obj_4</name>
       <uri>model://postbox</uri>
       <static>true</static>
-      <pose>12.04 57.36 0 0 0 1.44</pose>
+      <pose>6.18 19.02 0 0 0 1.26</pose>
     </include>
+    <!-- 90 deg -->
     <include>
-      <name>circle_obj_6</name>
+      <name>obj_5</name>
+      <uri>model://prius_hybrid</uri>
+      <static>true</static>
+      <pose>0 25 0 0 0 1.57</pose>
+    </include>
+    <!-- 108 deg -->
+    <include>
+      <name>obj_6</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>-1.98 58.97 0 0 0 1.70</pose>
+      <pose>-6.18 19.02 0 0 0 1.88</pose>
     </include>
+    <!-- 126 deg -->
     <include>
-      <name>circle_obj_7</name>
+      <name>obj_7</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>-15.68 57.21 0 0 0 1.96</pose>
+      <pose>-14.71 20.24 0 0 0 2.20</pose>
     </include>
+    <!-- 144 deg -->
     <include>
-      <name>circle_obj_8</name>
+      <name>obj_8</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
-      <pose>-28.56 52.19 0 0 0 2.22</pose>
+      <pose>-16.18 11.76 0 0 0 2.51</pose>
     </include>
+    <!-- 162 deg -->
     <include>
-      <name>circle_obj_9</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>-40.13 44.18 0 0 0 2.48</pose>
-    </include>
-    <include>
-      <name>circle_obj_10</name>
+      <name>obj_9</name>
       <uri>model://bus</uri>
       <static>true</static>
-      <pose>-49.97 33.62 0 0 0 2.74</pose>
+      <pose>-23.79 7.73 0 0 0 2.83</pose>
     </include>
+    <!-- 180 deg -->
     <include>
-      <name>circle_obj_11</name>
+      <name>obj_10</name>
       <uri>model://postbox</uri>
       <static>true</static>
-      <pose>-57.67 21.16 0 0 0 3.00</pose>
+      <pose>-20 0 0 0 0 3.14</pose>
     </include>
+    <!-- 198 deg -->
     <include>
-      <name>circle_obj_12</name>
+      <name>obj_11</name>
+      <uri>model://prius_hybrid</uri>
+      <static>true</static>
+      <pose>-23.79 -7.73 0 0 0 3.46</pose>
+    </include>
+    <!-- 216 deg -->
+    <include>
+      <name>obj_12</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>-62.93 7.61 0 0 0 3.27</pose>
+      <pose>-16.18 -11.76 0 0 0 3.77</pose>
     </include>
+    <!-- 234 deg -->
     <include>
-      <name>circle_obj_13</name>
+      <name>obj_13</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>-65.53 -6.36 0 0 0 3.53</pose>
+      <pose>-14.71 -20.24 0 0 0 4.08</pose>
     </include>
+    <!-- 252 deg -->
     <include>
-      <name>circle_obj_14</name>
+      <name>obj_14</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
-      <pose>-65.41 -20.36 0 0 0 3.79</pose>
+      <pose>-6.18 -19.02 0 0 0 4.40</pose>
     </include>
+    <!-- 270 deg -->
     <include>
-      <name>circle_obj_15</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>-62.57 -33.91 0 0 0 4.05</pose>
-    </include>
-    <include>
-      <name>circle_obj_16</name>
+      <name>obj_15</name>
       <uri>model://bus</uri>
       <static>true</static>
-      <pose>-57.13 -46.47 0 0 0 4.31</pose>
+      <pose>0 -25 0 0 0 4.71</pose>
     </include>
+    <!-- 288 deg -->
     <include>
-      <name>circle_obj_17</name>
+      <name>obj_16</name>
       <uri>model://postbox</uri>
       <static>true</static>
-      <pose>-49.27 -57.59 0 0 0 4.57</pose>
+      <pose>6.18 -19.02 0 0 0 5.03</pose>
     </include>
+    <!-- 306 deg -->
     <include>
-      <name>circle_obj_18</name>
+      <name>obj_17</name>
+      <uri>model://prius_hybrid</uri>
+      <static>true</static>
+      <pose>14.71 -20.24 0 0 0 5.34</pose>
+    </include>
+    <!-- 324 deg -->
+    <include>
+      <name>obj_18</name>
       <uri>model://person_standing</uri>
       <static>true</static>
-      <pose>-39.41 -66.81 0 0 0 4.83</pose>
+      <pose>16.18 -11.76 0 0 0 5.65</pose>
     </include>
+    <!-- 342 deg -->
     <include>
-      <name>circle_obj_19</name>
+      <name>obj_19</name>
       <uri>model://suv</uri>
       <static>true</static>
-      <pose>-28.01 -73.74 0 0 0 5.09</pose>
-    </include>
-    <include>
-      <name>circle_obj_20</name>
-      <uri>model://stop_sign</uri>
-      <static>true</static>
-      <pose>-15.57 -78.04 0 0 0 5.35</pose>
-    </include>
-    <include>
-      <name>circle_obj_21</name>
-      <uri>model://prius_hybrid</uri>
-      <static>true</static>
-      <pose>-2.68 -79.48 0 0 0 5.61</pose>
-    </include>
-    <include>
-      <name>circle_obj_22</name>
-      <uri>model://bus</uri>
-      <static>true</static>
-      <pose>10.36 -77.97 0 0 0 5.87</pose>
-    </include>
-    <include>
-      <name>circle_obj_23</name>
-      <uri>model://postbox</uri>
-      <static>true</static>
-      <pose>23.01 -73.53 0 0 0 6.13</pose>
+      <pose>23.79 -7.73 0 0 0 5.97</pose>
     </include>
   </world>
 </sdf>
