@@ -1,21 +1,40 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_control</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="robotmania@todo.todo">robotmania</maintainer>
-  <license>TODO: License declaration</license>
+<?xml version="1.0"?>                                                        <!-- Header XML standar, wajib untuk semua file XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2, memastikan format sesuai standar -->
+<package format="3">                                                          <!-- Format package.xml ROS2 (format 3, wajib untuk ROS2 Humble) -->
+  <name>huskybot_control</name>                                               <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.1.0</version>                                                    <!-- Versi package, update setiap ada perubahan besar/release -->
+  <description>Node kontrol dan monitoring Huskybot (teleop/manual/autonomous) untuk simulasi dan real robot. Mendukung joystick, safety monitor, dan integrasi autonomous planner.</description> <!-- Deskripsi package, WAJIB diisi, selalu update jika fitur bertambah -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi, penting untuk support dan tracking -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>         <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
+  <license>Apache-2.0</license>                                               <!-- Lisensi package, WAJIB diisi (misal: Apache-2.0, BSD-3-Clause, MIT), penting untuk legalitas distribusi -->
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>                            <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake), wajib agar bisa dibuild dengan colcon/ament -->
 
-  <!-- <depend>husky_description</depend> -->
-  <!-- <depend>husky_gazebo</depend> -->
+  <depend>huskybot_description</depend>                                       <!-- Dependency ke package URDF/mesh robot, pastikan package ini ada jika robot butuh URDF -->
+  <depend>huskybot_gazebo</depend>                                            <!-- Dependency ke package simulasi Gazebo, pastikan package ini ada jika butuh plugin/launch Gazebo -->
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <!-- Dependency Python dan pesan yang digunakan di scripts/robot_control.py -->
+  <exec_depend>rclpy</exec_depend>                                            <!-- Dependency runtime untuk node Python ROS2, wajib untuk semua node Python -->
+  <exec_depend>geometry_msgs</exec_depend>                                    <!-- Dependency runtime untuk pesan geometry_msgs (Twist), wajib jika publish/subscribe Twist -->
+  <exec_depend>sensor_msgs</exec_depend>                                      <!-- Dependency runtime untuk pesan sensor_msgs (Joy, LaserScan), wajib jika pakai Joy/LaserScan -->
+  <!-- <exec_depend>nav_msgs</exec_depend> -->                                 <!-- Tambahkan jika ada import nav_msgs di script -->
+  <!-- <exec_depend>std_srvs</exec_depend> -->                                 <!-- Tambahkan jika ada import std_srvs di script -->
+
+  <!-- Tambahkan dependency eksternal lain jika ada import di script -->
+  <!-- <exec_depend>example_pkg</exec_depend> -->                              <!-- Tambahkan jika ada dependency lain, misal: tf2_ros, dsb -->
+
+  <!-- Jika ada node/library C++ di masa depan, tambahkan dependency berikut -->
+  <!-- <exec_depend>rclcpp</exec_depend> -->                                   <!-- Tambahkan jika ada node C++ -->
+  <!-- <exec_depend>std_msgs</exec_depend> -->                                 <!-- Tambahkan jika ada node C++ pakai std_msgs -->
+
+  <test_depend>ament_lint_auto</test_depend>                                  <!-- Dependency untuk linting otomatis saat test, membantu menjaga kualitas kode -->
+  <test_depend>ament_lint_common</test_depend>                                <!-- Dependency untuk linting umum saat test, best practice ROS2 -->
+
+  <url type="website">https://github.com/jezzy/huskybot</url>                 <!-- (Opsional tapi disarankan) URL website/repo utama package -->
+  <url type="repository">https://github.com/jezzy/huskybot</url>              <!-- (Opsional) URL repository source code -->
+  <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url>       <!-- (Opsional) URL bugtracker/issues -->
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_cmake</build_type>                                      <!-- Tipe build system (ament_cmake untuk CMake), wajib agar dikenali oleh colcon/ament -->
   </export>
 </package>

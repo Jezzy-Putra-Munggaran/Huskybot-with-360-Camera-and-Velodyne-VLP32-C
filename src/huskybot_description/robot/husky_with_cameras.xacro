@@ -1,34 +1,33 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras">
+<?xml version="1.0"?>  <!-- Header XML standar -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras">  <!-- Root elemen robot, pakai Xacro -->
 
-  <!-- Include Husky base from husky_description -->
-  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/>
-  <!-- <xacro:husky_robot/> -->
+  <!-- Include Husky base dari package husky_description -->
+  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/>  <!-- Import base Husky agar semua link/joint dasar tersedia -->
 
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
-  <link name="orin_box_link">
+  <link name="orin_box_link">  <!-- Link untuk box Jetson Orin -->
     <visual>
       <geometry>
-        <box size="0.25 0.18 0.09"/>
+        <box size="0.25 0.18 0.09"/>  <!-- Dimensi box -->
       </geometry>
       <material name="black">
-        <color rgba="0 0 0 1"/>
+        <color rgba="0 0 0 1"/>  <!-- Warna hitam -->
       </material>
-      <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
+      <origin xyz="0.0 0 0.045" rpy="0 0 0"/>  <!-- Posisi relatif di robot -->
     </visual>
     <collision>
       <geometry>
-        <box size="0.25 0.18 0.09"/>
+        <box size="0.25 0.18 0.09"/>  <!-- Dimensi collision sama dengan visual -->
       </geometry>
       <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="2.0"/>
+      <mass value="2.0"/>  <!-- Massa box -->
       <origin xyz="0.0 0 0.045"/>
-      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>  <!-- Inersia sederhana -->
     </inertial>
   </link>
-  <joint name="orin_box_joint" type="fixed">
+  <joint name="orin_box_joint" type="fixed">  <!-- Joint fixed ke top_plate_link -->
     <parent link="top_plate_link"/>
     <child link="orin_box_link"/>
     <origin xyz="0 0 0.03" rpy="0 0 0"/>
@@ -38,7 +37,7 @@
   <link name="hex_tower_link">
     <visual>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.38"/>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.38"/>  <!-- Mesh tower -->
       </geometry>
       <material name="black">
         <color rgba="0 0 0 1"/>
@@ -153,8 +152,8 @@
         </noise>
       </ray>
       <plugin name="velodyne_plugin" filename="libgazebo_ros_ray_sensor.so">
-        <topicName>/velodyne_points</topicName>
-        <frameName>velodyne_link</frameName>
+        <topicName>/velodyne_points</topicName>  <!-- Topic pointcloud hasil Velodyne -->
+        <frameName>velodyne_link</frameName>      <!-- Nama frame sensor -->
       </plugin>
     </sensor>
   </gazebo>

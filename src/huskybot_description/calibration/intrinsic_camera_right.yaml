@@ -1,9 +1,11 @@
-# Contoh hasil kalibrasi OpenCV/ROS untuk Arducam IMX477 (dummy, ganti dengan hasil Anda sendiri!)
-camera_matrix:
-  rows: 3
-  cols: 3
-  data: [612.4, 0.0, 320.1, 0.0, 611.8, 240.2, 0.0, 0.0, 1.0]
-distortion_coefficients:
-  rows: 1
-  cols: 5
-  data: [-0.121, 0.089, 0.0, 0.0, 0.0]
+# Contoh hasil kalibrasi OpenCV/ROS untuk Arducam IMX477 (dummy, ganti dengan hasil Anda sendiri!)  # Komentar penjelas, file ini contoh/dummy, harus diganti hasil kalibrasi asli
+camera_matrix:                  # Matriks intrinsik kamera (3x3), hasil kalibrasi OpenCV/ROS
+  rows: 3                      # Jumlah baris matriks (3)
+  cols: 3                      # Jumlah kolom matriks (3)
+  data: [612.4, 0.0, 320.1,    # Nilai matriks intrinsik (fx, 0, cx, 0, fy, cy, 0, 0, 1)
+         0.0, 611.8, 240.2,
+         0.0, 0.0, 1.0]
+distortion_coefficients:        # Koefisien distorsi lensa kamera (hasil kalibrasi)
+  rows: 1                      # Jumlah baris (1)
+  cols: 5                      # Jumlah kolom (5, biasanya untuk model plumb_bob: k1, k2, t1, t2, k3)
+  data: [-0.121, 0.089, 0.0, 0.0, 0.0]  # Nilai koefisien distorsi (dummy, ganti hasil kalibrasi asli)
