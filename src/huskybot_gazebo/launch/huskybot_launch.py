@@ -121,15 +121,15 @@ def generate_launch_description():            # Fungsi utama ROS2 untuk launch f
     log_robot = LogInfo(msg=["Robot model: ", LaunchConfiguration('robot_model')])  # Logging robot model yang dipakai
 
     return LaunchDescription([
-        log_start,                          # Logging info
-        log_world,                          # Logging world file
-        log_robot,                          # Logging robot model
         gui_arg,                            # Argumen GUI
         world_arg,                          # Argumen world file
         robot_model_arg,                    # Argumen robot model
         enable_yolo_arg,                    # Argumen enable YOLO
         enable_stitcher_arg,                # Argumen enable stitcher
         enable_panorama_arg,                # Argumen enable panorama
+        log_start,                          # Logging info
+        log_world,                          # Logging world file
+        log_robot,                          # Logging robot model
         joy_node,                           # Node joystick
         start_world,                        # Launch world Gazebo
         spawn_robot_world,                  # Launch spawn robot

@@ -1,18 +1,23 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_description</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="robotmania@todo.todo">robotmania</maintainer>
-  <license>TODO: License declaration</license>
+<?xml version="1.0"?>  <!-- Header XML standar -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2 -->
+<package format="3">  <!-- Format package.xml ROS2 (format 3, wajib untuk ROS2 Humble) -->
+  <name>huskybot_description</name>  <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.0.1</version>  <!-- Versi package, bisa diubah sesuai release -->
+  <description>URDF/Xacro, mesh, dan launch file untuk simulasi Huskybot dengan kamera dan LiDAR di ROS2</description>  <!-- Deskripsi package, WAJIB diisi -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi -->
+  <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: Apache-2.0, BSD-3-Clause, MIT) -->
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
+  <exec_depend>xacro</exec_depend>  <!-- Dependency runtime untuk parsing file .xacro -->
+  <exec_depend>urdf</exec_depend>  <!-- Dependency runtime untuk parsing file .urdf -->
+  <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime untuk pesan sensor (misal: CameraInfo, PointCloud2) -->
+  <exec_depend>robot_state_publisher</exec_depend>  <!-- Dependency runtime untuk publish TF dari URDF -->
+  <exec_depend>gazebo_ros</exec_depend>  <!-- Dependency runtime untuk integrasi dengan Gazebo (plugin, spawn_entity, dsb) -->
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_lint_auto</test_depend>  <!-- Dependency untuk linting otomatis saat test -->
+  <test_depend>ament_lint_common</test_depend>  <!-- Dependency untuk linting umum saat test -->
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_cmake</build_type>  <!-- Tipe build system (ament_cmake untuk CMake) -->
   </export>
 </package>
