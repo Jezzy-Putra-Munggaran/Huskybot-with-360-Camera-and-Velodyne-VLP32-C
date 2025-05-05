@@ -1,7 +1,0 @@
-{
-  "package_name": "velodyne_msgs",
-  "non_idl_tuples": [
-    "/home/jezzy/huskybot/src/velodyne/velodyne_msgs:msg/VelodynePacket.msg",
-    "/home/jezzy/huskybot/src/velodyne/velodyne_msgs:msg/VelodyneScan.msg"
-  ]
-}

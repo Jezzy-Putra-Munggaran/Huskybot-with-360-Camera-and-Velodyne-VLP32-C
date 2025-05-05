@@ -1,6 +1,0 @@
-setup.py
-yolov12_msgs/__init__.py
-yolov12_msgs.egg-info/PKG-INFO
-yolov12_msgs.egg-info/SOURCES.txt
-yolov12_msgs.egg-info/dependency_links.txt
-yolov12_msgs.egg-info/top_level.txt

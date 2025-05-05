@@ -1,56 +1,58 @@
-<?xml version="1.0" ?>
-<sdf version="1.6">
-  <world name="yolo_test_world">
+<?xml version="1.0" ?>  <!-- Header XML standar, wajib untuk file XML -->
+<sdf version="1.6">  <!-- Versi SDF, harus sesuai dengan versi Gazebo Classic 11 (default ROS2 Humble) -->
+  <world name="yolo_test_world">  <!-- Nama world, unik untuk identifikasi di Gazebo -->
+
     <include>
-      <uri>model://sun</uri>                <!-- Pencahayaan -->
+      <uri>model://sun</uri>                <!-- Tambahkan pencahayaan matahari ke world -->
     </include>
     <include>
-      <uri>model://ground_plane</uri>       <!-- Ground plane -->
+      <uri>model://ground_plane</uri>       <!-- Tambahkan ground plane (tanah datar) ke world -->
     </include>
 
     <!-- 20 objek: kecil di radius 20m, besar di radius 25m -->
     <!-- Sudut antar objek: 18 derajat (360/20) -->
     <!-- Penempatan: urut kecil-besar-kecil-besar dst -->
+    <!-- Semua objek statis, tidak bergerak, untuk deteksi dan evaluasi sensor/YOLO -->
 
     <!-- 0 deg -->
     <include>
-      <name>obj_0</name>
-      <uri>model://person_standing</uri>
-      <static>true</static>
-      <pose>20 0 0 0 0 0</pose>
+      <name>obj_0</name>                    <!-- Nama unik objek, penting untuk referensi di plugin/script -->
+      <uri>model://person_standing</uri>    <!-- Model manusia berdiri (objek kecil) -->
+      <static>true</static>                 <!-- Objek tidak bergerak -->
+      <pose>20 0 0 0 0 0</pose>             <!-- Posisi di world: x=20, y=0, z=0, rotasi=0 -->
     </include>
     <!-- 18 deg -->
     <include>
       <name>obj_1</name>
-      <uri>model://suv</uri>
+      <uri>model://suv</uri>                <!-- Model mobil SUV (objek besar) -->
       <static>true</static>
-      <pose>23.79 7.73 0 0 0 0.31</pose>
+      <pose>23.79 7.73 0 0 0 0.31</pose>   <!-- Posisi di world, rotasi yaw 0.31 rad -->
     </include>
     <!-- 36 deg -->
     <include>
       <name>obj_2</name>
-      <uri>model://stop_sign</uri>
+      <uri>model://stop_sign</uri>          <!-- Model rambu stop (objek kecil) -->
       <static>true</static>
       <pose>16.18 11.76 0 0 0 0.63</pose>
     </include>
     <!-- 54 deg -->
     <include>
       <name>obj_3</name>
-      <uri>model://bus</uri>
+      <uri>model://bus</uri>                <!-- Model bus (objek besar) -->
       <static>true</static>
       <pose>14.71 20.24 0 0 0 0.94</pose>
     </include>
     <!-- 72 deg -->
     <include>
       <name>obj_4</name>
-      <uri>model://postbox</uri>
+      <uri>model://postbox</uri>            <!-- Model kotak pos (objek kecil) -->
       <static>true</static>
       <pose>6.18 19.02 0 0 0 1.26</pose>
     </include>
     <!-- 90 deg -->
     <include>
       <name>obj_5</name>
-      <uri>model://prius_hybrid</uri>
+      <uri>model://prius_hybrid</uri>       <!-- Model mobil Prius (objek besar) -->
       <static>true</static>
       <pose>0 25 0 0 0 1.57</pose>
     </include>
@@ -152,5 +154,96 @@
       <static>true</static>
       <pose>23.79 -7.73 0 0 0 5.97</pose>
     </include>
+
+    <!-- Saran: Tambahkan spawn point robot di tengah world -->
+    <include>
+      <name>husky_spawn_point</name>                <!-- Nama unik untuk spawn point -->
+      <uri>model://empty</uri>                      <!-- Model kosong, hanya sebagai marker -->
+      <pose>0 0 0 0 0 0</pose>                      <!-- Posisi 0,0,0 (tengah world) -->
+    </include>
+
+    <!-- ===================== PLUGIN WORLD GAZEBO ===================== -->
+
+    <!-- Plugin logging world ke file -->
+    <plugin name="world_logger" filename="libgazebo_ros_factory.so">
+      <ros>
+        <namespace>/world_logger</namespace> <!-- Namespace ROS plugin -->
+      </ros>
+      <log_file>world_log.txt</log_file>     <!-- Nama file log world -->
+      <update_rate>1.0</update_rate>         <!-- Frekuensi logging (Hz) -->
+    </plugin>
+
+    <!-- Plugin ROS interface agar world bisa publish state ke ROS2 -->
+    <plugin name="ros_world_plugin" filename="libgazebo_ros_api_plugin.so">
+      <ros>
+        <namespace>/gazebo</namespace>       <!-- Namespace ROS plugin -->
+      </ros>
+    </plugin>
+
+    <!-- Plugin sensor global: publish /clock ke ROS2 -->
+    <plugin name="clock_publisher" filename="libgazebo_ros_clock.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>100.0</update_rate>       <!-- Frekuensi publish clock -->
+    </plugin>
+
+    <!-- Plugin publish world state (model poses, tf, dsb) ke ROS2 -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <publish_model_pose>true</publish_model_pose>    <!-- Publish pose semua model ke ROS2 -->
+      <publish_visual>true</publish_visual>            <!-- Publish visual info ke ROS2 -->
+      <publish_collision>true</publish_collision>      <!-- Publish collision info ke ROS2 -->
+      <publish_contacts>true</publish_contacts>        <!-- Publish kontak antar objek ke ROS2 -->
+      <update_rate>10.0</update_rate>                  <!-- Frekuensi update state -->
+    </plugin>
+
+    <!-- Plugin global sensor noise (contoh, opsional) -->
+    <plugin name="global_sensor_noise" filename="libgazebo_ros_noise.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <noise_type>gaussian</noise_type>                <!-- Tipe noise (gaussian, opsional) -->
+      <mean>0.0</mean>                                 <!-- Mean noise -->
+      <stddev>0.01</stddev>                            <!-- Standar deviasi noise -->
+      <update_rate>10.0</update_rate>                  <!-- Frekuensi update noise -->
+    </plugin>
+
+    <!-- Plugin publish /tf dan /tf_static ke ROS2 -->
+    <plugin name="tf_broadcaster" filename="libgazebo_ros_tf.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>50.0</update_rate>                  <!-- Frekuensi publish TF -->
+    </plugin>
+
+    <!-- Plugin world ROS service (reset, pause, dsb) -->
+    <plugin name="gazebo_ros_services" filename="libgazebo_ros_services.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+    </plugin>
+
+    <!-- Plugin ROS diagnostics (opsional, monitoring world health) -->
+    <plugin name="gazebo_ros_diagnostics" filename="libgazebo_ros_diagnostics.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>1.0</update_rate>                   <!-- Frekuensi publish diagnostics -->
+    </plugin>
+
+    <!-- Plugin custom: publish semua model poses ke topic custom (contoh, opsional) -->
+    <!--
+    <plugin name="custom_model_pose_publisher" filename="libcustom_model_pose_publisher.so">
+      <ros>
+        <namespace>/custom_pose</namespace>
+      </ros>
+      <topic>/custom/model_poses</topic>
+      <update_rate>5.0</update_rate>
+    </plugin>
+    -->
+
   </world>
 </sdf>

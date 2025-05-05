@@ -1,23 +1,39 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_recognition</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="robotmania@todo.todo">robotmania</maintainer>
-  <license>TODO: License declaration</license>
+<?xml version="1.0"?> <!-- Header XML standar, wajib untuk semua file XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema agar sesuai standar ROS2 -->
+<package format="3"> <!-- Format package.xml ROS2 (format 3, wajib untuk ROS2 Humble) -->
+  <name>huskybot_recognition</name> <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.1.0</version> <!-- Versi package, update jika ada perubahan besar (best practice release) -->
+  <description>
+    ROS2 package for multi-camera YOLOv12 detection, panorama stitching, and logging for Huskybot simulation and real robot.
+    Includes nodes for YOLOv12 detection, panorama inference, detection logging, and result listeners.
+    Fully compatible with ROS2 Humble, Gazebo, and multi-robot simulation.
+    (Update 2025-05-06)
+  </description> <!-- Deskripsi package, WAJIB diisi dan selalu update -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author> <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
+  <license>Apache-2.0</license> <!-- Lisensi package, WAJIB diisi (misal: Apache-2.0, BSD-3-Clause, MIT) -->
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend> <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
 
-  <depend>rclpy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>cv_bridge</depend>
-  <depend>yolov12_msgs</depend>
+  <exec_depend>rclpy</exec_depend> <!-- Dependency runtime Python client library ROS2 -->
+  <exec_depend>sensor_msgs</exec_depend> <!-- Dependency runtime message sensor_msgs (untuk Image) -->
+  <exec_depend>cv_bridge</exec_depend> <!-- Dependency runtime bridge ROS <-> OpenCV -->
+  <exec_depend>yolov12_msgs</exec_depend> <!-- Dependency runtime custom message YOLOv12 (harus sudah di-build) -->
+  <exec_depend>python3-opencv</exec_depend> <!-- Dependency runtime OpenCV Python (untuk image processing) -->
+  <exec_depend>python3-numpy</exec_depend> <!-- Dependency runtime numpy Python (untuk array/matrix) -->
+  <exec_depend>python3-yaml</exec_depend> <!-- Dependency runtime PyYAML (untuk baca file kalibrasi) -->
+  <exec_depend>ultralytics</exec_depend> <!-- Dependency runtime YOLOv12 Python (pastikan sudah pip install ultralytics) -->
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_lint_auto</test_depend> <!-- Dependency untuk linting/testing otomatis -->
+  <test_depend>ament_lint_common</test_depend> <!-- Dependency untuk linting/testing umum -->
+  <test_depend>pytest</test_depend> <!-- Dependency untuk unit test Python (opsional, best practice) -->
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_cmake</build_type> <!-- Tipe build system (ament_cmake untuk CMake) -->
+    <architecture_independent/> <!-- Package ini tidak tergantung arsitektur (pure Python/launch) -->
+    <description lang="en">YOLOv12 multi-camera recognition and logging for Huskybot in ROS2 Humble.</description> <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <readme>README.md</readme> <!-- (Opsional) Path ke file README untuk dokumentasi package -->
+    <url type="website">https://github.com/jezzy/huskybot</url> <!-- (Opsional) URL website/repo utama package -->
+    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url> <!-- (Opsional) URL bugtracker/issues -->
   </export>
 </package>
