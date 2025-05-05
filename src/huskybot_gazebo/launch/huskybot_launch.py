@@ -36,7 +36,7 @@ def generate_launch_description():            # Fungsi utama ROS2 untuk launch f
         description='Path ke world file SDF Gazebo'                                # Argumen path world file
     )
     robot_model_arg = DeclareLaunchArgument(
-        'robot_model', default_value=os.path.join(pkg_huskybot_description, 'robot', 'husky_with_cameras.xacro'),
+        'robot_model', default_value=os.path.join(pkg_huskybot_description, 'robot', 'huskybot.urdf.xacro'),
         description='Path ke Xacro/URDF robot model'                               # Argumen path robot model
     )
     enable_yolo_arg = DeclareLaunchArgument(

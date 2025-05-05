@@ -1,51 +1,135 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import os  # Import modul os untuk operasi path file
-from ament_index_python.packages import get_package_share_directory  # Untuk mencari path share ROS2 package
+import os  # Modul os untuk operasi path file
+import shutil  # Untuk cek dependency (xacro, gazebo_ros)
+from ament_index_python.packages import get_package_share_directory  # Cari path share ROS2 package
 from launch import LaunchDescription  # Kelas utama untuk launch file ROS2
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo  # Untuk deklarasi argumen, eksekusi proses, dan logging info ke terminal
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction  # Untuk deklarasi argumen, eksekusi proses, logging info, dan fungsi custom
 from launch.substitutions import LaunchConfiguration, Command  # Untuk ambil nilai argumen dan jalankan perintah shell
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2
 from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter node yang bisa dieksekusi (misal hasil xacro)
 
+def validate_pose(context, *args, **kwargs):  # Fungsi custom untuk validasi pose string
+    pose_str = LaunchConfiguration('pose').perform(context)  # Ambil pose string dari argumen
+    parts = pose_str.strip().split()
+    if len(parts) != 6:  # Harus 6 elemen (x y z roll pitch yaw)
+        print(f"[ERROR] Argumen pose harus 6 angka (x y z roll pitch yaw), sekarang: '{pose_str}'", flush=True)
+        exit(21)
+    try:
+        [float(p) for p in parts]  # Cek semua bisa dikonversi ke float
+    except Exception:
+        print(f"[ERROR] Semua elemen pose harus berupa angka: '{pose_str}'", flush=True)
+        exit(22)
+    return []  # Tidak perlu return action apapun
+
 def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')  # Ambil argumen use_sim_time (default true)
-    robot_description_topic = LaunchConfiguration('robot_description_topic', default='robot_description')  # Argumen untuk remap topic robot_description
-
-    urdf_file = os.path.join(  # Path ke file xacro robot
-        get_package_share_directory('huskybot_description'),
-        'robot',
-        'husky_with_cameras.xacro'
+    # ---------- Declare Launch Arguments ----------
+    urdf_file_arg = DeclareLaunchArgument(  # Argumen path file URDF/Xacro robot (bisa diubah user)
+        'urdf_file',
+        default_value=os.path.join(
+            get_package_share_directory('huskybot_description'),
+            'robot',
+            'huskybot.urdf.xacro'
+        ),
+        description='Path ke file URDF/Xacro robot (default: huskybot.urdf.xacro)'
+    )
+    entity_name_arg = DeclareLaunchArgument(  # Argumen nama entity di Gazebo
+        'entity_name',
+        default_value='husky_with_cameras',
+        description='Nama entity robot di Gazebo'
+    )
+    pose_arg = DeclareLaunchArgument(  # Argumen pose robot (x y z roll pitch yaw)
+        'pose',
+        default_value='0 0 0 0 0 0',
+        description='Pose awal robot di Gazebo: x y z roll pitch yaw'
+    )
+    robot_namespace_arg = DeclareLaunchArgument(  # Argumen namespace robot
+        'robot_namespace',
+        default_value='',
+        description='Namespace robot di Gazebo (opsional)'
+    )
+    reference_frame_arg = DeclareLaunchArgument(  # Argumen reference frame
+        'reference_frame',
+        default_value='world',
+        description='Reference frame untuk spawn entity (default: world)'
+    )
+    use_sim_time_arg = DeclareLaunchArgument(  # Argumen use_sim_time
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation (Gazebo) clock if true'
+    )
+    robot_description_topic_arg = DeclareLaunchArgument(  # Argumen topic robot_description
+        'robot_description_topic',
+        default_value='robot_description',
+        description='Topic tempat robot_description di-publish (default: robot_description)'
     )
 
-    # ---------- Error Handling: cek file Xacro ada ----------
-    if not os.path.exists(urdf_file):  # Jika file Xacro tidak ada
-        print(f"[ERROR] File Xacro robot tidak ditemukan: {urdf_file}", flush=True)  # Print error ke terminal
-        exit(1)  # Exit agar launch tidak lanjut
+    # ---------- Ambil nilai argumen ----------
+    urdf_file = LaunchConfiguration('urdf_file')  # Path ke file URDF/Xacro robot
+    entity_name = LaunchConfiguration('entity_name')  # Nama entity di Gazebo
+    pose = LaunchConfiguration('pose')  # Pose robot
+    robot_namespace = LaunchConfiguration('robot_namespace')  # Namespace robot
+    reference_frame = LaunchConfiguration('reference_frame')  # Reference frame
+    use_sim_time = LaunchConfiguration('use_sim_time')  # Use sim time
+    robot_description_topic = LaunchConfiguration('robot_description_topic')  # Topic robot_description
 
-    robot_description = ParameterValue(  # Jalankan xacro untuk menghasilkan URDF string
-        Command(['xacro ', urdf_file]),
+    # ---------- Check Dependency ----------
+    if shutil.which('xacro') is None:  # Pastikan xacro sudah terinstall
+        print("[ERROR] Dependency 'xacro' tidak ditemukan di PATH. Install dengan: sudo apt install ros-humble-xacro", flush=True)
+        exit(2)
+    if shutil.which('ros2') is None:  # Pastikan ros2 CLI ada (untuk spawn_entity.py)
+        print("[ERROR] Dependency 'ros2' tidak ditemukan di PATH. Pastikan ROS2 environment sudah aktif.", flush=True)
+        exit(3)
+    try:
+        get_package_share_directory('gazebo_ros')  # Cek package gazebo_ros
+    except Exception:
+        print("[ERROR] Package 'gazebo_ros' tidak ditemukan. Install dengan: sudo apt install ros-humble-gazebo-ros-pkgs", flush=True)
+        exit(4)
+
+    # ---------- Error Handling: cek file URDF/Xacro ada ----------
+    urdf_file_path = os.path.expandvars(os.path.expanduser(
+        os.path.join(
+            get_package_share_directory('huskybot_description'),
+            'robot',
+            'huskybot.urdf.xacro'
+        )
+    )) if isinstance(urdf_file, str) else None
+    if not os.path.isfile(urdf_file_path):
+        print(f"[ERROR] File URDF/Xacro robot tidak ditemukan: {urdf_file_path}", flush=True)
+        exit(1)
+
+    # ---------- Jalankan xacro untuk menghasilkan URDF string ----------
+    robot_description = ParameterValue(
+        Command(['xacro ', urdf_file]),  # Eksekusi xacro ke file xacro, hasilnya string URDF
         value_type=str
     )
 
     # ---------- Logging info ----------
-    log_spawn = LogInfo(msg=f"Spawning robot model: {urdf_file}")  # Logging info model yang di-spawn
+    log_spawn = LogInfo(msg=["Spawning robot model: ", urdf_file])  # Logging info model yang di-spawn
     log_topic = LogInfo(msg=["robot_description topic: ", robot_description_topic])  # Logging info topic robot_description
+    log_entity = LogInfo(msg=["Entity name: ", entity_name])  # Logging entity name
+    log_pose = LogInfo(msg=["Spawn pose: ", pose])  # Logging pose
+    log_ns = LogInfo(msg=["Robot namespace: ", robot_namespace])  # Logging robot namespace
+    log_ref = LogInfo(msg=["Reference frame: ", reference_frame])  # Logging reference frame
 
+    # ---------- LaunchDescription ----------
     return LaunchDescription([
-        DeclareLaunchArgument(  # Deklarasi argumen use_sim_time (bisa di-set saat launch)
-            'use_sim_time',
-            default_value='false',
-            description='Use simulation (Gazebo) clock if true'),
-        DeclareLaunchArgument(  # Argumen untuk remap topic robot_description (opsional)
-            'robot_description_topic',
-            default_value='robot_description',
-            description='Topic tempat robot_description di-publish (default: robot_description)'
-        ),
+        urdf_file_arg,  # Argumen path file URDF/Xacro
+        entity_name_arg,  # Argumen nama entity
+        pose_arg,  # Argumen pose
+        robot_namespace_arg,  # Argumen namespace robot
+        reference_frame_arg,  # Argumen reference frame
+        use_sim_time_arg,  # Argumen use_sim_time
+        robot_description_topic_arg,  # Argumen topic robot_description
+        OpaqueFunction(function=validate_pose),  # Validasi pose string sebelum launch
         log_spawn,  # Logging info model yang di-spawn
         log_topic,  # Logging info topic robot_description
+        log_entity,  # Logging entity name
+        log_pose,  # Logging pose
+        log_ns,    # Logging robot namespace
+        log_ref,   # Logging reference frame
         Node(  # Jalankan robot_state_publisher untuk publish TF dan robot_description
             package='robot_state_publisher',
             executable='robot_state_publisher',
@@ -55,9 +139,19 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             remappings=[('/robot_description', robot_description_topic)]  # Remap topic robot_description jika diperlukan
         ),
         ExecuteProcess(  # Eksekusi proses eksternal untuk spawn robot ke Gazebo
-            cmd=['ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
-                 '-topic', robot_description_topic,  # Ambil URDF dari topic robot_description (bisa di-remap)
-                 '-entity', 'husky_with_cameras'],  # Nama entity di Gazebo
+            cmd=[
+                'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
+                '-topic', robot_description_topic,  # Ambil URDF dari topic robot_description (bisa di-remap)
+                '-entity', entity_name,  # Nama entity di Gazebo (dari argumen)
+                '-robot_namespace', robot_namespace,  # Namespace robot (dari argumen)
+                '-reference_frame', reference_frame,  # Reference frame (dari argumen)
+                '-x', Command(['echo ', pose, '| awk \'{print $1}\'']),  # Ambil x dari pose string
+                '-y', Command(['echo ', pose, '| awk \'{print $2}\'']),  # Ambil y dari pose string
+                '-z', Command(['echo ', pose, '| awk \'{print $3}\'']),  # Ambil z dari pose string
+                '-R', Command(['echo ', pose, '| awk \'{print $4}\'']),  # Ambil roll dari pose string
+                '-P', Command(['echo ', pose, '| awk \'{print $5}\'']),  # Ambil pitch dari pose string
+                '-Y', Command(['echo ', pose, '| awk \'{print $6}\'']),  # Ambil yaw dari pose string
+            ],
             output='screen'
         )
     ])

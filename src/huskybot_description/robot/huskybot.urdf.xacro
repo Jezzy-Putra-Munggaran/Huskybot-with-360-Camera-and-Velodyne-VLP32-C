@@ -4,6 +4,46 @@
   <!-- Include Husky base dari package husky_description -->
   <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/>  <!-- Import base Husky agar semua link/joint dasar tersedia -->
 
+  <!-- ==================== PLUGIN GAZEBO ==================== -->
+  <gazebo>
+    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control"> <!-- Plugin ros2_control untuk integrasi controller ROS2 -->
+      <robotNamespace>/huskybot</robotNamespace>                          <!-- Namespace ROS robot (harus konsisten dengan node kontrol) -->
+      <robotParam>/robot_description</robotParam>                         <!-- Param robot_description (untuk robot_state_publisher) -->
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>   <!-- Tipe hardware simulation Gazebo -->
+    </plugin>
+  </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller"> <!-- Plugin diff_drive untuk cmd_vel dan odom -->
+      <ros>
+        <namespace>/huskybot</namespace>                                 <!-- Namespace ROS robot -->
+      </ros>
+      <left_joint>joint_right_wheel</left_joint>                         <!-- Joint kiri (cek urutan di base) -->
+      <right_joint>joint_left_wheel</right_joint>                        <!-- Joint kanan (cek urutan di base) -->
+      <wheel_separation>0.1</wheel_separation>                           <!-- Jarak antar roda (cek real robot) -->
+      <wheel_diameter>0.025</wheel_diameter>                             <!-- Diameter roda (cek real robot) -->
+      <max_wheel_torque>0.1</max_wheel_torque>                           <!-- Torsi maksimum roda -->
+      <max_wheel_acceleration>1.0</max_wheel_acceleration>               <!-- Akselerasi maksimum roda -->
+      <publish_odom>true</publish_odom>                                  <!-- Publish odometry ke ROS -->
+      <publish_odom_tf>true</publish_odom_tf>                            <!-- Publish TF odometry -->
+      <odometry_frame>odom</odometry_frame>                              <!-- Nama frame odometry -->
+      <robot_base_frame>chassis</robot_base_frame>                       <!-- Nama frame base robot -->
+    </plugin>
+  </gazebo>
+  <gazebo>
+    <plugin filename="libgazebo_ros_imu.so" name="gazebo_ros_imu_controller"> <!-- Plugin IMU -->
+      <robotNamespace>/huskybot/</robotNamespace>                        <!-- Namespace ROS robot -->
+      <topicName>imu/data3</topicName>                                  <!-- Topic output IMU -->
+      <serviceName>imu/service</serviceName>                            <!-- Nama service IMU -->
+      <bodyName>chassis</bodyName>                                      <!-- Link tempat IMU dipasang -->
+      <gaussianNoise>0</gaussianNoise>                                  <!-- Noise IMU (0 = tanpa noise) -->
+      <rpyOffsets>0 0 0</rpyOffsets>                                    <!-- Offset rotasi IMU -->
+      <updateRate>50.0</updateRate>                                     <!-- Frekuensi update IMU -->
+      <alwaysOn>true</alwaysOn>                                         <!-- IMU selalu aktif -->
+    </plugin>
+  </gazebo>
+
+  <!-- ==================== TOWER 3 TINGKAT ==================== -->
+
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
   <link name="orin_box_link">  <!-- Link untuk box Jetson Orin -->
     <visual>
@@ -17,14 +57,14 @@
     </visual>
     <collision>
       <geometry>
-        <box size="0.25 0.18 0.09"/>  <!-- Dimensi collision sama dengan visual -->
+        <box size="0.25 0.18 0.09"/>
       </geometry>
       <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="2.0"/>  <!-- Massa box -->
+      <mass value="2.0"/>
       <origin xyz="0.0 0 0.045"/>
-      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>  <!-- Inersia sederhana -->
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
     </inertial>
   </link>
   <joint name="orin_box_joint" type="fixed">  <!-- Joint fixed ke top_plate_link -->
@@ -33,36 +73,65 @@
     <origin xyz="0 0 0.03" rpy="0 0 0"/>
   </joint>
 
-  <!-- 2. Tower Hexagonal (prisma segi enam, warna hitam) -->
-  <link name="hex_tower_link">
+  <!-- 2. Tower Hexagonal Bawah (prisma segi enam, warna hitam, tingkat 1) -->
+  <link name="hex_tower_lower_link">
     <visual>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.38"/>  <!-- Mesh tower -->
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.18"/>
       </geometry>
       <material name="black">
         <color rgba="0 0 0 1"/>
       </material>
-      <origin xyz="0 0 0.07" rpy="0 0 0"/>
+      <origin xyz="0 0 0.09" rpy="0 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.38"/>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.18"/>
       </geometry>
-      <origin xyz="0 0 0.07" rpy="0 0 0"/>
+      <origin xyz="0 0 0.09" rpy="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0.07"/>
-      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      <mass value="0.7"/>
+      <origin xyz="0 0 0.09"/>
+      <inertia ixx="0.007" ixy="0" ixz="0" iyy="0.007" iyz="0" izz="0.007"/>
     </inertial>
   </link>
-  <joint name="hex_tower_joint" type="fixed">
+  <joint name="hex_tower_lower_joint" type="fixed">
     <parent link="orin_box_link"/>
-    <child link="hex_tower_link"/>
-    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+    <child link="hex_tower_lower_link"/>
+    <origin xyz="0 0 0.09" rpy="0 0 0"/>
   </joint>
 
-  <!-- 3. Tatakan Silinder LiDAR (warna hitam) -->
+  <!-- 3. Tower Hexagonal Atas (prisma segi enam, warna hitam, tingkat 2) -->
+  <link name="hex_tower_upper_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.18 0.18 0.18"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 1"/>
+      </material>
+      <origin xyz="0 0 0.09" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.18 0.18 0.18"/>
+      </geometry>
+      <origin xyz="0 0 0.09" rpy="0 0 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0 0 0.09"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
+    </inertial>
+  </link>
+  <joint name="hex_tower_upper_joint" type="fixed">
+    <parent link="hex_tower_lower_link"/>
+    <child link="hex_tower_upper_link"/>
+    <origin xyz="0 0 0.18" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 4. Tatakan Silinder LiDAR (paling atas tower, warna hitam, tingkat 3) -->
   <link name="lidar_base_link">
     <visual>
       <geometry>
@@ -71,27 +140,27 @@
       <material name="black">
         <color rgba="0 0 0 1"/>
       </material>
-      <origin xyz="0 0 0.21" rpy="0 0 0"/>
+      <origin xyz="0 0 0.11" rpy="0 0 0"/>
     </visual>
     <collision>
       <geometry>
         <cylinder length="0.04" radius="0.09"/>
       </geometry>
-      <origin xyz="0 0 0.21" rpy="0 0 0"/>
+      <origin xyz="0 0 0.11" rpy="0 0 0"/>
     </collision>
     <inertial>
       <mass value="0.5"/>
-      <origin xyz="0 0 0.21"/>
+      <origin xyz="0 0 0.11"/>
       <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.005"/>
     </inertial>
   </link>
   <joint name="lidar_base_joint" type="fixed">
-    <parent link="hex_tower_link"/>
+    <parent link="hex_tower_upper_link"/>
     <child link="lidar_base_link"/>
-    <origin xyz="0 0 0.19" rpy="0 0 0"/>
+    <origin xyz="0 0 0.18" rpy="0 0 0"/>
   </joint>
 
-  <!-- 4. Velodyne VLP-32C (simulasi, gunakan mesh realistik jika ada) -->
+  <!-- 5. Velodyne VLP-32C (paling atas) -->
   <link name="velodyne_link">
     <visual>
       <geometry>
@@ -158,6 +227,7 @@
     </sensor>
   </gazebo>
 
+  <!-- ==================== KAMERA HEXAGONAL ==================== -->
   <!-- Macro untuk kamera di sisi tower heksagonal -->
   <xacro:macro name="hex_camera" params="idx yaw_deg">
     <link name="camera_${idx}_link">
@@ -170,9 +240,14 @@
         </material>
         <origin xyz="0 0 0" rpy="0 0 0"/>
       </visual>
+      <inertial>
+        <mass value="0.1"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+      </inertial>
     </link>
     <joint name="camera_${idx}_joint" type="fixed">
-      <parent link="hex_tower_link"/>
+      <parent link="hex_tower_upper_link"/>
       <child link="camera_${idx}_link"/>
       <origin xyz="${0.11 * cos(yaw_deg * 3.14159 / 180)} ${0.11 * sin(yaw_deg * 3.14159 / 180)} 0.09"
               rpy="0 0 ${yaw_deg * 3.14159 / 180}"/>
@@ -197,7 +272,7 @@
         <visualize>true</visualize>
         <plugin name="gazebo_ros_camera" filename="libgazebo_ros_camera.so">
           <camera_name>camera_${idx}</camera_name>
-          <image_topic_name>image_raw</image_topic_name>
+          <image_topic_name>image_raw</image_topic_name> <!-- Topic kamera konsisten -->
           <camera_info_topic_name>camera_info</camera_info_topic_name>
           <frame_name>camera_${idx}_link</frame_name>
         </plugin>

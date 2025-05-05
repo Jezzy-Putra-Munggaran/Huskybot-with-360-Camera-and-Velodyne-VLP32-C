@@ -1,21 +1,29 @@
-<?xml version="1.0"?>  <!-- Header XML standar -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2 -->
+<?xml version="1.0"?>  <!-- Header XML standar, wajib untuk semua file XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema agar sesuai standar ROS2 -->
 <package format="3">  <!-- Format package.xml ROS2 (format 3, wajib untuk ROS2 Humble) -->
   <name>huskybot_description</name>  <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
-  <version>0.0.1</version>  <!-- Versi package, bisa diubah sesuai release -->
-  <description>URDF/Xacro, mesh, dan launch file untuk simulasi Huskybot dengan kamera dan LiDAR di ROS2</description>  <!-- Deskripsi package, WAJIB diisi -->
+  <version>0.1.0</version>  <!-- Versi package, update jika ada perubahan besar (best practice release) -->
+  <description>URDF/Xacro, mesh, dan launch file untuk simulasi Huskybot dengan kamera dan LiDAR di ROS2. Mendukung integrasi penuh dengan Gazebo, robot_state_publisher, dan sensor_msgs. (Update 2025-05-05)</description>  <!-- Deskripsi package, WAJIB diisi dan selalu update -->
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: Apache-2.0, BSD-3-Clause, MIT) -->
 
   <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
-  <exec_depend>xacro</exec_depend>  <!-- Dependency runtime untuk parsing file .xacro -->
-  <exec_depend>urdf</exec_depend>  <!-- Dependency runtime untuk parsing file .urdf -->
+  <exec_depend>xacro</exec_depend>  <!-- Dependency runtime untuk parsing file .xacro (wajib jika pakai Xacro di launch/script) -->
+  <exec_depend>urdf</exec_depend>  <!-- Dependency runtime untuk parsing file .urdf (wajib jika ada URDF) -->
   <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime untuk pesan sensor (misal: CameraInfo, PointCloud2) -->
   <exec_depend>robot_state_publisher</exec_depend>  <!-- Dependency runtime untuk publish TF dari URDF -->
   <exec_depend>gazebo_ros</exec_depend>  <!-- Dependency runtime untuk integrasi dengan Gazebo (plugin, spawn_entity, dsb) -->
+  <exec_depend>std_msgs</exec_depend>  <!-- Dependency pesan standar ROS2 (jika ada node custom Python/C++) -->
+  <exec_depend>geometry_msgs</exec_depend>  <!-- Dependency pesan geometri (Twist, Pose, dsb) -->
+  <exec_depend>nav_msgs</exec_depend>  <!-- Dependency pesan navigasi (Path, Odometry, dsb) -->
+  <!-- Tambahkan dependency lain jika ada node custom lain di masa depan -->
 
-  <test_depend>ament_lint_auto</test_depend>  <!-- Dependency untuk linting otomatis saat test -->
-  <test_depend>ament_lint_common</test_depend>  <!-- Dependency untuk linting umum saat test -->
+  <test_depend>ament_lint_auto</test_depend>  <!-- Dependency untuk linting otomatis saat test (CI/CD) -->
+  <test_depend>ament_lint_common</test_depend>  <!-- Dependency untuk linting umum saat test (CI/CD) -->
+
+  <doc_depend>sphinx</doc_depend>  <!-- Dependency dokumentasi auto (misal: sphinx, opsional jika generate doc) -->
+  <!-- <doc_depend>doxygen</doc_depend> -->  <!-- Dependency dokumentasi auto (misal: doxygen, opsional jika generate doc) -->
 
   <export>
     <build_type>ament_cmake</build_type>  <!-- Tipe build system (ament_cmake untuk CMake) -->
