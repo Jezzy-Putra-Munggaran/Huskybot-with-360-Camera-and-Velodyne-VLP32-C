@@ -1,0 +1,147 @@
+# File konfigurasi RViz2 untuk visualisasi robot Huskybot
+# File ini bisa di-load otomatis oleh display.launch.py
+# Pastikan semua topic dan frame sesuai dengan workspace dan URDF/Xacro
+
+Panels:  # Panel-panel utama RViz2
+  - Class: rviz/Displays
+    Name: Displays
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Name: Tool Properties
+  - Class: rviz/Views
+    Name: Views
+  - Class: rviz/Time
+    Name: Time
+
+Visualization Manager:  # Konfigurasi utama visualisasi RViz2
+  Class: ""
+  Displays:
+    - Class: rviz/Grid
+      Name: Grid
+      Enabled: true
+      Plane: XY
+      Cell Size: 1
+      Plane Cell Count: 20
+      Color: 160; 160; 164
+      Alpha: 0.5
+    - Class: rviz/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Robot Description: robot_description   # Param robot_description, harus dipublish oleh robot_state_publisher
+      TF Prefix: ""                         # Kosong jika tidak pakai namespace (ubah jika multi-robot)
+      Visual Enabled: true
+      Collision Enabled: false
+      Links:
+        All Links Enabled: true
+      Update Interval: 0
+    - Class: rviz/TF
+      Name: TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Show Arrows: true
+      Show Axes: true
+      Marker Scale: 1
+    - Class: rviz/LaserScan
+      Name: VelodyneScan
+      Enabled: true
+      Topic: /velodyne_points                # Topic pointcloud dari Velodyne (cek URDF/plugin)
+      Color: 255; 255; 127
+      Style: Flat Squares
+      Size (m): 0.03
+      Decay Time: 0
+      Use Fixed Frame: true
+    - Class: rviz/Camera
+      Name: CameraFront
+      Enabled: true                         # Enable jika node kamera aktif
+      Image Topic: /camera_front/image_raw   # Ubah sesuai topic kamera di workspace
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
+    - Class: rviz/PointCloud2
+      Name: PointCloud
+      Enabled: true                         # Enable jika node pointcloud aktif
+      Topic: /camera/depth/points           # Ubah sesuai topic pointcloud di workspace
+      Size (m): 0.01
+      Style: Flat Squares
+      Color Transformer: RGB8
+      Decay Time: 0
+      Use Fixed Frame: true
+    - Class: rviz/Map
+      Name: StaticMap
+      Enabled: true                         # Enable jika ada node mapping/navigasi
+      Topic: /map                           # Topic map dari node SLAM/navigation
+      Alpha: 0.7
+      Draw Behind: true
+      Color Scheme: map
+    - Class: rviz/Path
+      Name: GlobalPath
+      Enabled: true                         # Enable jika ada node path planner
+      Topic: /plan                          # Topic path global (ubah sesuai node planner)
+      Color: 25; 255; 0
+      Line Style: Lines
+      Line Width: 0.03
+    - Class: rviz/Marker
+      Name: Marker
+      Enabled: true                         # Enable jika ada node publish marker
+      Marker Topic: /visualization_marker   # Topic marker (ubah sesuai node)
+      Queue Size: 100
+    # Tambahkan display lain sesuai kebutuhan (Costmap, Odometry, dsb)
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: base_link                  # Ubah ke odom/map jika workspace pakai frame lain
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/MoveCamera
+    - Class: rviz/Interact
+    - Class: rviz/Select
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 5
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.7
+      Target Frame: base_link
+      Value: Orbit (rviz)
+      Yaw: 1.5
+    Saved: ~
+
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 800
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1200
+  X: 100
+  Y: 100
+
+# Saran 4: Simpan file ini setelah custom view/layout di RViz2.
+# Saran 5: Untuk multi-robot, duplikasi RobotModel/TF dengan TF Prefix dan topic berbeda.
+# Saran 6: Validasi konsistensi topic/frame dengan URDF dan node workspace (bisa pakai script Python).
+# Saran 7: Tambahkan screenshot RViz di README untuk dokumentasi.
+# Saran 8: Tidak perlu OOP, file ini hanya konfigurasi RViz.

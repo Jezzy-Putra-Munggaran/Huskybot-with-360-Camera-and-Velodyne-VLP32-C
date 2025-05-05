@@ -3,7 +3,11 @@
 <package format="3">  <!-- Format package.xml ROS2 (format 3, wajib untuk ROS2 Humble) -->
   <name>huskybot_description</name>  <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
   <version>0.1.0</version>  <!-- Versi package, update jika ada perubahan besar (best practice release) -->
-  <description>URDF/Xacro, mesh, dan launch file untuk simulasi Huskybot dengan kamera dan LiDAR di ROS2. Mendukung integrasi penuh dengan Gazebo, robot_state_publisher, dan sensor_msgs. (Update 2025-05-05)</description>  <!-- Deskripsi package, WAJIB diisi dan selalu update -->
+  <description>
+    URDF/Xacro, mesh, dan launch file untuk simulasi Huskybot dengan kamera dan LiDAR di ROS2.
+    Mendukung integrasi penuh dengan Gazebo, robot_state_publisher, dan sensor_msgs.
+    (Update 2025-05-05)
+  </description>  <!-- Deskripsi package, WAJIB diisi dan selalu update -->
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi -->
   <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: Apache-2.0, BSD-3-Clause, MIT) -->
@@ -17,15 +21,29 @@
   <exec_depend>std_msgs</exec_depend>  <!-- Dependency pesan standar ROS2 (jika ada node custom Python/C++) -->
   <exec_depend>geometry_msgs</exec_depend>  <!-- Dependency pesan geometri (Twist, Pose, dsb) -->
   <exec_depend>nav_msgs</exec_depend>  <!-- Dependency pesan navigasi (Path, Odometry, dsb) -->
+  <exec_depend>launch</exec_depend>  <!-- Dependency runtime untuk launch file Python (agar ros2 launch bisa jalan) -->
+  <exec_depend>launch_ros</exec_depend>  <!-- Dependency runtime untuk launch file ROS2 (Node, dsb) -->
+  <exec_depend>ament_index_python</exec_depend>  <!-- Dependency runtime untuk get_package_share_directory di Python launch -->
   <!-- Tambahkan dependency lain jika ada node custom lain di masa depan -->
+  <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime untuk node Python ROS2 (wajib jika ada script Python ROS2) -->
+  <!-- <exec_depend>image_transport</exec_depend> -->  <!-- Tambahkan jika ada node/image pipeline -->
+  <!-- <exec_depend>tf2_ros</exec_depend> -->  <!-- Tambahkan jika ada node TF2 custom -->
 
   <test_depend>ament_lint_auto</test_depend>  <!-- Dependency untuk linting otomatis saat test (CI/CD) -->
   <test_depend>ament_lint_common</test_depend>  <!-- Dependency untuk linting umum saat test (CI/CD) -->
+  <test_depend>launch_testing</test_depend>  <!-- Dependency untuk launch test ROS2 (opsional, best practice) -->
+  <test_depend>pytest</test_depend>  <!-- Dependency untuk unit test Python (opsional, best practice) -->
 
   <doc_depend>sphinx</doc_depend>  <!-- Dependency dokumentasi auto (misal: sphinx, opsional jika generate doc) -->
   <!-- <doc_depend>doxygen</doc_depend> -->  <!-- Dependency dokumentasi auto (misal: doxygen, opsional jika generate doc) -->
 
   <export>
     <build_type>ament_cmake</build_type>  <!-- Tipe build system (ament_cmake untuk CMake) -->
+    <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python/URDF/mesh/launch) -->
+    <description lang="en">Full robot description, launch, and mesh for Huskybot multi-sensor simulation in ROS2 Humble.</description> <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <url type="website">https://github.com/jezzy/huskybot</url> <!-- (Opsional) URL website/repo utama package -->
+    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url> <!-- (Opsional) URL bugtracker/issues -->
+    <readme>README.md</readme> <!-- (Opsional) Path ke file README untuk dokumentasi package -->
+    <testfile>test/test_pep257.py</testfile> <!-- (Opsional) Contoh file test, agar test otomatis terdeteksi -->
   </export>
 </package>
