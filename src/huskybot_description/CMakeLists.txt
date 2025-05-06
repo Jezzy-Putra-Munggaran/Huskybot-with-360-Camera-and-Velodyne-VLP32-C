@@ -22,9 +22,9 @@ find_package(gazebo_ros REQUIRED)                      # Dependency untuk integr
 find_package(std_msgs REQUIRED)                        # Dependency pesan standar ROS2 (jika ada node custom)
 find_package(nav_msgs REQUIRED)                        # Dependency pesan navigasi (Path, Odometry, dsb)
 find_package(geometry_msgs REQUIRED)                   # Dependency pesan geometri (Twist, Pose, dsb)
-find_package(launch REQUIRED)                          # Dependency untuk launch file Python (agar ros2 launch bisa jalan)
-find_package(launch_ros REQUIRED)                      # Dependency untuk launch file ROS2 (Node, dsb)
-find_package(ament_index_python REQUIRED)              # Dependency untuk get_package_share_directory di Python launch
+# find_package(launch REQUIRED)                        # HAPUS: launch adalah package Python, TIDAK perlu find_package di CMake!
+# find_package(launch_ros REQUIRED)                    # HAPUS: launch_ros adalah package Python, TIDAK perlu find_package di CMake!
+# find_package(ament_index_python REQUIRED)            # HAPUS: ament_index_python adalah modul Python, TIDAK perlu find_package di CMake!
 # Tambahkan dependency lain jika ada node custom lain (misal: image_transport, tf2_ros, dsb)
 
 if(BUILD_TESTING)

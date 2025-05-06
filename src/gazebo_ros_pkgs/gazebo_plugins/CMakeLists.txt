@@ -6,12 +6,16 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-inconsistent-missing-override")
+  # we dont use add_compile_options with pedantic in message packages
+  # because the Python C extensions dont comply with it
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 endif()
 
 if(WIN32)
   add_compile_definitions(
+    # For math constants
     _USE_MATH_DEFINES
+    # Minimize Windows namespace collision
     NOMINMAX
     WIN32_LEAN_AND_MEAN
   )
@@ -60,7 +64,6 @@ ament_target_dependencies(gazebo_ros_joint_state_publisher
   "rclcpp"
   "sensor_msgs"
 )
-target_link_libraries(gazebo_ros_joint_state_publisher tbb)
 ament_export_libraries(gazebo_ros_joint_state_publisher)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_joint_state_publisher PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -82,7 +85,6 @@ ament_target_dependencies(gazebo_ros_diff_drive
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_diff_drive tbb)
 ament_export_libraries(gazebo_ros_diff_drive)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_diff_drive PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -100,13 +102,11 @@ ament_target_dependencies(gazebo_ros_force
   "geometry_msgs"
   "rclcpp"
 )
-target_link_libraries(gazebo_ros_force tbb)
 ament_export_libraries(gazebo_ros_force)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_force PUBLIC ${ignition-common3_INCLUDE_DIRS})
   target_link_libraries(gazebo_ros_force ${ignition-common3_LIBRARIES})
 endif()
-
 # gazebo_ros_template
 add_library(gazebo_ros_template SHARED
   src/gazebo_ros_template.cpp
@@ -117,7 +117,6 @@ ament_target_dependencies(gazebo_ros_template
   "gazebo_ros"
   "rclcpp"
 )
-target_link_libraries(gazebo_ros_template tbb)
 ament_export_libraries(gazebo_ros_template)
 
 # multi_camera_plugin
@@ -130,7 +129,6 @@ ament_target_dependencies(multi_camera_plugin
 )
 target_link_libraries(multi_camera_plugin
   gazebo_sensors
-  tbb
 )
 target_compile_definitions(multi_camera_plugin
   PRIVATE BUILDING_DLL
@@ -154,7 +152,6 @@ target_link_libraries(gazebo_ros_camera
   CameraPlugin
   DepthCameraPlugin
   multi_camera_plugin
-  tbb
 )
 ament_export_libraries(gazebo_ros_camera)
 if(ENABLE_PROFILER)
@@ -174,7 +171,6 @@ ament_target_dependencies(gazebo_ros_imu_sensor
 )
 target_link_libraries(gazebo_ros_imu_sensor
   ImuSensorPlugin
-  tbb
 )
 ament_export_libraries(gazebo_ros_imu_sensor)
 if(ENABLE_PROFILER)
@@ -193,12 +189,12 @@ ament_target_dependencies(gazebo_ros_gps_sensor
   "geometry_msgs"
   "gazebo_dev"
 )
-target_link_libraries(gazebo_ros_gps_sensor tbb)
 ament_export_libraries(gazebo_ros_gps_sensor)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_gps_sensor PUBLIC ${ignition-common3_INCLUDE_DIRS})
   target_link_libraries(gazebo_ros_gps_sensor ${ignition-common3_LIBRARIES})
 endif()
+
 
 # gazebo_ros_ray_sensor
 add_library(gazebo_ros_ray_sensor SHARED
@@ -209,7 +205,6 @@ ament_target_dependencies(gazebo_ros_ray_sensor
   "gazebo_ros"
   "sensor_msgs"
 )
-target_link_libraries(gazebo_ros_ray_sensor tbb)
 ament_export_libraries(gazebo_ros_ray_sensor)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_ray_sensor PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -230,7 +225,6 @@ ament_target_dependencies(gazebo_ros_p3d
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_p3d tbb)
 ament_export_libraries(gazebo_ros_p3d)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_p3d PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -252,7 +246,6 @@ ament_target_dependencies(gazebo_ros_tricycle_drive
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_tricycle_drive tbb)
 ament_export_libraries(gazebo_ros_tricycle_drive)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_tricycle_drive PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -264,13 +257,15 @@ add_library(gazebo_ros_video SHARED
   src/gazebo_ros_video.cpp
 )
 target_include_directories(gazebo_ros_video PUBLIC include)
+if(${cv_bridge_VERSION} VERSION_GREATER_EQUAL 3.3.0)
+  target_compile_options(gazebo_ros_video PRIVATE -DCV_BRIDGE_HAS_HPP_HEADERS)
+endif()
 ament_target_dependencies(gazebo_ros_video
   "gazebo_ros"
   "image_transport"
   "sensor_msgs"
   "cv_bridge"
 )
-target_link_libraries(gazebo_ros_video tbb)
 ament_export_libraries(gazebo_ros_video)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_video PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -288,7 +283,6 @@ ament_target_dependencies(gazebo_ros_ft_sensor
   "rclcpp"
   "geometry_msgs"
 )
-target_link_libraries(gazebo_ros_ft_sensor tbb)
 ament_export_libraries(gazebo_ros_ft_sensor)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_ft_sensor PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -302,7 +296,6 @@ add_library(gazebo_ros_bumper SHARED
 target_include_directories(gazebo_ros_bumper PUBLIC include)
 target_link_libraries(gazebo_ros_bumper
   ContactPlugin
-  tbb
 )
 ament_target_dependencies(gazebo_ros_bumper
   "gazebo_ros"
@@ -328,7 +321,6 @@ ament_target_dependencies(gazebo_ros_harness
 )
 target_link_libraries(gazebo_ros_harness
   HarnessPlugin
-  tbb
 )
 ament_export_libraries(gazebo_ros_harness)
 
@@ -345,7 +337,6 @@ ament_target_dependencies(gazebo_ros_hand_of_god
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_hand_of_god tbb)
 ament_export_libraries(gazebo_ros_hand_of_god)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_hand_of_god PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -367,7 +358,6 @@ ament_target_dependencies(gazebo_ros_ackermann_drive
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_ackermann_drive tbb)
 ament_export_libraries(gazebo_ros_ackermann_drive)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_ackermann_drive PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -387,7 +377,6 @@ ament_target_dependencies(gazebo_ros_elevator
 )
 target_link_libraries(gazebo_ros_elevator
   ElevatorPlugin
-  tbb
 )
 ament_export_libraries(gazebo_ros_elevator)
 
@@ -403,7 +392,6 @@ ament_target_dependencies(gazebo_ros_vacuum_gripper
   "std_msgs"
   "std_srvs"
 )
-target_link_libraries(gazebo_ros_vacuum_gripper tbb)
 ament_export_libraries(gazebo_ros_vacuum_gripper)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_vacuum_gripper PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -421,7 +409,6 @@ ament_target_dependencies(gazebo_ros_joint_pose_trajectory
   "rclcpp"
   "trajectory_msgs"
 )
-target_link_libraries(gazebo_ros_joint_pose_trajectory tbb)
 ament_export_libraries(gazebo_ros_joint_pose_trajectory)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_joint_pose_trajectory PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -442,7 +429,6 @@ ament_target_dependencies(gazebo_ros_planar_move
   "tf2_geometry_msgs"
   "tf2_ros"
 )
-target_link_libraries(gazebo_ros_planar_move tbb)
 ament_export_libraries(gazebo_ros_planar_move)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_planar_move PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -460,7 +446,6 @@ ament_target_dependencies(gazebo_ros_projector
   "rclcpp"
   "std_msgs"
 )
-target_link_libraries(gazebo_ros_projector tbb)
 ament_export_libraries(gazebo_ros_projector)
 if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_projector PUBLIC ${ignition-common3_INCLUDE_DIRS})
@@ -468,19 +453,19 @@ if(ENABLE_PROFILER)
 endif()
 
 # gazebo_ros_wheel_slip
-if(NOT GAZEBO_VERSION VERSION_LESS 9.5)
+if(NOT GAZEBO_VERSION VERSION_LESS 11.9)
   add_library(gazebo_ros_wheel_slip SHARED
     src/gazebo_ros_wheel_slip.cpp
   )
   ament_target_dependencies(gazebo_ros_wheel_slip
     "gazebo_dev"
+    "gazebo_msgs"
     "gazebo_ros"
     "rclcpp"
     "std_msgs"
   )
   target_link_libraries(gazebo_ros_wheel_slip
     WheelSlipPlugin
-    tbb
   )
   target_include_directories(gazebo_ros_wheel_slip PUBLIC include)
   ament_export_libraries(gazebo_ros_wheel_slip)
@@ -495,7 +480,13 @@ ament_export_dependencies(gazebo_ros)
 if(BUILD_TESTING)
   add_subdirectory(test)
   find_package(ament_lint_auto REQUIRED)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE
+    ament_cmake_cpplint
+  )
   ament_lint_auto_find_test_dependencies()
+  ament_cpplint(
+    FILTERS -build/include_order
+  )
 endif()
 
 if(NOT WIN32)
@@ -543,13 +534,19 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-if(NOT GAZEBO_VERSION VERSION_LESS 9.5)
+if(NOT GAZEBO_VERSION VERSION_LESS 11.9)
 install(TARGETS
     gazebo_ros_wheel_slip
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 endif()
+
+install(
+  PROGRAMS
+    scripts/wheel_slip_drawbar_pull_publisher.py
+    DESTINATION lib/${PROJECT_NAME}/
+)
 
 install(DIRECTORY
   worlds

@@ -152,7 +152,7 @@ GazeboRosCamera::~GazeboRosCamera()
 void GazeboRosCamera::Load(gazebo::sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
   // Initialize ROS node
-  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf, _sensor);
+  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->ros_node_->get_qos();
@@ -435,26 +435,31 @@ void GazeboRosCamera::Load(gazebo::sensors::SensorPtr _sensor, sdf::ElementPtr _
     camera_info_msg.k[8] = 1.0;
 
     // rectification
-    camera_info_msg.r[0] = 1.0;
-    camera_info_msg.r[1] = 0.0;
-    camera_info_msg.r[2] = 0.0;
-    camera_info_msg.r[3] = 0.0;
-    camera_info_msg.r[4] = 1.0;
-    camera_info_msg.r[5] = 0.0;
-    camera_info_msg.r[6] = 0.0;
-    camera_info_msg.r[7] = 0.0;
-    camera_info_msg.r[8] = 1.0;
+    // Get string from SDF and parse into Matrix3d for populating message
+    std::string default_rmat("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0");
+    std::istringstream stream(_sdf->Get<std::string>("rectification_matrix", default_rmat).first);
 
-    // camera_ projection matrix (same as camera_ matrix due
-    // to lack of distortion/rectification) (is this generated?)
-    camera_info_msg.p[0] = focal_length;
+    ignition::math::Matrix3d rmat;
+    stream >> rmat;
+    camera_info_msg.r[0] = rmat(0, 0);
+    camera_info_msg.r[1] = rmat(0, 1);
+    camera_info_msg.r[2] = rmat(0, 2);
+    camera_info_msg.r[3] = rmat(1, 0);
+    camera_info_msg.r[4] = rmat(1, 1);
+    camera_info_msg.r[5] = rmat(1, 2);
+    camera_info_msg.r[6] = rmat(2, 0);
+    camera_info_msg.r[7] = rmat(2, 1);
+    camera_info_msg.r[8] = rmat(2, 2);
+
+    // projection matrix
+    camera_info_msg.p[0] = _sdf->Get<double>("P_fx", focal_length).first;
     camera_info_msg.p[1] = 0.0;
-    camera_info_msg.p[2] = cx;
-    camera_info_msg.p[3] = -focal_length * hack_baseline;
+    camera_info_msg.p[2] = _sdf->Get<double>("P_cx", cx).first;
+    camera_info_msg.p[3] = _sdf->Get<double>("Tx", -focal_length * hack_baseline).first;
     camera_info_msg.p[4] = 0.0;
-    camera_info_msg.p[5] = focal_length;
-    camera_info_msg.p[6] = cy;
-    camera_info_msg.p[7] = 0.0;
+    camera_info_msg.p[5] = _sdf->Get<double>("P_fy", focal_length).first;
+    camera_info_msg.p[6] = _sdf->Get<double>("P_cy", cy).first;
+    camera_info_msg.p[7] = _sdf->Get<double>("Ty", 0).first;
     camera_info_msg.p[8] = 0.0;
     camera_info_msg.p[9] = 0.0;
     camera_info_msg.p[10] = 1.0;
@@ -709,8 +714,7 @@ void GazeboRosCamera::OnNewDepthFrame(
 
   sensor_msgs::PointCloud2Modifier cloud_modifier(impl_->cloud_msg_);
   cloud_modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
-  cloud_modifier.resize(_width * _height);
-
+  impl_->cloud_msg_.data.resize(_width * _height * impl_->cloud_msg_.point_step);
   impl_->cloud_msg_.is_dense = true;
 
   int image_index = 0;
@@ -850,6 +854,11 @@ std::string GazeboRosCamera::GetCameraName() const
 uint64_t GazeboRosCamera::GetNumCameras() const
 {
   return impl_->num_cameras_;
+}
+
+gazebo_ros::Node::SharedPtr GazeboRosCamera::GetRosNode() const
+{
+  return impl_->ros_node_;
 }
 
 extern "C" GZ_PLUGIN_VISIBLE gazebo::SensorPlugin * RegisterPlugin();

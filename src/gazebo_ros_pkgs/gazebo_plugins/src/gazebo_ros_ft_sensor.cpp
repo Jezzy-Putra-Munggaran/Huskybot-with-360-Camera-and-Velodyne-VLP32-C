@@ -92,7 +92,7 @@ GazeboRosFTSensor::~GazeboRosFTSensor()
 void GazeboRosFTSensor::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   // Initialize ROS node
-  impl_->rosnode_ = gazebo_ros::Node::Get(_sdf, _model);
+  impl_->rosnode_ = gazebo_ros::Node::Get(_sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->rosnode_->get_qos();

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gazebo/common/CommonIface.hh>
-
 #include <gazebo_ros/node.hpp>
 
 #include <rcl/arguments.h>
@@ -30,65 +28,22 @@ namespace gazebo_ros
 std::weak_ptr<Executor> Node::static_executor_;
 std::weak_ptr<Node> Node::static_node_;
 std::mutex Node::lock_;
+ExistingNodes Node::static_existing_nodes_;
 
 Node::~Node()
 {
   executor_->remove_node(get_node_base_interface());
+
+  // remove node object from global map
+  static_existing_nodes_.remove_node(this->get_fully_qualified_name());
 }
 
-Node::SharedPtr Node::Get(sdf::ElementPtr sdf)
-{
-  return Get(sdf, "/");
-}
-
-Node::SharedPtr Node::Get(
-  sdf::ElementPtr sdf,
-  const gazebo::physics::ModelPtr & parent)
-{
-  std::string modelName;
-  if (parent) {
-    modelName = parent->GetName();
-  }
-
-  return Get(sdf, "/" + modelName);
-}
-
-Node::SharedPtr Node::Get(
-  sdf::ElementPtr sdf,
-  const gazebo::sensors::SensorPtr & parent)
-{
-  std::string modelName;
-  std::vector<std::string> values;
-  std::string scopedName = parent->ScopedName();
-  values = gazebo::common::split(scopedName, "::");
-  if (values.size() < 2) {
-    modelName = "";
-  } else {
-    // the second element is the model name; the first one is the world name
-    modelName = values[1];
-  }
-
-  return Get(sdf, "/" + modelName);
-}
-
-Node::SharedPtr Node::Get(
-  sdf::ElementPtr sdf,
-  const gazebo::rendering::VisualPtr & parent)
-{
-  std::string modelName;
-  if (parent) {
-    modelName = parent->GetRootVisual()->Name();
-  }
-
-  return Get(sdf, "/" + modelName);
-}
-
-Node::SharedPtr Node::Get(
-  sdf::ElementPtr sdf,
-  const std::string & defaultNamespace)
+Node::SharedPtr Node::Get(sdf::ElementPtr sdf, std::string node_name)
 {
   // Initialize arguments
   std::string name = "";
+  std::string ns = "/";
+  std::string full_name;
   std::vector<std::string> arguments;
   std::vector<rclcpp::Parameter> parameter_overrides;
 
@@ -96,25 +51,17 @@ Node::SharedPtr Node::Get(
   if (!sdf->HasAttribute("name")) {
     RCLCPP_WARN(internal_logger(), "Name of plugin not found.");
   }
-  name = sdf->Get<std::string>("name");
+
+  if (!node_name.empty()) {
+    name = node_name;
+  } else {
+    name = sdf->Get<std::string>("name");
+  }
 
   // Get inner <ros> element if full plugin sdf was passed in
   if (sdf->HasElement("ros")) {
     sdf = sdf->GetElement("ros");
   }
-
-  // Legacy namespace
-  // True to default to the root (/) namespace if <namespace> is not specified
-  // False to use the model name as the namespace if <namespace> is not
-  // specified.
-  // todo(anyone) change this to false in humble
-  bool legacyNamespace = true;
-  if (sdf->HasElement("legacy_namespace")) {
-    legacyNamespace = sdf->Get<bool>("legacy_namespace");
-  }
-  std::string ns =
-    (legacyNamespace || defaultNamespace.empty() ||
-    defaultNamespace[0] != '/') ? "/" : defaultNamespace;
 
   // Set namespace if tag is present
   if (sdf->HasElement("namespace")) {
@@ -149,6 +96,18 @@ Node::SharedPtr Node::Get(
     }
   }
 
+  if (sdf->HasElement("parameters")) {
+    sdf::ElementPtr argument_sdf = sdf->GetElement("parameters");
+
+    arguments.push_back(RCL_ROS_ARGS_FLAG);
+    while (argument_sdf) {
+      std::string argument = argument_sdf->Get<std::string>();
+      arguments.push_back(RCL_PARAM_FILE_FLAG);
+      arguments.push_back(argument);
+      argument_sdf = argument_sdf->GetNextElement("parameters");
+    }
+  }
+
   // Convert each parameter tag to a ROS parameter
   if (sdf->HasElement("parameter")) {
     sdf::ElementPtr parameter_sdf = sdf->GetElement("parameter");
@@ -161,12 +120,35 @@ Node::SharedPtr Node::Get(
     }
   }
 
+  // set full node name
+  if (ns[0] == '/' && ns.size() == 1) {
+    full_name = ns + name;
+  } else {
+    full_name = ns + "/" + name;
+  }
+
+  // check if node with the same name exists already
+  if (static_existing_nodes_.check_node(full_name)) {
+    RCLCPP_ERROR(
+      internal_logger(),
+      "Found multiple nodes with same name: %s. This might be due to multiple plugins using the "
+      "same name. Try changing one of the the plugin names or use a different ROS namespace. "
+      "This error might also result from a custom plugin inheriting from another gazebo_ros plugin "
+      "and the custom plugin trying to access the ROS node object hence creating multiple nodes "
+      "with same name. To solve this try providing the optional node_name argument in "
+      "gazebo_ros::Node::Get() function. ", full_name.c_str());
+    return nullptr;
+  }
+
   rclcpp::NodeOptions node_options;
   node_options.arguments(arguments);
   node_options.parameter_overrides(parameter_overrides);
 
   // Create node with parsed arguments
   std::shared_ptr<gazebo_ros::Node> node = CreateWithArgs(name, ns, node_options);
+
+  // Add node to global map
+  static_existing_nodes_.add_node(full_name);
 
   // Parse the qos tag
   node->qos_ = gazebo_ros::QoS(sdf, name, ns, node_options);
@@ -225,6 +207,24 @@ rclcpp::Parameter Node::sdf_to_ros_parameter(sdf::ElementPtr const & sdf)
 rclcpp::Logger Node::internal_logger()
 {
   return rclcpp::get_logger("gazebo_ros_node");
+}
+
+void ExistingNodes::add_node(const std::string & node_name)
+{
+  std::lock_guard<std::mutex> guard(this->internal_mutex_);
+  this->set_.insert(node_name);
+}
+
+void ExistingNodes::remove_node(const std::string & node_name)
+{
+  std::lock_guard<std::mutex> guard(this->internal_mutex_);
+  this->set_.erase(node_name);
+}
+
+bool ExistingNodes::check_node(const std::string & node_name)
+{
+  std::lock_guard<std::mutex> guard(this->internal_mutex_);
+  return this->set_.find(node_name) != this->set_.end();
 }
 
 }  // namespace gazebo_ros

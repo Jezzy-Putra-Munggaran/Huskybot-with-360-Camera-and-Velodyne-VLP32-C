@@ -22,16 +22,16 @@ import math
 import os
 import sys
 from urllib.parse import SplitResult, urlsplit
-from lxml import etree as ElementTree
 
 from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import DeleteEntity
 # from gazebo_msgs.srv import SetModelConfiguration
 from gazebo_msgs.srv import SpawnEntity
 from geometry_msgs.msg import Pose
+from lxml import etree as ElementTree
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSDurabilityPolicy
+from rclpy.qos import DurabilityPolicy
 from rclpy.qos import QoSProfile
 from std_msgs.msg import String
 from std_srvs.srv import Empty
@@ -167,7 +167,7 @@ class SpawnEntityNode(Node):
 
             latched_qos = QoSProfile(
                 depth=1,
-                durability=QoSDurabilityPolicy.RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL)
+                durability=DurabilityPolicy.TRANSIENT_LOCAL)
             self.subscription = self.create_subscription(
                 String, self.args.topic, entity_xml_cb, latched_qos)
 
@@ -250,7 +250,8 @@ class SpawnEntityNode(Node):
                 client.call_async(Empty.Request())
             else:
                 self.get_logger().error('Service %s/unpause_physics unavailable. \
-                                         Was Gazebo started with GazeboRosInit?')
+                                         Was Gazebo started with GazeboRosInit?' % (
+                                             self.args.gazebo_namespace))
 
         # If bond enabled, setup shutdown callback and wait for shutdown
         if self.args.bond:
@@ -289,7 +290,8 @@ class SpawnEntityNode(Node):
                 rclpy.spin_once(self)
             return srv_call.result().success
         self.get_logger().error(
-            'Service %s/spawn_entity unavailable. Was Gazebo started with GazeboRosFactory?')
+            'Service %s/spawn_entity unavailable. Was Gazebo started with GazeboRosFactory?' % (
+                self.args.gazebo_namespace))
         return False
 
     # TODO(shivesh): Wait for https://github.com/ros2/rclpy/issues/244

@@ -6,12 +6,16 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # we dont use add_compile_options with pedantic in message packages
+  # because the Python C extensions dont comply with it
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-inconsistent-missing-override")
 endif()
 
 if(WIN32)
   add_compile_definitions(
+    # For math constants
     _USE_MATH_DEFINES
+    # Minimize Windows namespace collision
     NOMINMAX
     WIN32_LEAN_AND_MEAN
   )
@@ -27,6 +31,10 @@ find_package(rclcpp REQUIRED)
 find_package(rmw REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(tinyxml_vendor REQUIRED)
+
+# Needed for EOL GUI notice
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 link_directories(
   ${gazebo_dev_LIBRARY_DIRS}
@@ -49,6 +57,7 @@ target_include_directories(gazebo_ros_node
 if(WIN32)
   target_compile_definitions(gazebo_ros_node PRIVATE "GAZEBO_ROS_NODE_BUILDING_DLL")
 endif()
+
 ament_target_dependencies(gazebo_ros_node
   "gazebo_dev"
   "rclcpp"
@@ -89,7 +98,6 @@ ament_target_dependencies(gazebo_ros_init
 target_link_libraries(gazebo_ros_init
   gazebo_ros_node
   gazebo_ros_utils
-  tbb
 )
 ament_export_libraries(gazebo_ros_init)
 
@@ -105,7 +113,6 @@ ament_target_dependencies(gazebo_ros_factory
 target_link_libraries(gazebo_ros_factory
   gazebo_ros_node
   gazebo_ros_utils
-  tbb
 )
 ament_export_libraries(gazebo_ros_factory)
 
@@ -120,7 +127,6 @@ ament_target_dependencies(gazebo_ros_properties
 )
 target_link_libraries(gazebo_ros_properties
   gazebo_ros_node
-  tbb
 )
 ament_export_libraries(gazebo_ros_properties)
 
@@ -135,7 +141,6 @@ ament_target_dependencies(gazebo_ros_state
 )
 target_link_libraries(gazebo_ros_state
   gazebo_ros_node
-  tbb
 )
 ament_export_libraries(gazebo_ros_state)
 
@@ -150,8 +155,21 @@ ament_target_dependencies(gazebo_ros_force_system
 )
 target_link_libraries(gazebo_ros_force_system
   gazebo_ros_node
-  tbb
 )
+
+set(CMAKE_AUTOMOC ON)
+add_library(gazebo_ros_eol_gui  SHARED src/gazebo_ros_eol_gui.cpp)
+
+target_link_libraries(gazebo_ros_eol_gui
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+  gazebo_ros_utils
+)
+ament_target_dependencies(gazebo_ros_eol_gui
+  "gazebo_dev"
+)
+set(CMAKE_AUTOMOC OFF)
+
 ament_export_libraries(gazebo_ros_force_system)
 
 ament_export_include_directories(include)
@@ -161,7 +179,13 @@ ament_export_dependencies(gazebo_dev)
 if(BUILD_TESTING)
   add_subdirectory(test)
   find_package(ament_lint_auto REQUIRED)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE
+    ament_cmake_cpplint
+  )
   ament_lint_auto_find_test_dependencies()
+  ament_cpplint(
+    FILTERS -build/include_order
+  )
 endif()
 
 ament_package()
@@ -184,6 +208,7 @@ install(
     gazebo_ros_properties
     gazebo_ros_state
     gazebo_ros_utils
+    gazebo_ros_eol_gui
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
@@ -195,6 +220,6 @@ install(
 )
 
 install(DIRECTORY
-  launch
+  launch worlds
   DESTINATION share/${PROJECT_NAME}/
 )

@@ -97,7 +97,7 @@ void GazeboRosForce::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf)
   }
 
   // Subscribe to wrench messages
-  impl_->ros_node_ = gazebo_ros::Node::Get(sdf, model);
+  impl_->ros_node_ = gazebo_ros::Node::Get(sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->ros_node_->get_qos();

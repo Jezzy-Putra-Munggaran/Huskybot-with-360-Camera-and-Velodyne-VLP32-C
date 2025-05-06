@@ -88,7 +88,7 @@ GazeboRosJointStatePublisher::~GazeboRosJointStatePublisher()
 void GazeboRosJointStatePublisher::Load(gazebo::physics::ModelPtr model, sdf::ElementPtr sdf)
 {
   // ROS node
-  impl_->ros_node_ = gazebo_ros::Node::Get(sdf, model);
+  impl_->ros_node_ = gazebo_ros::Node::Get(sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->ros_node_->get_qos();

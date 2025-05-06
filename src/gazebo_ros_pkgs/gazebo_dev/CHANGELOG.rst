@@ -2,6 +2,25 @@
 Changelog for package gazebo_dev
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.0 (2025-01-27)
+------------------
+* Update Gazebo web links (`#1548 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1548>`_)
+* Contributors: Alejandro Hernández Cordero
+
+3.8.0 (2024-07-02)
+------------------
+* Bloom-ignored all the packages except gazebo_msgs on jazzy (`#1534 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1534>`_)
+* Contributors: Jose Luis Rivero
+
+3.7.0 (2022-06-13)
+------------------
+
+3.6.0 (2022-05-10)
+------------------
+* Fix test failures (`#1380 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1380>`_)
+* Include TBB in gazebo-dev cmake to fix `#1372 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1372>`_ (`#1373 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1373>`_)
+* Contributors: Daisuke Nishimatsu, Jose Luis Rivero, Steve Peters
+
 3.5.2 (2021-03-15)
 ------------------
 

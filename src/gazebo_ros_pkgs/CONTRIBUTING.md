@@ -7,7 +7,7 @@ We welcome contributions to this repo and encourage you to fork the project, tha
 It is highly recommended to place the code that performs simulation inside
 [upstream gazebo code](https://bitbucket.org/osrf/gazebo/). The Gazebo project
 provides documentation about [how to create and code
-plugins](http://gazebosim.org/tutorials?cat=write_plugin) Ideally
+plugins](http://classic.gazebosim.org/tutorials?cat=write_plugin) Ideally
 gazebo_ros_pkgs should implement the ROS wrapper over an existing gazebo
 plugin.
 
@@ -20,7 +20,7 @@ can more easily recognize contributions which require their attention.
 
 ## Style
 
-We follow the [C++ ROS style guidelines](http://ros.org/wiki/CppStyleGuide) and
+We follow the [C++ ROS style guidelines](https://docs.ros.org/en/rolling/Contributing/Code-Style-Language-Versions.html#id1) and
 conventions as closely as possible. However, because the plugins inherit from Gazebo
 classes and Gazebo follows a very different formatting standard, there are a few
 exceptions where Gazebo's function names do not comply to the ROS guidelines.

@@ -22,7 +22,11 @@
  *
  */
 
+#ifdef CV_BRIDGE_HAS_HPP_HEADERS
+#include <cv_bridge/cv_bridge.hpp>
+#else
 #include <cv_bridge/cv_bridge.h>
+#endif
 #include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.h>
 #include <opencv2/opencv.hpp>
@@ -197,7 +201,7 @@ void GazeboRosVideo::Load(
   gazebo::rendering::VisualPtr _parent,
   sdf::ElementPtr _sdf)
 {
-  impl_->rosnode_ = gazebo_ros::Node::Get(_sdf, _parent);
+  impl_->rosnode_ = gazebo_ros::Node::Get(_sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->rosnode_->get_qos();

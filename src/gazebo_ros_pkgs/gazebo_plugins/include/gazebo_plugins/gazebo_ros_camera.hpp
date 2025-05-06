@@ -18,6 +18,9 @@
 #include <gazebo/plugins/CameraPlugin.hh>
 #include <gazebo/plugins/DepthCameraPlugin.hh>
 #include <gazebo_plugins/multi_camera_plugin.hpp>
+#include <gazebo_ros/node.hpp>
+
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 #include <std_msgs/msg/empty.hpp>
 
 #include <memory>
@@ -56,6 +59,19 @@ class GazeboRosCameraPrivate;
 
       <!-- Set to true to turn on triggering -->
       <triggered>true</triggered>
+
+      <!-- Set some projection matrix fields-->
+      <!-- Projection matrix principal point cx-->
+      <P_cx>0</P_cx>
+      <!-- Projection matrix principal point cy-->
+      <P_cy>320.5</P_cy>
+      <!-- Projection matrix focal length fy-->
+      <P_fy>0</P_fy>
+      <!-- Projection matrix translation Tx, Ty between stereo cameras-->
+      <Tx>240.5</Tx>
+      <Ty>0</Ty>
+      <!-- Full 3x3 rectification matrix. Values are in row-major order -->
+      <rectification_matrix>0.999 0.0 -0.049 0.0 1.0 0.0 0.049 0.0 0.999</rectification_matrix>
 
       <hack_baseline>0.07</hack_baseline>
     </plugin>
@@ -171,6 +187,10 @@ protected:
 
   // Get number of cameras
   uint64_t GetNumCameras() const;
+
+  /// Get the ROS node associated with this plugin
+  /// The returned pointer is null if the plugin has not been loaded.
+  gazebo_ros::Node::SharedPtr GetRosNode() const;
 
 private:
   /// Private data pointer

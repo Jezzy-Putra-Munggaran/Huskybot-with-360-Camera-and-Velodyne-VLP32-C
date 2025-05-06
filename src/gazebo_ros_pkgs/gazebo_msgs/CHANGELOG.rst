@@ -2,6 +2,26 @@
 Changelog for package gazebo_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.0 (2025-01-27)
+------------------
+* Update Gazebo web links (`#1548 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1548>`_)
+* Contributors: Alejandro Hernández Cordero
+
+3.8.0 (2024-07-02)
+------------------
+* Add a warning about the use of gazebo_msgs without Gazebo Classic (`#1533 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1533>`_)
+  The warning is added as an  extras config to appear on the consumer of the
+  package. Can be removed using the CMake parameter IGNORE_GAZEBO_MSGS_WARNING
+* Contributors: Jose Luis Rivero
+
+3.7.0 (2022-06-13)
+------------------
+
+3.6.0 (2022-05-10)
+------------------
+* gazebo_ros_wheel_slip: publish wheel slip (`#1331 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1331>`_)
+* Contributors: Audrow Nash
+
 3.5.2 (2021-03-15)
 ------------------
 

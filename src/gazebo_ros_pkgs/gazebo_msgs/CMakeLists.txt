@@ -31,6 +31,7 @@ set(msg_files
   "msg/ODEPhysics.msg"
   "msg/PerformanceMetrics.msg"
   "msg/SensorPerformanceMetric.msg"
+  "msg/WheelSlip.msg"
   "msg/WorldState.msg"
 )
 
@@ -82,7 +83,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 ament_export_dependencies(rosidl_default_runtime)
 
-ament_package()
+ament_package(CONFIG_EXTRAS "cmake/gazebo_msgs-extras.cmake")
 
 install(
   FILES gazebo_msgs_mapping_rules.yaml
