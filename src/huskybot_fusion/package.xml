@@ -1,33 +1,50 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_fusion</name>
-  <version>0.0.0</version>
-  <description>Fusion node for camera 360 and Velodyne VLP-32C</description>
-  <maintainer email="your@email.com">jezzy</maintainer>
-  <license>MIT</license>
+<?xml version="1.0"?>  <!-- Deklarasi XML, wajib di awal file -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Validasi schema package.xml ROS2 -->
+<package format="3">  <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
+  <name>huskybot_fusion</name>  <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.1.0</version>  <!-- Versi package, update jika sudah release/ada perubahan besar -->
+  <description>
+    Fusion node for camera 360 and Velodyne VLP-32C.
+    Melakukan data fusion antara hasil deteksi YOLOv12 (kamera 360°) dan point cloud LiDAR (Velodyne).
+    Publish hasil deteksi objek 3D ke topic /fusion/objects3d untuk navigasi dan obstacle avoidance.
+    FULL OOP, siap untuk ROS2 Humble, simulasi Gazebo, dan multi-robot.
+    (Update 2025-05-06)
+  </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
+  <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
 
   <!-- Build dependencies -->
-  <buildtool_depend>ament_python</buildtool_depend>
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <build_depend>rclpy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>yolov12_msgs</build_depend>
-  <build_depend>rosidl_default_generators</build_depend>
+  <buildtool_depend>ament_python</buildtool_depend>  <!-- Build tool utama ROS2 Python -->
+  <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Build tool utama ROS2 CMake (untuk message) -->
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>  <!-- Build tool untuk generate message interface ROS2 -->
+  <build_depend>rclpy</build_depend>  <!-- Dependency utama node ROS2 Python -->
+  <build_depend>sensor_msgs</build_depend>  <!-- Dependency message sensor_msgs (PointCloud2) -->
+  <build_depend>std_msgs</build_depend>  <!-- Dependency message std_msgs (Header) -->
+  <build_depend>yolov12_msgs</build_depend>  <!-- Dependency custom message YOLOv12 (hasil deteksi 2D) -->
+  <build_depend>rosidl_default_generators</build_depend>  <!-- (Duplikat, bisa dihapus salah satu) -->
 
   <!-- Execution dependencies -->
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>yolov12_msgs</exec_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime node ROS2 Python -->
+  <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime message sensor_msgs -->
+  <exec_depend>std_msgs</exec_depend>  <!-- Dependency runtime message std_msgs -->
+  <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency runtime custom message YOLOv12 -->
+  <exec_depend>rosidl_default_runtime</exec_depend>  <!-- Dependency runtime ROS2 untuk message interface -->
 
   <!-- Message generation -->
-  <member_of_group>rosidl_interface_packages</member_of_group>
+  <member_of_group>rosidl_interface_packages</member_of_group>  <!-- Agar dikenali sebagai package interface ROS2 -->
+
+  <!-- Test dependencies -->
+  <test_depend>ament_lint_auto</test_depend>  <!-- Dependency linting otomatis saat testing -->
+  <test_depend>ament_lint_common</test_depend>  <!-- Dependency linting umum ROS2 -->
+  <test_depend>pytest</test_depend>  <!-- Dependency unit test Python -->
 
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
+    <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python/message) -->
+    <description lang="en">Fusion node and 3D object message for Huskybot multi-sensor perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
+    <url type="website">https://github.com/jezzy/huskybot</url>  <!-- (Opsional) URL website/repo utama package -->
+    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
   </export>
 </package>
