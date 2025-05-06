@@ -1,5 +1,5 @@
-#!/usr/bin/python3  # Shebang agar bisa dieksekusi langsung
-# -*- coding: utf-8 -*-  # Encoding file Python
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os                                    # Modul OS untuk operasi file/path
 import sys                                   # Modul sys untuk akses error output
@@ -17,6 +17,32 @@ def check_file_exists(path, desc):            # Fungsi untuk cek file ada sebelu
     if not os.path.exists(path):              # Jika file tidak ada
         print(f"[ERROR] {desc} tidak ditemukan: {path}", file=sys.stderr) # Print error
         sys.exit(1)                          # Exit agar launch tidak lanjut
+
+def check_gazebo_plugin(plugin_name):         # Fungsi untuk cek plugin Gazebo
+    plugin_paths = os.environ.get('GAZEBO_PLUGIN_PATH', '/opt/ros/humble/lib').split(':')  # Ambil semua path plugin
+    found = False                            # Flag untuk status ditemukan/tidak
+    for plugin_dir in plugin_paths:          # Loop semua path di GAZEBO_PLUGIN_PATH
+        plugin_path = os.path.join(plugin_dir, plugin_name)  # Gabungkan path dan nama plugin
+        if os.path.exists(plugin_path):      # Jika file plugin ditemukan
+            print(f"[INFO] Plugin Gazebo '{plugin_name}' ditemukan di {plugin_dir}.", flush=True)  # Info ke user
+            found = True                     # Set flag ditemukan
+            break                            # Stop loop jika sudah ketemu
+    if not found:                            # Jika tidak ditemukan di semua path
+        print(f"[ERROR] Plugin Gazebo '{plugin_name}' tidak ditemukan di path manapun di $GAZEBO_PLUGIN_PATH.", flush=True)
+        print("Pastikan sudah install ros-humble-gazebo-ros-pkgs dan environment sudah di-source.", flush=True)
+        sys.exit(10)                         # Exit agar launch tidak lanjut
+
+# ---------- Error Handling: cek semua plugin penting sebelum launch ----------
+for plugin in [
+    'libgazebo_ros_factory.so',              # Plugin factory (WAJIB untuk spawn_entity.py)
+    # 'libgazebo_ros_api_plugin.so',           # Plugin API ROS-Gazebo
+    'libgazebo_ros_clock.so',                # Plugin publish /clock ke ROS2
+    'libgazebo_ros_state.so',                # Plugin publish model/link state
+    'libgazebo_ros_tf.so',                   # Plugin publish /tf ke ROS2
+    'libgazebo_ros_services.so',             # Plugin world service (reset, pause, dsb)
+    'libgazebo_ros_diagnostics.so'           # Plugin diagnostics world Gazebo
+]:
+    check_gazebo_plugin(plugin)              # Cek satu per satu, exit jika ada yang tidak ditemukan
 
 def generate_launch_description():            # Fungsi utama ROS2 untuk launch file
 

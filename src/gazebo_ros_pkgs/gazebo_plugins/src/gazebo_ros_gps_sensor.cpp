@@ -65,7 +65,7 @@ GazeboRosGpsSensor::~GazeboRosGpsSensor()
 
 void GazeboRosGpsSensor::Load(gazebo::sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
-  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf, _sensor);
+  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->ros_node_->get_qos();

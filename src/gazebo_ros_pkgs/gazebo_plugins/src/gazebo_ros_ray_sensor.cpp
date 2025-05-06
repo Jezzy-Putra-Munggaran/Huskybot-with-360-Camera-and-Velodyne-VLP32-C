@@ -101,7 +101,7 @@ GazeboRosRaySensor::~GazeboRosRaySensor()
 void GazeboRosRaySensor::Load(gazebo::sensors::SensorPtr _sensor, sdf::ElementPtr _sdf)
 {
   // Create ros_node configured from sdf
-  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf, _sensor);
+  impl_->ros_node_ = gazebo_ros::Node::Get(_sdf);
 
   // Get QoS profiles
   const gazebo_ros::QoS & qos = impl_->ros_node_->get_qos();
@@ -197,7 +197,7 @@ void GazeboRosRaySensorPrivate::SubscribeGazeboLaserScan()
 void GazeboRosRaySensorPrivate::PublishLaserScan(ConstLaserScanStampedPtr & _msg)
 {
   // Convert Laser scan to ROS LaserScan
-  auto ls = gazebo_ros::Convert<sensor_msgs::msg::LaserScan>(*_msg, min_intensity_);
+  auto ls = gazebo_ros::Convert<sensor_msgs::msg::LaserScan>(*_msg);
   // Set tf frame
   ls.header.frame_id = frame_name_;
   // Publish output

@@ -24,6 +24,7 @@ from launch.actions import Shutdown
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PythonExpression
+from launch_ros.substitutions import FindPackageShare
 
 from scripts import GazeboRosPaths
 
@@ -32,28 +33,41 @@ def generate_launch_description():
     cmd = [
         'gzserver',
         # Pass through arguments to gzserver
-        LaunchConfiguration('world'), ' ',
-        _boolean_command('version'), ' ',
-        _boolean_command('verbose'), ' ',
-        _boolean_command('lockstep'), ' ',
-        _boolean_command('help'), ' ',
-        _boolean_command('pause'), ' ',
-        _arg_command('physics'), ' ', LaunchConfiguration('physics'), ' ',
-        _arg_command('play'), ' ', LaunchConfiguration('play'), ' ',
-        _boolean_command('record'), ' ',
-        _arg_command('record_encoding'), ' ', LaunchConfiguration('record_encoding'), ' ',
-        _arg_command('record_path'), ' ', LaunchConfiguration('record_path'), ' ',
-        _arg_command('record_period'), ' ', LaunchConfiguration('record_period'), ' ',
-        _arg_command('record_filter'), ' ', LaunchConfiguration('record_filter'), ' ',
-        _arg_command('seed'), ' ', LaunchConfiguration('seed'), ' ',
-        _arg_command('iters'), ' ', LaunchConfiguration('iters'), ' ',
+        LaunchConfiguration('world'),
+        _boolean_command('version'),
+        _boolean_command('verbose'),
+        _boolean_command('lockstep'),
+        _boolean_command('help'),
+        _boolean_command('pause'),
+        # join with '=' (--initial_sim_time=[time]) so that old versions of
+        # gazebo will parse it all as a single argument and ignore the [time].
+        _arg_command('initial_sim_time', join_with='='),
+        _arg_command('physics'),
+        _arg_command('play'),
+        _boolean_command('record'),
+        _arg_command('record_encoding'),
+        _arg_command('record_path'),
+        _arg_command('record_period'),
+        _arg_command('record_filter'),
+        _arg_command('seed'),
+        _arg_command('iters'),
         _boolean_command('minimal_comms'),
-        _plugin_command('init'), ' ',
-        _plugin_command('factory'), ' ',
-        _plugin_command('force_system'), ' ',
+        _plugin_command('init'),
+        _plugin_command('factory'),
+        _plugin_command('force_system'),
         # Wait for (https://github.com/ros-simulation/gazebo_ros_pkgs/pull/941)
         # _plugin_command('force_system'), ' ',
-        _arg_command('profile'), ' ', LaunchConfiguration('profile'),
+        _arg_command('profile'),
+        # Support a yaml params_file:
+        #   If a params file is to be used, it needs to be preceded by --ros-args
+        #   and followed by a trailing --
+        # This provides the leading --ros-args if a params_file is specified.
+        _conditional_command('ros-args', LaunchConfiguration('params_file')),
+        # These two lines provide the --params-file [params_file] arguments
+        _conditional_command('params-file', LaunchConfiguration('params_file')),
+        LaunchConfiguration('params_file'),
+        # This provides the trailing -- if a params_file is specified.
+        _conditional_command('', LaunchConfiguration('params_file')),
         LaunchConfiguration('extra_gazebo_args'),
     ]
 
@@ -82,8 +96,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            'world', default_value='',
-            description='Specify world file name'
+            'world', default_value=[FindPackageShare('gazebo_ros'), '/worlds/empty.world'],
+            description='Specify world file name. Defaults to an empty world.'
         ),
         DeclareLaunchArgument(
             'version', default_value='false',
@@ -100,6 +114,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'help', default_value='false',
             description='Set "true" to produce gzserver help message.'
+        ),
+        DeclareLaunchArgument(
+            'initial_sim_time', default_value='',
+            description='Specify the initial simulation time (seconds).'
         ),
         DeclareLaunchArgument(
             'pause', default_value='false',
@@ -151,6 +169,10 @@ def generate_launch_description():
             'extra_gazebo_args', default_value='',
             description='Extra arguments to be passed to Gazebo'
         ),
+        DeclareLaunchArgument(
+            'params_file', default_value='',
+            description='Path to ROS 2 yaml parameter file'
+        ),
 
         # Specific to gazebo_ros
         DeclareLaunchArgument(
@@ -183,7 +205,7 @@ def generate_launch_description():
         # would be possible pending ros2/launch#290.
         ExecuteProcess(
             cmd=cmd,
-            output='screen',
+            output='both',
             additional_env=env,
             shell=False,
             prefix=prefix,
@@ -194,7 +216,7 @@ def generate_launch_description():
         # Execute node with default on_exit if the node is not required
         ExecuteProcess(
             cmd=cmd,
-            output='screen',
+            output='both',
             additional_env=env,
             shell=False,
             prefix=prefix,
@@ -210,9 +232,16 @@ def _boolean_command(arg):
     return py_cmd
 
 
-# Add string commands if not empty
-def _arg_command(arg):
-    cmd = ['"--', arg, '" if "" != "', LaunchConfiguration(arg), '" else ""']
+# Add string command and argument if not empty
+def _arg_command(arg, join_with='='):
+    cmd = ['"--', arg, join_with, '" if "" != "', LaunchConfiguration(arg), '" else ""']
+    py_cmd = PythonExpression(cmd)
+    return (py_cmd, LaunchConfiguration(arg))
+
+
+# Add --command if condition not empty
+def _conditional_command(arg, condition):
+    cmd = ['"--', arg, '" if "" != "', condition, '" else ""']
     py_cmd = PythonExpression(cmd)
     return py_cmd
 

@@ -29,7 +29,9 @@
     ],
     "files.associations": {
         "*.ipp": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "typeindex": "cpp",
+        "typeinfo": "cpp"
     },
     "cmake.sourceDirectory": "/home/jezzy/huskybot/src/huskybot_gazebo"
 }

@@ -2,6 +2,68 @@
 Changelog for package gazebo_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.0 (2025-01-27)
+------------------
+* Update Gazebo web links (`#1548 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1548>`_)
+* Contributors: Alejandro Hernández Cordero
+
+3.8.0 (2024-07-02)
+------------------
+* Bloom-ignored all the packages except gazebo_msgs on jazzy (`#1534 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1534>`_)
+* Structured point cloud (`#1447 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1447>`_)
+* [ros2] Add steerangle publisher to ackermann_drive (`#1518 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1518>`_)
+* gazebo_plugins: Fix min Gazebo version for wheel slip (`#1480 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1480>`_)
+  This plugin now uses API which was released in Gazebo Classic 11.9.
+  Fixes: f642be7a206c
+* Add drawbar pull demo world and script (`#1364 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1364>`_)
+  Add a demo world with gazebo_ros_force plugins
+  added to the wheel-slip trisphere-cycle models
+  and a script for publishing time-varying drawbar
+  pull forces.
+  * gazebo_ros_p3d.hpp: fix typo
+* gazebo_ros_wheel_slip: publish member variable (`#1434 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1434>`_)
+  I have observed some problems during teardown if gzserver
+  receives a SIGINT while publishing the wheel slip.
+  To try to fix it, this stores the message to be published
+  as a class member rather than a stack variable.
+* Fix deprecation warnings (`#1429 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1429>`_)
+  * Fix deprecation warning in spawn_entity.py
+  * Fix cv_bridge deprecation warning
+  Co-authored-by: Steve Peters <scpeters@openrobotics.org>
+* Add rectification matrix in sdf, docs, and example usage (`#1423 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1423>`_)
+  * Add rectification matrix in sdf, docs, and example usage
+  * Remove whitespace
+  * Add spaces for linter
+  * Added descriptive comment
+  Co-authored-by: kbjeppes <kaden.b.jeppesen@nasa.gov>
+* gazebo_ros_camera: configure projection matrix from sdf (`#1409 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1409>`_)
+* change radiation type comment from ultrasonic to ultrasound (`#1421 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1421>`_)
+* Include missing header in camera plugin (`#1408 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1408>`_)
+* Contributors: Brian, Graziato Davide, Jacob Perron, Jose Luis Rivero, Nestor D. Pereira Neto, Scott K Logan, Steve Peters, kjeppesen1, swkim01
+
+3.7.0 (2022-06-13)
+------------------
+* Add friction coefficient parameters (`#1393 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1393>`_)
+* GPS sensor plugin publishing velocity (`#1371 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1371>`_) (`#1387 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1387>`_)
+* Contributors: Jacob Perron, Jenn Nguyen, Marcel Dudek
+
+3.6.0 (2022-05-10)
+------------------
+* Initialize wheel slip parameters directly from SDF (`#1365 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1365>`_)
+* Fix test failures (`#1380 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1380>`_)
+* gazebo_ros_ft_sensor_demo.world: use world solver (`#1354 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1354>`_)
+* gazebo_ros_wheel_slip: set lateral slip to zero at low speed (`#1338 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1338>`_)
+* gazebo_ros_wheel_slip: publish wheel slip (`#1331 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1331>`_)
+* Add slip values for individual wheels (`#1312 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1312>`_)
+* Default slip values fix for wheel slip plugin (`#1308 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1308>`_)
+* Add runtime warning when user sets use_sim_time parameter
+* Fix warnings when building against the latest sources (`#1282 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1282>`_)
+* Add method to get ROS node from GazeboRosCameraPlugin (`#1299 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1299>`_)
+* Improve robustness of joint state publisher test (`#1259 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1259>`_)
+* Avoid rejecting QoS overrides parameters (`#1258 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1258>`_)
+* Publish with QoS reliable as default (`#1224 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1224>`_) (`#1235 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1235>`_)
+* Contributors: Aditya Pande, Audrow Nash, Brett Downing, Chris Lalancette, Daisuke Nishimatsu, Dharini Dutia, Jacob Perron, Steve Peters
+
 3.5.2 (2021-03-15)
 ------------------
 * gazebo_ros_camera: Added accessor methods for camera properties (`#1246 <https://github.com/ros-simulation/gazebo_ros_pkgs/issues/1246>`_)

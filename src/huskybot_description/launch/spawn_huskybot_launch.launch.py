@@ -1,14 +1,16 @@
-#!/usr/bin/python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os  # Modul os untuk operasi path file
 import shutil  # Untuk cek dependency (xacro, gazebo_ros)
 from ament_index_python.packages import get_package_share_directory  # Cari path share ROS2 package
 from launch import LaunchDescription  # Kelas utama untuk launch file ROS2
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, LogInfo, OpaqueFunction  # Untuk deklarasi argumen, eksekusi proses, logging info, dan fungsi custom
+from launch.actions import DeclareLaunchArgument, LogInfo, OpaqueFunction  # Untuk deklarasi argumen, logging info, dan fungsi custom
 from launch.substitutions import LaunchConfiguration, Command  # Untuk ambil nilai argumen dan jalankan perintah shell
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2
 from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter node yang bisa dieksekusi (misal hasil xacro)
+from launch.actions import ExecuteProcess  # Untuk menjalankan proses eksternal (spawn_entity)
+from typing import List  # Untuk type hint OpaqueFunction
 
 # ===================== ERROR HANDLING & VALIDASI =====================
 def validate_pose(context, *args, **kwargs):  # Fungsi custom untuk validasi pose string
@@ -48,6 +50,50 @@ def check_urdf_file(context, *args, **kwargs):  # Cek file URDF/Xacro ada dan bi
         print(f"[ERROR] File URDF/Xacro robot tidak bisa dibaca (permission denied): {urdf_file_path}", flush=True)
         exit(5)
     return []
+
+# ===================== POSE SPLIT UTILITY (SAFE) =====================
+def split_pose(context, *args, **kwargs) -> List[str]:
+    pose_str = LaunchConfiguration('pose').perform(context)
+    parts = pose_str.strip().split()
+    if len(parts) != 6:
+        print(f"[ERROR] Argumen pose harus 6 angka (x y z roll pitch yaw), sekarang: '{pose_str}'", flush=True)
+        exit(21)
+    try:
+        [float(p) for p in parts]
+    except Exception:
+        print(f"[ERROR] Semua elemen pose harus berupa angka: '{pose_str}'", flush=True)
+        exit(22)
+    return parts
+
+# ===================== OPAQUE FUNCTION UNTUK SPAWN ENTITY =====================
+def spawn_entity_action(context, *args, **kwargs):
+    # Ambil semua argumen yang dibutuhkan
+    robot_description_topic = LaunchConfiguration('robot_description_topic').perform(context)
+    entity_name = LaunchConfiguration('entity_name').perform(context)
+    robot_namespace = LaunchConfiguration('robot_namespace').perform(context)
+    reference_frame = LaunchConfiguration('reference_frame').perform(context)
+    pose_parts = split_pose(context)
+    # Mapping pose_parts ke x, y, z, R, P, Y
+    x, y, z, R, P, Y = pose_parts
+    # Jalankan proses spawn_entity.py dengan argumen yang sudah diparsing
+    return [
+        ExecuteProcess(
+            cmd=[
+                'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
+                '-topic', robot_description_topic,
+                '-entity', entity_name,
+                '-robot_namespace', robot_namespace,
+                '-reference_frame', reference_frame,
+                '-x', x,
+                '-y', y,
+                '-z', z,
+                '-R', R,
+                '-P', P,
+                '-Y', Y,
+            ],
+            output='screen'
+        )
+    ]
 
 # ===================== LAUNCH DESCRIPTION =====================
 def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
@@ -146,22 +192,7 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             parameters=[{'use_sim_time': use_sim_time, 'robot_description': robot_description}],
             remappings=[('/robot_description', robot_description_topic)]  # Remap topic robot_description jika diperlukan
         ),
-        ExecuteProcess(  # Eksekusi proses eksternal untuk spawn robot ke Gazebo
-            cmd=[
-                'ros2', 'run', 'gazebo_ros', 'spawn_entity.py',
-                '-topic', robot_description_topic,  # Ambil URDF dari topic robot_description (bisa di-remap)
-                '-entity', entity_name,  # Nama entity di Gazebo (dari argumen)
-                '-robot_namespace', robot_namespace,  # Namespace robot (dari argumen)
-                '-reference_frame', reference_frame,  # Reference frame (dari argumen)
-                '-x', Command(['echo ', pose, '| awk \'{print $1}\'']),  # Ambil x dari pose string
-                '-y', Command(['echo ', pose, '| awk \'{print $2}\'']),  # Ambil y dari pose string
-                '-z', Command(['echo ', pose, '| awk \'{print $3}\'']),  # Ambil z dari pose string
-                '-R', Command(['echo ', pose, '| awk \'{print $4}\'']),  # Ambil roll dari pose string
-                '-P', Command(['echo ', pose, '| awk \'{print $5}\'']),  # Ambil pitch dari pose string
-                '-Y', Command(['echo ', pose, '| awk \'{print $6}\'']),  # Ambil yaw dari pose string
-            ],
-            output='screen'
-        )
+        OpaqueFunction(function=spawn_entity_action)  # Jalankan proses spawn_entity.py dengan parsing pose yang benar
     ])
 
 # ===================== PENJELASAN & SARAN =====================
@@ -174,3 +205,5 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
 # - Saran: jika ingin OOP lebih lanjut, buat class Python untuk preset argumen multi-robot.
 # - Saran: tambahkan unit test launch file di folder test/ untuk CI/CD.
 # - Saran: tambahkan validasi file YAML kalibrasi jika ingin spawn robot dengan sensor baru.
+# - Saran: tambahkan logging ke file jika ingin audit lebih detail.
+# - Saran: tambahkan argumen untuk log_file jika ingin log custom per robot.

@@ -17,10 +17,6 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <gazebo/physics/Model.hh>
-#include <gazebo/rendering/Visual.hh>
-#include <gazebo/sensors/Sensor.hh>
-
 #include <gazebo_ros/executor.hpp>
 #include <gazebo_ros/node_visibility_control.h>
 #include <gazebo_ros/qos.hpp>
@@ -30,9 +26,14 @@
 #include <mutex>
 #include <string>
 #include <utility>
+#include <vector>
+#include <unordered_set>
 
 namespace gazebo_ros
 {
+// forward declare ExistingNodes
+class ExistingNodes;
+
 /// ROS Node for gazebo plugins
 /**
  * \class Node node.hpp <gazebo_ros/node.hpp>
@@ -70,16 +71,6 @@ public:
    *   <ros>
    *    <!-- Namespace of the node -->
    *    <namespace>/my_ns</namespace>
-   *    <!-- Legacy namespace behavior. True to default to the root namespace
-   *         if <namespace> is not specified, otherwise false to default
-   *         namespace to the the model name -->
-   *    <!-- Legacy behavior for setting namespace when <namespace> is not
-   *         specified.
-   *         When <legacy_namespace> is unspecified or set to true, the root
-   *         namespace `/` is the default.
-   *         When <legacy_namespace> is set to false, the default namespace is
-   *         the model name.
-   *    <legacy_namespace>true</legacy_namespace>
    *    <!-- Command line arguments sent to Node's constructor for remappings -->
    *    <argument>__name:=super_cool_node</argument>
    *    <argument>__log_level:=debug</argument>
@@ -96,42 +87,11 @@ public:
    * </plugin>
    * \endcode
    * \param[in] _sdf An SDF element in the style above or containing a <ros> tag in the style above
-   * \return A shared pointer to a new #gazebo_ros::Node
+   * \param[in] _node_name: An optional node_name to overwrite plugin name being used as node name.
+   * \return A shared pointer to a new #gazebo_ros::Node. A nullptr is returned and an error message
+   * is logged in case multiple nodes have the same name.
    */
-  static SharedPtr Get(sdf::ElementPtr _sdf);
-
-  /// Get reference to a #gazebo_ros::Node and add it to the global
-  /// #gazebo_ros::Executor.
-  /// This overloaded function allows users to specify a default namespace if
-  /// <namespace> is not present
-  static SharedPtr Get(
-    sdf::ElementPtr _sdf,
-    const std::string & _defaultNamespace);
-
-  /// Get reference to a #gazebo_ros::Node and add it to the global
-  /// #gazebo_ros::Executor.
-  /// This overloaded function sets the node namespace to the parent model name
-  /// if <namespace> is not present
-  static SharedPtr Get(
-    sdf::ElementPtr _sdf,
-    const gazebo::physics::ModelPtr & parent);
-
-  /// Get reference to a #gazebo_ros::Node and add it to the global
-  /// #gazebo_ros::Executor.
-  /// This overloaded function sets the node namespace to the name of the
-  /// parent model containing this sensor if <namespace> is not present
-  static SharedPtr Get(
-    sdf::ElementPtr _sdf,
-    const gazebo::sensors::SensorPtr & parent);
-
-  /// Get reference to a #gazebo_ros::Node and add it to the global
-  /// #gazebo_ros::Executor.
-  /// This overloaded function sets the node namespace to the name of the
-  /// parent model containing this visual if <namespace> is not present
-  /// if <namespace> is not present
-  static SharedPtr Get(
-    sdf::ElementPtr _sdf,
-    const gazebo::rendering::VisualPtr & parent);
+  static SharedPtr Get(sdf::ElementPtr _sdf, std::string _node_name = "");
 
   /// Create a #gazebo_ros::Node and add it to the global #gazebo_ros::Executor.
   /**
@@ -176,12 +136,18 @@ private:
   /// Inherit constructor
   using rclcpp::Node::Node;
 
+  // A handler for the param change callback.
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_change_callback_handler_;
+
   /// Points to #static_executor_, so that when all #gazebo_ros::Node instances are destroyed, the
   /// executor thread is too
   std::shared_ptr<Executor> executor_;
 
   /// QoS for node entities
   gazebo_ros::QoS qos_;
+
+  /// track of nodes already instantiated
+  static ExistingNodes static_existing_nodes_;
 
   /// Locks #initialized_ and #executor_
   static std::mutex lock_;
@@ -221,10 +187,59 @@ Node::SharedPtr Node::CreateWithArgs(Args && ... args)
     static_executor_ = node->executor_;
   }
 
+  // Generate warning on start up if use_sim_time parameter is set to false
+  bool check_sim_time = false;
+  node->get_parameter("use_sim_time", check_sim_time);
+  if (!check_sim_time) {
+    RCLCPP_WARN(
+      node->get_logger(), "Startup warning: use_sim_time parameter will be ignored "
+      "by default plugins and ROS messages will continue to use simulation timestamps");
+  }
+
+  std::weak_ptr<gazebo_ros::Node> node_weak_ptr;
+  node_weak_ptr = node;
+  // Parameter change callback
+  auto param_change_callback =
+    [&node_weak_ptr](std::vector<rclcpp::Parameter> parameters) {
+      auto result = rcl_interfaces::msg::SetParametersResult();
+      result.successful = true;
+
+      for (const auto & parameter : parameters) {
+        auto param_name = parameter.get_name();
+        if (param_name == "use_sim_time") {
+          if (auto node_shared_ptr = node_weak_ptr.lock()) {
+            RCLCPP_WARN(
+              node_shared_ptr->get_logger(),
+              "use_sim_time parameter will be ignored by default plugins "
+              "and ROS messages will continue to use simulation timestamps");
+          }
+        }
+      }
+      return result;
+    };
+
+  node->param_change_callback_handler_ =
+    node->add_on_set_parameters_callback(param_change_callback);
+
   // Add new node to the executor so its callbacks are called
   node->executor_->add_node(node);
 
   return node;
 }
+
+// Class to hold the global set of tracked node names.
+class ExistingNodes
+{
+public:
+  // Methods need to be protected by internal mutex
+  void add_node(const std::string & node_name);
+  bool check_node(const std::string & node_name);
+  void remove_node(const std::string & node_name);
+
+private:
+  /// set of tracked node names
+  std::unordered_set<std::string> set_;
+  std::mutex internal_mutex_;
+};
 }  // namespace gazebo_ros
 #endif  // GAZEBO_ROS__NODE_HPP_

@@ -83,17 +83,17 @@ def generate_launch_description():                                      # Fungsi
             ],
             condition=IfCondition(LaunchConfiguration('enable_safety_monitor'))  # Enable/disable node dengan argumen
         ),
-        LogInfo(msg="Launching Logger Node..."),                       # Logging info untuk node logger
-        Node(
-            package='huskybot_control',                                # Nama package logger
-            executable='logger.py',                                    # Nama script logger (pastikan ada di scripts/)
-            output='screen',                                           # Output log node ke terminal
-            parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')}, # Parameter use_sim_time diteruskan ke logger
-                {'log_file': LaunchConfiguration('log_file')},         # Path file log diteruskan ke logger
-                {'log_csv': LaunchConfiguration('log_csv')},           # Opsi log ke CSV diteruskan ke logger
-                {'log_level': LaunchConfiguration('log_level')},       # Level log diteruskan ke logger
-                {'max_log_size': LaunchConfiguration('max_log_size')}  # Ukuran maksimum file log diteruskan ke logger
-            ]
-        ),
+        # LogInfo(msg="Launching Logger Node..."),                       # Logging info untuk node logger
+        # Node(
+        #     package='huskybot_control',                                # Nama package logger
+        #     executable='logger.py',                                    # Nama script logger (pastikan ada di scripts/)
+        #     output='screen',                                           # Output log node ke terminal
+        #     parameters=[
+        #         {'use_sim_time': LaunchConfiguration('use_sim_time')}, # Parameter use_sim_time diteruskan ke logger
+        #         {'log_file': LaunchConfiguration('log_file')},         # Path file log diteruskan ke logger
+        #         {'log_csv': LaunchConfiguration('log_csv')},           # Opsi log ke CSV diteruskan ke logger
+        #         {'log_level': LaunchConfiguration('log_level')},       # Level log diteruskan ke logger
+        #         {'max_log_size': LaunchConfiguration('max_log_size')}  # Ukuran maksimum file log diteruskan ke logger
+        #     ]
+        # ),
     ])

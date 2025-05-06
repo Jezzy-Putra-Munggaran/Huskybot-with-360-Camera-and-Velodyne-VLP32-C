@@ -18,7 +18,7 @@ set(plugins
 
 foreach(plugin ${plugins})
   add_library(${plugin} SHARED plugins/${plugin}.cpp)
-  target_link_libraries(${plugin} gazebo_ros_node tbb)
+  target_link_libraries(${plugin} gazebo_ros_node)
   ament_target_dependencies(${plugin}
     "rclcpp"
     "gazebo_dev"
@@ -39,6 +39,7 @@ set(tests
   test_gazebo_ros_properties
   test_gazebo_ros_state
   test_node
+  test_reject_duplicate_nodes
   test_plugins
   test_qos
   test_sim_time
@@ -58,7 +59,6 @@ foreach(test ${tests})
     gazebo_ros_node
     gazebo_ros_utils
     gazebo_test_fixture
-    tbb
   )
   ament_target_dependencies(${test}
     "builtin_interfaces"
@@ -95,3 +95,4 @@ add_launch_test(mock_entity_spawner.test.py
     "mock_robot_state_publisher:=${CMAKE_CURRENT_BINARY_DIR}/mock_robot_state_publisher"
     "mock_gazebo_ros_factory:=${CMAKE_CURRENT_BINARY_DIR}/mock_gazebo_ros_factory"
 )
+add_launch_test(test_disable_performance_metrics.test.py)
