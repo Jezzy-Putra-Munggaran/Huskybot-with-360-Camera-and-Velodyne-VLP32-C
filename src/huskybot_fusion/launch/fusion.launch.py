@@ -14,7 +14,7 @@ def generate_launch_description():
     # Tambahkan parameterisasi agar bisa diubah tanpa edit file
     calibration_file_arg = DeclareLaunchArgument(
         'calibration_file',
-        default_value='/home/jezzy/huskybot/src/huskybot_description/calibration/extrinsic_lidar_to_camera.yaml',
+        default_value='/home/jezzy/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml',
         description='Path ke file kalibrasi extrinsic lidar-ke-kamera'
     )
     confidence_threshold_arg = DeclareLaunchArgument(

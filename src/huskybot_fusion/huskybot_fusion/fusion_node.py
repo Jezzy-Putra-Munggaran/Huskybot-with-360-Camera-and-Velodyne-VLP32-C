@@ -36,7 +36,7 @@ class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
 
         # Cek file kalibrasi (misal dari parameter, atau hardcode dulu)
         self.calibration_file = self.declare_parameter(
-            'calibration_file', '/home/jezzy/huskybot/src/huskybot_description/calibration/extrinsic_lidar_to_camera.yaml'
+            'calibration_file', '/home/jezzy/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml'
         ).get_parameter_value().string_value  # Ambil path file kalibrasi dari parameter
         if not os.path.isfile(self.calibration_file):  # Cek file kalibrasi ada
             self.get_logger().error(f"File kalibrasi tidak ditemukan: {self.calibration_file}")

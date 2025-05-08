@@ -17,11 +17,15 @@ Deskripsi model robot Husky A200 beserta mounting sensor (Velodyne VLP-32C dan 6
 ## Struktur Folder  <!-- Penjelasan struktur folder utama package -->
 - `robot/` : File Xacro/URDF robot dan sensor. <!-- Folder robot berisi file deskripsi utama -->
 - `meshes/` : Mesh visual sensor dan robot. <!-- Folder meshes berisi file mesh 3D sensor dan robot -->
-- `calibration/` : File kalibrasi kamera-LiDAR (jika ada). <!-- Folder calibration berisi file YAML kalibrasi sensor -->
+- `calibration/` : File kalibrasi kamera (INTRINSIC SAJA, legacy). <!-- Folder calibration hanya untuk file intrinsic kamera, legacy -->
 - `launch/` : Launch file Python untuk RViz2, spawn robot, dsb. <!-- Folder launch berisi file launch Python -->
 - `rviz/` : File konfigurasi RViz2. <!-- Folder rviz berisi konfigurasi visualisasi RViz -->
 - `README.md` : Dokumentasi package ini. <!-- File ini sendiri sebagai dokumentasi utama -->
 - `CMakeLists.txt`, `package.xml` : Konfigurasi build dan dependency ROS2. <!-- File build system dan dependency -->
+
+> **Catatan:**  
+> File kalibrasi extrinsic (kamera-LiDAR) **sekarang disimpan di** `huskybot_calibration/config/extrinsic_lidar_to_camera.yaml` **bukan di** `calibration/` **lagi!**  
+> Semua node fusion dan pipeline lain WAJIB membaca file extrinsic dari path baru tersebut.
 
 ---
 
@@ -73,7 +77,8 @@ map
 
 ## Catatan  <!-- Catatan penting untuk integrasi workspace -->
 Pastikan semua frame (`base_link`, `velodyne_link`, `camera_*_link`) konsisten dengan node lain di workspace. <!-- Penjelasan penting agar integrasi sensor dan node lain tidak error -->
-Jika ingin menambah sensor baru, tambahkan mesh, link, joint, dan plugin di file Xacro, serta update file kalibrasi di `calibration/`. <!-- Saran jika ingin extend robot -->
+Jika ingin menambah sensor baru, tambahkan mesh, link, joint, dan plugin di file Xacro, serta update file kalibrasi di `calibration/` untuk intrinsic kamera.  
+**Untuk file kalibrasi extrinsic kamera-LiDAR, update hanya di** `huskybot_calibration/config/extrinsic_lidar_to_camera.yaml`.
 
 ---
 
@@ -96,15 +101,17 @@ Jika ingin menambah sensor baru, tambahkan mesh, link, joint, dan plugin di file
 ## Contoh Dataset Kalibrasi  <!-- Contoh struktur dan isi file kalibrasi sensor -->
 ```
 calibration/
-  extrinsic_lidar_to_camera.yaml
   intrinsic_camera_front.yaml
   intrinsic_camera_left.yaml
   intrinsic_camera_right.yaml
   intrinsic_camera_rear.yaml
   intrinsic_camera_front_left.yaml
   intrinsic_camera_rear_right.yaml
+
+huskybot_calibration/config/
+  extrinsic_lidar_to_camera.yaml
 ```
-<!-- Penjelasan: Semua file kalibrasi kamera dan LiDAR disimpan di folder calibration/ -->
+<!-- Penjelasan: File intrinsic kamera tetap di calibration/, file extrinsic kamera-LiDAR sekarang di huskybot_calibration/config/ -->
 
 **Contoh isi extrinsic_lidar_to_camera.yaml:** <!-- Contoh format file YAML kalibrasi extrinsic -->
 ```yaml
@@ -132,7 +139,7 @@ T_lidar_camera:
 - Jika TF tidak lengkap, cek joint dan link di Xacro. <!-- Saran cek struktur joint/link jika TF error -->
 - Jika sensor tidak publish di Gazebo, cek plugin dan remap topic di launch file. <!-- Saran cek plugin dan remap topic jika sensor tidak publish -->
 - Jika spawn robot gagal, cek dependency xacro, gazebo_ros, dan permission file. <!-- Saran cek dependency dan permission jika spawn gagal -->
-- Jika kalibrasi tidak terbaca, cek format dan path file YAML di calibration/. <!-- Saran cek file kalibrasi jika tidak terbaca node lain -->
+- Jika kalibrasi tidak terbaca, cek format dan path file YAML di `huskybot_calibration/config/` untuk extrinsic, dan di `calibration/` untuk intrinsic kamera. <!-- Saran cek file kalibrasi jika tidak terbaca node lain -->
 
 ---
 
