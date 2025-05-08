@@ -6,16 +6,12 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  # we dont use add_compile_options with pedantic in message packages
-  # because the Python C extensions dont comply with it
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 endif()
 
 if(WIN32)
   add_compile_definitions(
-    # For math constants
     _USE_MATH_DEFINES
-    # Minimize Windows namespace collision
     NOMINMAX
     WIN32_LEAN_AND_MEAN
   )
@@ -107,6 +103,7 @@ if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_force PUBLIC ${ignition-common3_INCLUDE_DIRS})
   target_link_libraries(gazebo_ros_force ${ignition-common3_LIBRARIES})
 endif()
+
 # gazebo_ros_template
 add_library(gazebo_ros_template SHARED
   src/gazebo_ros_template.cpp
@@ -194,7 +191,6 @@ if(ENABLE_PROFILER)
   target_include_directories(gazebo_ros_gps_sensor PUBLIC ${ignition-common3_INCLUDE_DIRS})
   target_link_libraries(gazebo_ros_gps_sensor ${ignition-common3_LIBRARIES})
 endif()
-
 
 # gazebo_ros_ray_sensor
 add_library(gazebo_ros_ray_sensor SHARED

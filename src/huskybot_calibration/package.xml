@@ -1,0 +1,35 @@
+<?xml version="1.0"?> <!-- Header XML wajib untuk file XML ROS2 -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema agar package.xml sesuai standar ROS2 -->
+<package format="3"> <!-- Format package.xml ROS2 terbaru (format 3, wajib di ROS2 Humble) -->
+
+  <name>huskybot_calibration</name> <!-- Nama package, harus sama dengan nama folder dan modul utama -->
+  <version>0.1.0</version> <!-- Versi package, update jika ada perubahan besar -->
+  <description>Kalibrasi otomatis kamera-LiDAR dan sinkronisasi waktu sensor untuk Huskybot (360° Arducam + Velodyne VLP-32C). Siap untuk ROS2 Humble, Gazebo, dan robot Husky A200 asli.</description> <!-- Deskripsi singkat, jelas, dan spesifik -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama dan email maintainer utama, penting untuk tracking dan support -->
+  <license>Apache-2.0</license> <!-- Lisensi open source yang direkomendasikan ROS2, aman untuk publikasi dan kolaborasi -->
+
+  <!-- Dependency utama agar bisa jalan di ROS2 Humble, Gazebo, dan robot asli -->
+  <exec_depend>rclpy</exec_depend> <!-- Core ROS2 Python API, wajib untuk semua node Python -->
+  <exec_depend>sensor_msgs</exec_depend> <!-- Message sensor (Image, PointCloud2, dsb), untuk subscribe/publish data sensor -->
+  <exec_depend>std_msgs</exec_depend> <!-- Message standar ROS2, untuk komunikasi antar node -->
+  <exec_depend>cv_bridge</exec_depend> <!-- Konversi ROS Image <-> OpenCV, wajib untuk proses image kalibrasi -->
+  <exec_depend>numpy</exec_depend> <!-- Komputasi numerik, array, matrix, wajib untuk semua operasi kalibrasi -->
+  <exec_depend>pyyaml</exec_depend> <!-- Baca/tulis file YAML kalibrasi, wajib untuk load/save hasil kalibrasi -->
+  <exec_depend>opencv-python</exec_depend> <!-- OpenCV untuk deteksi pattern, image processing, wajib untuk kalibrasi checkerboard/ArUco -->
+  <exec_depend>message_filters</exec_depend> <!-- Sinkronisasi waktu antar sensor, wajib untuk sinkronisasi kamera-LiDAR -->
+  <exec_depend>geometry_msgs</exec_depend> <!-- Untuk publish transformasi, dsb, penting untuk integrasi TF -->
+  <exec_depend>tf2_ros</exec_depend> <!-- Untuk publish/lookup transformasi antar frame, penting untuk integrasi dengan workspace lain -->
+  <exec_depend>pcl-msgs</exec_depend> <!-- Untuk PointCloud2 jika perlu, penting untuk proses pointcloud LiDAR -->
+  <exec_depend>ament_index_python</exec_depend> <!-- Untuk lookup path package lain, penting untuk load file kalibrasi dari package lain -->
+  <exec_depend>matplotlib</exec_depend> <!-- (Opsional) Untuk visualisasi hasil kalibrasi, sangat membantu debugging dan verifikasi -->
+
+  <!-- Dependency test dan linter (wajib untuk CI/CD dan jaga kualitas kode) -->
+  <test_depend>ament_copyright</test_depend> <!-- Test copyright, wajib untuk CI -->
+  <test_depend>ament_flake8</test_depend> <!-- Test PEP8 Python, wajib untuk CI -->
+  <test_depend>ament_pep257</test_depend> <!-- Test docstring Python, wajib untuk CI -->
+  <test_depend>python3-pytest</test_depend> <!-- Unit test Python, wajib untuk CI dan jaga kualitas pipeline -->
+
+  <export>
+    <build_type>ament_python</build_type> <!-- Build type Python (standar ROS2), wajib untuk package Python -->
+  </export>
+</package>

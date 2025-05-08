@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>  <!-- Header XML standar, wajib untuk file XML -->
-<sdf version="1.6">  <!-- Versi SDF, harus sesuai dengan versi Gazebo Classic 11 (default ROS2 Humble) -->
+<sdf version="1.6">  <!-- Versi SDF, harus sesuai dengan Gazebo Classic 11 (default ROS2 Humble) -->
   <world name="yolo_test_world">  <!-- Nama world, unik untuk identifikasi di Gazebo -->
 
+    <!-- ===================== ENVIRONMENT BASE ===================== -->
     <include>
       <uri>model://sun</uri>                <!-- Tambahkan pencahayaan matahari ke world -->
     </include>
@@ -9,145 +10,126 @@
       <uri>model://ground_plane</uri>       <!-- Tambahkan ground plane (tanah datar) ke world -->
     </include>
 
+    <!-- ===================== OBJEK SIMULASI ===================== -->
     <!-- 20 objek: kecil di radius 20m, besar di radius 25m -->
-    <!-- Sudut antar objek: 18 derajat (360/20) -->
-    <!-- Penempatan: urut kecil-besar-kecil-besar dst -->
-    <!-- Semua objek statis, tidak bergerak, untuk deteksi dan evaluasi sensor/YOLO -->
+    <!-- Penempatan: urut kecil-besar-kecil-besar dst, untuk deteksi sensor/YOLO -->
+    <!-- Semua objek statis, tidak bergerak -->
 
-    <!-- 0 deg -->
+    <!-- Contoh objek, copy-paste untuk menambah objek lain -->
     <include>
-      <name>obj_0</name>                    <!-- Nama unik objek, penting untuk referensi di plugin/script -->
-      <uri>model://person_standing</uri>    <!-- Model manusia berdiri (objek kecil) -->
+      <name>obj_0</name>                    <!-- Nama unik objek -->
+      <uri>model://person_standing</uri>    <!-- Model manusia berdiri -->
       <static>true</static>                 <!-- Objek tidak bergerak -->
-      <pose>20 0 0 0 0 0</pose>             <!-- Posisi di world: x=20, y=0, z=0, rotasi=0 -->
+      <pose>20 0 0 0 0 0</pose>             <!-- Posisi di world -->
     </include>
-    <!-- 18 deg -->
     <include>
       <name>obj_1</name>
-      <uri>model://suv</uri>                <!-- Model mobil SUV (objek besar) -->
+      <uri>model://suv</uri>
       <static>true</static>
-      <pose>23.79 7.73 0 0 0 0.31</pose>   <!-- Posisi di world, rotasi yaw 0.31 rad -->
+      <pose>23.79 7.73 0 0 0 0.31</pose>
     </include>
-    <!-- 36 deg -->
     <include>
       <name>obj_2</name>
-      <uri>model://stop_sign</uri>          <!-- Model rambu stop (objek kecil) -->
+      <uri>model://stop_sign</uri>
       <static>true</static>
       <pose>16.18 11.76 0 0 0 0.63</pose>
     </include>
-    <!-- 54 deg -->
     <include>
       <name>obj_3</name>
-      <uri>model://bus</uri>                <!-- Model bus (objek besar) -->
+      <uri>model://bus</uri>
       <static>true</static>
       <pose>14.71 20.24 0 0 0 0.94</pose>
     </include>
-    <!-- 72 deg -->
     <include>
       <name>obj_4</name>
-      <uri>model://postbox</uri>            <!-- Model kotak pos (objek kecil) -->
+      <uri>model://postbox</uri>
       <static>true</static>
       <pose>6.18 19.02 0 0 0 1.26</pose>
     </include>
-    <!-- 90 deg -->
     <include>
       <name>obj_5</name>
-      <uri>model://prius_hybrid</uri>       <!-- Model mobil Prius (objek besar) -->
+      <uri>model://prius_hybrid</uri>
       <static>true</static>
       <pose>0 25 0 0 0 1.57</pose>
     </include>
-    <!-- 108 deg -->
     <include>
       <name>obj_6</name>
       <uri>model://person_standing</uri>
       <static>true</static>
       <pose>-6.18 19.02 0 0 0 1.88</pose>
     </include>
-    <!-- 126 deg -->
     <include>
       <name>obj_7</name>
       <uri>model://suv</uri>
       <static>true</static>
       <pose>-14.71 20.24 0 0 0 2.20</pose>
     </include>
-    <!-- 144 deg -->
     <include>
       <name>obj_8</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
       <pose>-16.18 11.76 0 0 0 2.51</pose>
     </include>
-    <!-- 162 deg -->
     <include>
       <name>obj_9</name>
       <uri>model://bus</uri>
       <static>true</static>
       <pose>-23.79 7.73 0 0 0 2.83</pose>
     </include>
-    <!-- 180 deg -->
     <include>
       <name>obj_10</name>
       <uri>model://postbox</uri>
       <static>true</static>
       <pose>-20 0 0 0 0 3.14</pose>
     </include>
-    <!-- 198 deg -->
     <include>
       <name>obj_11</name>
       <uri>model://prius_hybrid</uri>
       <static>true</static>
       <pose>-23.79 -7.73 0 0 0 3.46</pose>
     </include>
-    <!-- 216 deg -->
     <include>
       <name>obj_12</name>
       <uri>model://person_standing</uri>
       <static>true</static>
       <pose>-16.18 -11.76 0 0 0 3.77</pose>
     </include>
-    <!-- 234 deg -->
     <include>
       <name>obj_13</name>
       <uri>model://suv</uri>
       <static>true</static>
       <pose>-14.71 -20.24 0 0 0 4.08</pose>
     </include>
-    <!-- 252 deg -->
     <include>
       <name>obj_14</name>
       <uri>model://stop_sign</uri>
       <static>true</static>
       <pose>-6.18 -19.02 0 0 0 4.40</pose>
     </include>
-    <!-- 270 deg -->
     <include>
       <name>obj_15</name>
       <uri>model://bus</uri>
       <static>true</static>
       <pose>0 -25 0 0 0 4.71</pose>
     </include>
-    <!-- 288 deg -->
     <include>
       <name>obj_16</name>
       <uri>model://postbox</uri>
       <static>true</static>
       <pose>6.18 -19.02 0 0 0 5.03</pose>
     </include>
-    <!-- 306 deg -->
     <include>
       <name>obj_17</name>
       <uri>model://prius_hybrid</uri>
       <static>true</static>
       <pose>14.71 -20.24 0 0 0 5.34</pose>
     </include>
-    <!-- 324 deg -->
     <include>
       <name>obj_18</name>
       <uri>model://person_standing</uri>
       <static>true</static>
       <pose>16.18 -11.76 0 0 0 5.65</pose>
     </include>
-    <!-- 342 deg -->
     <include>
       <name>obj_19</name>
       <uri>model://suv</uri>
@@ -155,92 +137,19 @@
       <pose>23.79 -7.73 0 0 0 5.97</pose>
     </include>
 
-    <!-- Spawn point robot di tengah world -->
+    <!-- ===================== SPAWN POINT ROBOT ===================== -->
     <include>
       <name>husky_spawn_point</name>                <!-- Nama unik untuk spawn point -->
       <uri>model://empty</uri>                      <!-- Model kosong, hanya sebagai marker -->
       <pose>0 0 0 0 0 0</pose>                      <!-- Posisi 0,0,0 (tengah world) -->
     </include>
 
-    <!-- ===================== PLUGIN WORLD GAZEBO ===================== -->
-
-    <!-- Plugin ROS interface agar world bisa publish state ke ROS2 -->
-    <plugin name="ros_world_plugin" filename="libgazebo_ros_api_plugin.so">
-      <ros>
-        <namespace>/gazebo</namespace>       <!-- Namespace ROS plugin -->
-      </ros>
-    </plugin>
-
-    <!-- Plugin sensor global: publish /clock ke ROS2 -->
-    <plugin name="clock_publisher" filename="libgazebo_ros_clock.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-      <update_rate>100.0</update_rate>       <!-- Frekuensi publish clock -->
-    </plugin>
-
-    <!-- Plugin publish world state (model poses, tf, dsb) ke ROS2 -->
-    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-      <publish_model_pose>true</publish_model_pose>    <!-- Publish pose semua model ke ROS2 -->
-      <publish_visual>true</publish_visual>            <!-- Publish visual info ke ROS2 -->
-      <publish_collision>true</publish_collision>      <!-- Publish collision info ke ROS2 -->
-      <publish_contacts>true</publish_contacts>        <!-- Publish kontak antar objek ke ROS2 -->
-      <update_rate>10.0</update_rate>                  <!-- Frekuensi update state -->
-    </plugin>
-
-    <!-- Plugin global sensor noise (contoh, opsional) -->
-    <plugin name="global_sensor_noise" filename="libgazebo_ros_noise.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-      <noise_type>gaussian</noise_type>                <!-- Tipe noise (gaussian, opsional) -->
-      <mean>0.0</mean>                                 <!-- Mean noise -->
-      <stddev>0.01</stddev>                            <!-- Standar deviasi noise -->
-      <update_rate>10.0</update_rate>                  <!-- Frekuensi update noise -->
-    </plugin>
-
-    <!-- Plugin publish /tf dan /tf_static ke ROS2 -->
-    <plugin name="tf_broadcaster" filename="libgazebo_ros_tf.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-      <update_rate>50.0</update_rate>                  <!-- Frekuensi publish TF -->
-    </plugin>
-
-    <!-- Plugin world ROS service (reset, pause, dsb) -->
-    <plugin name="gazebo_ros_services" filename="libgazebo_ros_services.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-    </plugin>
-
-    <!-- Plugin ROS diagnostics (opsional, monitoring world health) -->
-    <plugin name="gazebo_ros_diagnostics" filename="libgazebo_ros_diagnostics.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-      <update_rate>1.0</update_rate>                   <!-- Frekuensi publish diagnostics -->
-    </plugin>
-
-    <!-- Plugin penting: factory agar spawn_entity.py bisa dipakai -->
-    <plugin name="gazebo_ros_factory" filename="libgazebo_ros_factory.so">
-      <ros>
-        <namespace>/gazebo</namespace>
-      </ros>
-    </plugin>
-
-    <!-- Plugin custom: publish semua model poses ke topic custom (contoh, opsional) -->
+    <!-- ===================== TROUBLESHOOTING & CATATAN ===================== -->
     <!--
-    <plugin name="custom_model_pose_publisher" filename="libcustom_model_pose_publisher.so">
-      <ros>
-        <namespace>/custom_pose</namespace>
-      </ros>
-      <topic>/custom/model_poses</topic>
-      <update_rate>5.0</update_rate>
-    </plugin>
+      - Jangan masukkan plugin ROS2 (libgazebo_ros_init.so, libgazebo_ros_factory.so, libgazebo_ros_state.so) ke world file! Semua plugin ROS2 di-load lewat launch file.
+      - Jika robot tidak muncul: pastikan plugin factory dan init sudah aktif di launch file, dan spawn_entity.py tidak error.
+      - Jika objek tidak muncul: pastikan model ada di ~/.gazebo/models atau /usr/share/gazebo-11/models.
+      - Jika ingin menambah sensor/plugin lain, pastikan sudah ada di hasil build dan kompatibel ROS2.
     -->
 
   </world>
