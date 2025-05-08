@@ -1,7 +1,7 @@
 <?xml version="1.0"?> <!-- Header XML wajib untuk file XML -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras"> <!-- Root elemen robot, pakai Xacro, nama robot unik -->
 
-  <!-- Include Husky base dari package husky_description -->
+  <!-- ==================== INCLUDE BASE HUSKY ==================== -->
   <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/> <!-- Import base Husky agar semua link/joint dasar tersedia -->
 
   <!-- ==================== PLUGIN GAZEBO ==================== -->
@@ -33,7 +33,8 @@
       <!-- Error handling: pastikan semua joint di atas ada di URDF base Husky -->
     </plugin>
   </gazebo>
-  <!-- IMU ROS2 plugin -->
+
+  <!-- ==================== SENSOR IMU ==================== -->
   <gazebo reference="imu_link">
     <sensor type="imu" name="imu_sensor">
       <always_on>true</always_on> <!-- IMU selalu aktif -->
@@ -47,7 +48,14 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!-- GPS ROS2 plugin (tambahkan link gps_link di bawah jika belum ada) -->
+
+  <!-- ==================== SENSOR GPS ==================== -->
+  <!--
+    ERROR HANDLING: 
+    - Jangan deklarasi ulang <link name="gps_link"/> dan joint jika sudah ada di base Husky!
+    - Jika ingin custom posisi, override joint dengan nama berbeda atau gunakan xacro argumen.
+    - Jika tetap ingin custom, pastikan hanya ada SATU link dengan nama gps_link di seluruh URDF!
+  -->
   <gazebo reference="gps_link">
     <sensor type="gps" name="gps_sensor">
       <always_on>true</always_on> <!-- GPS selalu aktif -->
@@ -62,13 +70,10 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!-- Link dan joint GPS (pastikan ada di URDF base, jika belum tambahkan di sini) -->
-  <link name="gps_link"/> <!-- Link GPS, posisi bisa diubah sesuai mounting -->
-  <joint name="gps_joint" type="fixed">
-    <parent link="base_link"/> <!-- Mount ke base_link -->
-    <child link="gps_link"/>
-    <origin xyz="0 0 0.3" rpy="0 0 0"/> <!-- Posisi GPS di atas robot -->
-  </joint>
+  <!--
+    <link name="gps_link"/> dan joint gps_joint DIHAPUS agar tidak duplikat!
+    Jika ingin custom mounting, edit di base Husky atau override dengan xacro argumen.
+  -->
 
   <!-- ==================== TOWER 3 TINGKAT ==================== -->
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
@@ -99,6 +104,7 @@
     <child link="orin_box_link"/>
     <origin xyz="0 0 0.03" rpy="0 0 0"/>
   </joint>
+
   <!-- 2. Tower Hexagonal Bawah -->
   <link name="hex_tower_lower_link">
     <visual>
@@ -127,6 +133,7 @@
     <child link="hex_tower_lower_link"/>
     <origin xyz="0 0 0.09" rpy="0 0 0"/>
   </joint>
+
   <!-- 3. Tower Hexagonal Atas -->
   <link name="hex_tower_upper_link">
     <visual>
@@ -155,6 +162,7 @@
     <child link="hex_tower_upper_link"/>
     <origin xyz="0 0 0.18" rpy="0 0 0"/>
   </joint>
+
   <!-- 4. Tatakan Silinder LiDAR -->
   <link name="lidar_base_link">
     <visual>
@@ -183,6 +191,7 @@
     <child link="lidar_base_link"/>
     <origin xyz="0 0 0.18" rpy="0 0 0"/>
   </joint>
+
   <!-- 5. Velodyne VLP-32C -->
   <link name="velodyne_link">
     <visual>
