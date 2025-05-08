@@ -1,0 +1,271 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import rclpy  # Library utama ROS2 Python
+from rclpy.node import Node  # Base class untuk node ROS2
+from sensor_msgs.msg import Image, PointCloud2  # Message ROS2 untuk kamera dan LiDAR
+from cv_bridge import CvBridge  # Konversi ROS Image <-> OpenCV
+import numpy as np  # Komputasi numerik
+import cv2  # OpenCV untuk deteksi checkerboard/ArUco
+import yaml  # Untuk baca/tulis file YAML hasil kalibrasi
+import os  # Untuk cek file/folder
+import traceback  # Untuk logging error detail
+from message_filters import ApproximateTimeSynchronizer, Subscriber  # Sinkronisasi data sensor
+from std_msgs.msg import Header  # Untuk header ROS2
+import logging  # Logging error/info
+import matplotlib.pyplot as plt  # Untuk visualisasi hasil kalibrasi
+
+try:
+    import open3d as o3d  # Untuk ICP (estimasi transformasi extrinsic, opsional)
+except ImportError:
+    o3d = None
+
+try:
+    from sklearn.cluster import DBSCAN  # Untuk clustering pattern di LiDAR (opsional)
+except ImportError:
+    DBSCAN = None
+
+CALIB_YAML_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), 'config', 'extrinsic_lidar_to_camera.yaml'
+)  # Path file hasil kalibrasi YAML
+
+class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
+    def __init__(self):
+        super().__init__('lidar_camera_calibrator')  # Inisialisasi node ROS2
+        self.bridge = CvBridge()  # Bridge untuk konversi image
+        self.declare_parameter('camera_topic', '/panorama/image_raw')  # Topic kamera (bisa diubah via launch)
+        self.declare_parameter('lidar_topic', '/velodyne_points')  # Topic LiDAR (bisa diubah via launch)
+        self.declare_parameter('pattern_type', 'checkerboard')  # checkerboard/aruco
+        self.declare_parameter('pattern_size', [7, 6])  # Ukuran pattern checkerboard (bisa diubah)
+        self.declare_parameter('square_size', 0.025)  # Satuan meter (bisa diubah)
+        self.declare_parameter('output_yaml', CALIB_YAML_PATH)  # Path output file YAML
+        self.declare_parameter('visualize', True)  # Aktifkan visualisasi hasil kalibrasi
+        self.declare_parameter('camera_frame_id', 'panorama_camera_link')  # Nama frame kamera
+        self.declare_parameter('lidar_frame_id', 'velodyne_link')  # Nama frame LiDAR
+
+        # Ambil parameter node
+        camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
+        lidar_topic = self.get_parameter('lidar_topic').get_parameter_value().string_value
+        self.pattern_type = self.get_parameter('pattern_type').get_parameter_value().string_value
+        self.pattern_size = self.get_parameter('pattern_size').get_parameter_value().integer_array_value
+        self.square_size = self.get_parameter('square_size').get_parameter_value().double_value
+        self.output_yaml = self.get_parameter('output_yaml').get_parameter_value().string_value
+        self.visualize = self.get_parameter('visualize').get_parameter_value().bool_value
+        self.camera_frame_id = self.get_parameter('camera_frame_id').get_parameter_value().string_value
+        self.lidar_frame_id = self.get_parameter('lidar_frame_id').get_parameter_value().string_value
+
+        # Error handling: cek folder output
+        output_dir = os.path.dirname(self.output_yaml)
+        if not os.path.exists(output_dir):
+            try:
+                os.makedirs(output_dir)
+            except Exception as e:
+                self.get_logger().error(f"Gagal membuat folder output: {e}")
+                raise
+
+        # Sinkronisasi data kamera dan LiDAR
+        try:
+            self.camera_sub = Subscriber(self, Image, camera_topic)
+            self.lidar_sub = Subscriber(self, PointCloud2, lidar_topic)
+            self.ts = ApproximateTimeSynchronizer(
+                [self.camera_sub, self.lidar_sub], queue_size=10, slop=0.1
+            )
+            self.ts.registerCallback(self.sync_callback)
+        except Exception as e:
+            self.get_logger().error(f"Error inisialisasi subscriber: {e}")
+            raise
+
+        self.get_logger().info("LidarCameraCalibrator node siap. Tunggu data sinkron kamera dan LiDAR...")
+
+    def sync_callback(self, img_msg, lidar_msg):
+        # Callback saat data kamera dan LiDAR sinkron
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
+        except Exception as e:
+            self.get_logger().error(f"Gagal konversi Image ROS ke OpenCV: {e}")
+            self.get_logger().debug(traceback.format_exc())
+            return
+
+        # Error handling: cek data LiDAR
+        if lidar_msg.width == 0 or lidar_msg.height == 0:
+            self.get_logger().error("Data PointCloud2 kosong!")
+            return
+
+        # Deteksi pattern checkerboard/ArUco di gambar kamera
+        found, corners = self.detect_pattern(cv_image)
+        if not found:
+            self.get_logger().warning("Pattern tidak terdeteksi di gambar kamera. Ulangi pengambilan data.")
+            return
+
+        # Ekstrak pattern di pointcloud LiDAR (clustering DBSCAN/manual pick/dummy centroid)
+        lidar_points = self.extract_pattern_from_lidar(lidar_msg)
+        if lidar_points is None:
+            self.get_logger().warning("Pattern tidak terdeteksi di LiDAR. Ulangi pengambilan data.")
+            return
+
+        # Validasi dimensi dan tipe data
+        if not isinstance(corners, np.ndarray) or not isinstance(lidar_points, np.ndarray):
+            self.get_logger().error("Tipe data pattern tidak valid (harus numpy.ndarray).")
+            return
+        if corners.shape[0] == 0 or lidar_points.shape[0] == 0:
+            self.get_logger().error("Pattern kosong pada kamera atau LiDAR.")
+            return
+
+        # Hitung transformasi extrinsic (ICP jika open3d tersedia, fallback ke identity)
+        try:
+            T = self.estimate_extrinsic(corners, lidar_points)
+        except Exception as e:
+            self.get_logger().error(f"Gagal estimasi transformasi extrinsic: {e}")
+            self.get_logger().debug(traceback.format_exc())
+            return
+
+        # Simpan hasil ke YAML
+        try:
+            self.save_extrinsic_to_yaml(T, self.output_yaml)
+            self.get_logger().info(f"Kalibrasi extrinsic berhasil! Hasil disimpan di: {self.output_yaml}")
+        except Exception as e:
+            self.get_logger().error(f"Gagal simpan file YAML: {e}")
+            self.get_logger().debug(traceback.format_exc())
+
+        # Visualisasi hasil kalibrasi (opsional)
+        if self.visualize:
+            try:
+                self.visualize_calibration(cv_image, corners, lidar_points, T)
+            except Exception as e:
+                self.get_logger().warning(f"Visualisasi gagal: {e}")
+
+    def detect_pattern(self, image):
+        # Deteksi checkerboard/ArUco di gambar kamera
+        try:
+            if self.pattern_type == 'checkerboard':
+                ret, corners = cv2.findChessboardCorners(
+                    image, tuple(self.pattern_size),
+                    flags=cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE
+                )
+                if ret:
+                    return True, corners
+                else:
+                    return False, None
+            elif self.pattern_type == 'aruco':
+                aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_1000)
+                parameters = cv2.aruco.DetectorParameters_create()
+                corners, ids, _ = cv2.aruco.detectMarkers(image, aruco_dict, parameters=parameters)
+                if ids is not None and len(ids) > 0:
+                    return True, corners
+                else:
+                    return False, None
+            else:
+                self.get_logger().error("pattern_type tidak dikenali (checkerboard/aruco)")
+                return False, None
+        except Exception as e:
+            self.get_logger().error(f"Error deteksi pattern: {e}")
+            self.get_logger().debug(traceback.format_exc())
+            return False, None
+
+    def extract_pattern_from_lidar(self, lidar_msg):
+        # Deteksi cluster pattern di pointcloud LiDAR (DBSCAN/manual pick/dummy centroid)
+        try:
+            from sensor_msgs_py import point_cloud2
+            points = np.array([p[:3] for p in point_cloud2.read_points(lidar_msg, field_names=("x", "y", "z"), skip_nans=True)])
+            if points.shape[0] < 10:
+                self.get_logger().warning("PointCloud terlalu sedikit untuk deteksi pattern.")
+                return None
+            # Jika DBSCAN tersedia, gunakan clustering untuk deteksi pattern
+            if DBSCAN is not None:
+                db = DBSCAN(eps=0.1, min_samples=5).fit(points)
+                labels = db.labels_
+                unique_labels = set(labels)
+                clusters = [points[labels == k] for k in unique_labels if k != -1]
+                if len(clusters) == 0:
+                    self.get_logger().warning("Tidak ada cluster terdeteksi di LiDAR.")
+                    return None
+                # Ambil cluster terbesar sebagai pattern (dummy)
+                largest_cluster = max(clusters, key=lambda c: c.shape[0])
+                centroid = np.mean(largest_cluster, axis=0)
+                return np.expand_dims(centroid, axis=0)
+            else:
+                # Fallback: gunakan centroid semua point
+                centroid = np.mean(points, axis=0)
+                return np.expand_dims(centroid, axis=0)
+        except Exception as e:
+            self.get_logger().error(f"Error ekstraksi pattern dari LiDAR: {e}")
+            self.get_logger().debug(traceback.format_exc())
+            return None
+
+    def estimate_extrinsic(self, img_corners, lidar_points):
+        # Estimasi transformasi extrinsic (ICP jika open3d tersedia, fallback ke identity)
+        try:
+            if o3d is not None and img_corners.shape[0] == lidar_points.shape[0]:
+                # Konversi ke format open3d
+                src = o3d.geometry.PointCloud()
+                dst = o3d.geometry.PointCloud()
+                src.points = o3d.utility.Vector3dVector(lidar_points.reshape(-1, 3))
+                dst.points = o3d.utility.Vector3dVector(img_corners.reshape(-1, 3))
+                threshold = 0.5
+                trans_init = np.eye(4)
+                reg_p2p = o3d.pipelines.registration.registration_icp(
+                    src, dst, threshold, trans_init,
+                    o3d.pipelines.registration.TransformationEstimationPointToPoint()
+                )
+                T = reg_p2p.transformation
+                self.get_logger().info("Estimasi transformasi extrinsic dengan ICP (open3d).")
+                return T
+            else:
+                self.get_logger().warning("ICP tidak tersedia atau jumlah point tidak sama, gunakan identity.")
+                return np.eye(4)
+        except Exception as e:
+            self.get_logger().error(f"Error estimasi extrinsic: {e}")
+            self.get_logger().debug(traceback.format_exc())
+            return np.eye(4)
+
+    def save_extrinsic_to_yaml(self, T, yaml_path):
+        # Simpan matriks transformasi ke file YAML, sertakan frame_id
+        try:
+            data = {
+                'T_lidar_camera': {
+                    'rows': 4,
+                    'cols': 4,
+                    'data': T.flatten().tolist(),
+                    'camera_frame_id': self.camera_frame_id,
+                    'lidar_frame_id': self.lidar_frame_id
+                }
+            }
+            with open(yaml_path, 'w') as f:
+                yaml.dump(data, f)
+        except Exception as e:
+            self.get_logger().error(f"Gagal menulis file YAML: {e}")
+            raise
+
+    def visualize_calibration(self, image, corners, lidar_points, T):
+        # Visualisasi hasil deteksi pattern dan transformasi (dummy)
+        try:
+            img_vis = image.copy()
+            if corners is not None:
+                for c in corners:
+                    cv2.circle(img_vis, tuple(c[0].astype(int)), 5, (0, 255, 0), -1)
+            plt.figure("Kalibrasi Kamera-LiDAR")
+            plt.subplot(1, 2, 1)
+            plt.title("Pattern di Kamera")
+            plt.imshow(cv2.cvtColor(img_vis, cv2.COLOR_BGR2RGB))
+            plt.axis('off')
+            if lidar_points is not None:
+                plt.subplot(1, 2, 2)
+                plt.title("Pattern di LiDAR (cluster/centroid)")
+                plt.scatter(lidar_points[:, 0], lidar_points[:, 1], c='r', marker='x')
+                plt.axis('equal')
+            plt.show(block=False)
+            plt.pause(2)
+            plt.close()
+        except Exception as e:
+            self.get_logger().warning(f"Visualisasi gagal: {e}")
+
+def main(args=None):
+    rclpy.init(args=args)  # Inisialisasi ROS2
+    try:
+        node = LidarCameraCalibrator()  # Buat node kalibrasi
+        rclpy.spin(node)  # Jalankan node
+    except Exception as e:
+        logging.error(f"Fatal error saat menjalankan node: {e}")
+        logging.debug(traceback.format_exc())
+    finally:
+        rclpy.shutdown()  # Shutdown ROS2

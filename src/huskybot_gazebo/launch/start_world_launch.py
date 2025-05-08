@@ -1,5 +1,5 @@
-#!/usr/bin/python3  # Shebang agar bisa dieksekusi langsung
-# -*- coding: utf-8 -*-  # Encoding file Python
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os                                            # Untuk operasi file/path
 import sys                                           # Untuk error output

@@ -21,6 +21,7 @@ Proyek ini bertujuan mengembangkan sistem deteksi halangan menggunakan kombinasi
 - [Struktur Folder](#struktur-folder)
 - [Instruksi Menjalankan Simulasi](#instruksi-menjalankan-simulasi)
 - [Checklist Fitur](#checklist-fitur)
+- [Roadmap Pengembangan](#roadmap-pengembangan)
 - [Troubleshooting](#troubleshooting)
 - [Saran & Rekomendasi](#saran--rekomendasi)
 - [Lisensi](#lisensi)
@@ -264,11 +265,24 @@ rviz2
 
 | Target Penelitian                        | Status | Node/Launch File                                      |
 |------------------------------------------|:------:|-------------------------------------------------------|
-| 3D Mapping                              |   ✅   | `huskybot_mapping/mapping.launch.py`                   |
-| Model Deteksi Halangan (YOLOv12)         |   ✅   | `huskybot_recognition/launch_yolov12.launch.py`        |
-| Obstacle Avoidance                       |   ✅   | `huskybot_navigation/navigation.launch.py`             |
-| Algoritma Pengukuran Jarak (2D-3D)       |   ✅   | `huskybot_fusion/fusion.launch.py`                     |
-| Algoritma Penghitungan Koordinat Posisi  |   ✅   | `huskybot_fusion/fusion.launch.py`                     |
+| Model Deteksi Halangan                   |   ✅   | `huskybot_recognition/yolov12_ros2_pt.py`             |
+| Object Detection + Panoramic Stitching   |   ✅   | `huskybot_recognition/yolov12_stitcher_node.py`       |
+| Obstacle Avoidance                       |   ❌   | (BELUM, akan dikembangkan di `huskybot_navigation/`)  |
+| Algoritma Pengukuran Jarak               |   ✅   | `huskybot_fusion/fusion_node.py`                      |
+| Algoritma Penghitungan Koordinat Posisi  |   ✅   | `huskybot_fusion/fusion_node.py`                      |
+
+> **Catatan:**  
+> Fitur *Obstacle Avoidance* (penghindaran halangan otomatis) **belum terimplementasi**.  
+> Rencana pengembangan: akan dibuat node di package `huskybot_navigation` yang mengintegrasikan hasil deteksi dan fusion ke perintah navigasi/gerak robot.
+
+---
+
+## Roadmap Pengembangan
+
+- [ ] Implementasi obstacle avoidance di `huskybot_navigation`
+- [ ] Integrasi dengan Navigation2 (Nav2) untuk path planning dan obstacle avoidance
+- [ ] Uji coba obstacle avoidance di simulasi dan real robot
+- [ ] Update dokumentasi dan contoh penggunaan setelah fitur selesai
 
 ---
 

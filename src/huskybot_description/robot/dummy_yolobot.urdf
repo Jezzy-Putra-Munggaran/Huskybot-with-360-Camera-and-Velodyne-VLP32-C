@@ -47,7 +47,7 @@
   </gazebo>
   <!-- ros_control plugin -->
   <gazebo>
-    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros_control">
       <robotNamespace>/huskybot</robotNamespace>
       <robotParam>/robot_description</robotParam>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
