@@ -1,0 +1,29 @@
+<?xml version="1.0"?> <!-- Header XML wajib -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2 -->
+<package format="3"> <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
+  <name>huskybot_msgs</name> <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.1.0</version> <!-- Versi package, update jika sudah release/ada perubahan besar -->
+  <description>Custom message interface untuk Huskybot (Object3D, dsb) untuk integrasi kamera 360° dan LiDAR.</description> <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
+  <license>Apache-2.0</license> <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
+
+  <!-- Build tool dependency wajib untuk ROS2 -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Dependency wajib untuk message interface -->
+  <build_depend>rosidl_default_generators</build_depend> <!-- Untuk generate message interface -->
+  <exec_depend>rosidl_default_runtime</exec_depend> <!-- Untuk runtime message interface -->
+  <build_depend>std_msgs</build_depend> <!-- Dependency message std_msgs (Header, dsb) -->
+  <exec_depend>std_msgs</exec_depend> <!-- Runtime dependency std_msgs -->
+
+  <!-- Dependency untuk testing/linting (opsional, best practice) -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <!-- Group deklarasi agar dikenali sebagai package interface -->
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type> <!-- Build type wajib untuk ROS2 CMake -->
+  </export>
+</package>
