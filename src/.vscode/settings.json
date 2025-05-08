@@ -31,7 +31,9 @@
         "*.ipp": "cpp",
         "map": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "condition_variable": "cpp",
+        "future": "cpp"
     },
     "cmake.sourceDirectory": "/home/jezzy/huskybot/src/huskybot_gazebo"
 }

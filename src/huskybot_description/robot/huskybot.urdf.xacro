@@ -312,7 +312,7 @@
 
   <!--
     Kalibrasi extrinsic kamera-LiDAR:
-    Simpan file transformasi di calibration/extrinsic_lidar_to_camera.yaml
+    Simpan file transformasi di huskybot_calibration/config/extrinsic_lidar_to_camera.yaml
     Contoh format:
       T_lidar_camera:
         rows: 4
