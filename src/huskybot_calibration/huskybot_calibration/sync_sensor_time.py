@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  # Shebang agar bisa dieksekusi langsung
-# -*- coding: utf-8 -*-  # Encoding file Python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
