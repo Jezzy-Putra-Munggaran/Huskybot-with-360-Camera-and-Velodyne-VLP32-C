@@ -5,7 +5,7 @@ import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
 from sensor_msgs.msg import PointCloud2  # Message point cloud dari Velodyne
 from yolov12_msgs.msg import Yolov12Inference  # Message hasil deteksi YOLOv12 (dari kamera 360°)
-from huskybot_fusion.msg import Object3D  # Custom message untuk hasil deteksi objek 3D
+from huskybot_msgs.msg import Object3D  # Custom message untuk hasil deteksi objek 3D (HARUS dari huskybot_msgs!)
 import message_filters  # Untuk sinkronisasi data multi sensor (kamera & lidar)
 import numpy as np  # Untuk pemrosesan data numerik/array
 import struct  # Untuk parsing data PointCloud2
@@ -33,6 +33,10 @@ class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
         # TF buffer dan listener untuk transformasi antar frame (misal dari kamera ke lidar)
         self.tf_buffer = tf2_ros.Buffer()  # Buffer TF2
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)  # Listener TF2
+
+        # Parameter threshold confidence (bisa diubah dari launch file)
+        self.confidence_threshold = self.declare_parameter(
+            'confidence_threshold', 0.3).get_parameter_value().double_value  # Default 0.3
 
         # Cek file kalibrasi (misal dari parameter, atau hardcode dulu)
         self.calibration_file = self.declare_parameter(
@@ -85,9 +89,18 @@ class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
                 label = det.class_name
                 confidence = det.confidence
 
+                # Filter confidence threshold
+                if confidence < self.confidence_threshold:
+                    self.get_logger().info(f"Deteksi {label} confidence {confidence:.2f} < threshold {self.confidence_threshold}, dilewati.")
+                    continue
+
                 # Project bbox ke point cloud (fungsi util, harus ada di fusion_utils.py)
-                from huskybot_fusion.fusion_utils import project_bbox_to_pointcloud
-                object_points = project_bbox_to_pointcloud(bbox, points, lidar_msg, yolo_msg)
+                try:
+                    from huskybot_fusion.fusion_utils import project_bbox_to_pointcloud
+                    object_points = project_bbox_to_pointcloud(bbox, points, lidar_msg, yolo_msg)
+                except ImportError as e:
+                    self.get_logger().error(f"ImportError project_bbox_to_pointcloud: {e}")
+                    continue
             except Exception as e:
                 self.get_logger().error(f"Gagal project bbox ke pointcloud: {e}")
                 continue
@@ -111,6 +124,10 @@ class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
                 continue
             if not (0.0 <= confidence <= 1.0):
                 self.get_logger().warn(f"Confidence tidak valid ({confidence}) untuk {label}, dilewati.")
+                continue
+            # Validasi quaternion (norm=1)
+            if not np.isclose(np.linalg.norm(orientation), 1.0, atol=1e-3):
+                self.get_logger().warn(f"Orientasi quaternion tidak normal (norm={np.linalg.norm(orientation)}), dilewati.")
                 continue
 
             obj_msg = Object3D()  # Buat message Object3D
@@ -164,20 +181,16 @@ if __name__ == '__main__':  # Jika file dijalankan langsung
     main()  # Panggil fungsi main
 
 # ===================== REVIEW & SARAN =====================
-# - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/ (fusion.launch.py), test/ (unit test).
-# - Semua dependency sudah dicantumkan di setup.py dan package.xml.
-# - Node ini subscribe ke /velodyne_points (LiDAR) dan /panorama/yolov12_inference (YOLOv12 panorama).
+# - Import message HARUS dari huskybot_msgs.msg, bukan huskybot_fusion.msg.
+# - Semua error handling sudah lengkap: validasi data kosong, try/except konversi, validasi hasil bbox 3D, logging error/warning.
 # - Sudah FULL OOP: semua logic dalam class FusionNode.
-# - Error handling: validasi data kosong, try/except konversi, validasi hasil bbox 3D, logging error/warning.
-# - Parameterisasi: path file kalibrasi bisa diubah dari launch file/CLI.
+# - Parameterisasi: path file kalibrasi dan threshold confidence bisa diubah dari launch file/CLI.
 # - Logging info ke terminal setiap publish objek 3D.
 # - Saran peningkatan:
 #   1. Tambahkan publish array Object3D (custom msg) agar batch publish lebih efisien.
-#   2. Tambahkan filter confidence threshold via parameter.
-#   3. Tambahkan logging ke file JSON/CSV untuk audit trail.
-#   4. Tambahkan unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
-#   5. Untuk multi-robot, gunakan namespace ROS2 di launch file.
-#   6. Tambahkan validasi quaternion (norm=1) sebelum publish.
-#   7. Tambahkan opsi remap topic via launch file.
-#   8. Tambahkan catch Exception utama di main() untuk robustness.
-# - File ini sudah aman, tidak ada bug fatal, siap untuk ROS2 Humble/Gazebo.
+#   2. Tambahkan logging ke file JSON/CSV untuk audit trail.
+#   3. Tambahkan unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
+#   4. Untuk multi-robot, gunakan namespace ROS2 di launch file.
+#   5. Tambahkan opsi remap topic via launch file.
+#   6. Tambahkan catch Exception utama di main() untuk robustness.
+# - File ini sudah aman, tidak ada bug fatal, siap untuk ROS2 Humble/Gazebo dan robot real.

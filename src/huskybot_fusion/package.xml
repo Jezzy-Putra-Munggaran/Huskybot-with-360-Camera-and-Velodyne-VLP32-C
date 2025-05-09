@@ -1,5 +1,5 @@
-<?xml version="1.0"?>  <!-- Deklarasi XML, wajib di awal file -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Validasi schema package.xml ROS2 -->
+<?xml version="1.0"?>  <!-- Deklarasi XML, wajib di awal file agar dikenali sebagai file XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Validasi schema package.xml ROS2, agar build system bisa cek format -->
 <package format="3">  <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
   <name>huskybot_fusion</name>  <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
   <version>0.1.0</version>  <!-- Versi package, update jika sudah release/ada perubahan besar -->
@@ -22,15 +22,21 @@
   <build_depend>sensor_msgs</build_depend>  <!-- Dependency message sensor_msgs (PointCloud2) -->
   <build_depend>std_msgs</build_depend>  <!-- Dependency message std_msgs (Header) -->
   <build_depend>yolov12_msgs</build_depend>  <!-- Dependency custom message YOLOv12 (hasil deteksi 2D) -->
-  <build_depend>rosidl_default_generators</build_depend>  <!-- (Duplikat, bisa dihapus salah satu) -->
-
+  <build_depend>huskybot_msgs</build_depend>  <!-- Dependency custom message Huskybot (hasil deteksi 3D) -->
+  
   <!-- Execution dependencies -->
   <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime node ROS2 Python -->
   <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime message sensor_msgs -->
   <exec_depend>std_msgs</exec_depend>  <!-- Dependency runtime message std_msgs -->
   <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency runtime custom message YOLOv12 -->
   <exec_depend>rosidl_default_runtime</exec_depend>  <!-- Dependency runtime ROS2 untuk message interface -->
-
+  <exec_depend>python3-numpy</exec_depend>  <!-- Dependency Python numpy (untuk proyeksi dan komputasi) -->
+  <exec_depend>python3-opencv</exec_depend>  <!-- Dependency Python OpenCV (untuk proyeksi 3D->2D) -->
+  <exec_depend>python3-yaml</exec_depend>  <!-- Dependency Python YAML (untuk parsing file kalibrasi) -->
+  <exec_depend>ros-numpy</exec_depend>  <!-- Dependency ros_numpy (untuk parsing PointCloud2) -->
+  <exec_depend>message_filters</exec_depend>  <!-- Dependency message_filters (sinkronisasi sensor) -->
+  <exec_depend>huskybot_msgs</exec_depend> <!-- Dependency runtime custom message Huskybot (hasil deteksi 3D) -->
+  
   <!-- Message generation -->
   <member_of_group>rosidl_interface_packages</member_of_group>  <!-- Agar dikenali sebagai package interface ROS2 -->
 
@@ -38,6 +44,8 @@
   <test_depend>ament_lint_auto</test_depend>  <!-- Dependency linting otomatis saat testing -->
   <test_depend>ament_lint_common</test_depend>  <!-- Dependency linting umum ROS2 -->
   <test_depend>pytest</test_depend>  <!-- Dependency unit test Python -->
+  <test_depend>flake8</test_depend>  <!-- Linter Python untuk CI/CD -->
+  <doc_depend>doxygen</doc_depend>  <!-- (Opsional) Dependency dokumentasi otomatis -->
 
   <export>
     <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
