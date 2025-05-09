@@ -42,6 +42,4 @@ install(
     share/${PROJECT_NAME}/                        # Tujuan install di install/share/huskybot_gazebo/
 )
 
-ament_python_install_package(${PROJECT_NAME})
-
 ament_package()                                   # Macro wajib penutup package ROS2

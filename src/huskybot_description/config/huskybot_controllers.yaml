@@ -1,0 +1,34 @@
+controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib)
+  ros__parameters:   # Semua parameter controller ROS2 didefinisikan di bawah ini (wajib)
+    update_rate: 100  # [int] Frekuensi update controller manager (Hz), default 100Hz. Cukup untuk simulasi dan real robot.
+
+    diff_drive_controller:  # [dict] Controller utama untuk differential drive (kendali roda kiri-kanan Husky)
+      type: diff_drive_controller/DiffDriveController  # [str] Tipe plugin controller (ROS2 Humble, plugin wajib sudah terinstall)
+      left_wheel_names: ["front_left_wheel_link", "rear_left_wheel_link"]  # [list] Nama link roda kiri (harus sama dengan URDF/Xacro)
+      right_wheel_names: ["front_right_wheel_link", "rear_right_wheel_link"]  # [list] Nama link roda kanan (harus sama dengan URDF/Xacro)
+      publish_rate: 50  # [int] Frekuensi publish data odom (Hz), default 50Hz. Jangan terlalu tinggi agar tidak membebani CPU.
+      base_frame_id: base_link  # [str] Nama frame utama robot (harus sama dengan URDF/Xacro, biasanya 'base_link')
+      use_stamped_vel: false  # [bool] Gunakan Twist biasa, bukan TwistStamped. Default false untuk robot mobile.
+
+      # Saran peningkatan: tambahkan parameter PID jika ingin tuning kecepatan/posisi
+      # Example:
+      #   wheel_separation: 0.55  # [float] Jarak antar roda kiri-kanan (meter), opsional jika ingin override URDF
+      #   wheel_radius: 0.165     # [float] Radius roda (meter), opsional jika ingin override URDF
+      #   cmd_vel_timeout: 0.25   # [float] Timeout (detik) jika tidak ada cmd_vel, robot otomatis berhenti
+
+    joint_state_broadcaster:  # [dict] Broadcaster untuk publish semua joint state ke topic /joint_states
+      type: joint_state_broadcaster/JointStateBroadcaster  # [str] Tipe plugin broadcaster (ROS2 Humble)
+
+    # Saran peningkatan: tambahkan controller lain jika ada joint/sensor tambahan
+    # Example:
+    # imu_broadcaster:
+    #   type: imu_sensor_broadcaster/IMUSensorBroadcaster
+    #   sensor_name: imu_link
+
+    # Error handling:
+    # - Jika controller gagal aktif, cek log ros2_control_node untuk pesan error (misal: joint tidak ditemukan).
+    # - Jika topic /cmd_vel tidak ada/tidak bergerak, cek apakah controller sudah aktif dan tidak error.
+    # - Jika robot tidak bergerak di Gazebo, cek plugin ros2_control di URDF dan parameter YAML sudah di-pass ke node.
+    # - Jika ingin multi-robot, tambahkan namespace di parameter dan launch file.
+    # - Jika ingin tuning PID, tambahkan parameter PID di controller YAML.
+    # - Jika ingin hardware real, pastikan hardware interface di URDF sudah benar dan parameter YAML menyesuaikan hardware driver.

@@ -55,8 +55,6 @@ install(
   DESTINATION lib/${PROJECT_NAME}  # Install ke lib/package_name/ agar bisa di-run via ros2 run
 )
 
-ament_python_install_package(${PROJECT_NAME})
-
 ament_package()  # Macro wajib penutup package ROS2
 
 # ===================== REVIEW & SARAN =====================
