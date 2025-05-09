@@ -12,7 +12,14 @@ import struct  # Untuk parsing data PointCloud2
 import tf2_ros  # Untuk transformasi antar frame (TF)
 from std_msgs.msg import Header  # Header ROS2 untuk sinkronisasi waktu/frame
 import os  # Untuk operasi file (cek file kalibrasi)
-import ros_numpy  # Untuk optimasi konversi PointCloud2
+import sys  # Untuk akses error output
+
+# Error handling: pastikan ros_numpy sudah terinstall
+try:
+    import ros_numpy  # Untuk optimasi konversi PointCloud2
+except ImportError:
+    print("[FATAL] ros_numpy tidak ditemukan. Install dengan: pip install ros-numpy", file=sys.stderr)
+    sys.exit(1)
 
 class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
     def __init__(self):

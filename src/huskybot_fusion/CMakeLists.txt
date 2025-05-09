@@ -55,6 +55,8 @@ install(CODE "execute_process(COMMAND chmod +x ${CMAKE_CURRENT_SOURCE_DIR}/${PRO
 # Export dependency runtime agar package lain bisa pakai message ini
 ament_export_dependencies(rosidl_default_runtime std_msgs yolov12_msgs sensor_msgs)  # Export dependency agar bisa dipakai package lain
 
+ament_python_install_package(${PROJECT_NAME})
+
 ament_package()  # Macro wajib penutup package ROS2 agar bisa di-build dan diinstall
 
 # ===================== REVIEW & SARAN =====================

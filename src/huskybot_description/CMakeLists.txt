@@ -104,4 +104,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test")
   install(DIRECTORY test DESTINATION share/${PROJECT_NAME}/)
 endif()
 
+ament_python_install_package(${PROJECT_NAME})
+
 ament_package()                                       # Macro wajib ROS2 agar package dikenali oleh ament (wajib di akhir)
