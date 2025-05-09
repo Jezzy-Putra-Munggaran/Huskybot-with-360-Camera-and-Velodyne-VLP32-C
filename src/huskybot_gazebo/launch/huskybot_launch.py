@@ -11,17 +11,17 @@ from launch import LaunchDescription  # Kelas utama untuk launch file
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo, OpaqueFunction  # Untuk argumen, include launch, logging, dan fungsi custom
 from launch.conditions import IfCondition  # Untuk kondisi enable/disable node
 from launch.launch_description_sources import PythonLaunchDescriptionSource  # Untuk include launch file Python
-from launch.substitutions import LaunchConfiguration  # Untuk ambil nilai argumen launch
+from launch.substitutions import LaunchConfiguration, Command  # Untuk ambil nilai argumen launch dan jalankan shell command
 from launch_ros.actions import Node  # Untuk mendefinisikan node ROS2
 
 # ---------- Error Handling: cek file sebelum include ----------
-def check_file_exists(path, desc):  # Fungsi untuk cek file ada sebelum include
+def check_file_exists(path, desc):  # Cek file ada sebelum include
     if not os.path.exists(path):  # Jika file tidak ada
-        print(f"[ERROR] {desc} tidak ditemukan: {path}", file=sys.stderr)  # Print error
+        print(f"[ERROR] {desc} tidak ditemukan: {path}", file=sys.stderr)
         sys.exit(1)  # Exit agar launch tidak lanjut
 
 # ---------- Error Handling: cek package dependency ----------
-def check_ros_package(pkg_name):  # Fungsi untuk cek package ROS2 dependency
+def check_ros_package(pkg_name):  # Cek package ROS2 dependency
     try:
         get_package_share_directory(pkg_name)  # Cek package
     except Exception:
@@ -29,7 +29,7 @@ def check_ros_package(pkg_name):  # Fungsi untuk cek package ROS2 dependency
         sys.exit(2)
 
 # ---------- Error Handling: cek environment variable penting ----------
-def check_env_var(var, must_contain=None):  # Fungsi untuk cek env var
+def check_env_var(var, must_contain=None):  # Cek env var
     val = os.environ.get(var, "")
     if not val:
         print(f"[WARNING] Environment variable {var} belum di-set.", file=sys.stderr)
@@ -37,26 +37,26 @@ def check_env_var(var, must_contain=None):  # Fungsi untuk cek env var
         print(f"[WARNING] {var} tidak mengandung '{must_contain}'.", file=sys.stderr)
 
 # ---------- Error Handling: cek executable di PATH ----------
-def check_executable(exe, install_hint=None):  # Fungsi untuk cek executable di PATH
+def check_executable(exe, install_hint=None):  # Cek executable di PATH
     if shutil.which(exe) is None:
         hint = f" (install: {install_hint})" if install_hint else ""
         print(f"[ERROR] Executable '{exe}' tidak ditemukan di PATH.{hint}", file=sys.stderr)
         sys.exit(3)
 
 # ---------- Error Handling: cek plugin Gazebo ----------
-def check_gazebo_plugin(plugin_name):  # Fungsi untuk cek plugin Gazebo
-    plugin_paths = os.environ.get('GAZEBO_PLUGIN_PATH', '/opt/ros/humble/lib').split(':')  # Ambil semua path plugin
-    found = False  # Flag untuk status ditemukan/tidak
-    for plugin_dir in plugin_paths:  # Loop semua path di GAZEBO_PLUGIN_PATH
-        plugin_path = os.path.join(plugin_dir, plugin_name)  # Gabungkan path dan nama plugin
-        if os.path.exists(plugin_path):  # Jika file plugin ditemukan
-            print(f"[INFO] Plugin Gazebo '{plugin_name}' ditemukan di {plugin_dir}.", flush=True)  # Info ke user
-            found = True  # Set flag ditemukan
-            break  # Stop loop jika sudah ketemu
-    if not found:  # Jika tidak ditemukan di semua path
+def check_gazebo_plugin(plugin_name):  # Cek plugin Gazebo
+    plugin_paths = os.environ.get('GAZEBO_PLUGIN_PATH', '/opt/ros/humble/lib').split(':')
+    found = False
+    for plugin_dir in plugin_paths:
+        plugin_path = os.path.join(plugin_dir, plugin_name)
+        if os.path.exists(plugin_path):
+            print(f"[INFO] Plugin Gazebo '{plugin_name}' ditemukan di {plugin_dir}.", flush=True)
+            found = True
+            break
+    if not found:
         print(f"[ERROR] Plugin Gazebo '{plugin_name}' tidak ditemukan di path manapun di $GAZEBO_PLUGIN_PATH.", flush=True)
         print("Pastikan sudah install ros-humble-gazebo-ros-pkgs dan environment sudah di-source.", flush=True)
-        sys.exit(10)  # Exit agar launch tidak lanjut
+        sys.exit(10)
 
 # ---------- Error Handling: cek semua plugin penting sebelum launch ----------
 for plugin in [
@@ -95,7 +95,7 @@ check_executable('xacro', 'sudo apt install ros-humble-xacro')  # Untuk parsing 
 check_executable('ros2', 'sudo apt install ros-humble-ros2cli') # Untuk CLI ROS2
 
 # ---------- Error Handling: validasi argumen CLI ----------
-def validate_args(context, *args, **kwargs):  # Fungsi custom validasi argumen
+def validate_args(context, *args, **kwargs):  # Validasi argumen world & robot_model
     world = LaunchConfiguration('world').perform(context)
     if not os.path.exists(world):
         print(f"[ERROR] World file tidak ditemukan: {world}", file=sys.stderr)
@@ -231,6 +231,25 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             condition=IfCondition(LaunchConfiguration('enable_panorama')),
         )
 
+        # ---------- Tambahkan Node ros2_control_node (WAJIB untuk kontrol robot di Gazebo) ----------
+        controllers_yaml = os.path.join(
+            pkg_huskybot_description, 'config', 'huskybot_controllers.yaml'
+        )  # Path file YAML controller
+        robot_description = Command([
+            'xacro ',
+            os.path.join(pkg_huskybot_description, 'robot', 'huskybot.urdf.xacro')
+        ])  # Jalankan xacro untuk generate URDF robot
+
+        ros2_control_node = Node(
+            package='controller_manager',  # Package controller_manager (ros2_control)
+            executable='ros2_control_node',  # Node utama ros2_control
+            parameters=[
+                {'robot_description': robot_description},  # URDF robot hasil xacro
+                controllers_yaml  # File YAML controller
+            ],
+            output='screen',  # Output log ke terminal
+        )
+
         # ---------- Logging Tambahan ----------
         log_start = LogInfo(msg="Launching Huskybot Gazebo Simulation...")  # Logging info saat launch mulai
         log_world = LogInfo(msg=["World file: ", LaunchConfiguration('world')])  # Logging world file yang dipakai
@@ -253,6 +272,7 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             joy_node,  # Node joystick
             start_world,  # Launch world Gazebo
             spawn_robot_world,  # Launch spawn robot
+            ros2_control_node,  # [WAJIB] Node ros2_control_node untuk kontrol robot
             spawn_robot_control,  # Launch kontrol robot
             spawn_fusion,  # Launch fusion sensor
             spawn_calibration,  # Launch kalibrasi kamera-LiDAR

@@ -14,6 +14,9 @@ from std_msgs.msg import Header  # Header ROS2 untuk sinkronisasi waktu/frame
 import os  # Untuk operasi file (cek file kalibrasi)
 import sys  # Untuk akses error output
 
+# Debug: print Python executable yang dipakai saat runtime
+print("[DEBUG] Python executable:", sys.executable, flush=True)
+
 # Error handling: pastikan ros_numpy sudah terinstall
 try:
     import ros_numpy  # Untuk optimasi konversi PointCloud2

@@ -50,6 +50,4 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_python_install_package(${PROJECT_NAME})
-
 ament_package()                                     # Macro wajib ROS2 agar package dikenali oleh ament/colcon

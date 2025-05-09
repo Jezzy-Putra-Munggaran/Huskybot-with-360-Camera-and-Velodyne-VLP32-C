@@ -1,35 +1,33 @@
-cmake_minimum_required(VERSION 3.5)                   # Versi minimum CMake yang dibutuhkan (standar ROS2 Humble)
-project(huskybot_description)                          # Nama package, harus sama dengan folder dan package.xml
+cmake_minimum_required(VERSION 3.5)                   # [WAJIB] Versi minimum CMake (standar ROS2 Humble)
+project(huskybot_description)                          # [WAJIB] Nama package, harus sama dengan folder dan package.xml
 
 if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)                             # Set standar C ke C99 jika belum diset (untuk file C, antisipasi jika ada C)
+  set(CMAKE_C_STANDARD 99)                             # [OPSIONAL] Set standar C ke C99 jika belum diset (antisipasi file C)
 endif()
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)                           # Set standar C++ ke C++14 jika belum diset (untuk file C++, antisipasi jika ada C++)
+  set(CMAKE_CXX_STANDARD 14)                           # [OPSIONAL] Set standar C++ ke C++14 jika belum diset (antisipasi file C++)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)        # Tambahkan warning compile untuk GCC/Clang (good practice, cegah bug silent)
+  add_compile_options(-Wall -Wextra -Wpedantic)        # [BEST PRACTICE] Tambahkan warning compile untuk cegah bug silent
 endif()
 
-# find dependencies
-find_package(ament_cmake REQUIRED)                     # Dependency utama semua package ROS2 (wajib)
-find_package(urdf REQUIRED)                            # Dependency untuk parsing URDF/Xacro (wajib untuk robot_description)
-find_package(xacro REQUIRED)                           # Dependency xacro (untuk parsing xacro di launch, wajib jika pakai .xacro)
-find_package(sensor_msgs REQUIRED)                     # Dependency sensor_msgs (untuk pesan sensor, jika diperlukan)
-find_package(gazebo_ros REQUIRED)                      # Dependency untuk integrasi Gazebo (plugin, spawn_entity, dsb)
-find_package(std_msgs REQUIRED)                        # Dependency pesan standar ROS2 (jika ada node custom)
-find_package(nav_msgs REQUIRED)                        # Dependency pesan navigasi (Path, Odometry, dsb)
-find_package(geometry_msgs REQUIRED)                   # Dependency pesan geometri (Twist, Pose, dsb)
-# find_package(launch REQUIRED)                        # HAPUS: launch adalah package Python, TIDAK perlu find_package di CMake!
-# find_package(launch_ros REQUIRED)                    # HAPUS: launch_ros adalah package Python, TIDAK perlu find_package di CMake!
-# find_package(ament_index_python REQUIRED)            # HAPUS: ament_index_python adalah modul Python, TIDAK perlu find_package di CMake!
-# Tambahkan dependency lain jika ada node custom lain (misal: image_transport, tf2_ros, dsb)
+# ===================== DEPENDENCY ROS2 =====================
+find_package(ament_cmake REQUIRED)                     # [WAJIB] Build system utama ROS2
+find_package(urdf REQUIRED)                            # [WAJIB] Untuk parsing URDF/Xacro (robot_description)
+find_package(xacro REQUIRED)                           # [WAJIB] Untuk parsing xacro di launch file
+find_package(sensor_msgs REQUIRED)                     # [WAJIB] Untuk pesan sensor (misal: joint_states)
+find_package(gazebo_ros REQUIRED)                      # [WAJIB] Untuk integrasi plugin Gazebo (spawn_entity, dsb)
+find_package(std_msgs REQUIRED)                        # [WAJIB] Untuk pesan standar ROS2 (misal: String, Header)
+find_package(nav_msgs REQUIRED)                        # [WAJIB] Untuk pesan navigasi (Path, Odometry)
+find_package(geometry_msgs REQUIRED)                   # [WAJIB] Untuk pesan geometri (Twist, Pose)
+# Tambahkan dependency lain jika ada node custom (misal: tf2_ros, image_transport)
 
+# ===================== TESTING & LINTING =====================
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)               # Untuk linting otomatis saat testing (best practice CI/CD)
-  ament_lint_auto_find_test_dependencies()             # Cari dependency test lint otomatis (otomatis lint semua file)
+  find_package(ament_lint_auto REQUIRED)               # [BEST PRACTICE] Untuk linting otomatis saat testing
+  ament_lint_auto_find_test_dependencies()             # [BEST PRACTICE] Cari dependency test lint otomatis
 
   # Test validasi Xacro/URDF (fail build jika URDF/Xacro tidak valid)
   file(GLOB XACRO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/robot/*.xacro") # Cari semua file xacro
@@ -39,7 +37,7 @@ if(BUILD_TESTING)
       add_test(
         NAME xacro_check_${xacro_file}
         COMMAND ${XACRO_EXECUTABLE} --check-order ${xacro_file}
-      )                                                # Test: validasi semua file xacro (fail jika error sintaks/urutan)
+      )                                                # [ERROR HANDLING] Validasi semua file xacro (fail jika error sintaks/urutan)
     endif()
   endforeach()
   file(GLOB URDF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/robot/*.urdf" "${CMAKE_CURRENT_SOURCE_DIR}/robot/*.xacro")
@@ -49,61 +47,67 @@ if(BUILD_TESTING)
       add_test(
         NAME urdf_check_${urdf_file}
         COMMAND ${CHECK_URDF_EXECUTABLE} ${urdf_file}
-      )                                                # Test: validasi semua hasil URDF dari xacro (fail jika error URDF)
+      )                                                # [ERROR HANDLING] Validasi semua hasil URDF dari xacro (fail jika error URDF)
     endif()
   endforeach()
   # Saran: Tambahkan test launch file di folder test/ untuk CI/CD (opsional, best practice)
 endif()
 
-# Variabel folder agar maintainable
-set(LAUNCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/launch)     # Folder launch file Python
-set(ROBOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/robot)       # Folder URDF/Xacro robot
-set(CALIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/calibration) # Folder file kalibrasi sensor
-set(MESHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/meshes)     # Folder mesh visual sensor/robot
-set(RVIZ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rviz)         # Folder file konfigurasi RViz
+# ===================== VARIABEL FOLDER =====================
+set(LAUNCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/launch)     # [KONSISTENSI] Folder launch file Python
+set(ROBOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/robot)       # [KONSISTENSI] Folder URDF/Xacro robot
+set(CALIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/calibration) # [KONSISTENSI] Folder file kalibrasi sensor
+set(MESHES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/meshes)     # [KONSISTENSI] Folder mesh visual sensor/robot
+set(RVIZ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rviz)         # [KONSISTENSI] Folder file konfigurasi RViz
+set(CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/config)     # [KONSISTENSI] Folder file konfigurasi controller YAML
 
+# ===================== INSTALL FOLDER UTAMA =====================
 install(
   DIRECTORY
-    ${LAUNCH_DIR}                                      # Install folder launch ke share/package/
-    ${ROBOT_DIR}                                       # Install folder robot ke share/package/
-    ${CALIB_DIR}                                       # Install folder calibration ke share/package/
-    ${MESHES_DIR}                                      # Install folder meshes ke share/package/
-    ${RVIZ_DIR}                                        # Install folder rviz ke share/package/
+    ${LAUNCH_DIR}                                      # [WAJIB] Install folder launch ke share/package/
+    ${ROBOT_DIR}                                       # [WAJIB] Install folder robot ke share/package/
+    ${CALIB_DIR}                                       # [WAJIB] Install folder calibration ke share/package/
+    ${MESHES_DIR}                                      # [WAJIB] Install folder meshes ke share/package/
+    ${RVIZ_DIR}                                        # [WAJIB] Install folder rviz ke share/package/
+    ${CONFIG_DIR}                                      # [WAJIB] Install folder config ke share/package/ (YAML controller, dsb)
   DESTINATION
     share/${PROJECT_NAME}/                             # Semua diinstall ke share/package_name/ (standar ROS2)
 )
 
+# ===================== INSTALL SCRIPT PYTHON =====================
 install(
   PROGRAMS
-    ${LAUNCH_DIR}/spawn_huskybot.py                    # Install script Python agar bisa dieksekusi dari ros2 run (pastikan chmod +x)
-    ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py      # Install script Python agar bisa dieksekusi dari ros2 run (pastikan chmod +x)
+    ${LAUNCH_DIR}/spawn_huskybot.py                    # [WAJIB] Script Python spawn robot ke Gazebo
+    ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py      # [WAJIB] Launch file Python untuk spawn robot
   DESTINATION lib/${PROJECT_NAME}                      # Script Python diinstall ke lib/package_name/ (standar ROS2)
 )
 
-# Pastikan semua script Python sudah chmod +x sebelum build (otomatis, cegah error permission)
-install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot.py)")              # Cek permission script
-install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py)")# Cek permission script
+# ===================== CHMOD +X UNTUK SCRIPT PYTHON =====================
+install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot.py)")              # [ERROR HANDLING] Pastikan script Python executable
+install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py)")# [ERROR HANDLING] Pastikan script Python executable
 
-# Install README.md ke share agar dokumentasi bisa diakses offline
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/${PROJECT_NAME}/)        # Install README ke share
+# ===================== INSTALL FILE DOKUMENTASI =====================
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/${PROJECT_NAME}/)        # [BEST PRACTICE] Install README ke share
 
-# Install semua file YAML kalibrasi secara eksplisit (jika ada file baru)
-file(GLOB CALIB_YAML_FILES "${CALIB_DIR}/*.yaml")                                             # Cari semua file YAML kalibrasi
-install(FILES ${CALIB_YAML_FILES} DESTINATION share/${PROJECT_NAME}/calibration)               # Install file YAML ke share
+# ===================== INSTALL FILE KALIBRASI YAML =====================
+file(GLOB CALIB_YAML_FILES "${CALIB_DIR}/*.yaml")                                             # [OTOMATIS] Cari semua file YAML kalibrasi
+install(FILES ${CALIB_YAML_FILES} DESTINATION share/${PROJECT_NAME}/calibration)               # [BEST PRACTICE] Install file YAML kalibrasi ke share
 
-# Saran: Tambahkan install CHANGELOG.md dan CONTRIBUTING.md jika ada (untuk dokumentasi dan kontribusi)
+# ===================== INSTALL FILE YAML CONTROLLER =====================
+file(GLOB CONFIG_YAML_FILES "${CONFIG_DIR}/*.yaml")                                           # [OTOMATIS] Cari semua file YAML di config/
+install(FILES ${CONFIG_YAML_FILES} DESTINATION share/${PROJECT_NAME}/config)                   # [WAJIB] Install file YAML controller ke share/config
+
+# ===================== INSTALL FILE DOKUMENTASI TAMBAHAN =====================
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG.md")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG.md DESTINATION share/${PROJECT_NAME}/)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG.md DESTINATION share/${PROJECT_NAME}/)   # [OPSIONAL] Install CHANGELOG.md jika ada
 endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md DESTINATION share/${PROJECT_NAME}/)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CONTRIBUTING.md DESTINATION share/${PROJECT_NAME}/) # [OPSIONAL] Install CONTRIBUTING.md jika ada
 endif()
 
-# Saran: Tambahkan folder test/ jika ingin unit test/launch test otomatis (best practice CI/CD)
+# ===================== INSTALL FOLDER TEST (OPSIONAL) =====================
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test")
-  install(DIRECTORY test DESTINATION share/${PROJECT_NAME}/)
+  install(DIRECTORY test DESTINATION share/${PROJECT_NAME}/)                                   # [BEST PRACTICE] Install folder test untuk CI/CD
 endif()
 
-ament_python_install_package(${PROJECT_NAME})
-
-ament_package()                                       # Macro wajib ROS2 agar package dikenali oleh ament (wajib di akhir)
+ament_package()                                       # [WAJIB] Macro ROS2 agar package dikenali oleh ament (wajib di akhir)
