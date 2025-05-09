@@ -80,6 +80,7 @@ for pkg in [
     'huskybot_control',      # Kontrol robot
     'huskybot_recognition',  # Node YOLOv12
     'huskybot_fusion',       # Node fusion sensor (tambahan)
+    'huskybot_calibration',  # Node kalibrasi kamera-LiDAR (tambahan)
 ]:
     check_ros_package(pkg)
 
@@ -119,8 +120,9 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
         pkg_huskybot_control = get_package_share_directory('huskybot_control')  # Path package huskybot_control
         pkg_huskybot_recognition = get_package_share_directory('huskybot_recognition')  # Path package huskybot_recognition
         pkg_huskybot_fusion = get_package_share_directory('huskybot_fusion')  # Path package huskybot_fusion
+        pkg_huskybot_calibration = get_package_share_directory('huskybot_calibration')  # Path package huskybot_calibration
 
-        # ---------- Argumen Modular (tambahan world & robot model) ----------
+        # ---------- Argumen Modular (tambahan world, robot model, dan kalibrasi) ----------
         gui_arg = DeclareLaunchArgument(
             'gui', default_value='true',
             description='Enable Gazebo GUI (set to true for GUI, false for headless)'  # Argumen GUI Gazebo
@@ -149,18 +151,24 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             'enable_fusion', default_value='true',
             description='Enable sensor fusion node'  # Argumen enable node fusion
         )
+        enable_calibration_arg = DeclareLaunchArgument(
+            'enable_calibration', default_value='false',
+            description='Enable calibration node (kalibrasi kamera-LiDAR)'  # Argumen enable node kalibrasi
+        )
 
         # ---------- Path Launch File (gunakan argumen modular) ----------
         start_world_path = os.path.join(pkg_huskybot_gazebo, 'launch', 'start_world_launch.py')  # Launch file world Gazebo
         spawn_robot_path = os.path.join(pkg_huskybot_description, 'launch', 'spawn_huskybot_launch.launch.py')  # Launch file spawn robot
         control_path = os.path.join(pkg_huskybot_control, 'launch', 'huskybot_control.launch.py')  # Launch file kontrol robot
         fusion_path = os.path.join(pkg_huskybot_fusion, 'launch', 'fusion.launch.py')  # Launch file fusion sensor
+        calibration_path = os.path.join(pkg_huskybot_calibration, 'launch', 'calibrate_lidar_camera.launch.py')  # Launch file kalibrasi
 
         # ---------- Error Handling: cek file ----------
         check_file_exists(start_world_path, "Launch file start_world_launch.py")  # Cek file world Gazebo
         check_file_exists(spawn_robot_path, "Launch file spawn_huskybot_launch.launch.py")  # Cek file spawn robot
         check_file_exists(control_path, "Launch file huskybot_control.launch.py")  # Cek file kontrol robot
         check_file_exists(fusion_path, "Launch file fusion.launch.py")  # Cek file fusion sensor
+        check_file_exists(calibration_path, "Launch file calibrate_lidar_camera.launch.py")  # Cek file kalibrasi
 
         # ---------- Validasi argumen CLI sebelum launch ----------
         validate_args_action = OpaqueFunction(function=validate_args)  # Validasi argumen world & robot_model
@@ -193,6 +201,12 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
         spawn_fusion = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(fusion_path),  # Include launch file fusion sensor
             condition=IfCondition(LaunchConfiguration('enable_fusion')),  # Enable/disable via argumen
+        )
+
+        # Kalibrasi node (tambahan)
+        spawn_calibration = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(calibration_path),  # Include launch file kalibrasi kamera-LiDAR
+            condition=IfCondition(LaunchConfiguration('enable_calibration')),  # Enable/disable via argumen
         )
 
         # ---------- Node Custom dengan Komentar Detail & Modular ----------
@@ -231,6 +245,7 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             enable_stitcher_arg,  # Argumen enable stitcher
             enable_panorama_arg,  # Argumen enable panorama
             enable_fusion_arg,  # Argumen enable fusion
+            enable_calibration_arg,  # Argumen enable kalibrasi
             validate_args_action,  # Validasi argumen sebelum launch
             log_start,  # Logging info
             log_world,  # Logging world file
@@ -240,6 +255,7 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
             spawn_robot_world,  # Launch spawn robot
             spawn_robot_control,  # Launch kontrol robot
             spawn_fusion,  # Launch fusion sensor
+            spawn_calibration,  # Launch kalibrasi kamera-LiDAR
             yolov12_node,  # Node YOLOv12
             yolov12_stitcher_node,  # Node panorama stitcher
             yolov12_panorama_inference_node,  # Node panorama inference
