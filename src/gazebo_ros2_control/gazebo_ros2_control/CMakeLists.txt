@@ -94,6 +94,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
 
-pluginlib_export_plugin_description_file(gazebo_ros2_control gazebo_hardware_plugins.xml)
+pluginlib_export_plugin_description_file(hardware_interface gazebo_hardware_plugins.xml)
 
 ament_package()

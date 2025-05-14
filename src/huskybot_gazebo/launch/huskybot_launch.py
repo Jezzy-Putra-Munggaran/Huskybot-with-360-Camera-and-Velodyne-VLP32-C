@@ -13,6 +13,7 @@ from launch.conditions import IfCondition  # Untuk kondisi enable/disable node
 from launch.launch_description_sources import PythonLaunchDescriptionSource  # Untuk include launch file Python
 from launch.substitutions import LaunchConfiguration, Command  # Untuk ambil nilai argumen launch dan jalankan shell command
 from launch_ros.actions import Node  # Untuk mendefinisikan node ROS2
+from launch_ros.parameter_descriptions import ParameterValue  # Tambahkan import ini
 
 # ---------- Error Handling: cek file sebelum include ----------
 def check_file_exists(path, desc):  # Cek file ada sebelum include
@@ -235,16 +236,19 @@ def generate_launch_description():  # Fungsi utama ROS2 untuk launch file
         controllers_yaml = os.path.join(
             pkg_huskybot_description, 'config', 'huskybot_controllers.yaml'
         )  # Path file YAML controller
-        robot_description = Command([
-            'xacro ',
-            os.path.join(pkg_huskybot_description, 'robot', 'huskybot.urdf.xacro')
-        ])  # Jalankan xacro untuk generate URDF robot
+        robot_description = ParameterValue(
+            Command([
+                'xacro ',
+                os.path.join(pkg_huskybot_description, 'robot', 'huskybot.urdf.xacro')
+            ]),
+            value_type=str  # WAJIB: pastikan hasil xacro dipass sebagai string, bukan YAML
+        )
 
         ros2_control_node = Node(
             package='controller_manager',  # Package controller_manager (ros2_control)
             executable='ros2_control_node',  # Node utama ros2_control
             parameters=[
-                {'robot_description': robot_description},  # URDF robot hasil xacro
+                {'robot_description': robot_description},  # Sudah dibungkus sebagai string
                 controllers_yaml  # File YAML controller
             ],
             output='screen',  # Output log ke terminal

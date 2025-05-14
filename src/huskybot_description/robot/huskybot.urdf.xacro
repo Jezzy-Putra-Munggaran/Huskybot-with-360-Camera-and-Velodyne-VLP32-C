@@ -13,26 +13,33 @@
       <!-- Error handling: pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
     </plugin>
   </gazebo>
-  <gazebo>
-    <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller"> <!-- Plugin diff_drive untuk cmd_vel dan odom -->
-      <ros>
-        <namespace>/huskybot</namespace> <!-- Namespace ROS robot, harus konsisten dengan node kontrol -->
-      </ros>
-      <left_joint>front_left_wheel</left_joint> <!-- Joint kiri depan -->
-      <left_joint>rear_left_wheel</left_joint> <!-- Joint kiri belakang -->
-      <right_joint>front_right_wheel</right_joint> <!-- Joint kanan depan -->
-      <right_joint>rear_right_wheel</right_joint> <!-- Joint kanan belakang -->
-      <wheel_separation>0.5708</wheel_separation> <!-- Jarak antar roda (track Husky, bisa di-xacro-kan) -->
-      <wheel_diameter>0.3302</wheel_diameter> <!-- Diameter roda (bisa di-xacro-kan) -->
-      <max_wheel_torque>0.1</max_wheel_torque> <!-- Torsi maksimum roda -->
-      <max_wheel_acceleration>1.0</max_wheel_acceleration> <!-- Akselerasi maksimum roda -->
-      <publish_odom>true</publish_odom> <!-- Publish odometry ke ROS -->
-      <publish_odom_tf>true</publish_odom_tf> <!-- Publish TF odometry -->
-      <odometry_frame>odom</odometry_frame> <!-- Nama frame odometry -->
-      <robot_base_frame>base_link</robot_base_frame> <!-- Nama frame base robot (Husky: base_link) -->
-      <!-- Error handling: pastikan semua joint di atas ada di URDF base Husky -->
-    </plugin>
-  </gazebo>
+
+  <!-- ==================== TAG ros2_control (WAJIB) ==================== -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="front_left_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="front_right_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="rear_left_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="rear_right_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
 
   <!-- ==================== SENSOR IMU ==================== -->
   <gazebo reference="imu_link">
