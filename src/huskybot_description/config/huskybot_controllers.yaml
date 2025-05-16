@@ -4,8 +4,8 @@ controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib)
 
     diff_drive_controller:  # [dict] Controller utama untuk differential drive (kendali roda kiri-kanan Husky)
       type: diff_drive_controller/DiffDriveController  # [str] Tipe plugin controller (ROS2 Humble, plugin wajib sudah terinstall)
-      left_wheel_names: ["front_left_wheel_link", "rear_left_wheel_link"]  # [list] Nama link roda kiri (harus sama dengan URDF/Xacro)
-      right_wheel_names: ["front_right_wheel_link", "rear_right_wheel_link"]  # [list] Nama link roda kanan (harus sama dengan URDF/Xacro)
+      left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]  # [list] Nama link roda kiri (harus sama dengan URDF/Xacro)
+      right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]  # [list] Nama link roda kanan (harus sama dengan URDF/Xacro)
       publish_rate: 50  # [int] Frekuensi publish data odom (Hz), default 50Hz. Jangan terlalu tinggi agar tidak membebani CPU.
       base_frame_id: base_link  # [str] Nama frame utama robot (harus sama dengan URDF/Xacro, biasanya 'base_link')
       use_stamped_vel: false  # [bool] Gunakan Twist biasa, bukan TwistStamped. Default false untuk robot mobile.

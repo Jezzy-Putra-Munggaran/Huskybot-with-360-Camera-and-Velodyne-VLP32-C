@@ -288,26 +288,60 @@ rviz2
 
 ## Troubleshooting
 
-- **Build error:**  
-  Pastikan sudah install semua dependency dan source ROS2.
-- **Kamera tidak tampil di rqt:**  
-  Cek plugin kamera di URDF/Xacro, cek resource komputer.
-- **Stitching panorama cembung/fisheye:**  
-  Pastikan file kalibrasi intrinsic kamera sudah benar.
-- **Velodyne error `pcap.h`:**  
-  Install `libpcap-dev`.
-- **Topic tidak muncul:**  
-  Cek dengan `ros2 topic list` dan pastikan semua node sudah jalan.
-- **GTSAM tidak ditemukan:**  
-  Build dan install GTSAM dari source, pastikan `CMAKE_PREFIX_PATH` sudah benar.
-- **Gazebo error GPG key:**  
-  Import ulang key Gazebo dan pastikan repo pakai `[signed-by=...]`.
-- **Build error dependency:**  
-  Jalankan `rosdep install --from-paths src --ignore-src -r -y`.
-- **Husky package tidak ada di ROS2:**  
-  Build dari source, atau gunakan custom package di repo ini.
-- **RViz2 tidak muncul:**  
-  Pastikan `rviz2` sudah terinstall dan tidak ada error library.
+### Gazebo ROS2 Service Tidak Muncul (`/gazebo/get_model_list` timeout)
+
+- **Gejala:** Saat menjalankan simulasi, service `/gazebo/get_model_list` tidak pernah ready, robot tidak bisa di-spawn, atau node ROS2 yang butuh service Gazebo ROS2 selalu timeout.
+- **Penyebab Umum:**
+  - Plugin ROS2 (`libgazebo_ros_init.so`, `libgazebo_ros_factory.so`, `libgazebo_ros_state.so`) **TIDAK BOLEH** dimasukkan ke file world SDF di Gazebo Classic 11 (ROS2 Humble).
+  - Plugin ROS2 **WAJIB** di-load ke proses `gzserver` lewat argumen `-s` saat launch, **BUKAN** lewat file world.
+  - Jika plugin tetap ada di file world, akan muncul error "incorrect plugin type" di log Gazebo dan service ROS2 tidak akan pernah muncul.
+  - Jika launch file tidak menjalankan `gzserver` dengan argumen `-s ...`, service ROS2 juga tidak akan muncul.
+- **Solusi:**
+  1. **Pastikan file world TIDAK mengandung plugin ROS2.**  
+     Semua baris `<plugin ... filename="libgazebo_ros_*.so"/>` di-comment atau dihapus dari file `.world`.
+  2. **Pastikan launch file menjalankan Gazebo dengan argumen plugin:**  
+     Proses `gzserver` harus dijalankan dengan:
+     ```
+     gzserver <world_file> -s libgazebo_ros_init.so -s libgazebo_ros_factory.so -s libgazebo_ros_state.so
+     ```
+     Jika perlu, edit launch file di `huskybot_gazebo/launch/` agar menambahkan argumen `-s` ini.
+  3. **Restart simulasi:**  
+     ```
+     pkill -9 gzserver
+     pkill -9 gzclient
+     ros2 launch huskybot_gazebo huskybot_launch.py
+     ```
+  4. **Cek service:**  
+     ```
+     ros2 service list | grep gazebo
+     ```
+     Harus muncul `/gazebo/get_model_list`, `/gazebo/spawn_entity`, dll.
+
+### Sensor Tidak Publish di Gazebo
+
+- Cek plugin di URDF/Xacro sudah benar dan sesuai dengan ROS2 Humble.
+- Pastikan semua dependency sudah terinstall dan path mesh benar.
+
+### Robot Tidak Bergerak
+
+- Cek topic `/cmd_vel` dan remapping.
+- Pastikan node kontrol dan safety monitor berjalan.
+
+### Node Fusion/Recognition Error Import
+
+- Pastikan dependency Python (misal: `ros-numpy`, `opencv-python`, `torch`, dsb) sudah diinstall di environment yang aktif.
+
+---
+
+## Catatan Integrasi Gazebo-ROS2 (PENTING)
+
+- **Gazebo Classic 11 + ROS2 Humble:**  
+  - Plugin ROS2 **TIDAK boleh** di file world.
+  - Plugin ROS2 **WAJIB** di-load lewat argumen `-s` ke proses `gzserver` (diatur di launch file).
+  - Jika tidak, semua service Gazebo ROS2 tidak akan pernah muncul di ROS2.
+- **Best Practice:**  
+  - Selalu jalankan simulasi lewat launch file ROS2, **jangan** manual lewat GUI Gazebo.
+  - Cek log Gazebo untuk error plugin type jika service tidak muncul.
 
 ---
 

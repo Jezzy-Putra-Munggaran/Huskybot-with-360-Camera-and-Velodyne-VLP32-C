@@ -152,5 +152,11 @@
       - Jika ingin menambah sensor/plugin lain, pastikan sudah ada di hasil build dan kompatibel ROS2.
     -->
 
+    <!-- ===================== PLUGIN ROS2 WAJIB ===================== -->
+    <!--
+    <plugin name="gazebo_ros" filename="libgazebo_ros_init.so"/>
+    <plugin name="factory" filename="libgazebo_ros_factory.so"/>
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so"/>
+    -->
   </world>
 </sdf>
