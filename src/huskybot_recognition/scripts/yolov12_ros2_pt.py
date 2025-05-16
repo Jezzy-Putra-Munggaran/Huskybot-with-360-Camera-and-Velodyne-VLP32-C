@@ -15,8 +15,31 @@ import traceback  # Untuk error logging detail
 import threading  # Untuk retry publisher/subscriber
 import time  # Untuk statistik deteksi/logging
 import csv  # Untuk logging statistik ke file
+import logging  # Untuk logging ke file (opsional)
 
 bridge = CvBridge()  # Inisialisasi bridge untuk konversi gambar
+
+# ===================== LOGGING TO FILE (OPSIONAL) =====================
+def setup_file_logger(log_path="~/huskybot_yolov12_node.log"):
+    log_path = os.path.expanduser(log_path)
+    logger = logging.getLogger("yolov12_ros2_pt_file_logger")
+    logger.setLevel(logging.INFO)
+    if not logger.hasHandlers():
+        fh = logging.FileHandler(log_path)
+        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
+        logger.addHandler(fh)
+    return logger
+
+file_logger = setup_file_logger()
+
+def log_to_file(msg, level='info'):
+    if file_logger:
+        if level == 'error':
+            file_logger.error(msg)
+        elif level == 'warn':
+            file_logger.warning(msg)
+        else:
+            file_logger.info(msg)
 
 def validate_yolov12_inference(msg):  # Fungsi validasi message sebelum publish
     if not isinstance(msg, Yolov12Inference):  # Pastikan tipe message benar
@@ -28,61 +51,77 @@ def validate_yolov12_inference(msg):  # Fungsi validasi message sebelum publish
 class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, reusable)
     def __init__(self):  # Konstruktor class
         super().__init__('camera_subscriber')  # Inisialisasi node dengan nama 'camera_subscriber'
-
-        # Parameterization: model_path dan threshold dari parameter node/launch file
-        self.declare_parameter('model_path', os.path.expanduser('~/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'))  # Path default model YOLOv12
-        self.declare_parameter('confidence_threshold', 0.25)  # Threshold confidence default
-        self.declare_parameter('log_stats', True)  # Logging statistik deteksi ke file
-        self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_stats.csv'))  # Path file statistik
-
-        model_path = self.get_parameter('model_path').get_parameter_value().string_value  # Ambil path model dari parameter
-        self.confidence_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value  # Ambil threshold dari parameter
-        self.log_stats = self.get_parameter('log_stats').get_parameter_value().bool_value  # Ambil flag logging statistik
-        self.log_stats_path = self.get_parameter('log_stats_path').get_parameter_value().string_value  # Ambil path file statistik
-
-        if not os.path.isfile(model_path):  # Cek file model ada
-            self.get_logger().error(f"Model YOLOv12 tidak ditemukan: {model_path}")
-            raise FileNotFoundError(f"Model YOLOv12 tidak ditemukan: {model_path}")
-
         try:
-            self.model = YOLO(model_path)  # Load model YOLOv12 (pastikan path dan file model benar)
+            # Parameterization: model_path dan threshold dari parameter node/launch file
+            self.declare_parameter('model_path', os.path.expanduser('~/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'))  # Path default model YOLOv12
+            self.declare_parameter('confidence_threshold', 0.25)  # Threshold confidence default
+            self.declare_parameter('log_stats', True)  # Logging statistik deteksi ke file
+            self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_stats.csv'))  # Path file statistik
+
+            model_path = self.get_parameter('model_path').get_parameter_value().string_value  # Ambil path model dari parameter
+            self.confidence_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value  # Ambil threshold dari parameter
+            self.log_stats = self.get_parameter('log_stats').get_parameter_value().bool_value  # Ambil flag logging statistik
+            self.log_stats_path = self.get_parameter('log_stats_path').get_parameter_value().string_value  # Ambil path file statistik
+
+            self.get_logger().info(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}")
+            log_to_file(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}")
+
+            # Validasi file model YOLO
+            if not os.path.isfile(model_path):
+                self.get_logger().error(f"Model YOLOv12 tidak ditemukan: {model_path}")
+                log_to_file(f"Model YOLOv12 tidak ditemukan: {model_path}", level='error')
+                raise FileNotFoundError(f"Model YOLOv12 tidak ditemukan: {model_path}")
+
+            try:
+                self.model = YOLO(model_path)  # Load model YOLOv12 (pastikan path dan file model benar)
+                self.get_logger().info("YOLOv12 model loaded successfully.")
+                log_to_file("YOLOv12 model loaded successfully.")
+            except Exception as e:
+                self.get_logger().error(f"Gagal load model YOLOv12: {e}")
+                log_to_file(f"Gagal load model YOLOv12: {e}", level='error')
+                raise
+
+            # Retry publisher jika error (robust untuk ROS2)
+            self.yolov12_pub = self._create_publisher_with_retry(Yolov12Inference, "/Yolov12_Inference", 1)
+            self.img_pub = self._create_publisher_with_retry(Image, "/inference_result", 1)
+
+            # Daftar topic kamera dan label (disesuaikan dengan Xacro Husky 6 kamera)
+            self.camera_topics = {
+                'camera_front':        '/camera_front/image_raw',
+                'camera_front_left':   '/camera_front_left/image_raw',
+                'camera_left':         '/camera_left/image_raw',
+                'camera_rear':         '/camera_rear/image_raw',
+                'camera_rear_right':   '/camera_rear_right/image_raw',
+                'camera_right':        '/camera_right/image_raw'
+            }
+
+            self._my_subscriptions = []  # Simpan subscription agar tidak di-GC
+            for cam_name, topic in self.camera_topics.items():  # Loop semua kamera
+                sub = self._create_subscription_with_retry(
+                    Image,
+                    topic,
+                    lambda msg, cam=cam_name: self.camera_callback(msg, cam),  # Callback dengan binding nama kamera
+                    10
+                )
+                self._my_subscriptions.append(sub)
+                self.get_logger().info(f"Subscribed to camera topic: {topic} ({cam_name})")
+                log_to_file(f"Subscribed to camera topic: {topic} ({cam_name})")
+
+            # Statistik deteksi (thread-safe)
+            self.stats_lock = threading.Lock()
+            self.stats = {'total_images': 0, 'total_detections': 0, 'per_class': {}}
+            if self.log_stats:
+                os.makedirs(os.path.dirname(self.log_stats_path), exist_ok=True)  # Pastikan folder log ada
+                self.stats_file = open(self.log_stats_path, 'a', newline='')  # Buka file log statistik
+                self.stats_writer = csv.writer(self.stats_file)
+                if os.stat(self.log_stats_path).st_size == 0:  # Jika file baru, tulis header
+                    self.stats_writer.writerow(['timestamp', 'camera', 'num_detections', 'class_counts'])
+                self.get_logger().info(f"Logging detection stats to: {self.log_stats_path}")
+                log_to_file(f"Logging detection stats to: {self.log_stats_path}")
         except Exception as e:
-            self.get_logger().error(f"Gagal load model YOLOv12: {e}")
+            self.get_logger().error(f"Error initializing Camera_subscriber: {e}\n{traceback.format_exc()}")
+            log_to_file(f"Error initializing Camera_subscriber: {e}\n{traceback.format_exc()}", level='error')
             raise
-
-        # Retry publisher jika error (robust untuk ROS2)
-        self.yolov12_pub = self._create_publisher_with_retry(Yolov12Inference, "/Yolov12_Inference", 1)
-        self.img_pub = self._create_publisher_with_retry(Image, "/inference_result", 1)
-
-        # Daftar topic kamera dan label (disesuaikan dengan Xacro Husky 6 kamera)
-        self.camera_topics = {
-            'camera_front':        '/camera_front/image_raw',
-            'camera_front_left':   '/camera_front_left/image_raw',
-            'camera_left':         '/camera_left/image_raw',
-            'camera_rear':         '/camera_rear/image_raw',
-            'camera_rear_right':   '/camera_rear_right/image_raw',
-            'camera_right':        '/camera_right/image_raw'
-        }
-
-        self._my_subscriptions = []  # Simpan subscription agar tidak di-GC
-        for cam_name, topic in self.camera_topics.items():  # Loop semua kamera
-            sub = self._create_subscription_with_retry(
-                Image,
-                topic,
-                lambda msg, cam=cam_name: self.camera_callback(msg, cam),  # Callback dengan binding nama kamera
-                10
-            )
-            self._my_subscriptions.append(sub)
-
-        # Statistik deteksi (thread-safe)
-        self.stats_lock = threading.Lock()
-        self.stats = {'total_images': 0, 'total_detections': 0, 'per_class': {}}
-        if self.log_stats:
-            os.makedirs(os.path.dirname(self.log_stats_path), exist_ok=True)  # Pastikan folder log ada
-            self.stats_file = open(self.log_stats_path, 'a', newline='')  # Buka file log statistik
-            self.stats_writer = csv.writer(self.stats_file)
-            if os.stat(self.log_stats_path).st_size == 0:  # Jika file baru, tulis header
-                self.stats_writer.writerow(['timestamp', 'camera', 'num_detections', 'class_counts'])
 
     def _create_publisher_with_retry(self, msg_type, topic, queue_size, max_retry=5):  # Retry publisher jika error
         for i in range(max_retry):
@@ -91,7 +130,10 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
                 return pub
             except Exception as e:
                 self.get_logger().warn(f"Retry publisher {topic} ({i+1}/{max_retry}): {e}")
+                log_to_file(f"Retry publisher {topic} ({i+1}/{max_retry}): {e}", level='warn')
                 time.sleep(1)
+        self.get_logger().error(f"Gagal membuat publisher {topic} setelah {max_retry} percobaan.")
+        log_to_file(f"Gagal membuat publisher {topic} setelah {max_retry} percobaan.", level='error')
         raise RuntimeError(f"Gagal membuat publisher {topic} setelah {max_retry} percobaan.")
 
     def _create_subscription_with_retry(self, msg_type, topic, callback, queue_size, max_retry=5):  # Retry subscription jika error
@@ -101,7 +143,10 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
                 return sub
             except Exception as e:
                 self.get_logger().warn(f"Retry subscription {topic} ({i+1}/{max_retry}): {e}")
+                log_to_file(f"Retry subscription {topic} ({i+1}/{max_retry}): {e}", level='warn')
                 time.sleep(1)
+        self.get_logger().error(f"Gagal membuat subscription {topic} setelah {max_retry} percobaan.")
+        log_to_file(f"Gagal membuat subscription {topic} setelah {max_retry} percobaan.", level='error')
         raise RuntimeError(f"Gagal membuat subscription {topic} setelah {max_retry} percobaan.")
 
     def camera_callback(self, data, cam_name):  # Callback saat gambar dari kamera diterima
@@ -109,12 +154,14 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
             img = bridge.imgmsg_to_cv2(data, "bgr8")  # Konversi ROS Image ke OpenCV BGR
         except CvBridgeError as e:
             self.get_logger().error(f"CV Bridge error: {e}")
+            log_to_file(f"CV Bridge error: {e}", level='error')
             return
 
         try:
             results = self.model(img)  # Jalankan YOLOv12 pada gambar
         except Exception as e:
             self.get_logger().error(f"YOLOv12 inference error: {e}\n{traceback.format_exc()}")
+            log_to_file(f"YOLOv12 inference error: {e}\n{traceback.format_exc()}", level='error')
             return
 
         yolov12_inference = Yolov12Inference()  # Buat pesan hasil deteksi
@@ -147,6 +194,7 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
                     class_counts[class_name] = class_counts.get(class_name, 0) + 1
                 except Exception as e:
                     self.get_logger().warn(f"Error parsing detection result: {e}")
+                    log_to_file(f"Error parsing detection result: {e}", level='warn')
 
         # Statistik deteksi (thread-safe)
         with self.stats_lock:
@@ -155,13 +203,17 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
             for cname, cnt in class_counts.items():
                 self.stats['per_class'][cname] = self.stats['per_class'].get(cname, 0) + cnt
             if self.log_stats:
-                self.stats_writer.writerow([
-                    time.strftime('%Y-%m-%d %H:%M:%S'),
-                    cam_name,
-                    num_detections,
-                    dict(class_counts)
-                ])
-                self.stats_file.flush()
+                try:
+                    self.stats_writer.writerow([
+                        time.strftime('%Y-%m-%d %H:%M:%S'),
+                        cam_name,
+                        num_detections,
+                        dict(class_counts)
+                    ])
+                    self.stats_file.flush()
+                except Exception as e:
+                    self.get_logger().warn(f"Error writing stats to file: {e}")
+                    log_to_file(f"Error writing stats to file: {e}", level='warn')
 
         try:
             annotated_frame = results[0].plot()  # Annotasi gambar dengan bounding box
@@ -170,12 +222,16 @@ class Camera_subscriber(Node):  # Definisi class node subscriber kamera (OOP, re
             self.img_pub.publish(img_msg)  # Publish gambar hasil deteksi (annotated)
         except Exception as e:
             self.get_logger().warn(f"Error publishing annotated image: {e}")
+            log_to_file(f"Error publishing annotated image: {e}", level='warn')
 
         # Validasi message sebelum publish
         if validate_yolov12_inference(yolov12_inference):
             self.yolov12_pub.publish(yolov12_inference)  # Publish hasil deteksi ke topic utama
+            self.get_logger().debug(f"Published Yolov12Inference for {cam_name} with {num_detections} detections.")
+            log_to_file(f"Published Yolov12Inference for {cam_name} with {num_detections} detections.", level='debug')
         else:
             self.get_logger().error("Yolov12Inference message tidak valid, tidak dipublish.")
+            log_to_file("Yolov12Inference message tidak valid, tidak dipublish.", level='error')
 
     def destroy_node(self):  # Cleanup node
         if self.log_stats and hasattr(self, 'stats_file'):
@@ -216,7 +272,8 @@ def main(args=None):  # Fungsi utama untuk menjalankan node
         else:
             rclpy.spin(camera_subscriber) # Jalankan node sampai shutdown
     except Exception as e:
-        print(f"[ERROR] {e}") # Print error jika ada
+        print(f"[ERROR] {e}\n{traceback.format_exc()}") # Print error jika ada
+        log_to_file(f"Exception utama: {e}\n{traceback.format_exc()}", level='error')
     finally:
         rclpy.shutdown() # Shutdown ROS2
 

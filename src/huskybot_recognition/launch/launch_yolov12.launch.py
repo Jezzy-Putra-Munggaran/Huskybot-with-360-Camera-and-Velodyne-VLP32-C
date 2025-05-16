@@ -1,52 +1,115 @@
-from launch import LaunchDescription  # Import class utama untuk mendefinisikan launch file ROS2
-from launch.actions import DeclareLaunchArgument, LogInfo  # Import untuk deklarasi argumen dan logging info ke terminal
-from launch.substitutions import LaunchConfiguration  # Import untuk mengambil nilai argumen launch
-from launch_ros.actions import Node  # Import untuk menjalankan node ROS2 dari package Python/C++
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, LogInfo, LogWarn, LogError, OpaqueFunction
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+import os
+import sys
+import shutil
+import time
 
-def generate_launch_description():  # Fungsi utama yang akan dipanggil oleh ROS2 saat launch file dijalankan
-    return LaunchDescription([  # Kembalikan objek LaunchDescription berisi daftar aksi yang akan dijalankan
-        DeclareLaunchArgument(  # Mendeklarasikan argumen launch bernama 'use_sim_time'
-            'use_sim_time',  # Nama argumen (bisa di-set saat launch)
-            default_value='true',  # Nilai default: true (umumnya untuk simulasi/Gazebo)
-            description='Use simulation (Gazebo) clock if true'),  # Penjelasan argumen
+# ===================== ERROR HANDLING & LOGGER =====================
+def check_model_file(context, *args, **kwargs):
+    model_path = LaunchConfiguration('model_path').perform(context)
+    expanded_path = os.path.expanduser(model_path)
+    if not os.path.isfile(expanded_path):
+        print(f"[ERROR] File model YOLOv12 tidak ditemukan: {expanded_path}", file=sys.stderr)
+        LogError(msg=f"File model YOLOv12 tidak ditemukan: {expanded_path}")
+    else:
+        print(f"[INFO] File model YOLOv12 ditemukan: {expanded_path}")
+        LogInfo(msg=f"File model YOLOv12 ditemukan: {expanded_path}")
+    return []
 
-        DeclareLaunchArgument(  # Tambahkan argumen untuk path model YOLOv12
+def check_rclpy_dependency(context, *args, **kwargs):
+    try:
+        import rclpy
+        LogInfo(msg="Dependency 'rclpy' ditemukan.")
+    except ImportError:
+        print("[ERROR] Dependency 'rclpy' tidak ditemukan. Install dengan: pip install rclpy", file=sys.stderr)
+        LogError(msg="Dependency 'rclpy' tidak ditemukan.")
+        sys.exit(2)
+    return []
+
+def log_to_file(msg):
+    log_file_path = os.path.expanduser("~/huskybot_yolov12_launch.log")
+    try:
+        with open(log_file_path, "a") as logf:
+            logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
+    except Exception as e:
+        print(f"[WARNING] Tidak bisa menulis ke log file: {log_file_path} ({e})", file=sys.stderr)
+
+def generate_launch_description():
+    try:
+        # Argumen launch
+        use_sim_time_arg = DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='true',
+            description='Use simulation (Gazebo) clock if true'
+        )
+        model_path_arg = DeclareLaunchArgument(
             'model_path',
             default_value='~/huskybot/src/huskybot_recognition/scripts/yolo12n.pt',
             description='Path ke file model YOLOv12 (.pt)'
-        ),
-
-        DeclareLaunchArgument(  # Tambahkan argumen untuk threshold confidence
+        )
+        confidence_threshold_arg = DeclareLaunchArgument(
             'confidence_threshold',
             default_value='0.25',
             description='Threshold confidence deteksi YOLOv12'
-        ),
-
-        DeclareLaunchArgument(  # Tambahkan argumen untuk logging statistik deteksi
+        )
+        log_stats_arg = DeclareLaunchArgument(
             'log_stats',
             default_value='true',
             description='Aktifkan logging statistik deteksi ke file'
-        ),
-
-        DeclareLaunchArgument(  # Tambahkan argumen untuk path file statistik deteksi
+        )
+        log_stats_path_arg = DeclareLaunchArgument(
             'log_stats_path',
             default_value='~/huskybot_detection_log/yolov12_stats.csv',
             description='Path file statistik deteksi YOLOv12'
-        ),
+        )
 
-        LogInfo(msg='Launching YOLOv12 ROS2 Node...'),  # Logging info ke terminal saat node dijalankan
+        # Error handling actions
+        check_model_action = OpaqueFunction(function=check_model_file)
+        check_rclpy_action = OpaqueFunction(function=check_rclpy_dependency)
 
-        Node(  # Menjalankan satu node ROS2
-            package='huskybot_recognition',  # Nama package ROS2 tempat node berada (harus sesuai package.xml dan setup.py)
-            executable='yolov12_ros2_pt.py',  # Nama executable/script Python yang akan dijalankan (harus terdaftar di setup.py entry_points)
-            output='screen',  # Output log node akan ditampilkan di terminal (bukan ke file)
+        # Logging info ke terminal dan file
+        log_launch = LogInfo(msg='Launching YOLOv12 ROS2 Node...')
+        log_to_file("Launching YOLOv12 ROS2 Node...")
+
+        # Node YOLOv12
+        yolov12_node = Node(
+            package='huskybot_recognition',
+            executable='yolov12_ros2_pt.py',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},  # Parameter agar node pakai waktu simulasi jika true
-                {'model_path': LaunchConfiguration('model_path')},  # Parameter path model YOLOv12
-                {'confidence_threshold': LaunchConfiguration('confidence_threshold')},  # Parameter threshold confidence
-                {'log_stats': LaunchConfiguration('log_stats')},  # Parameter logging statistik
-                {'log_stats_path': LaunchConfiguration('log_stats_path')},  # Parameter path file statistik
+                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {'model_path': LaunchConfiguration('model_path')},
+                {'confidence_threshold': LaunchConfiguration('confidence_threshold')},
+                {'log_stats': LaunchConfiguration('log_stats')},
+                {'log_stats_path': LaunchConfiguration('log_stats_path')},
             ],
-            # Bisa tambahkan remappings jika ingin ganti topic
-        ),
-    ])
+        )
+
+        return LaunchDescription([
+            use_sim_time_arg,
+            model_path_arg,
+            confidence_threshold_arg,
+            log_stats_arg,
+            log_stats_path_arg,
+            check_rclpy_action,
+            check_model_action,
+            log_launch,
+            yolov12_node
+        ])
+    except Exception as e:
+        print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)
+        LogError(msg=f"Exception saat generate_launch_description: {e}")
+        log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")
+        sys.exit(99)
+
+# ===================== PENJELASAN & SARAN =====================
+# - Semua argumen sudah modular dan bisa diubah saat launch/CLI.
+# - Error handling sudah lengkap: cek file model, dependency rclpy, logging ke file.
+# - Logging info ke terminal dan file untuk audit trail.
+# - Siap untuk multi-robot (tinggal remap topic jika perlu).
+# - Saran: tambahkan validasi file YAML kalibrasi jika ingin logging statistik per kamera.
+# - Saran: tambahkan unit test launch file di folder test/ untuk CI/CD.
+# - Saran: tambahkan argumen untuk log_file jika ingin log custom per robot.

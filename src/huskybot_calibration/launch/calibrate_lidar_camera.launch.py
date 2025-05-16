@@ -1,139 +1,198 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from launch import LaunchDescription  # Import utama untuk ROS2 launch file
-from launch_ros.actions import Node  # Import Node action untuk menjalankan node ROS2
-from launch.substitutions import LaunchConfiguration  # Untuk parameterisasi launch
-from launch.actions import DeclareLaunchArgument  # Untuk deklarasi argumen launch
+import os
+import sys
+import time
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, LogInfo, LogWarn, LogError, OpaqueFunction
+from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
+
+# ===================== ERROR HANDLING & LOGGER =====================
+def check_output_yaml(context, *args, **kwargs):
+    output_yaml = LaunchConfiguration('output_yaml').perform(context)
+    expanded = os.path.expandvars(os.path.expanduser(output_yaml))
+    output_dir = os.path.dirname(expanded)
+    if not os.path.isdir(output_dir):
+        try:
+            os.makedirs(output_dir)
+            print(f"[INFO] Membuat folder output YAML: {output_dir}")
+            LogInfo(msg=f"Membuat folder output YAML: {output_dir}")
+        except Exception as e:
+            print(f"[ERROR] Gagal membuat folder output YAML: {output_dir} ({e})", file=sys.stderr)
+            LogError(msg=f"Gagal membuat folder output YAML: {output_dir} ({e})")
+            sys.exit(2)
+    else:
+        print(f"[INFO] Folder output YAML sudah ada: {output_dir}")
+        LogInfo(msg=f"Folder output YAML sudah ada: {output_dir}")
+    return []
+
+def check_log_file_path(context, *args, **kwargs):
+    log_file_path = LaunchConfiguration('log_file_path').perform(context)
+    if log_file_path and log_file_path != '':
+        expanded = os.path.expandvars(os.path.expanduser(log_file_path))
+        try:
+            with open(expanded, "a") as logf:
+                logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Logger file check OK\n")
+            print(f"[INFO] Logger file bisa ditulis: {expanded}")
+            LogInfo(msg=f"Logger file bisa ditulis: {expanded}")
+        except Exception as e:
+            print(f"[ERROR] Logger file tidak bisa ditulis: {expanded} ({e})", file=sys.stderr)
+            LogError(msg=f"Logger file tidak bisa ditulis: {expanded} ({e})")
+            sys.exit(3)
+    return []
+
+def log_to_file(msg):
+    log_file_path = os.path.expanduser("~/huskybot_calibration_launch.log")
+    try:
+        with open(log_file_path, "a") as logf:
+            logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
+    except Exception as e:
+        print(f"[WARNING] Tidak bisa menulis ke log file: {log_file_path} ({e})", file=sys.stderr)
 
 def generate_launch_description():
-    # Deklarasi argumen launch agar bisa diubah dari command line atau launch file lain
-    return LaunchDescription([
-        DeclareLaunchArgument(
+    try:
+        # Deklarasi argumen launch agar bisa diubah dari command line atau launch file lain
+        use_sim_time_arg = DeclareLaunchArgument(
             'use_sim_time',
             default_value='false',
-            description='Gunakan waktu simulasi (Gazebo) jika true'  # Untuk simulasi di Gazebo
-        ),
-        DeclareLaunchArgument(
+            description='Gunakan waktu simulasi (Gazebo) jika true'
+        )
+        camera_topic_arg = DeclareLaunchArgument(
             'camera_topic',
             default_value='/panorama/image_raw',
-            description='Topic kamera (image)'  # Topic image kamera, harus konsisten dengan node kamera
-        ),
-        DeclareLaunchArgument(
+            description='Topic kamera (image)'
+        )
+        lidar_topic_arg = DeclareLaunchArgument(
             'lidar_topic',
             default_value='/velodyne_points',
-            description='Topic LiDAR (pointcloud)'  # Topic pointcloud LiDAR, harus konsisten dengan driver Velodyne
-        ),
-        DeclareLaunchArgument(
+            description='Topic LiDAR (pointcloud)'
+        )
+        pattern_type_arg = DeclareLaunchArgument(
             'pattern_type',
             default_value='checkerboard',
-            description='Tipe pattern kalibrasi (checkerboard/aruco)'  # Jenis pattern untuk deteksi kalibrasi
-        ),
-        DeclareLaunchArgument(
+            description='Tipe pattern kalibrasi (checkerboard/aruco)'
+        )
+        pattern_size_arg = DeclareLaunchArgument(
             'pattern_size',
             default_value='[7,6]',
-            description='Ukuran pattern checkerboard (misal: [7,6])'  # Ukuran pattern checkerboard
-        ),
-        DeclareLaunchArgument(
+            description='Ukuran pattern checkerboard (misal: [7,6])'
+        )
+        square_size_arg = DeclareLaunchArgument(
             'square_size',
             default_value='0.025',
-            description='Ukuran kotak pattern (meter)'  # Ukuran fisik kotak checkerboard
-        ),
-        DeclareLaunchArgument(
+            description='Ukuran kotak pattern (meter)'
+        )
+        output_yaml_arg = DeclareLaunchArgument(
             'output_yaml',
             default_value='config/extrinsic_lidar_to_camera.yaml',
-            description='Path file output YAML hasil kalibrasi'  # Output hasil kalibrasi, dibaca node fusion
-        ),
-        DeclareLaunchArgument(
+            description='Path file output YAML hasil kalibrasi'
+        )
+        visualize_arg = DeclareLaunchArgument(
             'visualize',
             default_value='true',
-            description='Aktifkan visualisasi hasil kalibrasi'  # Aktifkan visualisasi matplotlib
-        ),
-        DeclareLaunchArgument(
+            description='Aktifkan visualisasi hasil kalibrasi'
+        )
+        camera_frame_id_arg = DeclareLaunchArgument(
             'camera_frame_id',
             default_value='panorama_camera_link',
-            description='Nama frame kamera'  # Nama frame kamera, harus konsisten dengan URDF/Xacro
-        ),
-        DeclareLaunchArgument(
+            description='Nama frame kamera'
+        )
+        lidar_frame_id_arg = DeclareLaunchArgument(
             'lidar_frame_id',
             default_value='velodyne_link',
-            description='Nama frame LiDAR'  # Nama frame LiDAR, harus konsisten dengan URDF/Xacro
-        ),
-        DeclareLaunchArgument(
+            description='Nama frame LiDAR'
+        )
+        log_to_file_arg = DeclareLaunchArgument(
             'log_to_file',
             default_value='false',
-            description='Aktifkan logging proses ke file'  # Logging proses kalibrasi ke file log
-        ),
-        DeclareLaunchArgument(
+            description='Aktifkan logging proses ke file'
+        )
+        publish_tf_arg = DeclareLaunchArgument(
             'publish_tf',
             default_value='true',
-            description='Publish TF hasil kalibrasi ke TF tree'  # Publish hasil kalibrasi ke TF tree ROS2
-        ),
-        DeclareLaunchArgument(
+            description='Publish TF hasil kalibrasi ke TF tree'
+        )
+        sync_time_slop_arg = DeclareLaunchArgument(
             'sync_time_slop',
             default_value='0.1',
-            description='Threshold sinkronisasi waktu antar sensor (detik)'  # Toleransi sinkronisasi sensor
-        ),
-        DeclareLaunchArgument(
+            description='Threshold sinkronisasi waktu antar sensor (detik)'
+        )
+        log_file_path_arg = DeclareLaunchArgument(
             'log_file_path',
             default_value='config/calibration_process.log',
-            description='Path file log proses kalibrasi'  # Lokasi file log proses kalibrasi
-        ),
+            description='Path file log proses kalibrasi'
+        )
         # Saran peningkatan: namespace untuk multi-robot (opsional, bisa diaktifkan jika perlu)
-        # DeclareLaunchArgument(
+        # namespace_arg = DeclareLaunchArgument(
         #     'namespace',
         #     default_value='',
         #     description='Namespace ROS2 untuk multi-robot (opsional)'
-        # ),
-        Node(
-            package='huskybot_calibration',  # Nama package ROS2
-            executable='calibrate_lidar_camera.py',  # Nama executable Python (lihat setup.py entry_points)
-            name='lidar_camera_calibrator',  # Nama node ROS2
-            output='screen',  # Output ke terminal
+        # )
+
+        # Error handling actions
+        check_output_yaml_action = OpaqueFunction(function=check_output_yaml)
+        check_log_file_path_action = OpaqueFunction(function=check_log_file_path)
+
+        # Logging info ke terminal dan file
+        log_launch = LogInfo(msg="Launching Lidar-Camera Calibration Node...")
+        log_to_file("Launching Lidar-Camera Calibration Node...")
+
+        calibration_node = Node(
+            package='huskybot_calibration',
+            executable='calibrate_lidar_camera.py',
+            name='lidar_camera_calibrator',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},  # Parameter waktu simulasi
-                {'camera_topic': LaunchConfiguration('camera_topic')},  # Parameter topic kamera
-                {'lidar_topic': LaunchConfiguration('lidar_topic')},  # Parameter topic LiDAR
-                {'pattern_type': LaunchConfiguration('pattern_type')},  # Parameter tipe pattern
-                {'pattern_size': LaunchConfiguration('pattern_size')},  # Parameter ukuran pattern
-                {'square_size': LaunchConfiguration('square_size')},  # Parameter ukuran kotak pattern
-                {'output_yaml': LaunchConfiguration('output_yaml')},  # Parameter output YAML
-                {'visualize': LaunchConfiguration('visualize')},  # Parameter visualisasi
-                {'camera_frame_id': LaunchConfiguration('camera_frame_id')},  # Parameter frame kamera
-                {'lidar_frame_id': LaunchConfiguration('lidar_frame_id')},  # Parameter frame LiDAR
-                {'log_to_file': LaunchConfiguration('log_to_file')},  # Parameter logging ke file
-                {'publish_tf': LaunchConfiguration('publish_tf')},  # Parameter publish TF
-                {'sync_time_slop': LaunchConfiguration('sync_time_slop')},  # Parameter threshold sinkronisasi
-                {'log_file_path': LaunchConfiguration('log_file_path')},  # Parameter path log file
+                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {'camera_topic': LaunchConfiguration('camera_topic')},
+                {'lidar_topic': LaunchConfiguration('lidar_topic')},
+                {'pattern_type': LaunchConfiguration('pattern_type')},
+                {'pattern_size': LaunchConfiguration('pattern_size')},
+                {'square_size': LaunchConfiguration('square_size')},
+                {'output_yaml': LaunchConfiguration('output_yaml')},
+                {'visualize': LaunchConfiguration('visualize')},
+                {'camera_frame_id': LaunchConfiguration('camera_frame_id')},
+                {'lidar_frame_id': LaunchConfiguration('lidar_frame_id')},
+                {'log_to_file': LaunchConfiguration('log_to_file')},
+                {'publish_tf': LaunchConfiguration('publish_tf')},
+                {'sync_time_slop': LaunchConfiguration('sync_time_slop')},
+                {'log_file_path': LaunchConfiguration('log_file_path')},
             ],
-            emulate_tty=True  # Agar output warna tetap muncul di terminal
+            emulate_tty=True
             # namespace=LaunchConfiguration('namespace')  # Aktifkan jika ingin multi-robot
         )
-    ])
+
+        return LaunchDescription([
+            use_sim_time_arg,
+            camera_topic_arg,
+            lidar_topic_arg,
+            pattern_type_arg,
+            pattern_size_arg,
+            square_size_arg,
+            output_yaml_arg,
+            visualize_arg,
+            camera_frame_id_arg,
+            lidar_frame_id_arg,
+            log_to_file_arg,
+            publish_tf_arg,
+            sync_time_slop_arg,
+            log_file_path_arg,
+            # namespace_arg,  # Aktifkan jika ingin multi-robot
+            check_output_yaml_action,
+            check_log_file_path_action,
+            log_launch,
+            calibration_node
+        ])
+    except Exception as e:
+        print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)
+        LogError(msg=f"Exception saat generate_launch_description: {e}")
+        log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")
+        sys.exit(99)
 
 # Penjelasan:
-# - File ini adalah launch file ROS2 untuk menjalankan node kalibrasi kamera-LiDAR (`calibrate_lidar_camera.py`).
+# - File ini sudah ada logger, error handling, dan validasi path output/log file.
 # - Semua parameter penting bisa diubah dari command line atau launch file lain (modular untuk simulasi/real).
-# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky + Velodyne + Arducam).
-# - Node akan otomatis publish hasil kalibrasi ke topic dan file YAML, serta bisa publish TF ke TF tree.
-# - Parameterisasi lengkap: bisa atur topic, frame, pattern, output, logging, visualisasi, threshold sinkronisasi, dan path log file.
-# - Parameter `sync_time_slop` dan `log_file_path` adalah saran peningkatan agar pipeline lebih fleksibel dan robust.
-
-# Keterhubungan:
-# - Node ini akan membaca topic kamera (`/panorama/image_raw`) dan LiDAR (`/velodyne_points`) yang harus sudah aktif (dari driver atau simulasi Gazebo).
-# - Output file YAML akan dibaca oleh node fusion di package `huskybot_fusion`.
-# - Semua frame_id harus konsisten dengan URDF/Xacro di package `huskybot_description`.
-# - Logging dan output file akan tersimpan di folder `config/` (pastikan permission OK).
-# - Untuk multi-robot, bisa gunakan namespace ROS2 pada launch file (sudah disiapkan, tinggal aktifkan).
-
-# Error Handling:
-# - Jika parameter/topic/folder tidak ditemukan, node Python sudah ada error handling dan log error.
-# - Jika file output tidak bisa ditulis, node akan log error dan exit.
-# - Jika data sensor tidak sinkron, node akan log warning dan skip proses.
-# - Semua argumen bisa diubah tanpa edit file Python (cukup lewat launch/CLI).
-
-# Saran peningkatan (SUDAH diimplementasikan):
-# - Tambahkan validasi otomatis untuk semua parameter (misal: cek path output, cek topic aktif) sebelum node dijalankan.
-# - Tambahkan argumen untuk namespace multi-robot (sudah disiapkan, tinggal aktifkan jika perlu).
-# - Tambahkan test/integration test launch file di CI/CD pipeline.
-# - Dokumentasikan semua parameter di README agar user lain mudah mengubah sesuai kebutuhan.
+# - Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real.
+# - Saran: aktifkan namespace jika ingin multi-robot.

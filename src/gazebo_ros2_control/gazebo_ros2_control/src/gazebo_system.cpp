@@ -6,8 +6,7 @@
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -179,15 +178,18 @@ void GazeboSystem::registerJoints(
   this->dataPtr->pos_pid.resize(this->dataPtr->n_dof_);
   this->dataPtr->is_pos_pid.resize(this->dataPtr->n_dof_);
   this->dataPtr->is_vel_pid.resize(this->dataPtr->n_dof_);
+  this->dataPtr->sim_joints_.resize(this->dataPtr->n_dof_);
 
+  std::vector<std::string> missing_joints;
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     auto & joint_info = hardware_info.joints[j];
     const std::string joint_name = this->dataPtr->joint_names_[j] = joint_info.name;
 
-    gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
-    this->dataPtr->sim_joints_.push_back(simjoint);
-    if (!simjoint) {
+    this->dataPtr->sim_joints_[j] = parent_model->GetJoint(joint_name);
+
+    if (!this->dataPtr->sim_joints_[j]) {
       RCLCPP_ERROR(this->nh_->get_logger(), "Joint '%s' tidak ditemukan di model Gazebo!", joint_name.c_str());
+      missing_joints.push_back(joint_name);
       publish_health_status("ERROR: Joint " + joint_name + " not found in Gazebo model");
       continue;
     }
@@ -220,6 +222,23 @@ void GazeboSystem::registerJoints(
 
     this->dataPtr->is_joint_actuated_[j] = (joint_info.command_interfaces.size() > 0);
   }
+
+  if (!missing_joints.empty()) {
+    std::string msg = "Joints gagal ditemukan di Gazebo: ";
+    for (const auto& jn : missing_joints) msg += jn + " ";
+    RCLCPP_ERROR(this->nh_->get_logger(), "%s", msg.c_str());
+  }
+
+  int valid_joints = 0;
+  for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
+    if (this->dataPtr->sim_joints_[j]) valid_joints++;
+  }
+  RCLCPP_INFO(rclcpp::get_logger("GazeboSystem"),
+    "registerJoints: n_dof_=%zu, valid_joints=%d, state_interfaces_=%zu, command_interfaces_=%zu",
+    this->dataPtr->n_dof_,
+    valid_joints,
+    this->dataPtr->state_interfaces_.size(),
+    this->dataPtr->command_interfaces_.size());
 }
 
 // ===================== REGISTER SENSOR (IMU, GPS, KAMERA, LIDAR) =====================
@@ -266,7 +285,14 @@ void GazeboSystem::registerSensors(
 // ===================== MONITORING HEALTH HARDWARE =====================
 void GazeboSystem::publish_health_status(const std::string & status)
 {
-  if (!this->dataPtr->health_pub_) return;
+  RCLCPP_DEBUG(rclcpp::get_logger("GazeboSystem"), 
+    "publish_health_status dipanggil. nh_=%p, dataPtr=%p, health_pub_=%p, status='%s'", 
+    static_cast<void*>(this->nh_.get()), 
+    static_cast<void*>(this->dataPtr.get()), 
+    static_cast<void*>(this->dataPtr ? this->dataPtr->health_pub_.get() : nullptr),
+    status.c_str());
+
+  if (!this->nh_ || !this->dataPtr || !this->dataPtr->health_pub_) return;
   if (status == this->dataPtr->last_health_status_) return; // Hindari spam
   auto msg = std_msgs::msg::String();
   msg.data = "[" + std::to_string(this->dataPtr->clock_.now().seconds()) + "] " + status;
@@ -279,8 +305,23 @@ std::vector<hardware_interface::StateInterface>
 GazeboSystem::export_state_interfaces()
 {
   RCLCPP_INFO(rclcpp::get_logger("GazeboSystem"),
-    "export_state_interfaces: joint_names_.size()=%zu sim_joints_.size()=%zu",
-    this->dataPtr->joint_names_.size(), this->dataPtr->sim_joints_.size());
+    "export_state_interfaces: joint_names_.size()=%zu sim_joints_.size()=%zu joint_position_.size()=%zu joint_velocity_.size()=%zu joint_effort_.size()=%zu state_interfaces_.size()=%zu",
+    this->dataPtr->joint_names_.size(),
+    this->dataPtr->sim_joints_.size(),
+    this->dataPtr->joint_position_.size(),
+    this->dataPtr->joint_velocity_.size(),
+    this->dataPtr->joint_effort_.size(),
+    this->dataPtr->state_interfaces_.size());
+
+  // Validasi vector tidak kosong dan ukurannya konsisten
+  if (this->dataPtr->joint_names_.empty() || this->dataPtr->sim_joints_.empty()) {
+    RCLCPP_ERROR(rclcpp::get_logger("GazeboSystem"), "export_state_interfaces: joint_names_ atau sim_joints_ kosong! Plugin akan crash.");
+    throw std::runtime_error("export_state_interfaces: joint_names_ atau sim_joints_ kosong!");
+  }
+  if (this->dataPtr->joint_names_.size() != this->dataPtr->sim_joints_.size()) {
+    RCLCPP_ERROR(rclcpp::get_logger("GazeboSystem"), "export_state_interfaces: Ukuran joint_names_ dan sim_joints_ tidak sama!");
+    throw std::runtime_error("export_state_interfaces: Ukuran joint_names_ dan sim_joints_ tidak sama!");
+  }
   return std::move(this->dataPtr->state_interfaces_);
 }
 
@@ -373,6 +414,14 @@ hardware_interface::return_type GazeboSystem::write(
     }
   }
   if (all_ok) publish_health_status("OK: write success");
+  return hardware_interface::return_type::OK;
+}
+
+hardware_interface::return_type GazeboSystem::perform_command_mode_switch(
+  const std::vector<std::string> & start_interfaces,
+  const std::vector<std::string> & stop_interfaces)
+{
+  // Default: tidak melakukan apa-apa, return OK
   return hardware_interface::return_type::OK;
 }
 
