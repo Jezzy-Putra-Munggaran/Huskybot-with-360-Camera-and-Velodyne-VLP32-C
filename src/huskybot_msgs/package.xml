@@ -1,29 +1,39 @@
-<?xml version="1.0"?> <!-- Header XML wajib -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2 -->
-<package format="3"> <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
-  <name>huskybot_msgs</name> <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
-  <version>0.1.0</version> <!-- Versi package, update jika sudah release/ada perubahan besar -->
-  <description>Custom message interface untuk Huskybot (Object3D, dsb) untuk integrasi kamera 360° dan LiDAR.</description> <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
+<?xml version="1.0"?> <!-- Header XML wajib, agar dikenali sebagai file XML oleh ROS2 build system -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2, agar build system bisa cek format dan field -->
+<package format="3"> <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble, wajib untuk dependency dan metadata) -->
+  <name>huskybot_msgs</name> <!-- Nama package, harus sama dengan folder dan CMakeLists.txt agar workspace build tidak error -->
+  <version>0.1.0</version> <!-- Versi package, update jika sudah release/ada perubahan besar, penting untuk tracking dan CI/CD -->
+  <description>
+    Custom message interface untuk Huskybot (Object3D, dsb) untuk integrasi kamera 360° dan LiDAR.
+    Digunakan oleh node fusion, recognition, logger, dan seluruh pipeline workspace.
+    Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+  </description> <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi, agar user/dev lain paham fungsinya -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi dengan email aktif agar metadata package valid -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author> <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license> <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
 
   <!-- Build tool dependency wajib untuk ROS2 -->
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend> <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
 
   <!-- Dependency wajib untuk message interface -->
-  <build_depend>rosidl_default_generators</build_depend> <!-- Untuk generate message interface -->
-  <exec_depend>rosidl_default_runtime</exec_depend> <!-- Untuk runtime message interface -->
-  <build_depend>std_msgs</build_depend> <!-- Dependency message std_msgs (Header, dsb) -->
-  <exec_depend>std_msgs</exec_depend> <!-- Runtime dependency std_msgs -->
+  <build_depend>rosidl_default_generators</build_depend> <!-- Untuk generate message interface Python/C++ -->
+  <exec_depend>rosidl_default_runtime</exec_depend> <!-- Untuk runtime message interface Python/C++ -->
+  <build_depend>std_msgs</build_depend> <!-- Dependency message std_msgs (Header, dsb), wajib jika pakai std_msgs/Header di .msg -->
+  <exec_depend>std_msgs</exec_depend> <!-- Runtime dependency std_msgs, agar node lain bisa pakai message ini -->
 
   <!-- Dependency untuk testing/linting (opsional, best practice) -->
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_lint_auto</test_depend> <!-- Dependency linting otomatis saat test/CI -->
+  <test_depend>ament_lint_common</test_depend> <!-- Dependency linting umum saat test/CI -->
 
   <!-- Group deklarasi agar dikenali sebagai package interface -->
-  <member_of_group>rosidl_interface_packages</member_of_group>
+  <member_of_group>rosidl_interface_packages</member_of_group> <!-- Wajib agar dikenali sebagai package message/interface oleh ROS2 -->
 
   <export>
     <build_type>ament_cmake</build_type> <!-- Build type wajib untuk ROS2 CMake -->
+    <architecture_independent/> <!-- Package ini tidak tergantung arsitektur (pure message/interface) -->
+    <description lang="en">Custom message interface for Huskybot 360° fusion (Object3D, etc).</description> <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <readme>README.md</readme> <!-- (Opsional) Path ke file README untuk dokumentasi package -->
+    <url type="website">https://github.com/jezzy/huskybot</url> <!-- (Opsional) URL website/repo utama package -->
+    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url> <!-- (Opsional) URL bugtracker/issues -->
   </export>
 </package>

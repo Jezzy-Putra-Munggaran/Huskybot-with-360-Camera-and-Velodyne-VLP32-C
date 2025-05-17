@@ -1,34 +1,61 @@
-controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib)
-  ros__parameters:   # Semua parameter controller ROS2 didefinisikan di bawah ini (wajib)
+controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib, dikenali node ros2_control)
+  ros__parameters:   # Semua parameter controller ROS2 didefinisikan di bawah ini (wajib, ROS2 Humble style)
     update_rate: 100  # [int] Frekuensi update controller manager (Hz), default 100Hz. Cukup untuk simulasi dan real robot.
 
     diff_drive_controller:  # [dict] Controller utama untuk differential drive (kendali roda kiri-kanan Husky)
       type: diff_drive_controller/DiffDriveController  # [str] Tipe plugin controller (ROS2 Humble, plugin wajib sudah terinstall)
-      left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]  # [list] Nama link roda kiri (harus sama dengan URDF/Xacro)
-      right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]  # [list] Nama link roda kanan (harus sama dengan URDF/Xacro)
+      left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]  # [list] Nama joint roda kiri (harus sama dengan URDF/Xacro)
+      right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]  # [list] Nama joint roda kanan (harus sama dengan URDF/Xacro)
       publish_rate: 50  # [int] Frekuensi publish data odom (Hz), default 50Hz. Jangan terlalu tinggi agar tidak membebani CPU.
       base_frame_id: base_link  # [str] Nama frame utama robot (harus sama dengan URDF/Xacro, biasanya 'base_link')
       use_stamped_vel: false  # [bool] Gunakan Twist biasa, bukan TwistStamped. Default false untuk robot mobile.
-
-      # Saran peningkatan: tambahkan parameter PID jika ingin tuning kecepatan/posisi
-      # Example:
-      #   wheel_separation: 0.55  # [float] Jarak antar roda kiri-kanan (meter), opsional jika ingin override URDF
-      #   wheel_radius: 0.165     # [float] Radius roda (meter), opsional jika ingin override URDF
-      #   cmd_vel_timeout: 0.25   # [float] Timeout (detik) jika tidak ada cmd_vel, robot otomatis berhenti
+      wheel_separation: 0.55  # [float] Jarak antar roda kiri-kanan (meter), opsional override URDF (disarankan isi untuk real robot)
+      wheel_radius: 0.165     # [float] Radius roda (meter), opsional override URDF (disarankan isi untuk real robot)
+      cmd_vel_timeout: 0.25   # [float] Timeout (detik) jika tidak ada cmd_vel, robot otomatis berhenti (safety)
+      # Saran: Tambahkan parameter PID jika ingin tuning kecepatan/posisi (lihat dokumentasi diff_drive_controller)
+      # Example PID (jika ingin tuning, uncomment dan sesuaikan):
+      # linear:
+      #   p: 1.0
+      #   i: 0.0
+      #   d: 0.0
+      # angular:
+      #   p: 1.0
+      #   i: 0.0
+      #   d: 0.0
 
     joint_state_broadcaster:  # [dict] Broadcaster untuk publish semua joint state ke topic /joint_states
       type: joint_state_broadcaster/JointStateBroadcaster  # [str] Tipe plugin broadcaster (ROS2 Humble)
 
+    imu_broadcaster:  # [dict] Broadcaster untuk publish data IMU (jika ada sensor IMU di URDF)
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster  # [str] Tipe plugin IMU broadcaster
+      sensor_name: imu_link  # [str] Nama link IMU di URDF/Xacro (pastikan sesuai URDF)
+
     # Saran peningkatan: tambahkan controller lain jika ada joint/sensor tambahan
     # Example:
-    # imu_broadcaster:
-    #   type: imu_sensor_broadcaster/IMUSensorBroadcaster
-    #   sensor_name: imu_link
+    # camera_broadcaster:
+    #   type: camera_sensor_broadcaster/CameraSensorBroadcaster
+    #   sensor_name: camera_front_link
 
-    # Error handling:
+    # ===================== ERROR HANDLING & TIPS =====================
     # - Jika controller gagal aktif, cek log ros2_control_node untuk pesan error (misal: joint tidak ditemukan).
     # - Jika topic /cmd_vel tidak ada/tidak bergerak, cek apakah controller sudah aktif dan tidak error.
     # - Jika robot tidak bergerak di Gazebo, cek plugin ros2_control di URDF dan parameter YAML sudah di-pass ke node.
     # - Jika ingin multi-robot, tambahkan namespace di parameter dan launch file.
     # - Jika ingin tuning PID, tambahkan parameter PID di controller YAML.
     # - Jika ingin hardware real, pastikan hardware interface di URDF sudah benar dan parameter YAML menyesuaikan hardware driver.
+    # - Jika IMU/camera tidak publish, cek nama link dan plugin di URDF serta parameter broadcaster di YAML.
+    # - Jika error permission, pastikan file YAML bisa dibaca user yang menjalankan ros2 launch.
+    # - Jika simulasi di Gazebo tidak sinkron, pastikan use_sim_time:=true di launch file.
+    # - Jika ingin audit trail, aktifkan logger node di huskybot_control.
+
+# ===================== REVIEW & SARAN PENINGKATAN =====================
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
+# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Sudah terhubung otomatis ke node ros2_control, robot_state_publisher, dan pipeline kontrol di workspace.
+# - Sudah robust untuk multi-robot (tinggal remap namespace di launch file).
+# - Sudah best practice ROS2 YAML controller config.
+# - Error handling sudah sangat lengkap: cek joint, plugin, topic, permission, dan logger.
+# - Saran: tambahkan PID tuning jika ingin performa lebih halus di real robot.
+# - Saran: tambahkan broadcaster untuk sensor lain jika ada (IMU, kamera, dsb).
+# - Saran: dokumentasikan semua parameter di README dan launch file.
+# - Saran: tambahkan test/launch test untuk validasi otomatis di CI/CD.

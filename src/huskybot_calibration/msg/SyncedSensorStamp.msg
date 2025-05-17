@@ -55,5 +55,20 @@ uint8 lidar_status                  # Status sensor LiDAR
 uint8 imu_status                    # Status sensor IMU
 # Status kesehatan sensor IMU, bisa digunakan untuk monitoring dan error handling.
 
+string camera_status_detail         # (Opsional) Pesan error/detail status kamera
+# Penjelasan error atau status detail kamera, untuk debugging lebih mudah.
+
+string lidar_status_detail          # (Opsional) Pesan error/detail status LiDAR
+# Penjelasan error atau status detail LiDAR, untuk debugging lebih mudah.
+
+string imu_status_detail            # (Opsional) Pesan error/detail status IMU
+# Penjelasan error atau status detail IMU, untuk debugging lebih mudah.
+
+uint8 sync_error_code               # (Opsional) Kode error sinkronisasi (0: OK, 1: TIMEOUT, 2: DELAY, dst)
+# Kode error sinkronisasi, untuk monitoring dan troubleshooting otomatis.
+
+float64[8] reserved                 # (Opsional) Field cadangan untuk future-proofing pipeline
+# Field cadangan, bisa digunakan untuk data tambahan di masa depan.
+
 # (Opsional, bisa tambah field lain sesuai kebutuhan pipeline)
 # Tambahkan field lain jika pipeline bertambah (misal: status sinkronisasi lanjutan, data sensor lain, dsb).

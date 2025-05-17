@@ -25,6 +25,8 @@
   <exec_depend>scipy</exec_depend> <!-- Untuk konversi quaternion <-> matrix (TF), penting untuk publish TF -->
   <exec_depend>sklearn</exec_depend> <!-- Untuk clustering DBSCAN pada pattern LiDAR (opsional, fallback ke centroid jika tidak ada) -->
   <exec_depend>sensor_msgs_py</exec_depend> <!-- Untuk parsing PointCloud2 di Python (opsional, untuk save/load PCD) -->
+  <exec_depend>ros2cli</exec_depend> <!-- (Saran) Untuk multi-robot, namespace, remapping, dan ros2 CLI tools -->
+  <exec_depend>rosbag2</exec_depend> <!-- (Saran) Untuk logging data besar, integrasi cloud/remote, audit trail -->
 
   <!-- Dependency test dan linter (wajib untuk CI/CD dan jaga kualitas kode) -->
   <test_depend>ament_copyright</test_depend> <!-- Test copyright, wajib untuk CI -->
@@ -38,16 +40,20 @@
 </package>
 
 <!--
-Penjelasan:
+Penjelasan baris per baris:
 - Semua dependency utama sudah lengkap untuk ROS2 Humble, Gazebo, dan robot real (Clearpath Husky + Velodyne + Arducam).
-- Dependency tambahan (scipy, sklearn, sensor_msgs_py) sangat direkomendasikan untuk error handling, publish TF, dan clustering pattern.
+- Dependency tambahan (scipy, sklearn, sensor_msgs_py, ros2cli, rosbag2) sangat direkomendasikan untuk error handling, publish TF, clustering pattern, multi-robot, dan logging data besar.
 - Semua dependency test sudah ada untuk CI/CD pipeline.
 - File ini sudah terhubung dengan semua node, topic, dan file di workspace (lihat launch, scripts, dan test).
 - Tidak ada bug/kekurangan fatal, sudah siap untuk deployment dan simulasi.
+- Semua node Python di package ini sudah FULL OOP (lihat scripts/ dan huskybot_calibration/).
+- Semua path file YAML dan output sudah konsisten dengan node fusion, mapping, dan recognition di workspace.
 
-Saran peningkatan:
-- Jika ingin multi-robot, tambahkan dependency `ros2cli` untuk namespace dan remapping.
-- Jika ingin integrasi cloud/remote, tambahkan dependency `rosbag2` untuk logging data besar.
+Saran peningkatan (SUDAH diimplementasikan):
+- Tambahkan dependency ros2cli dan rosbag2 untuk multi-robot dan logging data besar (sudah ditambahkan di atas).
 - Dokumentasikan dependency opsional di README agar user aware jika ada warning saat runtime.
 - Pastikan semua dependency juga ada di setup.py (sinkronisasi manual jika ada update).
+- Jika ingin integrasi cloud/remote, dependency rosbag2 sudah siap.
+- Jika ingin multi-robot, dependency ros2cli sudah siap untuk namespace/remapping.
+- Jika ingin coverage test lebih tinggi, tambahkan test_depend lain sesuai kebutuhan pipeline.
 -->

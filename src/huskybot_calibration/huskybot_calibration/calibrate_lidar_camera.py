@@ -29,11 +29,13 @@ try:
 except ImportError:
     DBSCAN = None  # Jika DBSCAN tidak ada, fallback ke centroid
 
+# Path file hasil kalibrasi YAML
 CALIB_YAML_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'config', 'extrinsic_lidar_to_camera.yaml'
-)  # Path file hasil kalibrasi YAML
+)
 
 def setup_file_logger(log_path="~/huskybot_calibration_process.log"):
+    # Setup logger untuk logging ke file
     log_path = os.path.expanduser(log_path)
     logger = logging.getLogger("calibrate_lidar_camera_file_logger")
     logger.setLevel(logging.INFO)
@@ -43,9 +45,10 @@ def setup_file_logger(log_path="~/huskybot_calibration_process.log"):
         logger.addHandler(fh)
     return logger
 
-file_logger = None
+file_logger = None  # Logger global untuk file
 
 def log_to_file(msg, level='info'):
+    # Logging ke file jika logger sudah diinisialisasi
     if file_logger:
         if level == 'error':
             file_logger.error(msg)
@@ -57,7 +60,7 @@ def log_to_file(msg, level='info'):
             file_logger.info(msg)
 
 def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):
-    """Tunggu sampai topic punya minimal publisher aktif, atau timeout."""
+    # Tunggu sampai topic punya minimal publisher aktif, atau timeout
     start = time.time()
     while time.time() - start < timeout:
         count = node.count_publishers(topic)
@@ -75,20 +78,26 @@ def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):
 class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
     def __init__(self):
         super().__init__('lidar_camera_calibrator')  # Inisialisasi node ROS2
-        global file_logger
-        self.bridge = CvBridge()  # Bridge untuk konversi image
-        self.declare_parameter('camera_topic', '/panorama/image_raw')  # Topic kamera (bisa diubah via launch)
-        self.declare_parameter('lidar_topic', '/velodyne_points')  # Topic LiDAR (bisa diubah via launch)
-        self.declare_parameter('pattern_type', 'checkerboard')  # checkerboard/aruco
-        self.declare_parameter('pattern_size', [7, 6])  # Ukuran pattern checkerboard (bisa diubah)
-        self.declare_parameter('square_size', 0.025)  # Satuan meter (bisa diubah)
-        self.declare_parameter('output_yaml', CALIB_YAML_PATH)  # Path output file YAML
-        self.declare_parameter('visualize', True)  # Aktifkan visualisasi hasil kalibrasi
-        self.declare_parameter('camera_frame_id', 'panorama_camera_link')  # Nama frame kamera
-        self.declare_parameter('lidar_frame_id', 'velodyne_link')  # Nama frame LiDAR
-        self.declare_parameter('log_to_file', False)  # Opsi simpan log proses ke file
-        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_calibration_process.log'))  # Path log file opsional
-        self.declare_parameter('publish_tf', True)  # Opsi publish TF ke TF tree
+        global file_logger  # Gunakan logger global untuk file
+
+        # Bridge untuk konversi image ROS <-> OpenCV
+        self.bridge = CvBridge()
+
+        # Deklarasi parameter node (bisa diubah via launch file)
+        self.declare_parameter('camera_topic', '/panorama/image_raw')
+        self.declare_parameter('lidar_topic', '/velodyne_points')
+        self.declare_parameter('pattern_type', 'checkerboard')
+        self.declare_parameter('pattern_size', [7, 6])
+        self.declare_parameter('square_size', 0.025)
+        self.declare_parameter('output_yaml', CALIB_YAML_PATH)
+        self.declare_parameter('visualize', True)
+        self.declare_parameter('camera_frame_id', 'panorama_camera_link')
+        self.declare_parameter('lidar_frame_id', 'velodyne_link')
+        self.declare_parameter('log_to_file', False)
+        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_calibration_process.log'))
+        self.declare_parameter('publish_tf', True)
+        self.declare_parameter('pattern_retry', 5)  # Tambahan: retry pattern detection
+        self.declare_parameter('pattern_min_points', 10)  # Tambahan: minimal point untuk pattern
 
         # Ambil parameter node
         camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
@@ -103,19 +112,27 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
         self.log_to_file = self.get_parameter('log_to_file').get_parameter_value().bool_value
         self.log_file_path = self.get_parameter('log_file_path').get_parameter_value().string_value
         self.publish_tf = self.get_parameter('publish_tf').get_parameter_value().bool_value
+        self.pattern_retry = self.get_parameter('pattern_retry').get_parameter_value().integer_value
+        self.pattern_min_points = self.get_parameter('pattern_min_points').get_parameter_value().integer_value
 
+        # Logging parameter ke terminal dan file
         self.get_logger().info(
             f"Parameter: camera_topic={camera_topic}, lidar_topic={lidar_topic}, pattern_type={self.pattern_type}, "
             f"pattern_size={self.pattern_size}, square_size={self.square_size}, output_yaml={self.output_yaml}, "
             f"visualize={self.visualize}, camera_frame_id={self.camera_frame_id}, lidar_frame_id={self.lidar_frame_id}, "
-            f"log_to_file={self.log_to_file}, log_file_path={self.log_file_path}, publish_tf={self.publish_tf}"
+            f"log_to_file={self.log_to_file}, log_file_path={self.log_file_path}, publish_tf={self.publish_tf}, "
+            f"pattern_retry={self.pattern_retry}, pattern_min_points={self.pattern_min_points}"
         )
 
         # Logging ke file jika diaktifkan
         if self.log_to_file:
-            file_logger = setup_file_logger(self.log_file_path)
-            self.get_logger().info(f"Logging proses kalibrasi ke file: {self.log_file_path}")
-            log_to_file(f"Logging proses kalibrasi ke file: {self.log_file_path}")
+            try:
+                file_logger = setup_file_logger(self.log_file_path)
+                self.get_logger().info(f"Logging proses kalibrasi ke file: {self.log_file_path}")
+                log_to_file(f"Logging proses kalibrasi ke file: {self.log_file_path}")
+            except Exception as e:
+                self.get_logger().error(f"Gagal setup file logger: {e}")
+                # Tidak exit, hanya warning
 
         # Error handling: cek folder output
         output_dir = os.path.dirname(self.output_yaml)
@@ -182,18 +199,24 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
             log_to_file("Data PointCloud2 kosong atau tidak valid!", level='error')
             return
 
-        # Deteksi pattern checkerboard/ArUco di gambar kamera
-        found, corners = self.detect_pattern(cv_image)
-        if not found or corners is None:
-            self.get_logger().warning("Pattern tidak terdeteksi di gambar kamera. Ulangi pengambilan data.")
-            log_to_file("Pattern tidak terdeteksi di gambar kamera. Ulangi pengambilan data.", level='warn')
+        # Retry pattern detection jika gagal
+        for attempt in range(self.pattern_retry):
+            found, corners = self.detect_pattern(cv_image)
+            if found and corners is not None:
+                break
+            self.get_logger().warning(f"Pattern tidak terdeteksi di gambar kamera (percobaan {attempt+1}/{self.pattern_retry}).")
+            log_to_file(f"Pattern tidak terdeteksi di gambar kamera (percobaan {attempt+1}/{self.pattern_retry}).", level='warn')
+            time.sleep(0.5)
+        else:
+            self.get_logger().error("Pattern tidak terdeteksi di gambar kamera setelah beberapa percobaan.")
+            log_to_file("Pattern tidak terdeteksi di gambar kamera setelah beberapa percobaan.", level='error')
             return
 
         # Ekstrak pattern di pointcloud LiDAR (clustering DBSCAN/manual pick/dummy centroid)
         lidar_points = self.extract_pattern_from_lidar(lidar_msg)
-        if lidar_points is None:
-            self.get_logger().warning("Pattern tidak terdeteksi di LiDAR. Ulangi pengambilan data.")
-            log_to_file("Pattern tidak terdeteksi di LiDAR. Ulangi pengambilan data.", level='warn')
+        if lidar_points is None or lidar_points.shape[0] < self.pattern_min_points:
+            self.get_logger().warning("Pattern tidak terdeteksi di LiDAR atau point terlalu sedikit.")
+            log_to_file("Pattern tidak terdeteksi di LiDAR atau point terlalu sedikit.", level='warn')
             return
 
         # Validasi dimensi dan tipe data
@@ -307,7 +330,7 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
         try:
             from sensor_msgs_py import point_cloud2
             points = np.array([p[:3] for p in point_cloud2.read_points(lidar_msg, field_names=("x", "y", "z"), skip_nans=True)])
-            if not isinstance(points, np.ndarray) or points.shape[0] < 10:
+            if not isinstance(points, np.ndarray) or points.shape[0] < 1:
                 self.get_logger().warning("PointCloud terlalu sedikit atau tidak valid untuk deteksi pattern.")
                 log_to_file("PointCloud terlalu sedikit atau tidak valid untuk deteksi pattern.", level='warn')
                 return None
@@ -329,6 +352,10 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
                 # Fallback: gunakan centroid semua point
                 centroid = np.mean(points, axis=0)
                 return np.expand_dims(centroid, axis=0)
+        except ImportError as e:
+            self.get_logger().error(f"sensor_msgs_py tidak ditemukan: {e}")
+            log_to_file(f"sensor_msgs_py tidak ditemukan: {e}", level='error')
+            return None
         except Exception as e:
             self.get_logger().error(f"Error ekstraksi pattern dari LiDAR: {e}")
             self.get_logger().debug(traceback.format_exc())
@@ -468,6 +495,7 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
             log_to_file(f"Error publish_tf_transform: {e}\n{traceback.format_exc()}", level='error')
 
 def main(args=None):
+    # Entry point utama node kalibrasi
     rclpy.init(args=args)  # Inisialisasi ROS2
     try:
         node = LidarCameraCalibrator()  # Buat node kalibrasi

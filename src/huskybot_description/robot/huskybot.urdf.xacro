@@ -15,26 +15,26 @@
   </gazebo>
 
   <!-- ==================== TAG ros2_control (WAJIB) ==================== -->
-  <ros2_control name="GazeboSystem" type="system">
+  <ros2_control name="GazeboSystem" type="system"> <!-- Tag ros2_control untuk integrasi dengan ros2_control dan controller_manager -->
     <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin> <!-- Plugin hardware simulation Gazebo -->
     </hardware>
-    <joint name="front_left_wheel_joint">
+    <joint name="front_left_wheel_joint"> <!-- Joint roda kiri depan -->
+      <command_interface name="velocity"/> <!-- Interface kontrol kecepatan -->
+      <state_interface name="position"/> <!-- Interface baca posisi -->
+      <state_interface name="velocity"/> <!-- Interface baca kecepatan -->
+    </joint>
+    <joint name="front_right_wheel_joint"> <!-- Joint roda kanan depan -->
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="front_right_wheel_joint">
+    <joint name="rear_left_wheel_joint"> <!-- Joint roda kiri belakang -->
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="rear_left_wheel_joint">
-      <command_interface name="velocity"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-    <joint name="rear_right_wheel_joint">
+    <joint name="rear_right_wheel_joint"> <!-- Joint roda kanan belakang -->
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
@@ -319,12 +319,12 @@
   </xacro:macro>
 
   <!-- Instantiate 6 cameras di sisi tower heksagonal (0, 60, 120, 180, 240, 300 derajat) -->
-  <xacro:hex_camera idx="front"    yaw_deg="0"/>
-  <xacro:hex_camera idx="front_left"  yaw_deg="60"/>
-  <xacro:hex_camera idx="left"     yaw_deg="120"/>
-  <xacro:hex_camera idx="rear"     yaw_deg="180"/>
-  <xacro:hex_camera idx="rear_right"  yaw_deg="240"/>
-  <xacro:hex_camera idx="right"    yaw_deg="300"/>
+  <xacro:hex_camera idx="front"    yaw_deg="0"/> <!-- Kamera depan -->
+  <xacro:hex_camera idx="front_left"  yaw_deg="60"/> <!-- Kamera depan kiri -->
+  <xacro:hex_camera idx="left"     yaw_deg="120"/> <!-- Kamera kiri -->
+  <xacro:hex_camera idx="rear"     yaw_deg="180"/> <!-- Kamera belakang -->
+  <xacro:hex_camera idx="rear_right"  yaw_deg="240"/> <!-- Kamera belakang kanan -->
+  <xacro:hex_camera idx="right"    yaw_deg="300"/> <!-- Kamera kanan -->
 
   <!--
     Kalibrasi extrinsic kamera-LiDAR:

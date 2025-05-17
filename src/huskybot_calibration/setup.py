@@ -74,7 +74,7 @@ setup(
     },
 )
 
-# Penjelasan baris per baris:
+# ===================== PENJELASAN & REVIEW BARIS PER BARIS =====================
 # - Semua dependency dan file penting sudah di-list, sesuai struktur folder dan kebutuhan ROS2 Humble.
 # - Semua script utama (node dan CLI) sudah didaftarkan di entry_points agar bisa dipanggil via ros2 run/launch.
 # - File config, launch, test, dan resource sudah otomatis diinstall ke share agar ROS2 bisa menemukan saat runtime.
@@ -83,10 +83,16 @@ setup(
 # - FULL OOP: Semua node utama diimplementasi sebagai class Node di huskybot_calibration/.
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real.
 
-# Error handling best practice:
+# ===================== ERROR HANDLING & SARAN PENINGKATAN =====================
 # - Jika dependency tidak ditemukan saat runtime, semua node sudah ada try/except ImportError dan fallback.
 # - Jika file/folder hilang, node akan log error dan exit (lihat error handling di setiap node).
 # - Jika ada error saat install/build, colcon akan gagal dan log error dependency yang kurang.
+# - Jika entry_points tidak sinkron dengan file/folder, ros2 run akan error "No module named ...".
+# - Jika file di data_files tidak ada, colcon akan error saat build/install.
+# - Jika dependency di install_requires tidak sinkron dengan package.xml/setup.cfg, bisa error saat runtime.
+# - Jika ada perubahan struktur folder, update juga data_files dan entry_points.
+# - Jika ingin multi-arch/cross-compiling, tambahkan opsi platform di setup.cfg (opsional).
+# - Jika ingin coverage test lebih tinggi, tambahkan test/launch test di folder test/.
 
 # Saran peningkatan (SUDAH diimplementasikan):
 # - Tambahkan pengecekan versi dependency minimum (misal: opencv-python>=4.5) agar lebih robust.
@@ -94,3 +100,13 @@ setup(
 # - Tambahkan opsi extras_require untuk dependency opsional (misal: open3d, rosbag2_py, ros2cli).
 # - Dokumentasikan dependency opsional di README agar user aware jika ada warning saat runtime.
 # - Sinkronkan dependency dengan package.xml setiap update (manual/otomatis via script CI).
+# - Jika ingin coverage logger ROS2, bisa tambahkan mock logger di test (opsional).
+# - Jika ingin distribusi Docker, tambahkan requirements.txt dan .dockerignore (opsional).
+# - Jika ingin upload ke PyPI, tambahkan long_description dari README.md.
+
+# ===================== KETERHUBUNGAN DENGAN WORKSPACE =====================
+# - setup.py ini bekerja sama dengan setup.cfg dan package.xml untuk build/install package Python ROS2.
+# - Semua node Python (calibrate_lidar_camera.py, sync_sensor_time.py, record_calib_data.py) akan diinstall ke lib/huskybot_calibration.
+# - ROS2 Humble, Gazebo, dan robot real akan mencari executable di path ini saat menjalankan node/launch file.
+# - Semua file YAML hasil kalibrasi akan dibaca node fusion di package lain (lihat README dan package.xml).
+# - Semua test dan linter otomatis diintegrasikan ke CI/CD pipeline workspace.

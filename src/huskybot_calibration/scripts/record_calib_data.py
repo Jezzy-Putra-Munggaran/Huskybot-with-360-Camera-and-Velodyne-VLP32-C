@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3 
+# -*- coding: utf-8 -*- 
 
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
@@ -15,28 +15,30 @@ import time  # Untuk validasi topic aktif
 import traceback  # Untuk logging error detail
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
-def setup_file_logger(log_path="~/huskybot_calib_recorder.log"):
-    log_path = os.path.expanduser(log_path)
-    logger = logging.getLogger("calib_recorder_file_logger")
-    logger.setLevel(logging.INFO)
-    if not logger.hasHandlers():
-        fh = logging.FileHandler(log_path)
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-        logger.addHandler(fh)
-    return logger
+def setup_file_logger(log_path="~/huskybot_calib_recorder.log"):  # Fungsi setup logger ke file
+    log_path = os.path.expanduser(log_path)  # Expand ~ ke home user
+    logger = logging.getLogger("calib_recorder_file_logger")  # Buat/get logger dengan nama unik
+    logger.setLevel(logging.INFO)  # Set level info
+    if not logger.hasHandlers():  # Cegah double handler
+        fh = logging.FileHandler(log_path)  # Handler ke file
+        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
+        logger.addHandler(fh)  # Tambah handler ke logger
+    return logger  # Return logger
 
-file_logger = None
+file_logger = None  # Logger global untuk file
 
-def log_to_file(msg, level='info'):
-    if file_logger:
-        if level == 'error':
+def log_to_file(msg, level='info'):  # Fungsi logging ke file (jika file_logger aktif)
+    if file_logger:  # Jika logger sudah diinisialisasi
+        if level == 'error':  # Level error
             file_logger.error(msg)
-        elif level == 'warn':
+        elif level == 'warn':  # Level warning
             file_logger.warning(msg)
-        elif level == 'debug':
+        elif level == 'debug':  # Level debug
             file_logger.debug(msg)
-        else:
+        else:  # Default info
             file_logger.info(msg)
+    else:
+        print(f"[LOG][{level.upper()}] {msg}")  # Fallback: print ke terminal jika file_logger belum ada
 
 def validate_meta_yaml(meta_path, logger=None):  # Fungsi validasi file metadata YAML
     """
@@ -51,7 +53,7 @@ def validate_meta_yaml(meta_path, logger=None):  # Fungsi validasi file metadata
         log_to_file(msg, level='error')
         return False
     try:
-        with open(meta_path, 'r') as f:
+        with open(meta_path, 'r') as f:  # Buka file YAML
             data = yaml.safe_load(f)  # Load isi file YAML
         for k in ['image_stamp', 'lidar_stamp', 'camera_topic', 'lidar_topic', 'image_file', 'lidar_file']:
             if k not in data:  # Cek semua field wajib ada
@@ -78,20 +80,21 @@ def validate_meta_yaml(meta_path, logger=None):  # Fungsi validasi file metadata
         if logger: logger.error(msg)
         else: logging.error(msg)
         log_to_file(msg, level='error')
+        log_to_file(traceback.format_exc(), level='error')
         return False
 
 def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):  # Fungsi validasi topic aktif
     """Tunggu sampai topic punya minimal publisher aktif, atau timeout."""
-    start = time.time()
-    while time.time() - start < timeout:
-        count = node.count_publishers(topic)
-        if count >= min_publishers:
+    start = time.time()  # Catat waktu mulai
+    while time.time() - start < timeout:  # Loop sampai timeout
+        count = node.count_publishers(topic)  # Hitung publisher aktif di topic
+        if count >= min_publishers:  # Jika cukup publisher
             node.get_logger().info(f"Topic {topic} aktif dengan {count} publisher.")
             log_to_file(f"Topic {topic} aktif dengan {count} publisher.")
             return True
         node.get_logger().warn(f"Menunggu publisher aktif di topic {topic}...")
         log_to_file(f"Menunggu publisher aktif di topic {topic}...", level='warn')
-        time.sleep(0.5)
+        time.sleep(0.5)  # Tunggu sebentar sebelum cek lagi
     node.get_logger().error(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.")
     log_to_file(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.", level='error')
     return False
@@ -99,7 +102,7 @@ def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):  # Fungsi valid
 class CalibDataRecorder(Node):  # Node OOP untuk rekam data sinkron kamera-LiDAR
     def __init__(self, output_dir, camera_topic, lidar_topic, max_samples, log_to_file_flag=False, log_file_path=None):
         super().__init__('calib_data_recorder')  # Inisialisasi node ROS2
-        global file_logger
+        global file_logger  # Pakai logger global
         self.output_dir = output_dir  # Folder output data
         self.camera_topic = camera_topic  # Topic kamera
         self.lidar_topic = lidar_topic  # Topic LiDAR
@@ -172,7 +175,7 @@ class CalibDataRecorder(Node):  # Node OOP untuk rekam data sinkron kamera-LiDAR
             meta_path = os.path.join(self.output_dir, f'meta_{timestamp}.yaml')
             try:
                 cv_image = self.bridge.imgmsg_to_cv2(self.last_image, desired_encoding='bgr8')  # Konversi ke OpenCV
-                import cv2
+                import cv2  # Import lokal agar error bisa di-handle
                 cv2.imwrite(img_path, cv_image)  # Simpan image ke file
             except Exception as e:
                 self.get_logger().error(f"Gagal simpan image: {e}")
@@ -180,7 +183,7 @@ class CalibDataRecorder(Node):  # Node OOP untuk rekam data sinkron kamera-LiDAR
                 return
             try:
                 # Simpan pointcloud ke file PCD (format ASCII sederhana)
-                from sensor_msgs_py import point_cloud2
+                from sensor_msgs_py import point_cloud2  # Import lokal agar error bisa di-handle
                 points = np.array([p[:3] for p in point_cloud2.read_points(self.last_lidar, field_names=("x", "y", "z"), skip_nans=True)])
                 with open(lidar_path, 'w') as f:
                     f.write(f"# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z\nSIZE 4 4 4\nTYPE F F F\nCOUNT 1 1 1\nWIDTH {points.shape[0]}\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS {points.shape[0]}\nDATA ascii\n")
@@ -234,7 +237,7 @@ class CalibDataRecorder(Node):  # Node OOP untuk rekam data sinkron kamera-LiDAR
             logging.error(f"Gagal membuat folder {path}: {e}")
             log_to_file(f"Gagal membuat folder {path}: {e}", level='error')
 
-def main():
+def main():  # Fungsi utama CLI
     parser = argparse.ArgumentParser(description="Rekam data sinkron kamera-LiDAR untuk kalibrasi")
     parser.add_argument('--output', type=str, default='calibration_data/', help='Folder output data')
     parser.add_argument('--camera_topic', type=str, default='/panorama/image_raw', help='Topic kamera')
@@ -242,13 +245,13 @@ def main():
     parser.add_argument('--max_samples', type=int, default=20, help='Jumlah sample yang ingin direkam')
     parser.add_argument('--log_to_file', action='store_true', help='Aktifkan logging ke file')
     parser.add_argument('--log_file_path', type=str, default='~/huskybot_calib_recorder.log', help='Path file log')
-    args = parser.parse_args()
+    args = parser.parse_args()  # Parse argumen CLI
 
-    global file_logger
+    global file_logger  # Pakai logger global
     if args.log_to_file:
         file_logger = setup_file_logger(args.log_file_path)
 
-    rclpy.init()
+    rclpy.init()  # Inisialisasi ROS2
     try:
         node = CalibDataRecorder(
             args.output,
@@ -258,15 +261,15 @@ def main():
             log_to_file_flag=args.log_to_file,
             log_file_path=args.log_file_path if args.log_to_file else None
         )
-        rclpy.spin(node)
+        rclpy.spin(node)  # Jalankan node
     except Exception as e:
         logging.error(f"Fatal error saat menjalankan recorder: {e}")
         log_to_file(f"Fatal error saat menjalankan recorder: {e}\n{traceback.format_exc()}", level='error')
     finally:
-        rclpy.shutdown()
+        rclpy.shutdown()  # Shutdown ROS2
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__main__':  # Jika file dijalankan langsung
+    main()  # Panggil fungsi main
 
 # Penjelasan:
 # - Logger ROS2 dan logging ke file sudah di setiap langkah penting/error.
