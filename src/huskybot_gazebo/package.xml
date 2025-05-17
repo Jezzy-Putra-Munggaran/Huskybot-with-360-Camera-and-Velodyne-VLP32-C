@@ -1,19 +1,44 @@
-<?xml version="1.0"?>                                                      <!-- Header XML standar -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema ROS2 package.xml -->
-<package format="3">                                                        <!-- Format package.xml ROS2 (format 3) -->
-  <name>huskybot_gazebo</name>                                              <!-- Nama package (harus sama dengan folder dan CMakeLists.txt) -->
-  <version>0.0.0</version>                                                  <!-- Versi package (bisa diubah sesuai release) -->
-  <description>Gazebo worlds and launch files for Huskybot simulation</description> <!-- Deskripsi package (WAJIB diisi, sebaiknya jelas) -->
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>          <!-- Nama & email maintainer (WAJIB diisi, sebaiknya email valid) -->
-  <license>Apache-2.0</license>                              <!-- Lisensi package (WAJIB diisi, misal: Apache-2.0, BSD-3-Clause, MIT) -->
+<?xml version="1.0"?>                                                      <!-- Header XML standar, wajib di awal file agar dikenali sebagai XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Validasi schema package.xml ROS2, agar build system bisa cek format -->
+<package format="3">                                                        <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
+  <name>huskybot_gazebo</name>                                              <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
+  <version>0.1.0</version>                                                  <!-- Versi package, update jika sudah release/ada perubahan besar -->
+  <description>
+    Gazebo worlds and launch files for Huskybot simulation.
+    Simulasi robot Husky A200 + Velodyne VLP-32C + 6x Arducam IMX477.
+    Siap untuk ROS2 Humble, multi-robot, dan integrasi pipeline workspace.
+    (Update 2025-05-17)
+  </description>                                                            <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>         <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
+  <license>Apache-2.0</license>                                             <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <exec_depend>gazebo_ros</exec_depend>                      <!-- Tambahkan jika ingin pastikan dependency Gazebo ROS -->                     <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
+  <!-- Build dependencies -->
+  <buildtool_depend>ament_cmake</buildtool_depend>                          <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake) -->
 
+  <!-- Execution dependencies -->
+  <exec_depend>gazebo_ros</exec_depend>                                     <!-- Dependency utama integrasi Gazebo-ROS2 -->
+  <exec_depend>rclpy</exec_depend>                                          <!-- Dependency runtime node Python ROS2 (untuk launch file Python) -->
+  <exec_depend>ament_index_python</exec_depend>                             <!-- Dependency runtime untuk get_package_share_directory di launch file -->
+  <exec_depend>huskybot_description</exec_depend>                           <!-- Dependency ke package URDF/Xacro robot Huskybot -->
+  <exec_depend>huskybot_control</exec_depend>                               <!-- Dependency ke package kontrol robot (teleop, safety, autonomous) -->
+  <exec_depend>huskybot_recognition</exec_depend>                           <!-- Dependency ke package deteksi YOLOv12 dan panorama -->
+  <exec_depend>huskybot_fusion</exec_depend>                                <!-- Dependency ke package fusion sensor kamera-LiDAR -->
+  <exec_depend>huskybot_calibration</exec_depend>                           <!-- Dependency ke package kalibrasi kamera-LiDAR -->
+
+  <!-- Test dependencies -->
   <test_depend>ament_lint_auto</test_depend>                                <!-- Dependency untuk linting otomatis saat test -->
   <test_depend>ament_lint_common</test_depend>                              <!-- Dependency untuk linting umum saat test -->
+  <test_depend>pytest</test_depend>                                         <!-- Dependency unit test Python untuk launch/test -->
+  <test_depend>flake8</test_depend>                                         <!-- Linter Python untuk CI/CD -->
+  <test_depend>ament_pep257</test_depend>                                   <!-- Linter docstring Python untuk CI/CD -->
 
   <export>
     <build_type>ament_cmake</build_type>                                    <!-- Tipe build system (ament_cmake untuk CMake) -->
+    <architecture_independent/>                                             <!-- Package ini tidak tergantung arsitektur (pure Python/launch/world) -->
+    <description lang="en">Gazebo simulation world and launch for Huskybot multi-sensor.</description> <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <readme>README.md</readme>                                              <!-- (Opsional) Path ke file README untuk dokumentasi package -->
+    <url type="website">https://github.com/jezzy/huskybot</url>             <!-- (Opsional) URL website/repo utama package -->
+    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url>   <!-- (Opsional) URL bugtracker/issues -->
   </export>
 </package>

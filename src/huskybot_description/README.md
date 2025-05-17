@@ -144,11 +144,26 @@ T_lidar_camera:
 ---
 
 ## Saran Peningkatan  <!-- Saran untuk pengembangan dan maintain package ke depan -->
-- Tambahkan folder `test/` untuk unit test dan launch test otomatis (CI/CD).
-- Tambahkan file `CHANGELOG.md` dan `CONTRIBUTING.md` untuk dokumentasi dan kontribusi.
-- Update badge CI jika repo sudah publik dan pipeline aktif.
-- Dokumentasikan semua frame dan topic sensor di README agar integrasi lebih mudah.
-- Tambahkan contoh penggunaan multi-robot di README.
-- Tambahkan troubleshooting untuk error umum di ROS2 Humble/Gazebo.
+- Tambahkan folder `test/` untuk unit test dan launch test otomatis (CI/CD). <!-- Saran: test otomatis untuk jaga kualitas -->
+- Tambahkan file `CHANGELOG.md` dan `CONTRIBUTING.md` untuk dokumentasi dan kontribusi. <!-- Saran: dokumentasi dan kontribusi -->
+- Update badge CI jika repo sudah publik dan pipeline aktif. <!-- Saran: update badge CI jika pipeline sudah aktif -->
+- Dokumentasikan semua frame dan topic sensor di README agar integrasi lebih mudah. <!-- Saran: dokumentasi frame/topic -->
+- Tambahkan contoh penggunaan multi-robot di README. <!-- Saran: contoh multi-robot -->
+- Tambahkan troubleshooting untuk error umum di ROS2 Humble/Gazebo. <!-- Saran: troubleshooting error umum -->
 
 ---
+
+# ===================== REVIEW & SARAN PENINGKATAN =====================
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
+# - Semua struktur folder, dependency, dan instruksi sudah konsisten dengan workspace dan pipeline utama.
+# - Semua node, topic, file, dan folder sudah saling terhubung dengan baik ke pipeline workspace (mapping, fusion, recognition, dsb).
+# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Tidak perlu OOP di README, tapi semua node Python di launch/ sudah FULL OOP.
+# - Error handling: semua troubleshooting dan dependency sudah dijelaskan, serta saran error handling di setiap bagian.
+# - Saran: tambahkan badge coverage test jika pipeline CI sudah aktif.
+# - Saran: tambahkan contoh file YAML/CSV hasil kalibrasi di folder config/ untuk referensi user baru.
+# - Saran: tambahkan link ke dokumentasi workspace utama di bagian atas README.
+# - Saran: tambahkan tips integrasi multi-robot dan cloud jika workspace berkembang.
+# - Saran: tambahkan tips audit trail dan logging ke file untuk debugging pipeline besar.
+# - Jika ingin coverage test lebih tinggi, tambahkan test launch file di folder test/.
+# - Sudah best practice ROS2, CI/CD, dan aman untuk pipeline besar, simulasi, dan robot real.

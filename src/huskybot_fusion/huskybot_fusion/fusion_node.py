@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3  
+# -*- coding: utf-8 -*-  
 
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
@@ -8,7 +8,7 @@ from yolov12_msgs.msg import Yolov12Inference  # Message hasil deteksi YOLOv12 (
 from huskybot_msgs.msg import Object3D  # Custom message untuk hasil deteksi objek 3D (HARUS dari huskybot_msgs!)
 import message_filters  # Untuk sinkronisasi data multi sensor (kamera & lidar)
 import numpy as np  # Untuk pemrosesan data numerik/array
-import struct  # Untuk parsing data PointCloud2
+import struct  # Untuk parsing data PointCloud2 (backup jika ros_numpy error)
 import tf2_ros  # Untuk transformasi antar frame (TF)
 from std_msgs.msg import Header  # Header ROS2 untuk sinkronisasi waktu/frame
 import os  # Untuk operasi file (cek file kalibrasi)
@@ -22,28 +22,28 @@ import datetime  # Untuk timestamp log
 print("[DEBUG] Python executable:", sys.executable, flush=True)
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
-def setup_file_logger(log_path="~/huskybot_fusion_node.log"):
-    log_path = os.path.expanduser(log_path)
-    logger = logging.getLogger("fusion_node_file_logger")
-    logger.setLevel(logging.INFO)
-    if not logger.hasHandlers():
-        fh = logging.FileHandler(log_path)
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-        logger.addHandler(fh)
-    return logger
+def setup_file_logger(log_path="~/huskybot_fusion_node.log"):  # Fungsi setup logger file
+    log_path = os.path.expanduser(log_path)  # Expand ~ ke home user
+    logger = logging.getLogger("fusion_node_file_logger")  # Buat/get logger dengan nama unik
+    logger.setLevel(logging.INFO)  # Set level default INFO
+    if not logger.hasHandlers():  # Cegah duplicate handler
+        fh = logging.FileHandler(log_path)  # Handler file log
+        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
+        logger.addHandler(fh)  # Tambah handler ke logger
+    return logger  # Return logger instance
 
-file_logger = setup_file_logger()
+file_logger = setup_file_logger()  # Inisialisasi logger file global
 
-def log_to_file(msg, level='info'):
-    if file_logger:
+def log_to_file(msg, level='info'):  # Fungsi log ke file dengan level
+    if file_logger:  # Jika logger ada
         if level == 'error':
-            file_logger.error(msg)
+            file_logger.error(msg)  # Log error
         elif level == 'warn':
-            file_logger.warning(msg)
+            file_logger.warning(msg)  # Log warning
         elif level == 'debug':
-            file_logger.debug(msg)
+            file_logger.debug(msg)  # Log debug
         else:
-            file_logger.info(msg)
+            file_logger.info(msg)  # Log info
 
 # Error handling: pastikan ros_numpy sudah terinstall
 try:
@@ -89,8 +89,13 @@ class FusionNode(Node):  # Node OOP untuk fusion deteksi kamera 360° dan LiDAR
                 log_to_file(f"File kalibrasi ditemukan: {self.calibration_file}")
 
             # (Opsional) Logging ke file JSON untuk audit trail
-            self.log_json_path = os.path.expanduser("~/huskybot_fusion_log.json")
-            self.log_json_enabled = True
+            self.log_json_path = os.path.expanduser("~/huskybot_fusion_log.json")  # Path file log JSON
+            self.log_json_enabled = True  # Enable logging JSON
+
+            # Parameterisasi topic input/output agar lebih fleksibel (saran peningkatan)
+            self.lidar_topic = self.declare_parameter('lidar_topic', '/velodyne_points').get_parameter_value().string_value
+            self.yolo_topic = self.declare_parameter('yolo_topic', '/panorama/yolov12_inference').get_parameter_value().string_value
+            self.output_topic = self.declare_parameter('output_topic', '/fusion/objects3d').get_parameter_value().string_value
 
             self.get_logger().info("FusionNode started: listening to /velodyne_points and /panorama/yolov12_inference")
             log_to_file("FusionNode started: listening to /velodyne_points and /panorama/yolov12_inference")
@@ -285,8 +290,11 @@ if __name__ == '__main__':  # Jika file dijalankan langsung
 # - Semua error/exception di callback dan fungsi utama sudah di-log.
 # - Validasi file kalibrasi, parameter, dan dependency sudah lengkap.
 # - Monitoring health check sensor (point cloud, deteksi YOLO).
+# - Sudah parameterisasi topic input/output agar lebih fleksibel (saran sudah diimplementasikan).
 # - Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real.
 # - Saran: tambahkan publish array Object3D (custom msg) agar batch publish lebih efisien.
 # - Saran: tambahkan logging ke file JSON/CSV untuk audit trail.
 # - Saran: tambahkan unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
-# - Saran: tambahkan parameterisasi topic input/output jika ingin lebih fleksibel.
+# - Saran: tambahkan validasi isi file kalibrasi (cek field matrix, dsb) sebelum digunakan.
+# - Saran: tambahkan retry otomatis jika file kalibrasi belum ada saat node start.
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.

@@ -17,18 +17,22 @@
   <exec_depend>rclpy</exec_depend>                                            <!-- Dependency runtime untuk node Python ROS2, wajib untuk semua node Python -->
   <exec_depend>geometry_msgs</exec_depend>                                    <!-- Dependency runtime untuk pesan geometry_msgs (Twist), wajib jika publish/subscribe Twist -->
   <exec_depend>sensor_msgs</exec_depend>                                      <!-- Dependency runtime untuk pesan sensor_msgs (Joy, LaserScan), wajib jika pakai Joy/LaserScan -->
-  <!-- <exec_depend>nav_msgs</exec_depend> -->                                 <!-- Tambahkan jika ada import nav_msgs di script -->
-  <!-- <exec_depend>std_srvs</exec_depend> -->                                 <!-- Tambahkan jika ada import std_srvs di script -->
+  <exec_depend>std_msgs</exec_depend>                                         <!-- Dependency runtime untuk pesan std_msgs (Bool, Float32), wajib untuk safety_monitor -->
+  <exec_depend>nav_msgs</exec_depend>                                         <!-- Dependency runtime untuk pesan nav_msgs (Odometry), wajib untuk logger -->
+  <exec_depend>logging</exec_depend>                                          <!-- Dependency runtime untuk logging ke file, best practice Python -->
+  <exec_depend>python3-threading</exec_depend>                                <!-- Dependency runtime untuk threading, best practice Python multi-thread -->
+  <exec_depend>python3-yaml</exec_depend>                                     <!-- Dependency runtime untuk parsing YAML parameter (opsional jika ada param YAML) -->
 
   <!-- Tambahkan dependency eksternal lain jika ada import di script -->
-  <!-- <exec_depend>example_pkg</exec_depend> -->                              <!-- Tambahkan jika ada dependency lain, misal: tf2_ros, dsb -->
+  <!-- <exec_depend>tf2_ros</exec_depend> -->                                  <!-- Tambahkan jika ada dependency lain, misal: tf2_ros, dsb -->
 
   <!-- Jika ada node/library C++ di masa depan, tambahkan dependency berikut -->
   <!-- <exec_depend>rclcpp</exec_depend> -->                                   <!-- Tambahkan jika ada node C++ -->
-  <!-- <exec_depend>std_msgs</exec_depend> -->                                 <!-- Tambahkan jika ada node C++ pakai std_msgs -->
+  <!-- <exec_depend>std_srvs</exec_depend> -->                                 <!-- Tambahkan jika ada node C++ pakai std_srvs -->
 
   <test_depend>ament_lint_auto</test_depend>                                  <!-- Dependency untuk linting otomatis saat test, membantu menjaga kualitas kode -->
   <test_depend>ament_lint_common</test_depend>                                <!-- Dependency untuk linting umum saat test, best practice ROS2 -->
+  <test_depend>pytest</test_depend>                                           <!-- Dependency untuk unit test Python, best practice CI/CD -->
 
   <url type="website">https://github.com/jezzy/huskybot</url>                 <!-- (Opsional tapi disarankan) URL website/repo utama package -->
   <url type="repository">https://github.com/jezzy/huskybot</url>              <!-- (Opsional) URL repository source code -->

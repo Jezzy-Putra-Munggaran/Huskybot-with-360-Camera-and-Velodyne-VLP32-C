@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo, LogWarn, LogError, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import os
@@ -13,19 +13,19 @@ def check_model_file(context, *args, **kwargs):
     expanded_path = os.path.expanduser(model_path)
     if not os.path.isfile(expanded_path):
         print(f"[ERROR] File model YOLOv12 tidak ditemukan: {expanded_path}", file=sys.stderr)
-        LogError(msg=f"File model YOLOv12 tidak ditemukan: {expanded_path}")
+        print("[ERROR]", msg=f"File model YOLOv12 tidak ditemukan: {expanded_path}", flush=True)
     else:
         print(f"[INFO] File model YOLOv12 ditemukan: {expanded_path}")
-        LogInfo(msg=f"File model YOLOv12 ditemukan: {expanded_path}")
+        print("[INFO]", msg=f"File model YOLOv12 ditemukan: {expanded_path}", flush=True)
     return []
 
 def check_rclpy_dependency(context, *args, **kwargs):
     try:
         import rclpy
-        LogInfo(msg="Dependency 'rclpy' ditemukan.")
+        print("[INFO]", msg="Dependency 'rclpy' ditemukan.", flush=True)
     except ImportError:
         print("[ERROR] Dependency 'rclpy' tidak ditemukan. Install dengan: pip install rclpy", file=sys.stderr)
-        LogError(msg="Dependency 'rclpy' tidak ditemukan.")
+        print("[ERROR]", msg="Dependency 'rclpy' tidak ditemukan.", flush=True)
         sys.exit(2)
     return []
 
@@ -71,7 +71,7 @@ def generate_launch_description():
         check_rclpy_action = OpaqueFunction(function=check_rclpy_dependency)
 
         # Logging info ke terminal dan file
-        log_launch = LogInfo(msg='Launching YOLOv12 ROS2 Node...')
+print("[INFO]", msg='Launching YOLOv12 ROS2 Node...', flush=True)
         log_to_file("Launching YOLOv12 ROS2 Node...")
 
         # Node YOLOv12
@@ -92,16 +92,13 @@ def generate_launch_description():
             use_sim_time_arg,
             model_path_arg,
             confidence_threshold_arg,
-            log_stats_arg,
-            log_stats_path_arg,
             check_rclpy_action,
             check_model_action,
-            log_launch,
             yolov12_node
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)
-        LogError(msg=f"Exception saat generate_launch_description: {e}")
+        print("[ERROR]", msg=f"Exception saat generate_launch_description: {e}", flush=True)
         log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")
         sys.exit(99)
 

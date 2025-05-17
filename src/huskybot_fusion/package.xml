@@ -45,6 +45,7 @@
   <test_depend>ament_lint_common</test_depend>  <!-- Dependency linting umum ROS2 -->
   <test_depend>pytest</test_depend>  <!-- Dependency unit test Python -->
   <test_depend>flake8</test_depend>  <!-- Linter Python untuk CI/CD -->
+  <test_depend>ament_pep257</test_depend>  <!-- Linter docstring Python untuk CI/CD -->
   <doc_depend>doxygen</doc_depend>  <!-- (Opsional) Dependency dokumentasi otomatis -->
 
   <export>

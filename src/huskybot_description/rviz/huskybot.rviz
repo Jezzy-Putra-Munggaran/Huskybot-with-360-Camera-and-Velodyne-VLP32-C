@@ -1,8 +1,8 @@
-# File konfigurasi RViz2 untuk visualisasi robot Huskybot
-# File ini bisa di-load otomatis oleh display.launch.py
-# Pastikan semua topic dan frame sesuai dengan workspace dan URDF/Xacro
+# File konfigurasi RViz2 untuk visualisasi robot Huskybot                # Komentar: Penjelasan fungsi file ini (visualisasi RViz2)
+# File ini bisa di-load otomatis oleh display.launch.py                   # Komentar: File ini dipakai oleh launch/display.launch.py
+# Pastikan semua topic dan frame sesuai dengan workspace dan URDF/Xacro   # Komentar: Penting untuk konsistensi topic/frame
 
-Panels:  # Panel-panel utama RViz2
+Panels:  # Panel-panel utama RViz2                                       # Komentar: Panel yang muncul di RViz2
   - Class: rviz/Displays
     Name: Displays
   - Class: rviz/Selection
@@ -14,7 +14,7 @@ Panels:  # Panel-panel utama RViz2
   - Class: rviz/Time
     Name: Time
 
-Visualization Manager:  # Konfigurasi utama visualisasi RViz2
+Visualization Manager:  # Konfigurasi utama visualisasi RViz2            # Komentar: Root konfigurasi visualisasi
   Class: ""
   Displays:
     - Class: rviz/Grid
@@ -88,7 +88,7 @@ Visualization Manager:  # Konfigurasi utama visualisasi RViz2
       Enabled: true                         # Enable jika ada node publish marker
       Marker Topic: /visualization_marker   # Topic marker (ubah sesuai node)
       Queue Size: 100
-    # Tambahkan display lain sesuai kebutuhan (Costmap, Odometry, dsb)
+    # Tambahkan display lain sesuai kebutuhan (Costmap, Odometry, dsb)   # Komentar: Bisa tambah display lain jika perlu
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -140,8 +140,22 @@ Window Geometry:
   X: 100
   Y: 100
 
-# Saran 4: Simpan file ini setelah custom view/layout di RViz2.
-# Saran 5: Untuk multi-robot, duplikasi RobotModel/TF dengan TF Prefix dan topic berbeda.
-# Saran 6: Validasi konsistensi topic/frame dengan URDF dan node workspace (bisa pakai script Python).
-# Saran 7: Tambahkan screenshot RViz di README untuk dokumentasi.
-# Saran 8: Tidak perlu OOP, file ini hanya konfigurasi RViz.
+# Saran 1: Untuk multi-robot, duplikasi RobotModel/TF dengan TF Prefix dan topic berbeda. # Komentar: Multi-robot support
+# Saran 2: Validasi konsistensi topic/frame dengan URDF dan node workspace (bisa pakai script Python). # Komentar: Validasi konsistensi
+# Saran 3: Tambahkan screenshot RViz di README untuk dokumentasi. # Komentar: Dokumentasi visual
+# Saran 4: Tidak perlu OOP, file ini hanya konfigurasi RViz. # Komentar: Tidak perlu OOP
+# Saran 5: Simpan file ini setelah custom view/layout di RViz2. # Komentar: Simpan setelah custom
+# Saran 6: Untuk error handling, jika display tidak muncul, cek topic, frame, dan node publisher di workspace. # Komentar: Error handling
+# Saran 7: Untuk workspace besar, tambahkan display untuk semua kamera (CameraFront, CameraLeft, dst) dan remap topic sesuai launch file. # Komentar: Multi-kamera
+# Saran 8: Jika ingin audit trail visual, aktifkan display log di RViz2 dan simpan screenshot secara berkala. # Komentar: Audit visual
+
+# ===================== REVIEW & SARAN PENINGKATAN =====================
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
+# - Semua topic dan frame sudah konsisten dengan URDF/Xacro dan node workspace.
+# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Tidak perlu OOP di file ini, hanya konfigurasi RViz.
+# - Error handling: jika display tidak muncul, cek node publisher, topic, dan frame di workspace.
+# - Saran: tambahkan display untuk semua kamera (CameraFront, CameraLeft, dst) agar visualisasi 360°.
+# - Saran: tambahkan display Costmap, Odometry, dsb jika workspace sudah ada node terkait.
+# - Saran: dokumentasikan layout RViz di README dan simpan file ini setelah custom view.
+# - Saran: validasi file ini dengan workspace setiap kali ada perubahan URDF/topic.

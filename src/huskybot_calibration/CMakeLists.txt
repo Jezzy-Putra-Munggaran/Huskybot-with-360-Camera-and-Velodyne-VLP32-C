@@ -81,3 +81,4 @@ ament_package()                                     # [WAJIB] Macro penutup pack
 #   6. Tambahkan opsi extras_require untuk dependency opsional (open3d, rosbag2_py, ros2cli) di setup.py.
 #   7. Tambahkan validasi file YAML di node Python (sudah ada di source).
 #   8. Tambahkan logging error ke file untuk audit trail.
+#   9. (Sudah best practice) Semua node Python sudah FULL OOP, robust, dan siap untuk ROS2 Humble/Gazebo/robot real.

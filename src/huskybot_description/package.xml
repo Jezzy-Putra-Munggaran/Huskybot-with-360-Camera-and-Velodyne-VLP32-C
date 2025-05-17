@@ -24,10 +24,10 @@
   <exec_depend>launch</exec_depend>  <!-- Dependency runtime untuk launch file Python (agar ros2 launch bisa jalan) -->
   <exec_depend>launch_ros</exec_depend>  <!-- Dependency runtime untuk launch file ROS2 (Node, dsb) -->
   <exec_depend>ament_index_python</exec_depend>  <!-- Dependency runtime untuk get_package_share_directory di Python launch -->
-  <!-- Tambahkan dependency lain jika ada node custom lain di masa depan -->
   <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime untuk node Python ROS2 (wajib jika ada script Python ROS2) -->
   <!-- <exec_depend>image_transport</exec_depend> -->  <!-- Tambahkan jika ada node/image pipeline -->
   <!-- <exec_depend>tf2_ros</exec_depend> -->  <!-- Tambahkan jika ada node TF2 custom -->
+  <!-- Saran: Tambahkan dependency lain jika ada node custom baru di masa depan -->
 
   <test_depend>ament_lint_auto</test_depend>  <!-- Dependency untuk linting otomatis saat test (CI/CD) -->
   <test_depend>ament_lint_common</test_depend>  <!-- Dependency untuk linting umum saat test (CI/CD) -->

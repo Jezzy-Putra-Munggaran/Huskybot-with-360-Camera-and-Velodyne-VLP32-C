@@ -1,6 +1,6 @@
 from setuptools import setup  # Import setup tools untuk build/install Python package
-import os  # Untuk operasi path file
-from glob import glob  # Untuk mencari file dengan pola (misal *.msg)
+import os  # Untuk operasi path file (misal: join, exists)
+from glob import glob  # Untuk mencari file dengan pola (misal *.msg, *.yaml)
 
 package_name = 'huskybot_fusion'  # Nama package Python/ROS2, harus sama dengan folder utama
 
@@ -18,7 +18,7 @@ setup(
         # Saran: install file konfigurasi tambahan (misal: rviz, config YAML) jika ada
         # ('share/' + package_name + '/config', glob('config/*.yaml')),  # Uncomment jika ada folder config/
         # ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),  # Uncomment jika ada folder rviz/
-    ],
+    ],  # Semua file penting diinstall ke share agar bisa diakses node lain/CI
     install_requires=[
         'setuptools',  # Dependency utama Python package
         'rclpy',  # Library utama ROS2 Python
@@ -40,26 +40,32 @@ setup(
     tests_require=['pytest'],  # Dependency untuk test Python
     entry_points={
         'console_scripts': [
-            'fusion_node.py = huskybot_fusion.fusion_node:main',  # Entry point CLI untuk node fusion (ros2 run)
+            'fusion_node = huskybot_fusion.fusion_node:main',  # Entry point CLI untuk node fusion (ros2 run)
         ],
-    },
-    # Tambahkan ini agar ROS2 mengenali message interface
+    },  # Daftarkan script utama agar bisa di-run via ros2 run
     package_data={
         '': ['msg/*.msg'],  # Pastikan file .msg diikutkan saat build/install
-    },
+    },  # Agar message ROS2 bisa ditemukan saat build
     include_package_data=True,  # Pastikan semua data package diikutkan (msg, launch, dsb)
     long_description_content_type='text/markdown',  # Format long_description (untuk PyPI, opsional)
     # Saran: tambahkan long_description dari README.md jika ingin upload ke PyPI
     # long_description=open('README.md').read() if os.path.exists('README.md') else '',
+    # Saran: tambahkan extras_require untuk dev/test (misal: flake8, pytest-cov)
+    extras_require={
+        'dev': ['flake8', 'pytest', 'ament_pep257'],  # Dependency tambahan untuk development/test
+    },
 )
 
-# ===================== REVIEW & SARAN =====================
+# ===================== REVIEW & SARAN PENINGKATAN =====================
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/, test/, README.md, resource/.
 # - Semua file penting (msg, launch, test, README) sudah diinstall ke share agar bisa diakses workspace/CI.
-# - Entry point sudah benar untuk ros2 run (fusion_node.py).
+# - Entry point sudah benar untuk ros2 run (fusion_node).
 # - package_data dan include_package_data sudah benar agar msg bisa ditemukan saat build.
 # - Sudah terhubung dengan node fusion OOP, topic, dan message di workspace.
 # - Tidak ada bug/error, sudah best practice setup.py ROS2 Python package.
+# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Error handling: jika file/folder tidak ditemukan, colcon/build akan error dan log ke terminal.
 # - Saran peningkatan:
 #   1. Pastikan semua script Python sudah chmod +x (executable) di CMakeLists.txt (sudah).
 #   2. Tambahkan requirements.txt jika ingin distribusi Docker atau pip install.
@@ -68,7 +74,7 @@ setup(
 #   5. Untuk multi-robot, tidak perlu perubahan di setup.py, cukup di launch file/parameter.
 #   6. Untuk CI/CD, pastikan test/ sudah lengkap dan terinstall.
 #   7. Jika ada resource/ lain (misal config, rviz), tambahkan juga ke data_files.
-#   8. (Opsional) Tambahkan extras_require untuk dev/test (misal: flake8, pytest-cov).
+#   8. Tambahkan extras_require untuk dev/test (sudah diimplementasikan di atas).
 #   9. (Opsional) Tambahkan error handling try/except ImportError di node utama untuk dependency runtime.
-# - Semua baris sudah diberi komentar penjelasan.
-# - Sudah aman untuk ROS2 Humble, simulasi Gazebo, dan multi-robot.
+#   10. Dokumentasikan semua entry point dan data file di README.md.
+# - Tidak perlu OOP di file ini, karena hanya konfigurasi build/install.

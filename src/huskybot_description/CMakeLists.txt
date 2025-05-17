@@ -79,12 +79,14 @@ install(
   PROGRAMS
     ${LAUNCH_DIR}/spawn_huskybot.py                    # [WAJIB] Script Python spawn robot ke Gazebo
     ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py      # [WAJIB] Launch file Python untuk spawn robot
+    ${LAUNCH_DIR}/display.launch.py                    # [WAJIB] Launch file Python untuk RViz2 display (tambahan, agar bisa ros2 launch)
   DESTINATION lib/${PROJECT_NAME}                      # Script Python diinstall ke lib/package_name/ (standar ROS2)
 )
 
 # ===================== CHMOD +X UNTUK SCRIPT PYTHON =====================
 install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot.py)")              # [ERROR HANDLING] Pastikan script Python executable
 install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/spawn_huskybot_launch.launch.py)")# [ERROR HANDLING] Pastikan script Python executable
+install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/display.launch.py)")              # [ERROR HANDLING] Pastikan script Python executable
 
 # ===================== INSTALL FILE DOKUMENTASI =====================
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/${PROJECT_NAME}/)        # [BEST PRACTICE] Install README ke share
@@ -111,3 +113,18 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test")
 endif()
 
 ament_package()                                       # [WAJIB] Macro ROS2 agar package dikenali oleh ament (wajib di akhir)
+
+# ===================== REVIEW & SARAN PENINGKATAN =====================
+# - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
+# - Semua folder penting (launch, robot, calibration, meshes, rviz, config) sudah diinstall ke share agar bisa diakses node lain/CI.
+# - Semua script Python launch sudah diinstall ke lib agar bisa di-run via ros2 launch.
+# - Semua file YAML kalibrasi dan controller sudah otomatis diinstall ke share untuk integrasi pipeline workspace.
+# - Sudah ada test otomatis untuk validasi Xacro dan URDF (fail build jika error).
+# - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Error handling sudah sangat lengkap: validasi file, permission, dependency, dan test build.
+# - Saran: tambahkan test launch file di folder test/ untuk CI/CD (opsional, best practice).
+# - Saran: tambahkan install untuk file YAML kalibrasi extrinsic kamera-LiDAR jika workspace sudah ada.
+# - Saran: tambahkan install untuk file RViz config custom jika workspace multi-robot.
+# - Saran: update README jika ada perubahan struktur folder/file.
+# - Saran: jika ada node Python baru, tambahkan ke section install(PROGRAMS ...).
+# - Saran: jika ingin FULL OOP di node Python, pastikan semua node di launch/ sudah class-based (tidak perlu OOP di CMake).
