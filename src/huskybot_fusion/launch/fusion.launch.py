@@ -27,12 +27,33 @@ def log_to_file(msg):  # Fungsi logging ke file
     except Exception as e:
         print(f"[WARNING] Tidak bisa menulis ke log file: {log_file_path} ({e})", file=sys.stderr)  # Warning jika gagal log
 
+def build_fusion_node(context, *args, **kwargs):  # Fungsi untuk membangun node fusion dengan parameter log_file opsional
+    params = [
+        {'calibration_file': LaunchConfiguration('calibration_file').perform(context)},  # Path file kalibrasi
+        {'confidence_threshold': LaunchConfiguration('confidence_threshold').perform(context)},  # Threshold confidence
+        {'fusion_method': LaunchConfiguration('fusion_method').perform(context)}  # Metode fusion
+    ]
+    log_file = LaunchConfiguration('log_file').perform(context)  # Ambil argumen log_file
+    if log_file and log_file.strip() != '':  # Jika log_file tidak kosong
+        params.append({'log_file': log_file})  # Tambahkan parameter log_file
+    # Bisa tambahkan validasi permission log_file di sini jika ingin lebih robust
+    node = Node(
+        package='huskybot_fusion',  # Nama package ROS2
+        executable='fusion_node',  # [REVISI] Nama entry point Python (bukan .py, sesuai setup.py console_scripts)
+        name='fusion_node',  # Nama node di ROS2 graph
+        namespace=LaunchConfiguration('namespace').perform(context),  # Namespace (untuk multi-robot)
+        output='screen',  # Output ke terminal
+        parameters=params,  # Parameter dinamis (termasuk log_file jika ada)
+        # remappings=[('/velodyne_points', '/velodyne_points'), ...] # (Opsional) remap topic jika perlu
+    )
+    return [node]  # Harus return list of actions
+
 def generate_launch_description():  # Fungsi utama generate LaunchDescription
     try:
         # ===================== ARGUMEN LAUNCH =====================
         calibration_file_arg = DeclareLaunchArgument(
             'calibration_file',
-            default_value='/home/jezzy/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml',
+            default_value='/mnt/nova_ssd/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml',
             description='Path ke file kalibrasi extrinsic lidar-ke-kamera'  # Penjelasan argumen
         )
         confidence_threshold_arg = DeclareLaunchArgument(
@@ -63,21 +84,8 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         print("[INFO] Launching Fusion Node (kamera 360° + LiDAR)...", flush=True)  # Info ke terminal
         log_to_file("Launching Fusion Node (kamera 360° + LiDAR)...")  # Log ke file
 
-        # ===================== NODE FUSION =====================
-        fusion_node = Node(
-            package='huskybot_fusion',  # Nama package
-            executable='fusion_node.py',  # Nama script node Python
-            name='fusion_node',  # Nama node
-            namespace=LaunchConfiguration('namespace'),  # Namespace (untuk multi-robot)
-            output='screen',  # Output ke terminal
-            parameters=[
-                {'calibration_file': LaunchConfiguration('calibration_file')},  # Path file kalibrasi
-                {'confidence_threshold': LaunchConfiguration('confidence_threshold')},  # Threshold confidence
-                {'fusion_method': LaunchConfiguration('fusion_method')},  # Metode fusion
-                {'log_file': LaunchConfiguration('log_file')}  # Path file log (opsional)
-            ],
-            # remappings=[('/velodyne_points', '/velodyne_points'), ...] # (Opsional) remap topic jika perlu
-        )
+        # ===================== NODE FUSION (DENGAN PARAMETER LOG_FILE OPSIONAL) =====================
+        fusion_node_action = OpaqueFunction(function=build_fusion_node)  # Node fusion dengan log_file hanya jika tidak kosong
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================
         return LaunchDescription([
@@ -87,15 +95,16 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             namespace_arg,  # Argumen namespace
             log_file_arg,  # Argumen file log
             check_calib_action,  # Action cek file kalibrasi
-            fusion_node  # Node fusion utama
+            fusion_node_action  # Node fusion utama (dengan log_file opsional)
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)  # Print fatal error
         log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")  # Log fatal error
         sys.exit(99)  # Exit dengan kode error
 
-# ===================== REVIEW & SARAN PENINGKATAN =====================
+# ===================== PENJELASAN & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
+# - Parameter log_file hanya ditambahkan jika tidak kosong, sehingga tidak ada warning "Parameter file path is not a file: ."
 # - Semua argumen sudah modular dan bisa diubah saat launch/CLI.
 # - Error handling sudah lengkap: cek file kalibrasi extrinsic, logging ke file, exit jika error.
 # - Logging info ke terminal dan file untuk audit trail.

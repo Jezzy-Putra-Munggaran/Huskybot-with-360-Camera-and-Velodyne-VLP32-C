@@ -50,7 +50,7 @@ class PanoramaDetection(Node):  # [WAJIB] Definisi class node deteksi panorama (
         self.bridge = CvBridge()  # [WAJIB] Inisialisasi bridge untuk konversi gambar
 
         # ===================== PARAMETERISASI NODE =====================
-        self.declare_parameter('model_path', os.path.expanduser('~/huskybot/src/huskybot_recognition/scripts/yolov12n.pt'))  # [WAJIB] Path default model YOLOv12
+        self.declare_parameter('model_path', os.path.expanduser('/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'))  # [WAJIB] Path default model YOLOv12
         self.declare_parameter('confidence_threshold', 0.25)  # [WAJIB] Threshold confidence default
         self.declare_parameter('log_stats', False)  # [BEST PRACTICE] Logging statistik deteksi ke file
         self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/panorama_stats.csv'))  # [BEST PRACTICE] Path file statistik

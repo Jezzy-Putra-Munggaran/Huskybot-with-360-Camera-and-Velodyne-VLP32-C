@@ -18,13 +18,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 # ===================== INSTALL PYTHON MODULE =====================
-ament_python_install_module(${PROJECT_NAME})  # [WAJIB] Install package Python ke environment ROS2
+ament_python_install_module(${PROJECT_NAME})  # [WAJIB] Install package Python ke environment ROS2 agar bisa diimport node lain
 
 # ===================== INSTALL PYTHON SCRIPTS =====================
 install(PROGRAMS
-  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_node.py  # [WAJIB] Script node utama fusion (OOP, robust)
-  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_utils.py  # [WAJIB] Script utilitas fusion (proyeksi, kalibrasi)
-  DESTINATION lib/${PROJECT_NAME}  # [WAJIB] Install ke lib/package_name/ agar bisa di-run via ros2 run
+  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_node.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_utils.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 # ===================== INSTALL LAUNCH FILES =====================

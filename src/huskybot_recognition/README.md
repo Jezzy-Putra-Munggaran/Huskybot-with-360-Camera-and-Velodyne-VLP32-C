@@ -119,7 +119,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('model_path', default_value='~/huskybot/src/huskybot_recognition/scripts/yolov12n.pt'),
+        DeclareLaunchArgument('model_path', default_value='/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'),
         DeclareLaunchArgument('confidence_threshold', default_value='0.25'),
         Node(
             package='huskybot_recognition',
@@ -159,7 +159,7 @@ def generate_launch_description():
 
 ## File Kalibrasi & Model
 
-- File model YOLOv12 (`yolov12n.pt`) ada di `scripts/`. <!-- File model YOLOv12 wajib ada di scripts/ -->
+- File model YOLOv12 (`yolo12n.pt`) ada di `scripts/`. <!-- File model YOLOv12 wajib ada di scripts/ -->
 - File kalibrasi kamera (`intrinsic_camera_*.yaml`) ada di `huskybot_description/calibration/`. <!-- File kalibrasi wajib ada di folder ini -->
 - Pastikan path file model dan kalibrasi sudah benar di parameter/launch file. <!-- Saran agar tidak error file hilang -->
 

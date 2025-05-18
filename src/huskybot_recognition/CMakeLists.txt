@@ -65,7 +65,7 @@ install(
 # [SARAN] Install file model YOLOv12 jika ingin distribusi model bersama package (otomatis di-share)
 install(
   FILES
-    scripts/yolov12n.pt  # [SARAN] Install file model YOLOv12 (jika ada, agar node tidak error file hilang)
+    scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 (jika ada, agar node tidak error file hilang)
   DESTINATION share/${PROJECT_NAME}/scripts/
   OPTIONAL  # [BEST PRACTICE] Tidak error jika file tidak ada (agar build tetap jalan di CI/CD)
 )
