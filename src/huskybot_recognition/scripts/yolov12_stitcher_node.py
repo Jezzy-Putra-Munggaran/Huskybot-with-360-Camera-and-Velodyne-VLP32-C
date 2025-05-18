@@ -44,7 +44,7 @@ class PanoramaStitcher(Node):  # [WAJIB] Node OOP untuk stitching panorama dari 
         self.bridge = CvBridge()  # [WAJIB] Inisialisasi bridge untuk konversi gambar
 
         # ===================== PARAMETERISASI NODE =====================
-        self.declare_parameter('calib_dir', os.path.expanduser("~/huskybot/src/huskybot_description/calibration"))  # [WAJIB] Path folder kalibrasi kamera
+        self.declare_parameter('calib_dir', os.path.expanduser("/mnt/nova_ssd/huskybot/src/huskybot_description/calibration"))  # [WAJIB] Path folder kalibrasi kamera
         self.declare_parameter('save_dir', os.path.expanduser("~/panorama_results"))  # [WAJIB] Path folder simpan hasil panorama
         self.declare_parameter('monitor_interval', 2.0)  # [BEST PRACTICE] Interval monitoring health kamera
         self.declare_parameter('max_frame_age', 1.0)  # [BEST PRACTICE] Maksimum usia frame agar tidak delay

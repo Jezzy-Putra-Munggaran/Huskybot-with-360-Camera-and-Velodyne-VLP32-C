@@ -1,9 +1,9 @@
 #!/usr/bin/python3  
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-  
 
 import os  # Untuk operasi file dan path
 import sys  # Untuk akses error output dan exit
-import traceback  # Untuk print traceback error
+import traceback  # Untuk print traceback error jika fatal
 import shutil  # Untuk cek executable di PATH
 import time  # Untuk timestamp dan timeout
 import rclpy  # Untuk inisialisasi node ROS2 Python (cek entity Gazebo)
@@ -22,17 +22,17 @@ from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter 
 def check_file_exists(path, desc):  # Cek file ada sebelum include
     if not os.path.exists(path):  # Jika file tidak ada
         print(f"[ERROR] {desc} tidak ditemukan: {path}", file=sys.stderr)  # Print error ke stderr
-        print("[ERROR]", f"{desc} tidak ditemukan: {path}", flush=True)  # Print error ke stdout
+        print(f"[ERROR] {desc} tidak ditemukan: {path}", flush=True)  # Print error ke stdout
         sys.exit(1)  # Exit dengan kode error
 
 # ---------- Error Handling: cek package dependency ----------
 def check_ros_package(pkg_name):  # Cek package ROS2 dependency ada
     try:
         get_package_share_directory(pkg_name)  # Cek path share package
-        print("[INFO]", f"Package ROS2 '{pkg_name}' ditemukan.", flush=True)  # Info jika ditemukan
+        print(f"[INFO] Package ROS2 '{pkg_name}' ditemukan.", flush=True)  # Info jika ditemukan
     except Exception:
         print(f"[ERROR] Package ROS2 '{pkg_name}' tidak ditemukan. Install dengan: sudo apt install ros-humble-{pkg_name.replace('_', '-')}", file=sys.stderr)  # Error jika tidak ada
-        print("[ERROR]", f"Package ROS2 '{pkg_name}' tidak ditemukan.", flush=True)
+        print(f"[ERROR] Package ROS2 '{pkg_name}' tidak ditemukan.", flush=True)
         sys.exit(2)  # Exit dengan kode error
 
 # ---------- Error Handling: cek environment variable penting ----------
@@ -40,17 +40,17 @@ def check_env_var(var, must_contain=None):  # Cek env var penting
     val = os.environ.get(var, "")
     if not val:
         print(f"[WARNING] Environment variable {var} belum di-set.", file=sys.stderr)
-        print("[WARNING]", f"Environment variable {var} belum di-set.", flush=True)
+        print(f"[WARNING] Environment variable {var} belum di-set.", flush=True)
     if must_contain and must_contain not in val:
         print(f"[WARNING] {var} tidak mengandung '{must_contain}'.", file=sys.stderr)
-        print("[WARNING]", f"{var} tidak mengandung '{must_contain}'.", flush=True)
+        print(f"[WARNING] {var} tidak mengandung '{must_contain}'.", flush=True)
 
 # ---------- Error Handling: cek executable di PATH ----------
 def check_executable(exe, install_hint=None):  # Cek executable di PATH
     if shutil.which(exe) is None:
         hint = f" (install: {install_hint})" if install_hint else ""
         print(f"[ERROR] Executable '{exe}' tidak ditemukan di PATH.{hint}", file=sys.stderr)
-        print("[ERROR]", f"Executable '{exe}' tidak ditemukan di PATH.{hint}", flush=True)
+        print(f"[ERROR] Executable '{exe}' tidak ditemukan di PATH.{hint}", flush=True)
         sys.exit(3)
 
 # ---------- Error Handling: cek plugin Gazebo ----------
@@ -106,16 +106,19 @@ check_executable('ros2', 'sudo apt install ros-humble-ros2cli')  # Cek ros2
 
 # ---------- Error Handling: validasi argumen CLI ----------
 def validate_args(context, *args, **kwargs):  # Validasi argumen world dan robot_model
-    world = LaunchConfiguration('world').perform(context)
-    if not os.path.exists(world):
+    world = LaunchConfiguration('world').perform(context)  # Ambil nilai world dari context
+    if not os.path.exists(world):  # Jika file world tidak ada
         print(f"[ERROR] World file tidak ditemukan: {world}", file=sys.stderr)
-        print("[ERROR]", f"World file tidak ditemukan: {world}", flush=True)
+        print(f"[ERROR] World file tidak ditemukan: {world}", flush=True)
         sys.exit(11)
-    robot_model = LaunchConfiguration('robot_model').perform(context)
-    if not os.path.exists(robot_model):
+    robot_model = LaunchConfiguration('robot_model').perform(context)  # Ambil nilai robot_model dari context
+    if not os.path.exists(robot_model):  # Jika file robot_model tidak ada
         print(f"[ERROR] Robot model file tidak ditemukan: {robot_model}", file=sys.stderr)
-        print("[ERROR]", f"Robot model file tidak ditemukan: {robot_model}", flush=True)
+        print(f"[ERROR] Robot model file tidak ditemukan: {robot_model}", flush=True)
         sys.exit(12)
+    # Logging info world dan robot_model yang sudah resolve
+    print(f"[INFO] World file (resolved): {world}", flush=True)
+    print(f"[INFO] Robot model (resolved): {robot_model}", flush=True)
     return []
 
 # ---------- OpaqueFunction: cek topic/service penting setelah launch ----------
@@ -125,19 +128,18 @@ def check_topic_after_launch(context, *args, **kwargs):  # Cek service /gazebo/g
         result = subprocess.run(['ros2', 'service', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=10)
         if '/gazebo/get_model_list' not in result.stdout:
             print("[ERROR] Service /gazebo/get_model_list belum ready setelah launch.", file=sys.stderr)
-            print("[ERROR]", "Service /gazebo/get_model_list belum ready setelah launch.", flush=True)
+            print("[ERROR] Service /gazebo/get_model_list belum ready setelah launch.", flush=True)
         else:
-            print("[INFO] Service /gazebo/get_model_list sudah ready setelah launch.")
-            print("[INFO]", "Service /gazebo/get_model_list sudah ready setelah launch.", flush=True)
+            print("[INFO] Service /gazebo/get_model_list sudah ready setelah launch.", flush=True)
     except Exception as e:
         print(f"[ERROR] Exception saat cek service: {e}", file=sys.stderr)
-        print("[ERROR]", f"Exception saat cek service: {e}", flush=True)
+        print(f"[ERROR] Exception saat cek service: {e}", flush=True)
     return []
 
 def wait_for_gazebo_and_entity(context, *args, **kwargs):  # Tunggu entity robot muncul di Gazebo
     entity_name = 'husky_with_cameras'  # Nama entity robot di Gazebo
     timeout = 60  # Timeout 60 detik
-    print(f"[INFO] Menunggu Gazebo dan entity '{entity_name}' muncul...")
+    print(f"[INFO] Menunggu Gazebo dan entity '{entity_name}' muncul...", flush=True)
     rclpy.init(args=None)
     node = rclpy.create_node('wait_for_entity')
     cli = node.create_client(GetModelList, '/gazebo/get_model_list')
@@ -147,8 +149,8 @@ def wait_for_gazebo_and_entity(context, *args, **kwargs):  # Tunggu entity robot
             print(f"[ERROR] Timeout menunggu service /gazebo/get_model_list", file=sys.stderr)
             rclpy.shutdown()
             sys.exit(100)
-        print("[INFO] Waiting for /gazebo/get_model_list service...")
-    print("[INFO] Service /gazebo/get_model_list sudah ready.")
+        print("[INFO] Waiting for /gazebo/get_model_list service...", flush=True)
+    print("[INFO] Service /gazebo/get_model_list sudah ready.", flush=True)
     found = False
     while time.time() - start_time < timeout:
         req = GetModelList.Request()
@@ -157,7 +159,7 @@ def wait_for_gazebo_and_entity(context, *args, **kwargs):  # Tunggu entity robot
         if future.done() and future.result():
             if entity_name in future.result().model_names:
                 found = True
-                print(f"[INFO] Entity '{entity_name}' sudah muncul di Gazebo.")
+                print(f"[INFO] Entity '{entity_name}' sudah muncul di Gazebo.", flush=True)
                 break
         time.sleep(1)
     node.destroy_node()
@@ -170,12 +172,12 @@ def wait_for_gazebo_and_entity(context, *args, **kwargs):  # Tunggu entity robot
 def generate_launch_description():  # Fungsi utama generate LaunchDescription
     try:
         # Ambil path share semua package yang dibutuhkan
-        pkg_huskybot_gazebo = get_package_share_directory('huskybot_gazebo')
-        pkg_huskybot_description = get_package_share_directory('huskybot_description')
-        pkg_huskybot_control = get_package_share_directory('huskybot_control')
-        pkg_huskybot_recognition = get_package_share_directory('huskybot_recognition')
-        pkg_huskybot_fusion = get_package_share_directory('huskybot_fusion')
-        pkg_huskybot_calibration = get_package_share_directory('huskybot_calibration')
+        pkg_huskybot_gazebo = get_package_share_directory('huskybot_gazebo')  # Path package gazebo
+        pkg_huskybot_description = get_package_share_directory('huskybot_description')  # Path package description
+        pkg_huskybot_control = get_package_share_directory('huskybot_control')  # Path package control
+        pkg_huskybot_recognition = get_package_share_directory('huskybot_recognition')  # Path package recognition
+        pkg_huskybot_fusion = get_package_share_directory('huskybot_fusion')  # Path package fusion
+        pkg_huskybot_calibration = get_package_share_directory('huskybot_calibration')  # Path package calibration
 
         # Deklarasi semua argumen launch yang bisa diubah dari CLI
         gui_arg = DeclareLaunchArgument('gui', default_value='true', description='Enable Gazebo GUI (set to true for GUI, false for headless)')
@@ -187,7 +189,6 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         enable_panorama_arg = DeclareLaunchArgument('enable_panorama', default_value='true', description='Enable panorama inference node')
         enable_fusion_arg = DeclareLaunchArgument('enable_fusion', default_value='true', description='Enable sensor fusion node')
         enable_calibration_arg = DeclareLaunchArgument('enable_calibration', default_value='false', description='Enable calibration node (kalibrasi kamera-LiDAR)')
-        # Saran: tambahkan argumen namespace untuk multi-robot
         namespace_arg = DeclareLaunchArgument('namespace', default_value='', description='Namespace ROS2 untuk multi-robot (opsional)')
 
         # Path semua launch file yang akan di-include
@@ -349,10 +350,8 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         set_log_level = SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1')  # Buffer log ROS2
         set_ros_log_level = SetEnvironmentVariable('RCUTILS_LOG_SEVERITY_THRESHOLD', 'DEBUG')  # Set log level DEBUG
 
-        # Logging info ke terminal (opsional, bisa dihapus jika tidak ingin print)
-        print("[INFO]", "Launching Huskybot Gazebo Simulation...", flush=True)
-        print("[INFO]", ["World file: ", LaunchConfiguration('world')], flush=True)
-        print("[INFO]", ["Robot model: ", LaunchConfiguration('robot_model')], flush=True)
+        # Logging info ke terminal (saran: print string, bukan LaunchConfiguration, dan sudah resolve di OpaqueFunction validate_args)
+        print(f"[INFO] Launching Huskybot Gazebo Simulation...", flush=True)
 
         return LaunchDescription([
             set_log_level,  # Set log buffer
@@ -367,7 +366,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             enable_fusion_arg,  # Argumen enable fusion
             enable_calibration_arg,  # Argumen enable calibration
             namespace_arg,  # Argumen namespace (multi-robot)
-            validate_args_action,  # Validasi argumen world/model
+            validate_args_action,  # Validasi argumen world/model (print resolved path di sini)
             joy_node,  # Node joystick
             start_world,  # Launch Gazebo server
             spawn_robot_world,  # Spawn robot ke world
@@ -386,17 +385,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         traceback.print_exc()
         sys.exit(99)
 
-# ---------------------------
-# CATATAN:
-# - Untuk men-disable node: ros2 launch huskybot_gazebo huskybot_launch.py enable_yolo:=false
-# - Untuk pilih world: ros2 launch huskybot_gazebo huskybot_launch.py world:=/path/to/world.sdf
-# - Untuk pilih robot model: ros2 launch huskybot_gazebo huskybot_launch.py robot_model:=/path/to/model.xacro
-# - Semua error file hilang akan muncul di terminal sebelum launch berjalan.
-# - Logging node custom ke screen dan file (output='both').
-# - Namespace sudah siap untuk multi-robot, tinggal set namespace:=robot1 dst.
-# ---------------------------
-
-# ===================== REVIEW & SARAN PENINGKATAN =====================
+# ===================== PENJELASAN & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Struktur folder sudah benar: launch/, worlds/, README.md, package.xml, CMakeLists.txt.
 # - Semua dependency package dan file sudah dicek sebelum launch (robust error handling).

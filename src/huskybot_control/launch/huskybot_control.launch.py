@@ -1,5 +1,5 @@
 #!/usr/bin/python3  
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-  
 
 import os  # Untuk operasi path file/folder
 import sys  # Untuk exit jika error fatal
@@ -42,6 +42,21 @@ def log_to_file(msg):  # Fungsi logging ke file audit trail launch
             logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")  # Tulis pesan log
     except Exception as e:
         print(f"[WARNING] Tidak bisa menulis ke log file: {log_file_path} ({e})", file=sys.stderr)  # Warning jika gagal log
+
+def build_robot_control_parameters(context, *args, **kwargs):  # Fungsi untuk membangun parameter robot_control_node secara dinamis
+    params = [
+        {'use_sim_time': LaunchConfiguration('use_sim_time').perform(context)},  # Parameter waktu simulasi
+        {'max_speed': LaunchConfiguration('max_speed').perform(context)},  # Parameter kecepatan maksimum
+        {'safety_stop': LaunchConfiguration('safety_stop').perform(context)}  # Parameter safety stop
+    ]
+    param_yaml = LaunchConfiguration('param_yaml').perform(context)  # Ambil argumen param_yaml
+    if param_yaml and param_yaml != '':  # Jika ada file param_yaml
+        params.append(os.path.expandvars(os.path.expanduser(param_yaml)))  # Tambahkan file param_yaml ke parameter
+    return params  # Return list parameter
+
+def build_logger_condition(context, *args, **kwargs):  # Fungsi untuk menentukan apakah logger_node diaktifkan
+    enable_logger = LaunchConfiguration('enable_logger').perform(context)  # Ambil argumen enable_logger
+    return enable_logger.lower() in ['true', '1']  # Return True jika enable_logger true/1
 
 def generate_launch_description():  # Fungsi utama generate launch description
     try:
@@ -90,6 +105,10 @@ def generate_launch_description():  # Fungsi utama generate launch description
             'max_log_size',
             default_value=str(5*1024*1024),
             description='Ukuran maksimum file log dalam byte (default 5MB)')  # Argumen ukuran maksimum log
+        enable_logger_arg = DeclareLaunchArgument(
+            'enable_logger',
+            default_value='false',
+            description='Aktifkan node logger.py (true/false)')  # Argumen enable logger
 
         # ===================== ERROR HANDLING ACTIONS =====================
         check_param_yaml_action = OpaqueFunction(function=check_param_yaml)  # Cek file param_yaml sebelum launch
@@ -100,17 +119,17 @@ def generate_launch_description():  # Fungsi utama generate launch description
         log_to_file("Launching Huskybot Control Node...")  # Log info ke file
 
         # ===================== NODE UTAMA KONTROL ROBOT =====================
-        robot_control_node = Node(
-            package='huskybot_control',  # Nama package
-            executable='robot_control.py',  # Nama script node utama
-            output='screen',  # Output ke terminal
-            parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},
-                {'max_speed': LaunchConfiguration('max_speed')},
-                {'safety_stop': LaunchConfiguration('safety_stop')}
-            ] + ([LaunchConfiguration('param_yaml')] if LaunchConfiguration('param_yaml') != '' else []),  # Tambah param_yaml jika ada
-            remappings=[
-                ('/huskybot/cmd_vel', LaunchConfiguration('cmd_vel_topic'))  # Remap topic cmd_vel jika perlu
+        robot_control_node = OpaqueFunction(
+            function=lambda context: [
+                Node(
+                    package='huskybot_control',  # Nama package
+                    executable='robot_control.py',  # Nama script node utama
+                    output='screen',  # Output ke terminal
+                    parameters=build_robot_control_parameters(context),  # Parameter dinamis (termasuk param_yaml jika ada)
+                    remappings=[
+                        ('/huskybot/cmd_vel', LaunchConfiguration('cmd_vel_topic').perform(context))  # Remap topic cmd_vel jika perlu
+                    ]
+                )
             ]
         )
 
@@ -140,27 +159,28 @@ def generate_launch_description():  # Fungsi utama generate launch description
                 {'log_level': LaunchConfiguration('log_level')},
                 {'max_log_size': LaunchConfiguration('max_log_size')}
             ],
-            condition=IfCondition(LaunchConfiguration('log_file'))  # Hanya aktif jika log_file tidak kosong
+            condition=IfCondition(LaunchConfiguration('enable_logger'))  # Aktifkan logger hanya jika enable_logger true
         )
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================
         return LaunchDescription([
-            use_sim_time_arg,
-            max_speed_arg,
-            safety_stop_arg,
-            param_yaml_arg,
-            cmd_vel_topic_arg,
-            enable_safety_monitor_arg,
-            scan_topic_arg,
-            log_file_arg,
-            log_csv_arg,
-            log_level_arg,
-            max_log_size_arg,
-            check_param_yaml_action,
-            check_logger_file_action,
-            robot_control_node,
-            safety_monitor_node,
-            logger_node
+            use_sim_time_arg,  # Argumen waktu simulasi
+            max_speed_arg,  # Argumen kecepatan maksimum
+            safety_stop_arg,  # Argumen safety stop
+            param_yaml_arg,  # Argumen file parameter YAML
+            cmd_vel_topic_arg,  # Argumen topic cmd_vel
+            enable_safety_monitor_arg,  # Argumen enable safety monitor
+            scan_topic_arg,  # Argumen topic scan
+            log_file_arg,  # Argumen file log
+            log_csv_arg,  # Argumen log ke CSV
+            log_level_arg,  # Argumen level log
+            max_log_size_arg,  # Argumen ukuran maksimum log
+            enable_logger_arg,  # Argumen enable logger
+            check_param_yaml_action,  # Validasi file param_yaml
+            check_logger_file_action,  # Validasi file log
+            robot_control_node,  # Node utama kontrol robot (dengan param_yaml dinamis)
+            safety_monitor_node,  # Node safety monitor (opsional)
+            logger_node  # Node logger (opsional)
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)  # Log fatal error ke stderr

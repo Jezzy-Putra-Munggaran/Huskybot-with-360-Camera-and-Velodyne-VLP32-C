@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*- 
 
 import os  # Untuk operasi file/folder
@@ -17,15 +17,12 @@ def check_output_yaml(context, *args, **kwargs):  # Fungsi validasi folder outpu
     if not os.path.isdir(output_dir):  # Jika folder belum ada
         try:
             os.makedirs(output_dir)  # Buat folder
-            print(f"[INFO] Membuat folder output YAML: {output_dir}")  # Log ke terminal
-            print("[INFO]", msg=f"Membuat folder output YAML: {output_dir}", flush=True)  # Log ke launch output
+            print(f"[INFO] Membuat folder output YAML: {output_dir}", flush=True)  # Log ke terminal
         except Exception as e:
             print(f"[ERROR] Gagal membuat folder output YAML: {output_dir} ({e})", file=sys.stderr)  # Log error ke stderr
-            print("[ERROR]", msg=f"Gagal membuat folder output YAML: {output_dir} ({e})", flush=True)  # Log error ke launch output
             sys.exit(2)  # Exit dengan kode error
     else:
-        print(f"[INFO] Folder output YAML sudah ada: {output_dir}")  # Log info jika folder sudah ada
-        print("[INFO]", msg=f"Folder output YAML sudah ada: {output_dir}", flush=True)
+        print(f"[INFO] Folder output YAML sudah ada: {output_dir}", flush=True)  # Log info jika folder sudah ada
     return []  # Wajib return list kosong untuk OpaqueFunction
 
 def check_log_file_path(context, *args, **kwargs):  # Fungsi validasi file log proses
@@ -35,11 +32,9 @@ def check_log_file_path(context, *args, **kwargs):  # Fungsi validasi file log p
         try:
             with open(expanded, "a") as logf:  # Coba buka file untuk append
                 logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Logger file check OK\n")  # Tulis log
-            print(f"[INFO] Logger file bisa ditulis: {expanded}")  # Log ke terminal
-            print("[INFO]", msg=f"Logger file bisa ditulis: {expanded}", flush=True)
+            print(f"[INFO] Logger file bisa ditulis: {expanded}", flush=True)  # Log ke terminal
         except Exception as e:
             print(f"[ERROR] Logger file tidak bisa ditulis: {expanded} ({e})", file=sys.stderr)  # Log error ke stderr
-            print("[ERROR]", msg=f"Logger file tidak bisa ditulis: {expanded} ({e})", flush=True)
             sys.exit(3)  # Exit dengan kode error
     return []  # Wajib return list kosong untuk OpaqueFunction
 
@@ -55,9 +50,9 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
     try:
         # ===================== ARGUMEN LAUNCH =====================
         use_sim_time_arg = DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
-            description='Gunakan waktu simulasi (Gazebo) jika true'
+            'use_sim_time',  # Nama argumen
+            default_value='false',  # Default false (bisa true untuk simulasi)
+            description='Gunakan waktu simulasi (Gazebo) jika true'  # Deskripsi argumen
         )
         camera_topic_arg = DeclareLaunchArgument(
             'camera_topic',
@@ -136,7 +131,7 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
         check_log_file_path_action = OpaqueFunction(function=check_log_file_path)  # Validasi file log proses
 
         # ===================== LOGGING INFO =====================
-        print("[INFO]", msg="Launching Lidar-Camera Calibration Node...", flush=True)  # Log ke launch output
+        print("[INFO] Launching Lidar-Camera Calibration Node...", flush=True)  # Log ke terminal
         log_to_file("Launching Lidar-Camera Calibration Node...")  # Log ke file launch
 
         # ===================== NODE KALIBRASI =====================
@@ -167,26 +162,26 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================
         return LaunchDescription([
-            use_sim_time_arg,
-            camera_topic_arg,
-            lidar_topic_arg,
-            pattern_type_arg,
-            pattern_size_arg,
-            square_size_arg,
-            output_yaml_arg,
-            visualize_arg,
-            camera_frame_id_arg,
-            lidar_frame_id_arg,
-            publish_tf_arg,
-            sync_time_slop_arg,
+            use_sim_time_arg,  # Argumen waktu simulasi
+            camera_topic_arg,  # Argumen topic kamera
+            lidar_topic_arg,  # Argumen topic LiDAR
+            pattern_type_arg,  # Argumen tipe pattern
+            pattern_size_arg,  # Argumen ukuran pattern
+            square_size_arg,  # Argumen ukuran kotak pattern
+            output_yaml_arg,  # Argumen path output YAML
+            visualize_arg,  # Argumen visualisasi
+            camera_frame_id_arg,  # Argumen frame kamera
+            lidar_frame_id_arg,  # Argumen frame LiDAR
+            publish_tf_arg,  # Argumen publish TF
+            sync_time_slop_arg,  # Argumen threshold sinkronisasi waktu
             # namespace_arg,  # Aktifkan jika ingin multi-robot
-            check_output_yaml_action,
-            check_log_file_path_action,
-            calibration_node
+            check_output_yaml_action,  # Validasi folder output YAML
+            check_log_file_path_action,  # Validasi file log proses
+            calibration_node  # Node utama kalibrasi
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)  # Log fatal error ke stderr
-        print("[ERROR]", msg=f"Exception saat generate_launch_description: {e}", flush=True)  # Log error ke launch output
+        print(f"[ERROR] Exception saat generate_launch_description: {e}", flush=True)  # Log error ke terminal
         log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")  # Log ke file launch
         sys.exit(99)  # Exit dengan kode error
 

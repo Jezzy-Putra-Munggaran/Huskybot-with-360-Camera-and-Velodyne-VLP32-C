@@ -56,7 +56,7 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
         super().__init__('camera_subscriber')  # [WAJIB] Inisialisasi node dengan nama 'camera_subscriber'
         try:
             # ===================== PARAMETERISASI NODE =====================
-            self.declare_parameter('model_path', os.path.expanduser('~/huskybot/src/huskybot_recognition/scripts/yolov12n.pt'))  # [WAJIB] Path default model YOLOv12
+            self.declare_parameter('model_path', os.path.expanduser('/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'))  # [WAJIB] Path default model YOLOv12
             self.declare_parameter('confidence_threshold', 0.25)  # [WAJIB] Threshold confidence default
             self.declare_parameter('log_stats', True)  # [BEST PRACTICE] Logging statistik deteksi ke file
             self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_stats.csv'))  # [BEST PRACTICE] Path file statistik
