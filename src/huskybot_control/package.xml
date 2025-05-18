@@ -11,7 +11,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>                            <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake), wajib agar bisa dibuild dengan colcon/ament -->
 
   <depend>huskybot_description</depend>                                       <!-- Dependency ke package URDF/mesh robot, pastikan package ini ada jika robot butuh URDF -->
-  <depend>huskybot_gazebo</depend>                                            <!-- Dependency ke package simulasi Gazebo, pastikan package ini ada jika butuh plugin/launch Gazebo -->
+  <!-- <depend>huskybot_gazebo</depend>                                            Dependency ke package simulasi Gazebo, pastikan package ini ada jika butuh plugin/launch Gazebo -->
 
   <!-- Dependency Python dan pesan yang digunakan di scripts/robot_control.py -->
   <exec_depend>rclpy</exec_depend>                                            <!-- Dependency runtime untuk node Python ROS2, wajib untuk semua node Python -->

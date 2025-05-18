@@ -21,7 +21,7 @@
   <exec_depend>rclpy</exec_depend>                                          <!-- Dependency runtime node Python ROS2 (untuk launch file Python) -->
   <exec_depend>ament_index_python</exec_depend>                             <!-- Dependency runtime untuk get_package_share_directory di launch file -->
   <exec_depend>huskybot_description</exec_depend>                           <!-- Dependency ke package URDF/Xacro robot Huskybot -->
-  <exec_depend>huskybot_control</exec_depend>                               <!-- Dependency ke package kontrol robot (teleop, safety, autonomous) -->
+  <!-- <exec_depend>huskybot_control</exec_depend>                               Dependency ke package kontrol robot (teleop, safety, autonomous) -->
   <exec_depend>huskybot_recognition</exec_depend>                           <!-- Dependency ke package deteksi YOLOv12 dan panorama -->
   <exec_depend>huskybot_fusion</exec_depend>                                <!-- Dependency ke package fusion sensor kamera-LiDAR -->
   <exec_depend>huskybot_calibration</exec_depend>                           <!-- Dependency ke package kalibrasi kamera-LiDAR -->

@@ -1,5 +1,5 @@
-#!/usr/bin/python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/python3 
+# -*- coding: utf-8 -*- 
 
 import os  # Untuk operasi path file
 import sys  # Untuk exit/error handling
@@ -76,6 +76,22 @@ def split_pose(context, *args, **kwargs) -> List[str]:  # Utility untuk split po
         sys.exit(22)
     return parts
 
+# ===================== OPAQUE FUNCTION UNTUK LOGGING ARGUMEN =====================
+def log_launch_args(context, *args, **kwargs):  # Logging semua argumen launch ke file (dengan context)
+    urdf_file = LaunchConfiguration('urdf_file').perform(context)
+    entity_name = LaunchConfiguration('entity_name').perform(context)
+    pose = LaunchConfiguration('pose').perform(context)
+    robot_namespace = LaunchConfiguration('robot_namespace').perform(context)
+    reference_frame = LaunchConfiguration('reference_frame').perform(context)
+    robot_description_topic = LaunchConfiguration('robot_description_topic').perform(context)
+    log_to_file(f"Spawning robot model: {urdf_file}")
+    log_to_file(f"robot_description topic: {robot_description_topic}")
+    log_to_file(f"Entity name: {entity_name}")
+    log_to_file(f"Spawn pose: {pose}")
+    log_to_file(f"Robot namespace: {robot_namespace}")
+    log_to_file(f"Reference frame: {reference_frame}")
+    return []
+
 # ===================== OPAQUE FUNCTION UNTUK SPAWN ENTITY =====================
 def spawn_entity_action(context, *args, **kwargs):  # Fungsi untuk spawn entity ke Gazebo
     robot_description_topic = LaunchConfiguration('robot_description_topic').perform(context)  # Topic robot_description
@@ -110,9 +126,9 @@ def spawn_entity_action(context, *args, **kwargs):  # Fungsi untuk spawn entity 
 def generate_launch_description():  # Fungsi utama generate LaunchDescription
     try:
         urdf_file_arg = DeclareLaunchArgument(
-            'urdf_file',
+            'urdf_file',  # Nama argumen
             default_value=os.path.join(
-                get_package_share_directory('huskybot_description'),
+                get_package_share_directory('huskybot_description'),  # Path share package
                 'robot',
                 'huskybot.urdf.xacro'
             ),
@@ -160,25 +176,20 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         check_deps_action = OpaqueFunction(function=check_dependencies)  # Cek dependency sebelum launch
         check_urdf_action = OpaqueFunction(function=check_urdf_file)  # Cek file URDF sebelum launch
         validate_pose_action = OpaqueFunction(function=validate_pose)  # Validasi pose sebelum launch
+        log_args_action = OpaqueFunction(function=log_launch_args)  # Logging argumen launch ke file
 
         robot_description = ParameterValue(
             Command(['xacro ', urdf_file]),  # Jalankan xacro untuk generate URDF string
             value_type=str
         )
 
-        # Logging info ke terminal dan file
+        # Logging info ke terminal
         print("[INFO]", "Spawning robot model:", urdf_file, flush=True)
         print("[INFO]", "robot_description topic:", robot_description_topic, flush=True)
         print("[INFO]", "Entity name:", entity_name, flush=True)
         print("[INFO]", "Spawn pose:", pose, flush=True)
         print("[INFO]", "Robot namespace:", robot_namespace, flush=True)
         print("[INFO]", "Reference frame:", reference_frame, flush=True)
-        log_to_file(f"Spawning robot model: {urdf_file.perform({})}")
-        log_to_file(f"robot_description topic: {robot_description_topic.perform({})}")
-        log_to_file(f"Entity name: {entity_name.perform({})}")
-        log_to_file(f"Spawn pose: {pose.perform({})}")
-        log_to_file(f"Robot namespace: {robot_namespace.perform({})}")
-        log_to_file(f"Reference frame: {reference_frame.perform({})}")
 
         return LaunchDescription([
             urdf_file_arg,  # Argumen path URDF
@@ -191,6 +202,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             check_deps_action,  # Action cek dependency
             check_urdf_action,  # Action cek file URDF
             validate_pose_action,  # Action validasi pose
+            log_args_action,  # Logging argumen launch ke file
             Node(
                 package='robot_state_publisher',  # Node robot_state_publisher untuk publish TF
                 executable='robot_state_publisher',
