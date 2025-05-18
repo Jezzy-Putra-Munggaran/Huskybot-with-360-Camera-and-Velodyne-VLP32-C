@@ -21,7 +21,7 @@ find_package(rclpy REQUIRED)                        # Dependency Python ROS2 (wa
 find_package(geometry_msgs REQUIRED)                # Dependency pesan geometry_msgs (untuk Twist, dsb)
 find_package(sensor_msgs REQUIRED)                  # Dependency pesan sensor_msgs (untuk Joy, LaserScan, dsb)
 find_package(huskybot_description REQUIRED)         # (Opsional) Dependency ke package lain jika perlu (URDF/mesh)
-find_package(huskybot_gazebo REQUIRED)              # (Opsional) Dependency ke package lain jika perlu (simulasi)
+# find_package(huskybot_gazebo REQUIRED)              # (Opsional) Dependency ke package lain jika perlu (simulasi)
 # find_package(<dependency> REQUIRED)               # (Contoh) Tambahkan dependency lain jika ada import di scripts/
 
 if(BUILD_TESTING)

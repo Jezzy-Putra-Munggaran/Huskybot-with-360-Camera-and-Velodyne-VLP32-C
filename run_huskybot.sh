@@ -25,5 +25,8 @@ export GAZEBO_MODEL_PATH=$HOME/huskybot/install/huskybot_description/share/husky
 echo "GAZEBO_PLUGIN_PATH: $GAZEBO_PLUGIN_PATH"
 echo "GAZEBO_MODEL_PATH: $GAZEBO_MODEL_PATH"
 
-# Jalankan launch file
+# Jalankan launch file (tanpa -v debug, karena tidak didukung di ROS2 Humble)
 ros2 launch huskybot_gazebo huskybot_launch.py
+
+# Setelah selesai, tampilkan lokasi file log launch
+echo "Log launch lengkap ada di: ~/.ros/log/latest_launch.log"
