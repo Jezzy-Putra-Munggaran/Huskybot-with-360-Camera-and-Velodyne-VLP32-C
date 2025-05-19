@@ -33,7 +33,6 @@
   <exec_depend>python3-numpy</exec_depend>  <!-- Dependency Python numpy (untuk proyeksi dan komputasi) -->
   <exec_depend>python3-opencv</exec_depend>  <!-- Dependency Python OpenCV (untuk proyeksi 3D->2D) -->
   <exec_depend>python3-yaml</exec_depend>  <!-- Dependency Python YAML (untuk parsing file kalibrasi) -->
-  <exec_depend>ros-numpy</exec_depend>  <!-- Dependency ros_numpy (untuk parsing PointCloud2) -->
   <exec_depend>message_filters</exec_depend>  <!-- Dependency message_filters (sinkronisasi sensor) -->
   <exec_depend>huskybot_msgs</exec_depend> <!-- Dependency runtime custom message Huskybot (hasil deteksi 3D) -->
   

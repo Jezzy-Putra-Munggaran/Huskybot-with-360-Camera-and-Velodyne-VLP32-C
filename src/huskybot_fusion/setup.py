@@ -28,7 +28,6 @@ setup(
         'numpy',  # [WAJIB] Untuk komputasi numerik/proyeksi
         'opencv-python',  # [WAJIB] Untuk proyeksi 3D->2D
         'pyyaml',  # [WAJIB] Untuk parsing file kalibrasi YAML
-        'ros_numpy',  # [WAJIB] Untuk parsing PointCloud2
         'message_filters',  # [WAJIB] Untuk sinkronisasi sensor
     ],  # [WAJIB] Semua dependency Python utama (pastikan sudah di package.xml juga)
     zip_safe=True,  # [WAJIB] Package bisa di-zip (standar ROS2)

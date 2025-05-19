@@ -110,7 +110,7 @@ fusion_logs/
 ## Troubleshooting  <!-- Tips troubleshooting jika ada error saat simulasi/visualisasi -->
 - Jika objek 3D tidak muncul, cek sinkronisasi topic dan kalibrasi.  <!-- Saran cek sinkronisasi topic dan file kalibrasi -->
 - Jika hasil fusion tidak akurat, cek parameter kalibrasi dan proyeksi.  <!-- Saran cek parameter kalibrasi dan fungsi proyeksi -->
-- Jika node fusion error import, pastikan dependency Python (`ros-numpy`, `opencv-python`, `pyyaml`, dsb) sudah diinstall di environment yang aktif.  <!-- Saran cek dependency Python jika error import -->
+- Jika node fusion error import, pastikan dependency Python (`opencv-python`, `pyyaml`, dsb) sudah diinstall di environment yang aktif.  <!-- Saran cek dependency Python jika error import -->
 - Jika file kalibrasi tidak ditemukan, cek path dan permission file YAML di parameter/launch file.  <!-- Saran cek path dan permission file kalibrasi -->
 - Jika simulasi di Gazebo tidak sinkron, pastikan `use_sim_time:=true` di launch file.  <!-- Saran gunakan waktu simulasi di Gazebo -->
 - Jika log file tidak terbuat, cek permission folder dan path log_file.  <!-- Saran cek permission folder log -->
