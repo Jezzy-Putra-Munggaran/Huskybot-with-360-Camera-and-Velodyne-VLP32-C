@@ -1,14 +1,14 @@
 #!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+# -*- coding: utf-8 -*- 
 
 import rclpy  # [WAJIB] Library utama ROS2 Python
 from rclpy.node import Node  # [WAJIB] Base class untuk node ROS2
 from sensor_msgs.msg import PointCloud2  # [WAJIB] Message point cloud dari Velodyne
 from yolov12_msgs.msg import Yolov12Inference  # [WAJIB] Message hasil deteksi YOLOv12 (dari kamera 360°)
-from huskybot_msgs.msg import Object3D  # [WAJIB] Custom message untuk hasil deteksi objek 3D (HARUS dari huskybot_msgs!)
+from huskybot_msgs.msg import Object3D  # [WAJIB] Custom message untuk hasil deteksi objek 3D
 import message_filters  # [WAJIB] Untuk sinkronisasi data multi sensor (kamera & lidar)
 import numpy as np  # [WAJIB] Untuk pemrosesan data numerik/array
-import struct  # [BEST PRACTICE] Untuk parsing data PointCloud2 (backup jika ros_numpy error)
+import struct  # [BEST PRACTICE] Untuk parsing data PointCloud2 (backup manual)
 import tf2_ros  # [WAJIB] Untuk transformasi antar frame (TF)
 from std_msgs.msg import Header  # [WAJIB] Header ROS2 untuk sinkronisasi waktu/frame
 import os  # [WAJIB] Untuk operasi file (cek file kalibrasi)
@@ -26,9 +26,12 @@ def setup_file_logger(log_path="~/huskybot_fusion_node.log"):  # [BEST PRACTICE]
     logger = logging.getLogger("fusion_node_file_logger")  # [WAJIB] Buat/get logger dengan nama unik
     logger.setLevel(logging.INFO)  # [WAJIB] Set level default INFO
     if not logger.hasHandlers():  # [WAJIB] Cegah duplicate handler
-        fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
-        logger.addHandler(fh)  # [WAJIB] Tambah handler ke logger
+        try:
+            fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
+            fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
+            logger.addHandler(fh)  # [WAJIB] Tambah handler ke logger
+        except Exception as e:
+            print(f"[FATAL] Tidak bisa setup file logger: {e}", file=sys.stderr)  # [ERROR HANDLING] Print error ke stderr
     return logger  # [WAJIB] Return logger instance
 
 file_logger = setup_file_logger()  # [WAJIB] Inisialisasi logger file global
@@ -46,11 +49,11 @@ def log_to_file(msg, level='info'):  # [BEST PRACTICE] Fungsi log ke file dengan
 
 # ===================== ERROR HANDLING: DEPENDENCY =====================
 try:
-    import ros_numpy  # [WAJIB] Untuk optimasi konversi PointCloud2
+    import sensor_msgs_py.point_cloud2 as pc2  # [WAJIB] Library resmi ROS2 untuk parsing PointCloud2
 except ImportError:
-    print("[FATAL] ros_numpy tidak ditemukan. Install dengan: pip install ros-numpy", file=sys.stderr)  # [WAJIB] Print error ke stderr
-    log_to_file("[FATAL] ros_numpy tidak ditemukan. Install dengan: pip install ros-numpy", level='error')  # [WAJIB] Log error ke file
-    sys.exit(1)  # [WAJIB] Exit jika dependency tidak ada
+    print("[FATAL] sensor_msgs_py.point_cloud2 tidak ditemukan. Install dengan: sudo apt install ros-humble-sensor-msgs-py", file=sys.stderr)
+    log_to_file("[FATAL] sensor_msgs_py.point_cloud2 tidak ditemukan. Install dengan: sudo apt install ros-humble-sensor-msgs-py", level='error')
+    sys.exit(1)
 
 class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° dan LiDAR
     def __init__(self):
@@ -104,19 +107,23 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
 
     def fusion_callback(self, lidar_msg, yolo_msg):  # [WAJIB] Callback utama fusion
         try:
-            if lidar_msg is None:  # [ERROR HANDLING] Data lidar kosong
-                self.get_logger().warn("Data lidar kosong, fusion dilewati.")
-                log_to_file("Data lidar kosong, fusion dilewati.", level='warn')
+            # ===================== ERROR HANDLING: Validasi Message =====================
+            if lidar_msg is None or not hasattr(lidar_msg, 'data') or len(lidar_msg.data) == 0:
+                self.get_logger().warn("Data lidar kosong/invalid, fusion dilewati.")
+                log_to_file("Data lidar kosong/invalid, fusion dilewati.", level='warn')
                 return
-            if yolo_msg is None:  # [ERROR HANDLING] Data YOLO kosong
-                self.get_logger().warn("Data YOLO kosong, fusion dilewati.")
-                log_to_file("Data YOLO kosong, fusion dilewati.", level='warn')
+            if yolo_msg is None or not hasattr(yolo_msg, 'yolov12_inference'):
+                self.get_logger().warn("Data YOLO kosong/invalid, fusion dilewati.")
+                log_to_file("Data YOLO kosong/invalid, fusion dilewati.", level='warn')
                 return
 
-            # 1. Parse point cloud dari LiDAR menggunakan ros_numpy
+            # ===================== PARSING POINT CLOUD =====================
             try:
-                pc_np = ros_numpy.point_cloud2.pointcloud2_to_array(lidar_msg)  # [WAJIB] Konversi PointCloud2 ke numpy structured array
-                points = np.stack([pc_np['x'], pc_np['y'], pc_np['z']], axis=-1)  # [WAJIB] Ambil array [N,3]
+                # Konversi PointCloud2 ke numpy array [N,3] (x, y, z)
+                points = np.array([
+                    [x, y, z]
+                    for x, y, z in pc2.read_points(lidar_msg, field_names=("x", "y", "z"), skip_nans=True)
+                ])
             except Exception as e:
                 self.get_logger().error(f"Gagal konversi PointCloud2 ke numpy: {e}")
                 log_to_file(f"Gagal konversi PointCloud2 ke numpy: {e}", level='error')
@@ -127,7 +134,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 log_to_file("Point cloud kosong, fusion dilewati.", level='warn')
                 return
 
-            # 2. Batch processing deteksi (jika banyak deteksi)
+            # ===================== PARSING DETEKSI YOLO =====================
             detections = getattr(yolo_msg, 'yolov12_inference', [])  # [WAJIB] Ambil array deteksi dari message
             if len(detections) == 0:  # [ERROR HANDLING] Deteksi YOLO kosong
                 self.get_logger().warn("Deteksi YOLO kosong, fusion dilewati.")
@@ -237,22 +244,13 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
             self.get_logger().error(f"Exception utama di fusion_callback: {e}\n{traceback.format_exc()}")
             log_to_file(f"Exception utama di fusion_callback: {e}\n{traceback.format_exc()}", level='error')
 
-    def pointcloud2_to_xyz(self, cloud_msg):  # [BEST PRACTICE] Fungsi konversi PointCloud2 ke numpy [N,3] (backup, pakai ros_numpy jika bisa)
-        fmt = 'fff'  # [WAJIB] x, y, z float32
-        points = []
-        for i in range(cloud_msg.width * cloud_msg.height):
-            offset = i * cloud_msg.point_step
-            x, y, z = struct.unpack_from(fmt, cloud_msg.data, offset)
-            points.append([x, y, z])
-        return np.array(points)
-
     def compute_3d_bbox(self, points):  # [WAJIB] Hitung bbox 3D axis-aligned dari point cloud objek
-        min_pt = np.min(points, axis=0)
-        max_pt = np.max(points, axis=0)
-        center = (min_pt + max_pt) / 2.0
-        size = max_pt - min_pt
+        min_pt = np.min(points, axis=0)  # [WAJIB] Titik minimum (x, y, z)
+        max_pt = np.max(points, axis=0)  # [WAJIB] Titik maksimum (x, y, z)
+        center = (min_pt + max_pt) / 2.0  # [WAJIB] Titik tengah bbox 3D
+        size = max_pt - min_pt  # [WAJIB] Ukuran bbox 3D (dx, dy, dz)
         orientation = np.array([0, 0, 0, 1])  # [WAJIB] Asumsi axis-aligned (tanpa rotasi)
-        return center, size, orientation
+        return center, size, orientation  # [WAJIB] Return hasil bbox
 
 def main(args=None):  # [WAJIB] Fungsi utama untuk menjalankan node
     try:
