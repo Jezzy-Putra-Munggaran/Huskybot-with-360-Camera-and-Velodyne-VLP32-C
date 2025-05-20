@@ -1,6 +1,6 @@
 from setuptools import setup  # [WAJIB] Import setup tools untuk build/install Python package
 import os  # [WAJIB] Untuk operasi path file (misal: join, exists)
-from glob import glob  # [WAJIB] Untuk mencari file dengan pola (misal *.msg, *.yaml)
+from glob import glob  # [WAJIB] Untuk mencari file dengan pola (misal *.yaml)
 
 package_name = 'huskybot_fusion'  # [WAJIB] Nama package Python/ROS2, harus sama dengan folder utama
 
@@ -13,10 +13,6 @@ if not os.path.isfile(resource_marker):
 # Cek package.xml wajib ada
 if not os.path.isfile('package.xml'):
     raise FileNotFoundError("[FATAL] package.xml tidak ditemukan. Wajib ada agar metadata ROS2 terbaca.")
-
-# Cek minimal satu file .msg wajib ada
-if not glob('msg/*.msg'):
-    raise FileNotFoundError("[FATAL] Tidak ada file msg/*.msg. Wajib ada untuk custom message Object3D.")
 
 # Cek README wajib ada
 if not os.path.isfile('README.md'):
@@ -60,9 +56,6 @@ setup(
             'fusion_node = huskybot_fusion.fusion_node:main',  # [WAJIB] Entry point agar bisa ros2 run huskybot_fusion fusion_node
         ],
     },  # [WAJIB] Daftarkan script utama agar bisa di-run via ros2 run
-    package_data={
-        '': ['msg/*.msg'],  # [WAJIB] Pastikan file .msg diikutkan saat build/install
-    },  # [WAJIB] Agar message ROS2 bisa ditemukan saat build
     include_package_data=True,  # [WAJIB] Pastikan semua data package diikutkan (msg, launch, dsb)
     long_description_content_type='text/markdown',  # [BEST PRACTICE] Format long_description (untuk PyPI, opsional)
     long_description=open('README.md').read() if os.path.exists('README.md') else '',  # [BEST PRACTICE] Isi long_description dari README.md jika ada
