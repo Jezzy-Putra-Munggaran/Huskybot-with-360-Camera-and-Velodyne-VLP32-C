@@ -139,6 +139,18 @@ def project_bbox_to_pointcloud(
             log_to_file(msg, level='error')
             return None
 
+        # ===================== Tambahan Error Handling: Filter Outlier Point Cloud =====================
+        # Saring point cloud dengan jarak terlalu jauh (>100m) atau NaN/inf
+        dist = np.linalg.norm(points, axis=1)
+        mask_valid = np.isfinite(dist) & (dist < 100.0)
+        if np.count_nonzero(mask_valid) < 5:
+            msg = f"Peringatan: Hanya {np.count_nonzero(mask_valid)} point cloud valid (outlier atau kosong), fusion dilewati."
+            if ros_logger: ros_logger.warn(msg)
+            logging.warning(msg)
+            log_to_file(msg, level='warn')
+            return None
+        points = points[mask_valid]
+
         if T_lidar_camera is not None:  # Jika ada transformasi extrinsic
             points_h = np.hstack([points, np.ones((points.shape[0], 1))])  # Tambah dimensi homogen
             points_cam = (T_lidar_camera @ points_h.T).T[:, :3]  # Transformasi ke frame kamera
@@ -170,6 +182,15 @@ def project_bbox_to_pointcloud(
                 logging.error(traceback.format_exc())
                 log_to_file(traceback.format_exc(), level='error')
                 return None
+
+        # ===================== Tambahan Error Handling: Point Cloud Terlalu Sedikit =====================
+        if filtered_points is None or filtered_points.shape[0] < 5:
+            msg = f"Peringatan: Hasil filter point cloud di bbox hanya {0 if filtered_points is None else filtered_points.shape[0]} point, fusion dilewati."
+            if ros_logger: ros_logger.warn(msg)
+            logging.warning(msg)
+            log_to_file(msg, level='warn')
+            return None
+
         msg = f"project_bbox_to_pointcloud: {filtered_points.shape[0]} points in bbox" if filtered_points is not None else "project_bbox_to_pointcloud: no points"
         if ros_logger: ros_logger.debug(msg)
         logging.debug(msg)
@@ -193,6 +214,6 @@ def project_bbox_to_pointcloud(
 # - Saran: tambahkan unit test untuk fungsi ini di test/ dan debug visualisasi point cloud hasil filter.
 # - Saran: tambahkan parameterisasi logging agar bisa disable/enable log file dari parameter node.
 # - Saran: jika ingin FULL OOP, wrap fungsi ke dalam class FusionUtils, tapi untuk utilitas Python, fungsi modular sudah best practice.
-# - Saran: tambahkan validasi range nilai point cloud (misal, filter outlier >100m).
-# - Saran: tambahkan warning jika point cloud hasil filter terlalu sedikit (<5 point).
+# - Saran: tambahkan validasi range nilai point cloud (misal, filter outlier >100m). [SUDAH]
+# - Saran: tambahkan warning jika point cloud hasil filter terlalu sedikit (<5 point). [SUDAH]
 # - Saran: dokumentasikan format input/output di README dan test.

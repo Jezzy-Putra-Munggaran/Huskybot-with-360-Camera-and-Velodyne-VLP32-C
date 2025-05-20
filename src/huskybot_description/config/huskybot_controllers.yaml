@@ -12,13 +12,11 @@ controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib,
       wheel_separation: 0.55  # [float] Jarak antar roda kiri-kanan (meter), opsional override URDF (disarankan isi untuk real robot)
       wheel_radius: 0.165     # [float] Radius roda (meter), opsional override URDF (disarankan isi untuk real robot)
       cmd_vel_timeout: 0.25   # [float] Timeout (detik) jika tidak ada cmd_vel, robot otomatis berhenti (safety)
-      # Saran: Tambahkan parameter PID jika ingin tuning kecepatan/posisi (lihat dokumentasi diff_drive_controller)
-      # Example PID (jika ingin tuning, uncomment dan sesuaikan):
-      # linear:
+      # linear:  # [dict] (Opsional) PID untuk linear velocity (uncomment jika ingin tuning)
       #   p: 1.0
       #   i: 0.0
       #   d: 0.0
-      # angular:
+      # angular:  # [dict] (Opsional) PID untuk angular velocity (uncomment jika ingin tuning)
       #   p: 1.0
       #   i: 0.0
       #   d: 0.0
@@ -30,11 +28,13 @@ controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib,
       type: imu_sensor_broadcaster/IMUSensorBroadcaster  # [str] Tipe plugin IMU broadcaster
       sensor_name: imu_link  # [str] Nama link IMU di URDF/Xacro (pastikan sesuai URDF)
 
-    # Saran peningkatan: tambahkan controller lain jika ada joint/sensor tambahan
-    # Example:
-    # camera_broadcaster:
+    # camera_broadcaster:  # [dict] (Contoh) Broadcaster untuk kamera (uncomment jika ingin publish info kamera)
     #   type: camera_sensor_broadcaster/CameraSensorBroadcaster
     #   sensor_name: camera_front_link
+
+    # lidar_broadcaster:  # [dict] (Contoh) Broadcaster untuk LiDAR (uncomment jika ingin publish info LiDAR)
+    #   type: lidar_sensor_broadcaster/LidarSensorBroadcaster
+    #   sensor_name: velodyne_link
 
     # ===================== ERROR HANDLING & TIPS =====================
     # - Jika controller gagal aktif, cek log ros2_control_node untuk pesan error (misal: joint tidak ditemukan).
@@ -47,6 +47,7 @@ controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib,
     # - Jika error permission, pastikan file YAML bisa dibaca user yang menjalankan ros2 launch.
     # - Jika simulasi di Gazebo tidak sinkron, pastikan use_sim_time:=true di launch file.
     # - Jika ingin audit trail, aktifkan logger node di huskybot_control.
+    # - Jika ingin coverage test, tambahkan test/launch test untuk validasi otomatis di CI/CD.
 
 # ===================== REVIEW & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
@@ -55,7 +56,7 @@ controller_manager:  # Namespace utama parameter controller_manager ROS2 (wajib,
 # - Sudah robust untuk multi-robot (tinggal remap namespace di launch file).
 # - Sudah best practice ROS2 YAML controller config.
 # - Error handling sudah sangat lengkap: cek joint, plugin, topic, permission, dan logger.
-# - Saran: tambahkan PID tuning jika ingin performa lebih halus di real robot.
-# - Saran: tambahkan broadcaster untuk sensor lain jika ada (IMU, kamera, dsb).
+# - Saran: tambahkan PID tuning jika ingin performa lebih halus di real robot (sudah ada template, tinggal uncomment).
+# - Saran: tambahkan broadcaster untuk sensor lain jika ada (IMU, kamera, LiDAR, dsb).
 # - Saran: dokumentasikan semua parameter di README dan launch file.
 # - Saran: tambahkan test/launch test untuk validasi otomatis di CI/CD.

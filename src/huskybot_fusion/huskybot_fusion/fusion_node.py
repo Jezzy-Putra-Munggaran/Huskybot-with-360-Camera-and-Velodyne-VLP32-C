@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*- 
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import rclpy  # [WAJIB] Library utama ROS2 Python
 from rclpy.node import Node  # [WAJIB] Base class untuk node ROS2
@@ -86,13 +86,27 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 'calibration_file', '/mnt/nova_ssd/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml'
             ).get_parameter_value().string_value  # [WAJIB] Ambil path file kalibrasi dari parameter
             expanded_calib = os.path.expanduser(self.calibration_file)  # [WAJIB] Expand ~ ke home user
-            if not os.path.isfile(expanded_calib):  # [WAJIB] Cek file kalibrasi ada
-                self.get_logger().error(f"File kalibrasi tidak ditemukan: {expanded_calib}")
-                log_to_file(f"File kalibrasi tidak ditemukan: {expanded_calib}", level='error')
-                # [ERROR HANDLING] Bisa retry otomatis atau exit, di sini hanya warning agar node tetap jalan
-            else:
-                self.get_logger().info(f"File kalibrasi ditemukan: {expanded_calib}")
-                log_to_file(f"File kalibrasi ditemukan: {expanded_calib}")
+
+            # ===================== ERROR HANDLING: RETRY FILE KALIBRASI =====================
+            self.max_calib_retry = 10  # [SARAN] Maksimal retry file kalibrasi
+            self.calib_retry_interval = 2  # [SARAN] Interval retry (detik)
+            self.calib_loaded = False  # [SARAN] Status file kalibrasi
+
+            for i in range(self.max_calib_retry):  # [SARAN] Retry otomatis jika file kalibrasi belum ada
+                if os.path.isfile(expanded_calib):
+                    self.get_logger().info(f"File kalibrasi ditemukan: {expanded_calib}")
+                    log_to_file(f"File kalibrasi ditemukan: {expanded_calib}")
+                    self.calib_loaded = True
+                    break
+                else:
+                    self.get_logger().warn(f"File kalibrasi tidak ditemukan: {expanded_calib} (percobaan {i+1}/{self.max_calib_retry})")
+                    log_to_file(f"File kalibrasi tidak ditemukan: {expanded_calib} (percobaan {i+1}/{self.max_calib_retry})", level='warn')
+                    import time
+                    time.sleep(self.calib_retry_interval)
+            if not self.calib_loaded:
+                self.get_logger().error(f"File kalibrasi tidak ditemukan setelah {self.max_calib_retry} percobaan: {expanded_calib}")
+                log_to_file(f"File kalibrasi tidak ditemukan setelah {self.max_calib_retry} percobaan: {expanded_calib}", level='error')
+                # [ERROR HANDLING] Node tetap jalan, tapi fusion tidak akan valid tanpa kalibrasi
 
             # ===================== LOGGING JSON (AUDIT TRAIL) =====================
             self.log_json_path = os.path.expanduser("~/huskybot_fusion_log.json")  # [BEST PRACTICE] Path file log JSON
@@ -284,9 +298,9 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 # - Validasi file kalibrasi, parameter, dan dependency sudah lengkap.
 # - Monitoring health check sensor (point cloud, deteksi YOLO).
 # - Sudah parameterisasi topic input/output agar lebih fleksibel (saran sudah diimplementasikan).
-# - Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
-# - Saran: tambahkan publish array Object3D (custom msg) agar batch publish lebih efisien.
-# - Saran: tambahkan logging ke file JSON/CSV untuk audit trail.
-# - Saran: tambahkan unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
-# - Saran: tambahkan validasi isi file kalibrasi (cek field matrix, dsb) sebelum digunakan.
-# - Saran: tambahkan retry otomatis jika file kalibrasi belum ada saat node start.
+# - Sudah FULL OOP, siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
+# - Saran: publish array Object3D (custom msg) agar batch publish lebih efisien (bisa buat Object3DArray.msg).
+# - Saran: logging ke file JSON/CSV untuk audit trail (sudah).
+# - Saran: unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
+# - Saran: validasi isi file kalibrasi (cek field matrix, dsb) sebelum digunakan.
+# - Saran: retry otomatis jika file kalibrasi belum ada saat node start (SUDAH).

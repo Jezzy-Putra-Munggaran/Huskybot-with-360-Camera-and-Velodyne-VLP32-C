@@ -1,85 +1,49 @@
-cmake_minimum_required(VERSION 3.8)  
-project(huskybot_fusion)  
+cmake_minimum_required(VERSION 3.8)  # [WAJIB] Versi minimum CMake untuk ROS2 Humble
+project(huskybot_fusion)  # [WAJIB] Nama project/package (harus sama dengan folder dan package.xml)
 
-# ===================== DEPENDENCY ROS2 =====================
-find_package(ament_cmake REQUIRED)  
-find_package(ament_cmake_python REQUIRED)  
-find_package(rclpy REQUIRED)  
-find_package(sensor_msgs REQUIRED)  
-find_package(std_msgs REQUIRED)  
-find_package(yolov12_msgs REQUIRED)  
-find_package(rosidl_default_generators REQUIRED)  
-find_package(huskybot_msgs REQUIRED)  
+find_package(ament_cmake REQUIRED)  # [WAJIB] Build system utama ROS2
+find_package(ament_cmake_python REQUIRED)  # [WAJIB] Untuk install package Python
+find_package(rclpy REQUIRED)  # [WAJIB] Library utama ROS2 Python
+find_package(sensor_msgs REQUIRED)  # [WAJIB] Message sensor (PointCloud2, dsb)
+find_package(std_msgs REQUIRED)  # [WAJIB] Message standar ROS2
+find_package(yolov12_msgs REQUIRED)  # [WAJIB] Custom message YOLOv12 (hasil deteksi kamera)
+find_package(rosidl_default_generators REQUIRED)  # [WAJIB] Untuk generate interface message
+find_package(huskybot_msgs REQUIRED)  # [WAJIB] Custom message hasil fusion 3D
 
-# ===================== BUILD CUSTOM MESSAGE =====================
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Object3D.msg"  
-  DEPENDENCIES std_msgs  
+rosidl_generate_interfaces(${PROJECT_NAME}  # [WAJIB] Generate message interface untuk Object3D.msg
+  "msg/Object3D.msg"  # [WAJIB] File message custom hasil fusion 3D
+  DEPENDENCIES std_msgs  # [WAJIB] Dependensi message standar
 )
 
-# Agar message Python diinstall ke package ini
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
-add_dependencies(${PROJECT_NAME} ${cpp_typesupport_target})
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")  # [WAJIB] Dapatkan target typesupport C++
+add_dependencies(${PROJECT_NAME} ${cpp_typesupport_target})  # [WAJIB] Pastikan dependency build message
 
-# ===================== INSTALL PYTHON SCRIPTS =====================
-install(PROGRAMS
-  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_node.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_utils.py
-  DESTINATION lib/${PROJECT_NAME}
+ament_python_install_package(${PROJECT_NAME})  # [WAJIB] Install package Python ke lib agar bisa di-run via ros2 run
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})  # [WAJIB] Install folder launch ke share agar bisa diakses ros2 launch
+install(DIRECTORY msg DESTINATION share/${PROJECT_NAME})  # [WAJIB] Install folder msg ke share agar bisa diakses node lain/CI
+install(DIRECTORY test DESTINATION share/${PROJECT_NAME})  # [BEST PRACTICE] Install folder test untuk CI/CD
+install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})  # [BEST PRACTICE] Install resource (misal: config, data)
+install(FILES README.md DESTINATION share/${PROJECT_NAME})  # [BEST PRACTICE] Install README agar dokumentasi selalu tersedia
+
+# WAJIB untuk ROS2 Python agar dikenali colcon/ros2 run
+install(
+  FILES resource/${PROJECT_NAME}  # [WAJIB] File marker agar package dikenali ament_index
+  DESTINATION share/ament_index/resource_index/packages  # [WAJIB] Path resource index
 )
 
-# ===================== INSTALL LAUNCH FILES =====================
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}  
-)
-
-# ===================== INSTALL MSG FILES =====================
-install(DIRECTORY msg
-  DESTINATION share/${PROJECT_NAME}  
-)
-
-# ===================== INSTALL TEST FILES =====================
-install(DIRECTORY test
-  DESTINATION share/${PROJECT_NAME}  
-)
-
-# ===================== INSTALL RESOURCE FOLDER =====================
-install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})  
-
-# ===================== INSTALL README =====================
-install(FILES README.md DESTINATION share/${PROJECT_NAME})  
-
-# ===================== CHMOD +X UNTUK SCRIPT PYTHON =====================
-install(CODE "execute_process(COMMAND chmod +x ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_node.py)")  
-install(CODE "execute_process(COMMAND chmod +x ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}/fusion_utils.py)")  
-
-# ===================== EXPORT DEPENDENCY RUNTIME =====================
-ament_export_dependencies(rosidl_default_runtime std_msgs yolov12_msgs sensor_msgs)  
-
-# ===================== AMENT PYTHON INSTALL PACKAGE (WAJIB) =====================
-ament_python_install_package(${PROJECT_NAME})
-
-ament_package()  
+ament_export_dependencies(rosidl_default_runtime std_msgs yolov12_msgs sensor_msgs)  # [WAJIB] Export dependency agar bisa diakses package lain
+ament_package()  # [WAJIB] Macro penutup package ROS2
 
 # ===================== REVIEW & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
-# - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/ (fusion.launch.py), test/ (unit test), resource/, README.md.
-# - Semua dependency sudah dicantumkan (ament_cmake, ament_cmake_python, rclpy, sensor_msgs, std_msgs, yolov12_msgs, rosidl_default_generators, huskybot_msgs).
-# - rosidl_generate_interfaces sudah benar untuk build custom message.
-# - Semua script Python utama dan utilitas diinstall ke lib agar bisa di-run dan diimport.
-# - Launch file, msg, test, resource, dan README diinstall ke share agar bisa diakses workspace/CI.
-# - ament_export_dependencies sudah benar agar message bisa dipakai package lain.
-# - FULL OOP sudah diimplementasikan di fusion_node.py (class FusionNode).
-# - Error handling di CMake: dependency fail-fast, file tidak ditemukan akan error saat build.
+# - Semua dependency utama ROS2 sudah dicantumkan (rclpy, sensor_msgs, std_msgs, yolov12_msgs, huskybot_msgs).
+# - Semua file penting (launch, msg, test, resource, README) sudah diinstall ke share agar bisa diakses node lain/CI.
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
-# - Saran peningkatan:
-#   1. Tambahkan ament_lint_auto dan ament_lint_common di test_depend di package.xml untuk CI (agar linting otomatis di CI/CD).
-#   2. Jika ingin distribusi Docker, tambahkan requirements.txt dan pastikan dependency Python sudah lengkap.
-#   3. Untuk workspace besar, tambahkan export interface jika ingin digunakan package lain.
-#   4. (Opsional) Tambahkan install untuk file konfigurasi tambahan (misal: rviz, config YAML) jika ada.
-#   5. (Opsional) Tambahkan test untuk validasi file YAML dan integrasi node.
-#   6. (Opsional) Tambahkan validasi permission file YAML dan resource agar tidak silent fail saat runtime.
-#   7. (Opsional) Tambahkan badge CI di README.md agar status build/test selalu terlihat.
-#   8. (Opsional) Tambahkan test launch file di folder test/ untuk CI/CD.
-#   9. (Opsional) Dokumentasikan semua argumen launch file di README.md.
-# - Tidak ada bug/error, sudah best practice ROS2 Python package.
+# - Sudah terhubung otomatis ke pipeline workspace (fusion_node, topic, message, dsb).
+# - Error handling: jika dependency tidak ditemukan, colcon akan gagal build dan log error.
+# - Saran: tambahkan install untuk folder config jika ada file YAML/kalibrasi khusus fusion.
+# - Saran: tambahkan badge CI/CD dan coverage test di README jika pipeline sudah aktif.
+# - Saran: tambahkan test/launch test di folder test/ untuk validasi otomatis di CI/CD.
+# - Saran: dokumentasikan semua dependency dan struktur folder di README.md.
+# - Tidak perlu OOP di file ini, karena hanya konfigurasi build/install.

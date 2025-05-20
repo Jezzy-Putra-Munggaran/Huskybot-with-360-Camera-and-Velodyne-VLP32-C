@@ -1,5 +1,5 @@
-#!/usr/bin/python3  # Shebang agar bisa dieksekusi langsung (wajib ROS2 Python)
-# -*- coding: utf-8 -*-  # Encoding file Python (wajib agar support karakter non-ASCII)
+#!/usr/bin/python3 
+# -*- coding: utf-8 -*- 
 
 import sys  # Untuk akses argumen CLI dan error handling
 import os  # Untuk operasi path file
