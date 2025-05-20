@@ -7,7 +7,7 @@ import time  # Untuk timestamp log file
 from launch import LaunchDescription  # Base class launch description ROS2
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # Untuk deklarasi argumen dan fungsi custom
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
-from launch.substitutions import LaunchConfiguration  # Untuk ambil argumen launch
+from launch.substitutions import LaunchConfiguration, PythonExpression
 
 # ===================== ERROR HANDLING & LOGGER =====================
 def check_output_yaml(context, *args, **kwargs):  # Fungsi validasi folder output YAML
@@ -111,23 +111,22 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
 
         # ===================== NODE SINKRONISASI WAKTU SENSOR =====================
         sync_sensor_time_node = Node(
-            package='huskybot_calibration',  # Nama package ROS2
-            executable='sync_sensor_time.py',  # Nama script node utama
-            name='sync_sensor_time_node',  # Nama node di ROS2
-            output='screen',  # Output ke terminal
+            package='huskybot_calibration',
+            executable='sync_sensor_time.py',
+            name='sync_sensor_time_node',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
                 {'camera_topic': LaunchConfiguration('camera_topic')},
                 {'lidar_topic': LaunchConfiguration('lidar_topic')},
                 {'imu_topic': LaunchConfiguration('imu_topic')},
                 {'output_yaml': LaunchConfiguration('output_yaml')},
                 {'output_csv': LaunchConfiguration('output_csv')},
-                {'sync_time_slop': LaunchConfiguration('sync_time_slop')},
-                {'log_to_file': LaunchConfiguration('log_to_file')},
+                {'sync_time_slop': PythonExpression(['float(', LaunchConfiguration('sync_time_slop'), ')'])},
+                {'log_to_file': PythonExpression(['"', LaunchConfiguration('log_to_file'), '" == "true"'])},
                 {'log_file_path': LaunchConfiguration('log_file_path')},
             ],
-            emulate_tty=True  # Agar output warna/logging tetap muncul di terminal
-            # namespace=LaunchConfiguration('namespace')  # Aktifkan jika ingin multi-robot
+            emulate_tty=True
         )
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================

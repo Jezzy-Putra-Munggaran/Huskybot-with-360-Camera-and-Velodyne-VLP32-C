@@ -7,7 +7,7 @@ import time  # Untuk timestamp log file
 from launch import LaunchDescription  # Base class launch description ROS2
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # Untuk deklarasi argumen dan fungsi custom
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
-from launch.substitutions import LaunchConfiguration  # Untuk ambil argumen launch
+from launch.substitutions import LaunchConfiguration, PythonExpression
 
 # ===================== ERROR HANDLING & LOGGER =====================
 def check_output_yaml(context, *args, **kwargs):  # Fungsi validasi folder output YAML
@@ -136,28 +136,27 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
 
         # ===================== NODE KALIBRASI =====================
         calibration_node = Node(
-            package='huskybot_calibration',  # Nama package ROS2
-            executable='calibrate_lidar_camera.py',  # Nama script node utama
-            name='lidar_camera_calibrator',  # Nama node di ROS2
-            output='screen',  # Output ke terminal
+            package='huskybot_calibration',
+            executable='calibrate_lidar_camera.py',
+            name='lidar_camera_calibrator',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
                 {'camera_topic': LaunchConfiguration('camera_topic')},
                 {'lidar_topic': LaunchConfiguration('lidar_topic')},
                 {'pattern_type': LaunchConfiguration('pattern_type')},
                 {'pattern_size': LaunchConfiguration('pattern_size')},
-                {'square_size': LaunchConfiguration('square_size')},
+                {'square_size': PythonExpression(['float(', LaunchConfiguration('square_size'), ')'])},
                 {'output_yaml': LaunchConfiguration('output_yaml')},
-                {'visualize': LaunchConfiguration('visualize')},
+                {'visualize': PythonExpression(['"', LaunchConfiguration('visualize'), '" == "true"'])},
                 {'camera_frame_id': LaunchConfiguration('camera_frame_id')},
                 {'lidar_frame_id': LaunchConfiguration('lidar_frame_id')},
-                {'log_to_file': LaunchConfiguration('log_to_file')},
-                {'publish_tf': LaunchConfiguration('publish_tf')},
-                {'sync_time_slop': LaunchConfiguration('sync_time_slop')},
+                {'log_to_file': PythonExpression(['"', LaunchConfiguration('log_to_file'), '" == "true"'])},
+                {'publish_tf': PythonExpression(['"', LaunchConfiguration('publish_tf'), '" == "true"'])},
+                {'sync_time_slop': PythonExpression(['float(', LaunchConfiguration('sync_time_slop'), ')'])},
                 {'log_file_path': LaunchConfiguration('log_file_path')},
             ],
-            emulate_tty=True  # Agar output warna/logging tetap muncul di terminal
-            # namespace=LaunchConfiguration('namespace')  # Aktifkan jika ingin multi-robot
+            emulate_tty=True
         )
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================
