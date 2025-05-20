@@ -23,7 +23,7 @@
   <build_depend>std_msgs</build_depend>  <!-- Dependency message std_msgs (Header) -->
   <build_depend>yolov12_msgs</build_depend>  <!-- Dependency custom message YOLOv12 (hasil deteksi 2D) -->
   <build_depend>huskybot_msgs</build_depend>  <!-- Dependency custom message Huskybot (hasil deteksi 3D) -->
-  
+
   <!-- Execution dependencies (WAJIB agar runtime tidak error) -->
   <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime node ROS2 Python -->
   <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime message sensor_msgs -->

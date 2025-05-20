@@ -10,14 +10,6 @@ find_package(yolov12_msgs REQUIRED)  # [WAJIB] Custom message YOLOv12 (hasil det
 find_package(rosidl_default_generators REQUIRED)  # [WAJIB] Untuk generate interface message
 find_package(huskybot_msgs REQUIRED)  # [WAJIB] Custom message hasil fusion 3D
 
-rosidl_generate_interfaces(${PROJECT_NAME}  # [WAJIB] Generate message interface untuk Object3D.msg
-  "msg/Object3D.msg"  # [WAJIB] File message custom hasil fusion 3D
-  DEPENDENCIES std_msgs  # [WAJIB] Dependensi message standar
-)
-
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")  # [WAJIB] Dapatkan target typesupport C++
-add_dependencies(${PROJECT_NAME} ${cpp_typesupport_target})  # [WAJIB] Pastikan dependency build message
-
 ament_python_install_package(${PROJECT_NAME})  # [WAJIB] Install package Python ke lib agar bisa di-run via ros2 run
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})  # [WAJIB] Install folder launch ke share agar bisa diakses ros2 launch
