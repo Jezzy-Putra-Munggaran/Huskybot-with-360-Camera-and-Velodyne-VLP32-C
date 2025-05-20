@@ -14,7 +14,7 @@ from launch import LaunchDescription  # Untuk deklarasi LaunchDescription utama
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription  # Untuk argumen dan include launch lain
 from launch.conditions import IfCondition  # Untuk kondisi enable/disable node
 from launch.launch_description_sources import PythonLaunchDescriptionSource  # Untuk include launch Python
-from launch.substitutions import LaunchConfiguration, Command  # Untuk ambil argumen dan command CLI
+from launch.substitutions import LaunchConfiguration, Command, PythonExpression  # Untuk ambil argumen dan command CLI
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
 from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter ROS2 node
 
@@ -212,7 +212,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             package="joy",
             executable="joy_node",
             output='screen',
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
         )
 
         # Include launch file start_world (Gazebo server)
@@ -270,7 +270,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             executable='yolov12_ros2_pt.py',
             output='both',
             condition=IfCondition(LaunchConfiguration('enable_yolo')),
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
         )
 
         # Node panorama stitcher (membuat panorama 360)
@@ -279,7 +279,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             executable='yolov12_stitcher_node.py',
             output='both',
             condition=IfCondition(LaunchConfiguration('enable_stitcher')),
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
         )
 
         # Node panorama inference (deteksi di panorama)
@@ -288,7 +288,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             executable='yolov12_panorama_inference.py',
             output='both',
             condition=IfCondition(LaunchConfiguration('enable_panorama')),
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
+            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
         )
 
         # Cek file YAML controller wajib ada
@@ -330,10 +330,10 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             parameters=[
                 {'robot_description': robot_description},
                 controllers_yaml,
-                {'use_sim_time': LaunchConfiguration('use_sim_time')}
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}
             ],
             output='screen',
-            namespace=LaunchConfiguration('namespace'),  # Saran: namespace untuk multi-robot
+            namespace=LaunchConfiguration('namespace'),
         )
 
         delayed_ros2_control = OpaqueFunction(function=wait_for_gazebo_and_entity)  # Tunggu entity robot muncul sebelum lanjut

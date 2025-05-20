@@ -1,6 +1,6 @@
 from launch import LaunchDescription  # Import utama untuk LaunchDescription ROS2
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # Untuk deklarasi argumen dan fungsi custom
-from launch.substitutions import LaunchConfiguration  # Untuk ambil nilai argumen launch
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
 import os  # Untuk operasi file (cek file kalibrasi/log)
 import sys  # Untuk akses error output
@@ -55,7 +55,7 @@ def log_to_file(msg):  # Fungsi logging ke file
 def build_fusion_node(context, *args, **kwargs):  # Fungsi untuk membangun node fusion dengan parameter log_file opsional
     params = [
         {'calibration_file': LaunchConfiguration('calibration_file').perform(context)},  # Path file kalibrasi
-        {'confidence_threshold': LaunchConfiguration('confidence_threshold').perform(context)},  # Threshold confidence
+        {'confidence_threshold': float(LaunchConfiguration('confidence_threshold').perform(context))},  # Threshold confidence
         {'fusion_method': LaunchConfiguration('fusion_method').perform(context)}  # Metode fusion
     ]
     log_file = LaunchConfiguration('log_file').perform(context)  # Ambil argumen log_file

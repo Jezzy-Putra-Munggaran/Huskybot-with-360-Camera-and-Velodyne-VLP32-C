@@ -6,7 +6,7 @@ import sys  # Untuk exit jika error fatal
 import time  # Untuk timestamp log
 from launch import LaunchDescription  # Import utama LaunchDescription ROS2
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # Untuk deklarasi argumen dan fungsi custom
-from launch.substitutions import LaunchConfiguration  # Untuk ambil nilai argumen launch
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node  # Untuk deklarasi node ROS2
 from launch.conditions import IfCondition  # Untuk kondisi enable/disable node
 
@@ -45,9 +45,9 @@ def log_to_file(msg):  # Fungsi logging ke file audit trail launch
 
 def build_robot_control_parameters(context, *args, **kwargs):  # Fungsi untuk membangun parameter robot_control_node secara dinamis
     params = [
-        {'use_sim_time': LaunchConfiguration('use_sim_time').perform(context)},  # Parameter waktu simulasi
-        {'max_speed': LaunchConfiguration('max_speed').perform(context)},  # Parameter kecepatan maksimum
-        {'safety_stop': LaunchConfiguration('safety_stop').perform(context)}  # Parameter safety stop
+        {'use_sim_time': LaunchConfiguration('use_sim_time').perform(context) == 'true'},
+        {'max_speed': float(LaunchConfiguration('max_speed').perform(context))},
+        {'safety_stop': LaunchConfiguration('safety_stop').perform(context) == 'true'}
     ]
     param_yaml = LaunchConfiguration('param_yaml').perform(context)  # Ambil argumen param_yaml
     if param_yaml and param_yaml != '':  # Jika ada file param_yaml
@@ -135,31 +135,31 @@ def generate_launch_description():  # Fungsi utama generate launch description
 
         # ===================== NODE SAFETY MONITOR (OPSIONAL) =====================
         safety_monitor_node = Node(
-            package='huskybot_control',  # Nama package
-            executable='safety_monitor.py',  # Nama script safety monitor
-            output='screen',  # Output ke terminal
+            package='huskybot_control',
+            executable='safety_monitor.py',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')}
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}
             ],
             remappings=[
-                ('/scan', LaunchConfiguration('scan_topic'))  # Remap topic scan jika perlu
+                ('/scan', LaunchConfiguration('scan_topic'))
             ],
-            condition=IfCondition(LaunchConfiguration('enable_safety_monitor'))  # Hanya aktif jika enable_safety_monitor true
+            condition=IfCondition(LaunchConfiguration('enable_safety_monitor'))
         )
 
         # ===================== NODE LOGGER (OPSIONAL) =====================
         logger_node = Node(
-            package='huskybot_control',  # Nama package
-            executable='logger.py',  # Nama script logger
-            output='screen',  # Output ke terminal
+            package='huskybot_control',
+            executable='logger.py',
+            output='screen',
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
                 {'log_file': LaunchConfiguration('log_file')},
-                {'log_csv': LaunchConfiguration('log_csv')},
+                {'log_csv': PythonExpression(['"', LaunchConfiguration('log_csv'), '" == "true"'])},
                 {'log_level': LaunchConfiguration('log_level')},
                 {'max_log_size': LaunchConfiguration('max_log_size')}
             ],
-            condition=IfCondition(LaunchConfiguration('enable_logger'))  # Aktifkan logger hanya jika enable_logger true
+            condition=IfCondition(LaunchConfiguration('enable_logger'))
         )
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================

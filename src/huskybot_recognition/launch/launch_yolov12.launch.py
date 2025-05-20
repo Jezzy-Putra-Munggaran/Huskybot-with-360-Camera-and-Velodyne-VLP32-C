@@ -1,6 +1,6 @@
 from launch import LaunchDescription  # [WAJIB] Import LaunchDescription, inti dari ROS2 launch file Python
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # [WAJIB] Untuk deklarasi argumen dan fungsi custom error handling
-from launch.substitutions import LaunchConfiguration  # [WAJIB] Untuk ambil nilai argumen dari CLI/launch
+from launch.substitutions import LaunchConfiguration, PythonExpression  # [WAJIB] Untuk ambil nilai argumen dari CLI/launch
 from launch_ros.actions import Node  # [WAJIB] Untuk menjalankan node ROS2 Python/C++
 import os  # [WAJIB] Untuk operasi file dan path
 import sys  # [WAJIB] Untuk akses error output dan exit
@@ -102,12 +102,12 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
             executable='yolov12_ros2_pt.py',  # [WAJIB] Nama executable node YOLOv12
             output='screen',  # [WAJIB] Output ke terminal
             parameters=[
-                {'use_sim_time': LaunchConfiguration('use_sim_time')},  # [WAJIB] Parameter waktu simulasi
-                {'model_path': LaunchConfiguration('model_path')},  # [WAJIB] Parameter path model YOLOv12
-                {'confidence_threshold': LaunchConfiguration('confidence_threshold')},  # [WAJIB] Parameter threshold confidence
-                {'log_stats': LaunchConfiguration('log_stats')},  # [BEST PRACTICE] Parameter logging statistik
-                {'log_stats_path': LaunchConfiguration('log_stats_path')},  # [BEST PRACTICE] Parameter path statistik
-                {'calib_yaml_path': LaunchConfiguration('calib_yaml_path')},  # [BEST PRACTICE] Parameter path YAML kalibrasi kamera
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
+                {'model_path': LaunchConfiguration('model_path')},
+                {'confidence_threshold': PythonExpression(['float(', LaunchConfiguration('confidence_threshold'), ')'])},
+                {'log_stats': PythonExpression(['"', LaunchConfiguration('log_stats'), '" == "true"'])},
+                {'log_stats_path': LaunchConfiguration('log_stats_path')},
+                {'calib_yaml_path': LaunchConfiguration('calib_yaml_path')},
             ],
         )
 
