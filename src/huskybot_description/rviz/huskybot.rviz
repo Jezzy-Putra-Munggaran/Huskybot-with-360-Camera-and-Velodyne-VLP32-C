@@ -1,8 +1,8 @@
-# File konfigurasi RViz2 untuk visualisasi robot Huskybot                # Komentar: Penjelasan fungsi file ini (visualisasi RViz2)
-# File ini bisa di-load otomatis oleh display.launch.py                   # Komentar: File ini dipakai oleh launch/display.launch.py
-# Pastikan semua topic dan frame sesuai dengan workspace dan URDF/Xacro   # Komentar: Penting untuk konsistensi topic/frame
+# File konfigurasi RViz2 untuk visualisasi robot Huskybot                # Penjelasan: File ini untuk visualisasi robot di RViz2
+# File ini bisa di-load otomatis oleh display.launch.py                  # Penjelasan: File ini dipakai oleh launch/display.launch.py
+# Pastikan semua topic dan frame sesuai dengan workspace dan URDF/Xacro  # Penjelasan: Penting untuk konsistensi topic/frame
 
-Panels:  # Panel-panel utama RViz2                                       # Komentar: Panel yang muncul di RViz2
+Panels:  # Panel-panel utama RViz2                                       # Panel yang muncul di RViz2
   - Class: rviz/Displays
     Name: Displays
   - Class: rviz/Selection
@@ -14,7 +14,7 @@ Panels:  # Panel-panel utama RViz2                                       # Komen
   - Class: rviz/Time
     Name: Time
 
-Visualization Manager:  # Konfigurasi utama visualisasi RViz2            # Komentar: Root konfigurasi visualisasi
+Visualization Manager:  # Konfigurasi utama visualisasi RViz2            # Root konfigurasi visualisasi
   Class: ""
   Displays:
     - Class: rviz/Grid
@@ -60,9 +60,44 @@ Visualization Manager:  # Konfigurasi utama visualisasi RViz2            # Komen
       Queue Size: 2
       Overlay Alpha: 0.5
       Transport Hint: raw
+    - Class: rviz/Camera
+      Name: CameraFrontLeft
+      Enabled: true
+      Image Topic: /camera_front_left/image_raw # Tambahan: Kamera depan kiri
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
+    - Class: rviz/Camera
+      Name: CameraLeft
+      Enabled: true
+      Image Topic: /camera_left/image_raw       # Tambahan: Kamera kiri
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
+    - Class: rviz/Camera
+      Name: CameraRear
+      Enabled: true
+      Image Topic: /camera_rear/image_raw       # Tambahan: Kamera belakang
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
+    - Class: rviz/Camera
+      Name: CameraRearRight
+      Enabled: true
+      Image Topic: /camera_rear_right/image_raw # Tambahan: Kamera belakang kanan
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
+    - Class: rviz/Camera
+      Name: CameraRight
+      Enabled: true
+      Image Topic: /camera_right/image_raw      # Tambahan: Kamera kanan
+      Queue Size: 2
+      Overlay Alpha: 0.5
+      Transport Hint: raw
     - Class: rviz/PointCloud2
       Name: PointCloud
-      Enabled: true                         # Enable jika node pointcloud aktif
+      Enabled: true
       Topic: /camera/depth/points           # Ubah sesuai topic pointcloud di workspace
       Size (m): 0.01
       Style: Flat Squares
@@ -71,24 +106,24 @@ Visualization Manager:  # Konfigurasi utama visualisasi RViz2            # Komen
       Use Fixed Frame: true
     - Class: rviz/Map
       Name: StaticMap
-      Enabled: true                         # Enable jika ada node mapping/navigasi
+      Enabled: true
       Topic: /map                           # Topic map dari node SLAM/navigation
       Alpha: 0.7
       Draw Behind: true
       Color Scheme: map
     - Class: rviz/Path
       Name: GlobalPath
-      Enabled: true                         # Enable jika ada node path planner
+      Enabled: true
       Topic: /plan                          # Topic path global (ubah sesuai node planner)
       Color: 25; 255; 0
       Line Style: Lines
       Line Width: 0.03
     - Class: rviz/Marker
       Name: Marker
-      Enabled: true                         # Enable jika ada node publish marker
+      Enabled: true
       Marker Topic: /visualization_marker   # Topic marker (ubah sesuai node)
       Queue Size: 100
-    # Tambahkan display lain sesuai kebutuhan (Costmap, Odometry, dsb)   # Komentar: Bisa tambah display lain jika perlu
+    # Tambahkan display lain sesuai kebutuhan (Costmap, Odometry, dsb)   # Bisa tambah display lain jika perlu
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -140,14 +175,14 @@ Window Geometry:
   X: 100
   Y: 100
 
-# Saran 1: Untuk multi-robot, duplikasi RobotModel/TF dengan TF Prefix dan topic berbeda. # Komentar: Multi-robot support
-# Saran 2: Validasi konsistensi topic/frame dengan URDF dan node workspace (bisa pakai script Python). # Komentar: Validasi konsistensi
-# Saran 3: Tambahkan screenshot RViz di README untuk dokumentasi. # Komentar: Dokumentasi visual
-# Saran 4: Tidak perlu OOP, file ini hanya konfigurasi RViz. # Komentar: Tidak perlu OOP
-# Saran 5: Simpan file ini setelah custom view/layout di RViz2. # Komentar: Simpan setelah custom
-# Saran 6: Untuk error handling, jika display tidak muncul, cek topic, frame, dan node publisher di workspace. # Komentar: Error handling
-# Saran 7: Untuk workspace besar, tambahkan display untuk semua kamera (CameraFront, CameraLeft, dst) dan remap topic sesuai launch file. # Komentar: Multi-kamera
-# Saran 8: Jika ingin audit trail visual, aktifkan display log di RViz2 dan simpan screenshot secara berkala. # Komentar: Audit visual
+# Saran 1: Untuk multi-robot, duplikasi RobotModel/TF dengan TF Prefix dan topic berbeda. # Multi-robot support
+# Saran 2: Validasi konsistensi topic/frame dengan URDF dan node workspace (bisa pakai script Python). # Validasi konsistensi
+# Saran 3: Tambahkan screenshot RViz di README untuk dokumentasi. # Dokumentasi visual
+# Saran 4: Tidak perlu OOP, file ini hanya konfigurasi RViz. # Tidak perlu OOP
+# Saran 5: Simpan file ini setelah custom view/layout di RViz2. # Simpan setelah custom
+# Saran 6: Untuk error handling, jika display tidak muncul, cek topic, frame, dan node publisher di workspace. # Error handling
+# Saran 7: Untuk workspace besar, tambahkan display untuk semua kamera (CameraFront, CameraLeft, dst) dan remap topic sesuai launch file. # Multi-kamera
+# Saran 8: Jika ingin audit trail visual, aktifkan display log di RViz2 dan simpan screenshot secara berkala. # Audit visual
 
 # ===================== REVIEW & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.

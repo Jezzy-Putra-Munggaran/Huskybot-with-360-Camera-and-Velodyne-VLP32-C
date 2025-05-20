@@ -4,19 +4,38 @@ from glob import glob  # [WAJIB] Untuk mencari file dengan pola (misal *.msg, *.
 
 package_name = 'huskybot_fusion'  # [WAJIB] Nama package Python/ROS2, harus sama dengan folder utama
 
+# ===================== ERROR HANDLING: CEK FILE/FOLDER WAJIB =====================
+# Cek resource marker wajib ada agar package dikenali ROS2
+resource_marker = f'resource/{package_name}'
+if not os.path.isfile(resource_marker):
+    raise FileNotFoundError(f"[FATAL] File marker resource/{package_name} tidak ditemukan. Wajib ada agar package dikenali ROS2.")
+
+# Cek package.xml wajib ada
+if not os.path.isfile('package.xml'):
+    raise FileNotFoundError("[FATAL] package.xml tidak ditemukan. Wajib ada agar metadata ROS2 terbaca.")
+
+# Cek minimal satu file .msg wajib ada
+if not glob('msg/*.msg'):
+    raise FileNotFoundError("[FATAL] Tidak ada file msg/*.msg. Wajib ada untuk custom message Object3D.")
+
+# Cek README wajib ada
+if not os.path.isfile('README.md'):
+    raise FileNotFoundError("[FATAL] README.md tidak ditemukan. Wajib ada untuk dokumentasi package.")
+
+# ===================== SETUP =====================
 setup(
     name=package_name,  # [WAJIB] Nama package (harus sama dengan folder)
     version='0.1.0',  # [WAJIB] Versi package (update jika ada perubahan besar)
     packages=[package_name],  # [WAJIB] Daftar package Python yang diinstall (harus ada __init__.py di folder)
     data_files=[
-        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),  # [WAJIB] Resource index agar dikenali ROS2
+        ('share/ament_index/resource_index/packages', [resource_marker]),  # [WAJIB] Resource index agar dikenali ROS2
         ('share/' + package_name, ['package.xml']),  # [WAJIB] Install package.xml ke share/ agar metadata ROS2 terbaca
         (os.path.join('share', package_name, 'msg'), glob('msg/*.msg')),  # [WAJIB] Install file .msg ke share/package/msg
         ('share/' + package_name + '/launch', glob('launch/*.py')),  # [WAJIB] Install launch file ke share/package/launch
         ('share/' + package_name + '/test', glob('test/*.py')),  # [BEST PRACTICE] Install test file ke share/package/test
         ('share/' + package_name, ['README.md']),  # [BEST PRACTICE] Install README agar dokumentasi ikut terinstall
-        # ('share/' + package_name + '/config', glob('config/*.yaml')),  # [SARAN] Uncomment jika ada folder config/
-        # ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),  # [SARAN] Uncomment jika ada folder rviz/
+        ('share/' + package_name + '/config', glob('config/*.yaml')),  # [SARAN] Install file kalibrasi/config jika ada
+        ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),  # [SARAN] Install file RViz jika ada
     ],  # [WAJIB] Semua file penting diinstall ke share agar bisa diakses node lain/CI
     install_requires=[
         'setuptools',  # [WAJIB] Dependency utama Python package
@@ -38,7 +57,7 @@ setup(
     tests_require=['pytest'],  # [BEST PRACTICE] Dependency untuk test Python
     entry_points={
         'console_scripts': [
-            'fusion_node = huskybot_fusion.fusion_node:main',  # [WAJIB] Entry point CLI untuk node fusion (ros2 run)
+            'fusion_node = huskybot_fusion.fusion_node:main',  # [WAJIB] Entry point agar bisa ros2 run huskybot_fusion fusion_node
         ],
     },  # [WAJIB] Daftarkan script utama agar bisa di-run via ros2 run
     package_data={
@@ -46,7 +65,7 @@ setup(
     },  # [WAJIB] Agar message ROS2 bisa ditemukan saat build
     include_package_data=True,  # [WAJIB] Pastikan semua data package diikutkan (msg, launch, dsb)
     long_description_content_type='text/markdown',  # [BEST PRACTICE] Format long_description (untuk PyPI, opsional)
-    # long_description=open('README.md').read() if os.path.exists('README.md') else '',  # [SARAN] Uncomment jika ingin upload ke PyPI
+    long_description=open('README.md').read() if os.path.exists('README.md') else '',  # [BEST PRACTICE] Isi long_description dari README.md jika ada
     extras_require={
         'dev': ['flake8', 'pytest', 'ament_pep257'],  # [BEST PRACTICE] Dependency tambahan untuk development/test
     },
@@ -54,8 +73,8 @@ setup(
 
 # ===================== PENJELASAN & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
-# - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/, test/, README.md, resource/.
-# - Semua file penting (msg, launch, test, README) sudah diinstall ke share agar bisa diakses workspace/CI.
+# - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/, test/, README.md, resource/, config/, rviz/.
+# - Semua file penting (msg, launch, test, README, config, rviz) sudah diinstall ke share agar bisa diakses workspace/CI.
 # - Entry point sudah benar untuk ros2 run (fusion_node).
 # - package_data dan include_package_data sudah benar agar msg bisa ditemukan saat build.
 # - Sudah terhubung dengan node fusion OOP, topic, dan message di workspace.
@@ -66,10 +85,10 @@ setup(
 #   1. Pastikan semua script Python sudah chmod +x (executable) di CMakeLists.txt (sudah).
 #   2. Tambahkan requirements.txt jika ingin distribusi Docker atau pip install.
 #   3. Pastikan maintainer_email dan license konsisten dengan package.xml (sudah).
-#   4. Tambahkan long_description dari README.md jika ingin upload ke PyPI.
+#   4. Tambahkan long_description dari README.md jika ingin upload ke PyPI (SUDAH).
 #   5. Untuk multi-robot, tidak perlu perubahan di setup.py, cukup di launch file/parameter.
 #   6. Untuk CI/CD, pastikan test/ sudah lengkap dan terinstall.
-#   7. Jika ada resource/ lain (misal config, rviz), tambahkan juga ke data_files.
+#   7. Jika ada resource/ lain (misal config, rviz), tambahkan juga ke data_files (SUDAH).
 #   8. Tambahkan extras_require untuk dev/test (sudah diimplementasikan di atas).
 #   9. (Opsional) Tambahkan error handling try/except ImportError di node utama untuk dependency runtime.
 #   10. Dokumentasikan semua entry point dan data file di README.md.

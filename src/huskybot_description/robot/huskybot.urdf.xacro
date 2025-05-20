@@ -2,39 +2,46 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="husky_with_cameras"> <!-- Root elemen robot, pakai Xacro, nama robot unik -->
 
   <!-- ==================== INCLUDE BASE HUSKY ==================== -->
-  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/> <!-- Import base Husky agar semua link/joint dasar tersedia -->
+  <!-- Import base Husky agar semua link/joint dasar tersedia -->
+  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro"/> <!-- Pastikan package husky_description sudah di-build dan path benar -->
 
   <!-- ==================== PLUGIN GAZEBO ==================== -->
   <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros_control"> <!-- Plugin ros2_control untuk integrasi controller ROS2 -->
+    <!-- Plugin ros2_control untuk integrasi controller ROS2 -->
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros_control">
       <robotNamespace>/huskybot</robotNamespace> <!-- Namespace ROS robot (harus konsisten dengan node kontrol di huskybot_control) -->
       <robotParam>/robot_description</robotParam> <!-- Param robot_description (untuk robot_state_publisher) -->
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> <!-- Tipe hardware simulation Gazebo -->
-      <!-- Error handling: pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
+      <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
     </plugin>
   </gazebo>
 
   <!-- ==================== TAG ros2_control (WAJIB) ==================== -->
-  <ros2_control name="GazeboSystem" type="system"> <!-- Tag ros2_control untuk integrasi dengan ros2_control dan controller_manager -->
+  <!-- Tag ros2_control untuk integrasi dengan ros2_control dan controller_manager -->
+  <ros2_control name="GazeboSystem" type="system">
     <hardware>
       <plugin>gazebo_ros2_control/GazeboSystem</plugin> <!-- Plugin hardware simulation Gazebo -->
     </hardware>
-    <joint name="front_left_wheel_joint"> <!-- Joint roda kiri depan -->
+    <!-- Joint roda kiri depan -->
+    <joint name="front_left_wheel_joint">
       <command_interface name="velocity"/> <!-- Interface kontrol kecepatan -->
       <state_interface name="position"/> <!-- Interface baca posisi -->
       <state_interface name="velocity"/> <!-- Interface baca kecepatan -->
     </joint>
-    <joint name="front_right_wheel_joint"> <!-- Joint roda kanan depan -->
+    <!-- Joint roda kanan depan -->
+    <joint name="front_right_wheel_joint">
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="rear_left_wheel_joint"> <!-- Joint roda kiri belakang -->
+    <!-- Joint roda kiri belakang -->
+    <joint name="rear_left_wheel_joint">
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
     </joint>
-    <joint name="rear_right_wheel_joint"> <!-- Joint roda kanan belakang -->
+    <!-- Joint roda kanan belakang -->
+    <joint name="rear_right_wheel_joint">
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
@@ -42,6 +49,7 @@
   </ros2_control>
 
   <!-- ==================== SENSOR IMU ==================== -->
+  <!-- Sensor IMU pada link imu_link -->
   <gazebo reference="imu_link">
     <sensor type="imu" name="imu_sensor">
       <always_on>true</always_on> <!-- IMU selalu aktif -->
@@ -52,13 +60,15 @@
         </ros>
         <frame_name>imu_link</frame_name> <!-- Nama frame IMU -->
         <topicName>imu/data</topicName> <!-- Topic IMU di ROS2 -->
+        <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
       </plugin>
     </sensor>
   </gazebo>
 
   <!-- ==================== SENSOR GPS ==================== -->
+  <!-- Sensor GPS pada link gps_link -->
   <!--
-    ERROR HANDLING: 
+    ERROR HANDLING:
     - Jangan deklarasi ulang <link name="gps_link"/> dan joint jika sudah ada di base Husky!
     - Jika ingin custom posisi, override joint dengan nama berbeda atau gunakan xacro argumen.
     - Jika tetap ingin custom, pastikan hanya ada SATU link dengan nama gps_link di seluruh URDF!
@@ -74,6 +84,7 @@
         <frame_name>gps_link</frame_name> <!-- Nama frame GPS -->
         <topicName>gps/fix</topicName> <!-- Topic GPS fix -->
         <velocityTopicName>gps/vel</velocityTopicName> <!-- Topic GPS velocity -->
+        <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
       </plugin>
     </sensor>
   </gazebo>
@@ -87,12 +98,12 @@
   <link name="orin_box_link">
     <visual>
       <geometry>
-        <box size="0.25 0.18 0.09"/>
+        <box size="0.25 0.18 0.09"/> <!-- Ukuran box Jetson Orin -->
       </geometry>
       <material name="black">
-        <color rgba="0 0 0 1"/>
+        <color rgba="0 0 0 1"/> <!-- Warna hitam -->
       </material>
-      <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
+      <origin xyz="0.0 0 0.045" rpy="0 0 0"/> <!-- Posisi box -->
     </visual>
     <collision>
       <geometry>
@@ -101,13 +112,13 @@
       <origin xyz="0.0 0 0.045" rpy="0 0 0"/>
     </collision>
     <inertial>
-      <mass value="2.0"/>
+      <mass value="2.0"/> <!-- Massa box -->
       <origin xyz="0.0 0 0.045"/>
       <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
     </inertial>
   </link>
   <joint name="orin_box_joint" type="fixed">
-    <parent link="top_plate_link"/>
+    <parent link="top_plate_link"/> <!-- Hubungkan ke top_plate_link dari base Husky -->
     <child link="orin_box_link"/>
     <origin xyz="0 0 0.03" rpy="0 0 0"/>
   </joint>
@@ -116,7 +127,7 @@
   <link name="hex_tower_lower_link">
     <visual>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.18"/>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.22 0.22 0.18"/> <!-- Mesh tower bawah -->
       </geometry>
       <material name="black">
         <color rgba="0 0 0 1"/>
@@ -145,7 +156,7 @@
   <link name="hex_tower_upper_link">
     <visual>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.18 0.18 0.18"/>
+        <mesh filename="package://huskybot_description/meshes/hexagonal-prism.stl" scale="0.18 0.18 0.18"/> <!-- Mesh tower atas -->
       </geometry>
       <material name="black">
         <color rgba="0 0 0 1"/>
@@ -174,7 +185,7 @@
   <link name="lidar_base_link">
     <visual>
       <geometry>
-        <cylinder length="0.04" radius="0.09"/>
+        <cylinder length="0.04" radius="0.09"/> <!-- Tatakan silinder LiDAR -->
       </geometry>
       <material name="black">
         <color rgba="0 0 0 1"/>
@@ -203,7 +214,7 @@
   <link name="velodyne_link">
     <visual>
       <geometry>
-        <mesh filename="package://huskybot_description/meshes/velodyne_vlp32c.dae" scale="1 1 1"/>
+        <mesh filename="package://huskybot_description/meshes/velodyne_vlp32c.dae" scale="1 1 1"/> <!-- Mesh Velodyne -->
       </geometry>
       <material name="grey">
         <color rgba="0.3 0.3 0.3 1"/>
@@ -261,6 +272,7 @@
       <plugin name="velodyne_plugin" filename="libgazebo_ros_ray_sensor.so">
         <topicName>/velodyne_points</topicName>
         <frameName>velodyne_link</frameName>
+        <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
       </plugin>
     </sensor>
   </gazebo>
@@ -271,7 +283,7 @@
     <link name="camera_${idx}_link">
       <visual>
         <geometry>
-          <mesh filename="package://huskybot_description/meshes/arducam_imx477.dae" scale="1 1 1"/>
+          <mesh filename="package://huskybot_description/meshes/arducam_imx477.dae" scale="1 1 1"/> <!-- Mesh kamera -->
         </geometry>
         <material name="black">
           <color rgba="0 0 0 1"/>
@@ -287,6 +299,7 @@
     <joint name="camera_${idx}_joint" type="fixed">
       <parent link="hex_tower_upper_link"/>
       <child link="camera_${idx}_link"/>
+      <!-- Posisi kamera di sisi tower heksagonal -->
       <origin xyz="${0.11 * cos(yaw_deg * 3.14159 / 180)} ${0.11 * sin(yaw_deg * 3.14159 / 180)} 0.09"
               rpy="0 0 ${yaw_deg * 3.14159 / 180}"/>
     </joint>
@@ -313,6 +326,7 @@
           <image_topic_name>image_raw</image_topic_name>
           <camera_info_topic_name>camera_info</camera_info_topic_name>
           <frame_name>camera_${idx}_link</frame_name>
+          <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
         </plugin>
       </sensor>
     </gazebo>
@@ -335,6 +349,7 @@
         cols: 4
         data: [ ... 16 nilai matriks ... ]
     Dokumentasikan transformasi ini di README dan gunakan untuk fusion 2D-3D.
+    ERROR HANDLING: Pastikan file YAML kalibrasi sudah ada dan path benar, jika tidak node fusion akan error.
   -->
 
 </robot>
