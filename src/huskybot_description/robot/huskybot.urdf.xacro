@@ -75,16 +75,15 @@
   -->
   <gazebo reference="gps_link">
     <sensor type="gps" name="gps_sensor">
-      <always_on>true</always_on> <!-- GPS selalu aktif -->
-      <update_rate>10</update_rate> <!-- Update rate GPS (Hz) -->
-      <plugin name="gps_sensor_plugin" filename="libgazebo_ros_gps_sensor.so"> <!-- Plugin GPS ROS2 native -->
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <plugin name="gps_sensor_plugin" filename="libgazebo_ros_gps_sensor.so">
         <ros>
-          <namespace>/huskybot</namespace> <!-- Namespace ROS untuk topic GPS -->
+          <namespace>/huskybot</namespace>
         </ros>
-        <frame_name>gps_link</frame_name> <!-- Nama frame GPS -->
-        <topicName>gps/fix</topicName> <!-- Topic GPS fix -->
-        <velocityTopicName>gps/vel</velocityTopicName> <!-- Topic GPS velocity -->
-        <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
+        <frame_name>gps_link</frame_name>
+        <topicName>gps/fix</topicName>
+        <velocityTopicName>gps/vel</velocityTopicName>
       </plugin>
     </sensor>
   </gazebo>
