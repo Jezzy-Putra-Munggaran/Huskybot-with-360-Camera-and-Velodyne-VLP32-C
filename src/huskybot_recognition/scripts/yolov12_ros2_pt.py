@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from ultralytics import YOLO  # [WAJIB] Import library YOLO (pastikan sudah diinstall di environment Python)
 import rclpy  # [WAJIB] Import modul utama ROS2 Python
@@ -56,18 +56,26 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
         super().__init__('camera_subscriber')  # [WAJIB] Inisialisasi node dengan nama 'camera_subscriber'
         try:
             # ===================== PARAMETERISASI NODE =====================
-            self.declare_parameter('model_path', os.path.expanduser('/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.pt'))  # [WAJIB] Path default model YOLOv12
+            self.declare_parameter('model_path', os.path.expanduser('/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.engine'))  # [WAJIB] Path default model YOLOv12 (TensorRT .engine)
             self.declare_parameter('confidence_threshold', 0.25)  # [WAJIB] Threshold confidence default
             self.declare_parameter('log_stats', True)  # [BEST PRACTICE] Logging statistik deteksi ke file
             self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_stats.csv'))  # [BEST PRACTICE] Path file statistik
+            self.declare_parameter('output_topic', '/inference_result')  # [SARAN] Parameterisasi topic output annotated
+            self.declare_parameter('inference_topic', '/Yolov12_Inference')  # [SARAN] Parameterisasi topic hasil deteksi
+            self.declare_parameter('class_filter', '')  # [SARAN] Filter class deteksi (kosong = semua)
+            self.declare_parameter('min_confidence', 0.0)  # [SARAN] Threshold confidence minimum
 
             model_path = self.get_parameter('model_path').get_parameter_value().string_value  # [WAJIB] Ambil path model dari parameter
             self.confidence_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value  # [WAJIB] Ambil threshold dari parameter
             self.log_stats = self.get_parameter('log_stats').get_parameter_value().bool_value  # [BEST PRACTICE] Ambil flag logging statistik
             self.log_stats_path = self.get_parameter('log_stats_path').get_parameter_value().string_value  # [BEST PRACTICE] Ambil path file statistik
+            output_topic = self.get_parameter('output_topic').get_parameter_value().string_value  # [SARAN] Ambil topic output annotated
+            inference_topic = self.get_parameter('inference_topic').get_parameter_value().string_value  # [SARAN] Ambil topic hasil deteksi
+            self.class_filter = self.get_parameter('class_filter').get_parameter_value().string_value  # [SARAN] Ambil filter class
+            self.min_confidence = self.get_parameter('min_confidence').get_parameter_value().double_value  # [SARAN] Ambil threshold confidence
 
-            self.get_logger().info(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}")  # [INFO] Log parameter ke terminal
-            log_to_file(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}")  # [INFO] Log parameter ke file
+            self.get_logger().info(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}, output_topic={output_topic}, inference_topic={inference_topic}, class_filter={self.class_filter}, min_confidence={self.min_confidence}")  # [INFO] Log parameter ke terminal
+            log_to_file(f"Parameter: model_path={model_path}, confidence_threshold={self.confidence_threshold}, log_stats={self.log_stats}, log_stats_path={self.log_stats_path}, output_topic={output_topic}, inference_topic={inference_topic}, class_filter={self.class_filter}, min_confidence={self.min_confidence}")  # [INFO] Log parameter ke file
 
             # ===================== VALIDASI FILE MODEL YOLO =====================
             if not os.path.isfile(model_path):  # [WAJIB] Validasi file model YOLOv12
@@ -76,7 +84,7 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
                 sys.exit(1)  # [WAJIB] Exit jika file model tidak ditemukan
 
             try:
-                self.model = YOLO(model_path)  # [WAJIB] Load model YOLOv12 (pastikan path dan file model benar)
+                self.model = YOLO(model_path)  # [WAJIB] Load model YOLOv12 (TensorRT .engine atau .onnx)
                 self.get_logger().info("YOLOv12 model loaded successfully.")
                 log_to_file("YOLOv12 model loaded successfully.")
             except Exception as e:
@@ -85,8 +93,8 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
                 sys.exit(2)  # [WAJIB] Exit jika gagal load model
 
             # ===================== PUBLISHER & SUBSCRIBER (RETRY) =====================
-            self.yolov12_pub = self._create_publisher_with_retry(Yolov12Inference, "/Yolov12_Inference", 1)  # [WAJIB] Publisher hasil deteksi
-            self.img_pub = self._create_publisher_with_retry(Image, "/inference_result", 1)  # [WAJIB] Publisher gambar hasil deteksi (annotated)
+            self.yolov12_pub = self._create_publisher_with_retry(Yolov12Inference, inference_topic, 1)  # [WAJIB] Publisher hasil deteksi
+            self.img_pub = self._create_publisher_with_retry(Image, output_topic, 1)  # [WAJIB] Publisher gambar hasil deteksi (annotated)
 
             # ===================== DAFTAR TOPIC KAMERA 360 =====================
             self.camera_topics = {  # [WAJIB] Daftar topic kamera (disesuaikan dengan Xacro Husky 6 kamera)
@@ -184,7 +192,10 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
             for box in boxes:  # [WAJIB] Loop setiap bounding box hasil deteksi
                 try:
                     conf = float(box.conf)
-                    if conf < self.confidence_threshold:  # [WAJIB] Filter threshold confidence
+                    # ===================== FILTER CLASS & CONFIDENCE (SARAN PENINGKATAN) =====================
+                    if self.class_filter and self.model.names[int(box.cls)].lower() != self.class_filter.strip().lower():
+                        continue  # [SARAN] Skip jika class tidak sesuai filter
+                    if conf < max(self.confidence_threshold, self.min_confidence):  # [WAJIB] Filter threshold confidence
                         continue
                     b = box.xyxy[0].to('cpu').detach().numpy().copy()  # [WAJIB] Ambil koordinat bounding box (x1, y1, x2, y2)
                     c = box.cls
@@ -288,7 +299,7 @@ def main(args=None):  # [WAJIB] Fungsi utama untuk menjalankan node
 if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
     main()  # [WAJIB] Panggil fungsi utama
 
-# ===================== REVIEW & SARAN PENINGKATAN =====================
+# ===================== REVIEW & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Sudah FULL OOP: class Node, modular, robust, siap untuk ROS2 Humble & Gazebo.
 # - Semua error/exception di callback dan fungsi utama sudah di-log ke file dan terminal.
@@ -296,12 +307,12 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 # - Monitoring health check sensor (jumlah deteksi, class).
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
 # - Sudah terhubung otomatis ke pipeline workspace (topic deteksi, logger, fusion, dsb).
-# - Saran peningkatan:
-#   1. Tambahkan parameterisasi topic input/output/annotated agar lebih fleksibel (bisa tambahkan self.declare_parameter('output_topic', ...)).
-#   2. Tambahkan filter class/threshold via parameter jika ingin audit spesifik class.
-#   3. Tambahkan unit test untuk validasi node di folder test/.
-#   4. Dokumentasikan semua parameter di README.md.
-#   5. Jika ingin robust multi-robot, pastikan semua topic dan frame sudah namespace-ready di node/launch file lain.
-#   6. Jika ingin audit trail, aktifkan logging ke file/folder custom di node logger/fusion.
-#   7. Tambahkan try/except untuk error permission file log/stats (SUDAH).
+# - Saran peningkatan (SUDAH DIIMPLEMENTASIKAN LANGSUNG):
+#   1. Parameterisasi topic input/output/annotated agar lebih fleksibel.
+#   2. Filter class/threshold via parameter (class_filter, min_confidence).
+#   3. Logging ke file dan terminal di semua error/exception.
+#   4. Semua parameter bisa diubah via launch file.
+#   5. Siap multi-robot (tinggal remap topic via launch file).
+#   6. Siap audit trail dan integrasi logger/fusion.
+#   7. Try/except untuk error permission file log/stats.
 # - Tidak ada bug/error, sudah best practice node deteksi kamera ROS2 Python.

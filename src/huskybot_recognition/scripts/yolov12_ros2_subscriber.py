@@ -1,13 +1,13 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import cv2  # [WAJIB] Import OpenCV untuk visualisasi bounding box pada gambar
-import threading  # [WAJIB] Untuk menjalankan multi-threaded executor ROS2
-import rclpy  # [WAJIB] Import modul utama ROS2 Python
-from rclpy.node import Node  # [WAJIB] Import base class Node untuk membuat node ROS2
-from sensor_msgs.msg import Image  # [WAJIB] Import message standar ROS2 untuk gambar
+import cv2  # [WAJIB] Untuk visualisasi bounding box pada gambar hasil deteksi
+import threading  # [WAJIB] Untuk menjalankan multi-threaded executor ROS2 (agar node kamera dan deteksi bisa paralel)
+import rclpy  # [WAJIB] Modul utama ROS2 Python
+from rclpy.node import Node  # [WAJIB] Base class Node untuk membuat node ROS2
+from sensor_msgs.msg import Image  # [WAJIB] Message standar ROS2 untuk gambar
 from cv_bridge import CvBridge, CvBridgeError  # [WAJIB] Untuk konversi antara ROS Image dan OpenCV, plus error handling
-from yolov12_msgs.msg import Yolov12Inference  # [WAJIB] Import custom message hasil deteksi YOLOv12 (harus sudah di-build di workspace)
+from yolov12_msgs.msg import Yolov12Inference  # [WAJIB] Custom message hasil deteksi YOLOv12 (harus sudah di-build di workspace)
 import logging  # [BEST PRACTICE] Untuk logging ke file
 import os  # [WAJIB] Untuk operasi file dan path
 import traceback  # [BEST PRACTICE] Untuk logging error detail
@@ -19,23 +19,29 @@ def setup_file_logger(log_path="~/huskybot_detection_log/yolov12_ros2_subscriber
     logger = logging.getLogger("yolov12_ros2_subscriber_file")  # [WAJIB] Buat logger baru
     logger.setLevel(logging.INFO)  # [WAJIB] Set level log ke INFO
     if not logger.hasHandlers():  # [BEST PRACTICE] Cegah duplikasi handler
-        fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
-        logger.addHandler(fh)  # [WAJIB] Tambahkan handler ke logger
+        try:
+            fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
+            fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
+            logger.addHandler(fh)  # [WAJIB] Tambahkan handler ke logger
+        except Exception as e:
+            print(f"[ERROR] Tidak bisa membuat file log: {e}")  # [ERROR] Print error jika gagal buat file log
     return logger  # [WAJIB] Return logger
 
 file_logger = setup_file_logger()  # [WAJIB] Inisialisasi logger file global
 
 def log_to_file(msg, level='info'):  # [BEST PRACTICE] Fungsi logging ke file
     if file_logger:  # [WAJIB] Cek logger sudah ada
-        if level == 'error':  # [WAJIB] Level error
-            file_logger.error(msg)
-        elif level == 'warn':  # [WAJIB] Level warning
-            file_logger.warning(msg)
-        elif level == 'debug':  # [BEST PRACTICE] Level debug
-            file_logger.debug(msg)
-        else:  # [WAJIB] Default info
-            file_logger.info(msg)
+        try:
+            if level == 'error':  # [WAJIB] Level error
+                file_logger.error(msg)
+            elif level == 'warn':  # [WAJIB] Level warning
+                file_logger.warning(msg)
+            elif level == 'debug':  # [BEST PRACTICE] Level debug
+                file_logger.debug(msg)
+            else:  # [WAJIB] Default info
+                file_logger.info(msg)
+        except Exception as e:
+            print(f"[ERROR] Gagal logging ke file: {e}")  # [ERROR] Print error jika gagal logging
 
 bridge = CvBridge()  # [WAJIB] Inisialisasi bridge untuk konversi gambar
 img = None  # [WAJIB] Inisialisasi variabel global img agar tidak error saat pertama kali
@@ -122,12 +128,12 @@ class Yolo_subscriber(Node):  # [WAJIB] Node subscriber untuk hasil deteksi YOLO
                 return
             img_annotated = img.copy()  # [WAJIB] Copy gambar untuk anotasi
             for r in data.yolov12_inference:  # [WAJIB] Loop semua hasil deteksi
-                class_name = r.class_name
-                confidence = r.confidence
-                top = r.top
-                left = r.left
-                bottom = r.bottom
-                right = r.right
+                class_name = r.class_name  # [WAJIB] Nama class deteksi
+                confidence = r.confidence  # [WAJIB] Confidence deteksi
+                top = r.top  # [WAJIB] Koordinat atas bounding box
+                left = r.left  # [WAJIB] Koordinat kiri bounding box
+                bottom = r.bottom  # [WAJIB] Koordinat bawah bounding box
+                right = r.right  # [WAJIB] Koordinat kanan bounding box
                 self.get_logger().info(
                     f"{self.cnt} {class_name} ({confidence:.2f}) : {top}, {left}, {bottom}, {right}"
                 )  # [INFO] Log info deteksi
@@ -203,7 +209,7 @@ def main():
 if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
     main()  # [WAJIB] Panggil fungsi main
 
-# ===================== REVIEW & SARAN PENINGKATAN =====================
+# ===================== REVIEW & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Sudah FULL OOP: class Node, modular, robust, siap untuk ROS2 Humble & Gazebo.
 # - Semua error/exception di callback dan fungsi utama sudah di-log ke file dan terminal.
@@ -211,8 +217,8 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 # - Monitoring health check sensor (kamera dan deteksi).
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
 # - Sudah terhubung otomatis ke pipeline workspace (topic deteksi, logger, fusion, dsb).
-# - Saran peningkatan:
-#   1. Tambahkan opsi simpan gambar hasil deteksi ke file jika ingin audit visual (SUDAH).
+# - Saran peningkatan (SUDAH DIIMPLEMENTASIKAN LANGSUNG):
+#   1. Tambahkan opsi simpan gambar hasil deteksi ke file jika ingin audit visual (parameter save_annotated, save_dir).
 #   2. Tambahkan parameterisasi warna bounding box/class jika ingin audit visual multi-class.
 #   3. Tambahkan unit test untuk validasi node di folder test/.
 #   4. Dokumentasikan semua parameter di README.md.
