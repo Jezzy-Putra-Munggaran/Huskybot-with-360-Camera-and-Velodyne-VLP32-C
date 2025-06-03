@@ -40,11 +40,14 @@ ros2 launch huskybot_fusion fusion.launch.py
 
 ---
 
-## Contoh Command Visualisasi  <!-- Contoh visualisasi hasil fusion di RViz2 -->
-```sh
-rviz2 -d huskybot_fusion/rviz/fusion.rviz
-```
-<!-- File RViz config harus ada di folder rviz/ agar visualisasi langsung sesuai pipeline -->
+## Visualisasi Label 3D di RViz2
+
+- Jalankan:
+  ```sh
+  rviz2 -d huskybot_fusion/rviz/fusion.rviz
+  ```
+- Pastikan display `MarkerArray` dengan topic `/fusion/objects3d_marker` sudah aktif.
+- Label `[class]\nJarak: ...\nPosisi: ...` akan muncul di atas objek 3D.
 
 ---
 

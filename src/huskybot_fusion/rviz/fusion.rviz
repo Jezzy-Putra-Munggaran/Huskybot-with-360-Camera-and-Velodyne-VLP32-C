@@ -1,0 +1,11 @@
+Visualization Manager:
+  Displays:
+    - Class: rviz/MarkerArray
+      Name: FusionMarkers
+      Enabled: true
+      Marker Topic: /fusion/objects3d_marker
+      Queue Size: 100
+      Alpha: 1.0
+      # ...display lain tetap...
+  Global Options:
+    Fixed Frame: base_link

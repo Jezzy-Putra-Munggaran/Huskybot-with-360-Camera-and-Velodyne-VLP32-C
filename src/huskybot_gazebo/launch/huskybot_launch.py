@@ -18,6 +18,15 @@ from launch.substitutions import LaunchConfiguration, Command, PythonExpression 
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
 from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter ROS2 node
 
+# Tambahkan node RViz2 untuk huskybot.rviz
+rviz_huskybot_node = Node(
+    package='rviz2',
+    executable='rviz2',
+    name='huskybot_rviz',
+    arguments=['-d', '/mnt/nova_ssd/huskybot/src/huskybot_description/rviz/huskybot.rviz'],
+    output='screen'
+)
+
 # ---------- Error Handling: cek file sebelum include ----------
 def check_file_exists(path, desc):  # Cek file ada sebelum include
     if not os.path.exists(path):  # Jika file tidak ada
@@ -374,6 +383,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             ros2_control_node,  # Node ros2_control (controller_manager)
             spawn_robot_control,  # Launch kontrol robot
             spawn_fusion,  # Launch fusion node
+            rviz_huskybot_node,  # Tambahkan node RViz2 untuk huskybot.rviz
             spawn_calibration,  # Launch calibration node
             yolov12_node,  # Node YOLOv12
             yolov12_stitcher_node,  # Node panorama stitcher

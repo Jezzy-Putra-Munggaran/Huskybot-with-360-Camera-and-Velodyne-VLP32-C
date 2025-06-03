@@ -17,6 +17,7 @@ import logging  # [BEST PRACTICE] Untuk logging ke file (opsional)
 import traceback  # [BEST PRACTICE] Untuk logging error detail
 import json  # [BEST PRACTICE] Untuk logging ke file JSON (opsional)
 import datetime  # [BEST PRACTICE] Untuk timestamp log
+from visualization_msgs.msg import Marker, MarkerArray  # Tambah import Marker
 
 print("[DEBUG] Python executable:", sys.executable, flush=True)  # [DEBUG] Print Python executable yang dipakai saat runtime
 
@@ -73,6 +74,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
 
             # ===================== PUBLISHER =====================
             self.pub_fusion = self.create_publisher(Object3D, self.output_topic, 10)  # [WAJIB] Publisher hasil objek 3D
+            self.marker_pub = self.create_publisher(MarkerArray, '/fusion/objects3d_marker', 10)  # Tambah publisher MarkerArray
 
             # ===================== TF2 =====================
             self.tf_buffer = tf2_ros.Buffer()  # [WAJIB] Buffer TF2
@@ -156,7 +158,9 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 return
 
             obj_msgs = []  # [WAJIB] List hasil objek 3D
-            for det in detections:
+            marker_array = MarkerArray()  # MarkerArray untuk label
+
+            for idx, det in enumerate(detections):
                 try:
                     bbox = [det.top, det.left, det.bottom, det.right]  # [WAJIB] Format [y1, x1, y2, x2]
                     label = det.class_name  # [WAJIB] Nama kelas objek
@@ -241,6 +245,11 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                             self.get_logger().warn(f"Error logging to JSON: {e}")
                             log_to_file(f"Error logging to JSON: {e}", level='warn')
 
+                    # ========== TAMBAH MARKER LABEL UNTUK RVIZ2 ==========
+                    from huskybot_fusion.fusion_marker_utils import create_object_marker
+                    marker = create_object_marker(obj_msg, idx, frame_id=lidar_msg.header.frame_id)
+                    marker_array.markers.append(marker)
+
                 except Exception as e:
                     self.get_logger().error(f"Exception dalam loop deteksi: {e}\n{traceback.format_exc()}")
                     log_to_file(f"Exception dalam loop deteksi: {e}\n{traceback.format_exc()}", level='error')
@@ -253,6 +262,9 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 except Exception as e:
                     self.get_logger().error(f"Error publish Object3D: {e}")
                     log_to_file(f"Error publish Object3D: {e}", level='error')
+
+            if len(marker_array.markers) > 0:
+                self.marker_pub.publish(marker_array)
 
         except Exception as e:
             self.get_logger().error(f"Exception utama di fusion_callback: {e}\n{traceback.format_exc()}")

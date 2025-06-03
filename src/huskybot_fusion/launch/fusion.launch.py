@@ -120,6 +120,15 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         # ===================== NODE FUSION (DENGAN PARAMETER LOG_FILE OPSIONAL) =====================
         fusion_node_action = OpaqueFunction(function=build_fusion_node)  # Node fusion dengan log_file hanya jika tidak kosong
 
+        # ===================== NODE RVIZ =====================
+        rviz_node = Node(
+            package='rviz2',
+            executable='rviz2',
+            name='fusion_rviz',
+            arguments=['-d', '/mnt/nova_ssd/huskybot/src/huskybot_fusion/rviz/fusion.rviz'],
+            output='screen'
+        )
+
         # ===================== RETURN LAUNCH DESCRIPTION =====================
         return LaunchDescription([
             calibration_file_arg,  # Argumen file kalibrasi
@@ -130,7 +139,8 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             enable_debug_arg,  # Argumen enable_debug
             check_calib_action,  # Action cek file kalibrasi
             check_log_action,  # Action cek permission file log
-            fusion_node_action  # Node fusion utama (dengan log_file opsional)
+            fusion_node_action,  # Node fusion utama (dengan log_file opsional)
+            rviz_node  # Node RViz untuk visualisasi
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)  # Print fatal error
