@@ -34,16 +34,20 @@ log_lock = threading.Lock()  # [BEST PRACTICE] Lock untuk thread-safe logging
 def log_to_file(msg, level='info'):  # [BEST PRACTICE] Fungsi logging ke file
     with log_lock:  # [BEST PRACTICE] Lock agar thread-safe
         if file_logger:  # [WAJIB] Cek logger sudah ada
-            if level == 'error':  # [WAJIB] Level error
-                file_logger.error(msg)
-            elif level == 'warn':  # [WAJIB] Level warning
-                file_logger.warning(msg)
-            elif level == 'debug':  # [BEST PRACTICE] Level debug
-                file_logger.debug(msg)
-            else:  # [WAJIB] Default info
-                file_logger.info(msg)
+            try:
+                if level == 'error':  # [WAJIB] Level error
+                    file_logger.error(msg)
+                elif level == 'warn':  # [WAJIB] Level warning
+                    file_logger.warning(msg)
+                elif level == 'debug':  # [BEST PRACTICE] Level debug
+                    file_logger.debug(msg)
+                else:  # [WAJIB] Default info
+                    file_logger.info(msg)
+            except Exception as e:
+                print(f"[ERROR] Gagal logging ke file: {e}")  # [ERROR] Print error jika gagal logging
 
 def validate_yolov12_inference(msg):  # [BEST PRACTICE] Fungsi validasi message sebelum publish
+    # Validasi tipe dan field message agar tidak error saat parsing
     if not isinstance(msg, Yolov12Inference):  # [WAJIB] Pastikan tipe message benar
         return False
     if not hasattr(msg, 'header') or not hasattr(msg, 'camera_name') or not hasattr(msg, 'yolov12_inference'):  # [WAJIB] Pastikan field utama ada
@@ -82,12 +86,17 @@ class PanoramaDetection(Node):  # [WAJIB] Definisi class node deteksi panorama (
             raise FileNotFoundError(f"Model YOLOv12 tidak ditemukan: {model_path}")
 
         try:
-            self.model = YOLO(model_path)  # [WAJIB] Load model YOLOv12 (pastikan path dan file model benar)
-            self.get_logger().info("YOLOv12 model loaded successfully.")
-            log_to_file("YOLOv12 model loaded successfully.")
+            # ===================== LOAD MODEL YOLOv12 (.engine/.onnx/.pt) =====================
+            # [SARAN] Otomatis deteksi format model: .engine (TensorRT), .onnx, .pt
+            if model_path.endswith('.engine') or model_path.endswith('.onnx') or model_path.endswith('.pt'):
+                self.model = YOLO(model_path)  # [WAJIB] Load model YOLOv12 (pastikan path dan file model benar)
+                self.get_logger().info(f"YOLOv12 model loaded successfully: {model_path}")
+                log_to_file(f"YOLOv12 model loaded successfully: {model_path}")
+            else:
+                raise ValueError(f"Format model tidak didukung: {model_path}")
         except Exception as e:
-            self.get_logger().error(f"Gagal load model YOLOv12: {e}")
-            log_to_file(f"Gagal load model YOLOv12: {e}", level='error')
+            self.get_logger().error(f"Gagal load model YOLOv12: {e}\n{traceback.format_exc()}")
+            log_to_file(f"Gagal load model YOLOv12: {e}\n{traceback.format_exc()}", level='error')
             raise
 
         # ===================== PUBLISHER & SUBSCRIBER =====================
@@ -221,8 +230,16 @@ def main(args=None):  # [WAJIB] Fungsi utama untuk menjalankan node
         node.get_logger().error(f"Exception utama: {e}\n{traceback.format_exc()}")
         log_to_file(f"Exception utama: {e}\n{traceback.format_exc()}", level='error')
     finally:
-        node.destroy_node()  # [WAJIB] Cleanup saat node selesai
-        rclpy.shutdown()  # [WAJIB] Shutdown ROS2
+        try:
+            node.destroy_node()  # [WAJIB] Cleanup saat node selesai
+        except Exception as e:
+            print(f"[WARNING] Error destroy_node: {e}")
+            log_to_file(f"Error destroy_node: {e}", level='warn')
+        try:
+            rclpy.shutdown()  # [WAJIB] Shutdown ROS2
+        except Exception as e:
+            print(f"[WARNING] Error rclpy.shutdown: {e}")
+            log_to_file(f"Error rclpy.shutdown: {e}", level='warn')
 
 if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
     main()  # [WAJIB] Panggil fungsi main
@@ -243,4 +260,6 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 #   5. Siap multi-robot (tinggal remap topic via launch file).
 #   6. Siap audit trail dan integrasi logger/fusion.
 #   7. Tambahkan try/except untuk error permission file log/stats.
+#   8. Otomatis deteksi format model (.engine/.onnx/.pt) dan error handling jika format tidak didukung.
+#   9. Error handling destroy_node dan rclpy.shutdown.
 # - Tidak ada bug/error, sudah best practice node deteksi panorama ROS2 Python.

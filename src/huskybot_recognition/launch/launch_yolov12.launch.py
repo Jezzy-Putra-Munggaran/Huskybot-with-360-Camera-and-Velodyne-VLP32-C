@@ -8,7 +8,7 @@ import shutil  # [BEST PRACTICE] Untuk operasi file (backup log, dsb)
 import time  # [BEST PRACTICE] Untuk timestamp logging
 
 # ===================== ERROR HANDLING & LOGGER =====================
-def check_model_file(context, *args, **kwargs):  # [WAJIB] Validasi file model YOLOv12 (.pt)
+def check_model_file(context, *args, **kwargs):  # [WAJIB] Validasi file model YOLOv12 (.pt/.engine/.onnx)
     model_path = LaunchConfiguration('model_path').perform(context)  # [WAJIB] Ambil path model dari argumen launch
     expanded_path = os.path.expanduser(model_path)  # [WAJIB] Expand ~ ke home user
     if not os.path.isfile(expanded_path):  # [WAJIB] Jika file model tidak ada
@@ -53,6 +53,25 @@ def log_to_file(msg):  # [BEST PRACTICE] Logging ke file untuk audit trail
     except Exception as e:
         print(f"[WARNING] Tidak bisa menulis ke log file: {log_file_path} ({e})", file=sys.stderr)  # [WARNING] Jika gagal log ke file
 
+def check_log_stats_dir(context, *args, **kwargs):  # [BEST PRACTICE] Validasi permission folder log_stats_path
+    log_stats_path = LaunchConfiguration('log_stats_path').perform(context)
+    expanded_path = os.path.expanduser(log_stats_path)
+    log_dir = os.path.dirname(expanded_path)
+    if log_dir and not os.path.isdir(log_dir):
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+            print(f"[INFO] Folder log_stats_path dibuat: {log_dir}")
+            log_to_file(f"[INFO] Folder log_stats_path dibuat: {log_dir}")
+        except Exception as e:
+            print(f"[ERROR] Tidak bisa membuat folder log_stats_path: {log_dir} ({e})", file=sys.stderr)
+            log_to_file(f"[ERROR] Tidak bisa membuat folder log_stats_path: {log_dir} ({e})")
+            sys.exit(3)
+    elif log_dir and not os.access(log_dir, os.W_OK):
+        print(f"[ERROR] Tidak ada permission tulis ke folder log_stats_path: {log_dir}", file=sys.stderr)
+        log_to_file(f"[ERROR] Tidak ada permission tulis ke folder log_stats_path: {log_dir}")
+        sys.exit(4)
+    return []
+
 def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescription
     try:
         # ===================== ARGUMEN LAUNCH =====================
@@ -63,8 +82,8 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
         )
         model_path_arg = DeclareLaunchArgument(
             'model_path',  # [WAJIB] Nama argumen
-            default_value='/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.pt',  # [WAJIB] Path default model YOLOv12
-            description='Path ke file model YOLOv12 (.pt)'  # [WAJIB] Path file model YOLOv12
+            default_value='/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.engine',  # [WAJIB] Path default model YOLOv12 TensorRT
+            description='Path ke file model YOLOv12 (.engine/.onnx/.pt)'  # [WAJIB] Path file model YOLOv12
         )
         confidence_threshold_arg = DeclareLaunchArgument(
             'confidence_threshold',  # [WAJIB] Nama argumen
@@ -86,20 +105,34 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
             default_value='',  # [BEST PRACTICE] Default kosong (opsional)
             description='Path file YAML kalibrasi kamera (opsional)'  # [BEST PRACTICE] Path file YAML kalibrasi kamera
         )
+        # [SARAN] Tambahkan argumen untuk format model agar node bisa auto-switch engine/onnx/pt
+        model_format_arg = DeclareLaunchArgument(
+            'model_format',  # [BEST PRACTICE] Nama argumen
+            default_value='engine',  # [BEST PRACTICE] Default TensorRT .engine
+            description='Format model YOLOv12: engine/onnx/pt (auto pilih node)'  # [BEST PRACTICE] Format model
+        )
 
         # ===================== ERROR HANDLING ACTIONS =====================
         check_model_action = OpaqueFunction(function=check_model_file)  # [WAJIB] Validasi file model YOLOv12
         check_rclpy_action = OpaqueFunction(function=check_rclpy_dependency)  # [WAJIB] Validasi dependency rclpy
         check_yaml_calib_action = OpaqueFunction(function=check_yaml_calib_file)  # [BEST PRACTICE] Validasi file YAML kalibrasi kamera
+        check_log_stats_dir_action = OpaqueFunction(function=check_log_stats_dir)  # [BEST PRACTICE] Validasi permission folder log_stats_path
 
         # ===================== LOGGING INFO KE TERMINAL DAN FILE =====================
         print("[INFO] Launching YOLOv12 ROS2 Node...", flush=True)  # [INFO] Info launching node
         log_to_file("Launching YOLOv12 ROS2 Node...")  # [BEST PRACTICE] Log launching node
 
-        # ===================== NODE YOLOv12 =====================
+        # ===================== NODE YOLOv12 (AUTO PILIH NODE SESUAI FORMAT) =====================
+        # [BEST PRACTICE] Pilih node Python sesuai format model (engine/onnx/pt)
+        model_format = LaunchConfiguration('model_format')
+        # [SARAN] Gunakan PythonExpression untuk auto-pilih executable
         yolov12_node = Node(
             package='huskybot_recognition',  # [WAJIB] Nama package node YOLOv12
-            executable='yolov12_ros2_pt.py',  # [WAJIB] Nama executable node YOLOv12
+            executable=PythonExpression([
+                '"yolov12_ros2_trt.py" if "', model_format, '" == "engine" else '
+                '"yolov12_ros2_onnx.py" if "', model_format, '" == "onnx" else '
+                '"yolov12_ros2_pt.py"'
+            ]),  # [WAJIB] Pilih node sesuai format model
             output='screen',  # [WAJIB] Output ke terminal
             parameters=[
                 {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
@@ -119,9 +152,11 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
             log_stats_arg,  # [BEST PRACTICE] Argumen logging statistik
             log_stats_path_arg,  # [BEST PRACTICE] Argumen path statistik
             calib_yaml_path_arg,  # [BEST PRACTICE] Argumen path YAML kalibrasi kamera
+            model_format_arg,  # [BEST PRACTICE] Argumen format model
             check_rclpy_action,  # [WAJIB] Validasi dependency rclpy
             check_model_action,  # [WAJIB] Validasi file model YOLOv12
             check_yaml_calib_action,  # [BEST PRACTICE] Validasi file YAML kalibrasi kamera
+            check_log_stats_dir_action,  # [BEST PRACTICE] Validasi permission folder log_stats_path
             yolov12_node  # [WAJIB] Node YOLOv12
         ])
     except Exception as e:
@@ -130,19 +165,20 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
         log_to_file(f"[FATAL] Exception saat generate_launch_description: {e}")  # [BEST PRACTICE] Log fatal error ke file
         sys.exit(99)  # [WAJIB] Exit dengan kode error
 
-# ===================== PENJELASAN & SARAN PENINGKATAN =====================
+# ===================== PENJELASAN & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN LANGSUNG) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Semua argumen sudah modular dan bisa diubah saat launch/CLI.
-# - Error handling sudah sangat lengkap: cek file model, dependency rclpy, file YAML kalibrasi, logging ke file.
+# - Error handling sudah sangat lengkap: cek file model, dependency rclpy, file YAML kalibrasi, permission folder log_stats_path, logging ke file.
 # - Logging info ke terminal dan file untuk audit trail.
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
 # - Sudah terhubung otomatis ke pipeline workspace (topic deteksi, logger, fusion, dsb).
 # - FULL OOP: Semua node Python di scripts/ sudah class-based dan modular.
-# - Saran peningkatan:
-#   1. Tambahkan validasi file YAML kalibrasi kamera (SUDAH).
-#   2. Tambahkan argumen untuk log_file custom per robot (SUDAH, tinggal ganti log_stats_path).
-#   3. Tambahkan unit test launch file di folder test/ untuk CI/CD.
-#   4. Dokumentasikan semua argumen launch file dan parameter node di README.md.
-#   5. Jika ingin robust multi-robot, pastikan semua topic dan frame sudah namespace-ready di node/launch file lain.
-#   6. Jika ingin audit trail, aktifkan logging ke file/folder custom di node logger/fusion.
+# - Saran peningkatan (SUDAH DIIMPLEMENTASIKAN LANGSUNG):
+#   1. Tambahkan validasi permission folder log_stats_path (SUDAH).
+#   2. Tambahkan argumen model_format agar node bisa auto-switch engine/onnx/pt (SUDAH).
+#   3. Pilih node Python otomatis sesuai format model (SUDAH).
+#   4. Tambahkan unit test launch file di folder test/ untuk CI/CD.
+#   5. Dokumentasikan semua argumen launch file dan parameter node di README.md.
+#   6. Jika ingin robust multi-robot, pastikan semua topic dan frame sudah namespace-ready di node/launch file lain.
+#   7. Jika ingin audit trail, aktifkan logging ke file/folder custom di node logger/fusion.
 # - Tidak ada bug/error, sudah best practice launch file ROS2 Python.

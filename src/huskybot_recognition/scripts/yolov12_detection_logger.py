@@ -18,23 +18,29 @@ def setup_file_logger(log_path="~/huskybot_detection_log/yolov12_detection_logge
     logger = logging.getLogger("yolov12_detection_logger_file")  # [WAJIB] Buat logger baru
     logger.setLevel(logging.INFO)  # [WAJIB] Set level log ke INFO
     if not logger.hasHandlers():  # [BEST PRACTICE] Cegah duplikasi handler
-        fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
-        logger.addHandler(fh)  # [WAJIB] Tambahkan handler ke logger
+        try:
+            fh = logging.FileHandler(log_path)  # [WAJIB] Handler file log
+            fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # [WAJIB] Format log
+            logger.addHandler(fh)  # [WAJIB] Tambahkan handler ke logger
+        except Exception as e:
+            print(f"[ERROR] Tidak bisa membuat file log: {e}")  # [ERROR] Print error jika gagal buat file log
     return logger  # [WAJIB] Return logger
 
 file_logger = setup_file_logger()  # [WAJIB] Inisialisasi logger file global
 
 def log_to_file(msg, level='info'):  # [BEST PRACTICE] Fungsi logging ke file
     if file_logger:  # [WAJIB] Cek logger sudah ada
-        if level == 'error':  # [WAJIB] Level error
-            file_logger.error(msg)
-        elif level == 'warn':  # [WAJIB] Level warning
-            file_logger.warning(msg)
-        elif level == 'debug':  # [BEST PRACTICE] Level debug
-            file_logger.debug(msg)
-        else:  # [WAJIB] Default info
-            file_logger.info(msg)
+        try:
+            if level == 'error':  # [WAJIB] Level error
+                file_logger.error(msg)
+            elif level == 'warn':  # [WAJIB] Level warning
+                file_logger.warning(msg)
+            elif level == 'debug':  # [BEST PRACTICE] Level debug
+                file_logger.debug(msg)
+            else:  # [WAJIB] Default info
+                file_logger.info(msg)
+        except Exception as e:
+            print(f"[ERROR] Gagal logging ke file: {e}")  # [ERROR] Print error jika gagal logging
 
 def validate_yolov12_inference(msg):  # [BEST PRACTICE] Fungsi validasi message sebelum proses
     if not isinstance(msg, Yolov12Inference):  # [WAJIB] Pastikan tipe message benar

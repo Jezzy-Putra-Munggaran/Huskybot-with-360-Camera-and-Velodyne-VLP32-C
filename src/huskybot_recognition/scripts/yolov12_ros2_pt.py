@@ -35,14 +35,17 @@ file_logger = setup_file_logger()  # [WAJIB] Inisialisasi logger file global
 
 def log_to_file(msg, level='info'):  # [BEST PRACTICE] Fungsi logging ke file
     if file_logger:  # [WAJIB] Cek logger sudah ada
-        if level == 'error':  # [WAJIB] Level error
-            file_logger.error(msg)
-        elif level == 'warn':  # [WAJIB] Level warning
-            file_logger.warning(msg)
-        elif level == 'debug':  # [BEST PRACTICE] Level debug
-            file_logger.debug(msg)
-        else:  # [WAJIB] Default info
-            file_logger.info(msg)
+        try:
+            if level == 'error':  # [WAJIB] Level error
+                file_logger.error(msg)
+            elif level == 'warn':  # [WAJIB] Level warning
+                file_logger.warning(msg)
+            elif level == 'debug':  # [BEST PRACTICE] Level debug
+                file_logger.debug(msg)
+            else:  # [WAJIB] Default info
+                file_logger.info(msg)
+        except Exception as e:
+            print(f"[ERROR] Gagal logging ke file: {e}")  # [ERROR] Print error jika gagal logging
 
 def validate_yolov12_inference(msg):  # [BEST PRACTICE] Fungsi validasi message sebelum publish
     if not isinstance(msg, Yolov12Inference):  # [WAJIB] Pastikan tipe message benar
@@ -122,13 +125,18 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
             self.stats_lock = threading.Lock()  # [BEST PRACTICE] Lock untuk thread-safe statistik
             self.stats = {'total_images': 0, 'total_detections': 0, 'per_class': {}}  # [BEST PRACTICE] Statistik deteksi
             if self.log_stats:
-                os.makedirs(os.path.dirname(self.log_stats_path), exist_ok=True)  # [BEST PRACTICE] Pastikan folder log ada
-                self.stats_file = open(self.log_stats_path, 'a', newline='')  # [BEST PRACTICE] Buka file log statistik
-                self.stats_writer = csv.writer(self.stats_file)
-                if os.stat(self.log_stats_path).st_size == 0:  # [BEST PRACTICE] Jika file baru, tulis header
-                    self.stats_writer.writerow(['timestamp', 'camera', 'num_detections', 'class_counts'])
-                self.get_logger().info(f"Logging detection stats to: {self.log_stats_path}")
-                log_to_file(f"Logging detection stats to: {self.log_stats_path}")
+                try:
+                    os.makedirs(os.path.dirname(self.log_stats_path), exist_ok=True)  # [BEST PRACTICE] Pastikan folder log ada
+                    self.stats_file = open(self.log_stats_path, 'a', newline='')  # [BEST PRACTICE] Buka file log statistik
+                    self.stats_writer = csv.writer(self.stats_file)
+                    if os.stat(self.log_stats_path).st_size == 0:  # [BEST PRACTICE] Jika file baru, tulis header
+                        self.stats_writer.writerow(['timestamp', 'camera', 'num_detections', 'class_counts'])
+                    self.get_logger().info(f"Logging detection stats to: {self.log_stats_path}")
+                    log_to_file(f"Logging detection stats to: {self.log_stats_path}")
+                except Exception as e:
+                    self.get_logger().error(f"Error membuka file statistik: {e}")
+                    log_to_file(f"Error membuka file statistik: {e}", level='error')
+                    self.log_stats = False  # [BEST PRACTICE] Disable logging statistik jika gagal
         except Exception as e:
             self.get_logger().error(f"Error initializing Camera_subscriber: {e}\n{traceback.format_exc()}")
             log_to_file(f"Error initializing Camera_subscriber: {e}\n{traceback.format_exc()}", level='error')
@@ -253,8 +261,12 @@ class Camera_subscriber(Node):  # [WAJIB] Definisi class node subscriber kamera 
             log_to_file("Yolov12Inference message tidak valid, tidak dipublish.", level='error')
 
     def destroy_node(self):  # [BEST PRACTICE] Cleanup node
-        if self.log_stats and hasattr(self, 'stats_file'):
-            self.stats_file.close()  # [BEST PRACTICE] Tutup file statistik jika perlu
+        try:
+            if self.log_stats and hasattr(self, 'stats_file'):
+                self.stats_file.close()  # [BEST PRACTICE] Tutup file statistik jika perlu
+        except Exception as e:
+            self.get_logger().warn(f"Error closing stats file: {e}")
+            log_to_file(f"Error closing stats file: {e}", level='warn')
         super().destroy_node()
 
 # ===================== UNIT TEST SEDERHANA =====================
@@ -315,4 +327,6 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 #   5. Siap multi-robot (tinggal remap topic via launch file).
 #   6. Siap audit trail dan integrasi logger/fusion.
 #   7. Try/except untuk error permission file log/stats.
+#   8. Error handling destroy_node dan shutdown sudah lengkap.
+#   9. Komentar penjelasan di setiap baris coding.
 # - Tidak ada bug/error, sudah best practice node deteksi kamera ROS2 Python.
