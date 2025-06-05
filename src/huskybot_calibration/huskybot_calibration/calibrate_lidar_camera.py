@@ -29,23 +29,23 @@ try:
 except ImportError:
     DBSCAN = None  # Jika DBSCAN tidak ada, fallback ke centroid
 
-# Path file hasil kalibrasi YAML
+# Path file hasil kalibrasi YAML, default di config/
 CALIB_YAML_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'config', 'extrinsic_lidar_to_camera.yaml'
 )
 
 def setup_file_logger(log_path="~/huskybot_calibration_process.log"):
     # Setup logger untuk logging ke file
-    log_path = os.path.expanduser(log_path)
-    logger = logging.getLogger("calibrate_lidar_camera_file_logger")
-    logger.setLevel(logging.INFO)
-    if not logger.hasHandlers():
-        fh = logging.FileHandler(log_path)
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
+    log_path = os.path.expanduser(log_path)  # Expand ~ ke home
+    logger = logging.getLogger("calibrate_lidar_camera_file_logger")  # Nama logger unik
+    logger.setLevel(logging.INFO)  # Level default INFO
+    if not logger.hasHandlers():  # Hindari duplikasi handler
+        fh = logging.FileHandler(log_path)  # File handler
+        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
         logger.addHandler(fh)
     return logger
 
-file_logger = None  # Logger global untuk file
+file_logger = None  # Logger global untuk file, diinisialisasi jika log_to_file True
 
 def log_to_file(msg, level='info'):
     # Logging ke file jika logger sudah diinisialisasi
@@ -65,13 +65,13 @@ def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):
     while time.time() - start < timeout:
         count = node.count_publishers(topic)
         if count >= min_publishers:
-            node.get_logger().info(f"Topic {topic} aktif dengan {count} publisher.")
+            node.get_logger().info(f"Topic {topic} aktif dengan {count} publisher.")  # Info jika aktif
             log_to_file(f"Topic {topic} aktif dengan {count} publisher.")
             return True
-        node.get_logger().warn(f"Menunggu publisher aktif di topic {topic}...")
+        node.get_logger().warn(f"Menunggu publisher aktif di topic {topic}...")  # Warning jika belum aktif
         log_to_file(f"Menunggu publisher aktif di topic {topic}...", level='warn')
         time.sleep(0.5)
-    node.get_logger().error(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.")
+    node.get_logger().error(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.")  # Error jika timeout
     log_to_file(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.", level='error')
     return False
 
@@ -80,24 +80,23 @@ class LidarCameraCalibrator(Node):  # Node OOP untuk kalibrasi kamera-LiDAR
         super().__init__('lidar_camera_calibrator')  # Inisialisasi node ROS2
         global file_logger  # Gunakan logger global untuk file
 
-        # Bridge untuk konversi image ROS <-> OpenCV
-        self.bridge = CvBridge()
+        self.bridge = CvBridge()  # Bridge untuk konversi image ROS <-> OpenCV
 
         # Deklarasi parameter node (bisa diubah via launch file)
-        self.declare_parameter('camera_topic', '/panorama/image_raw')
-        self.declare_parameter('lidar_topic', '/velodyne_points')
-        self.declare_parameter('pattern_type', 'checkerboard')
-        self.declare_parameter('pattern_size', [7, 6])
-        self.declare_parameter('square_size', 0.025)
-        self.declare_parameter('output_yaml', CALIB_YAML_PATH)
-        self.declare_parameter('visualize', True)
-        self.declare_parameter('camera_frame_id', 'panorama_camera_link')
-        self.declare_parameter('lidar_frame_id', 'velodyne_link')
-        self.declare_parameter('log_to_file', False)
-        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_calibration_process.log'))
-        self.declare_parameter('publish_tf', True)
-        self.declare_parameter('pattern_retry', 5)  # Tambahan: retry pattern detection
-        self.declare_parameter('pattern_min_points', 10)  # Tambahan: minimal point untuk pattern
+        self.declare_parameter('camera_topic', '/panorama/image_raw')  # Topic kamera
+        self.declare_parameter('lidar_topic', '/velodyne_points')  # Topic LiDAR
+        self.declare_parameter('pattern_type', 'checkerboard')  # checkerboard/aruco
+        self.declare_parameter('pattern_size', [7, 6])  # Ukuran checkerboard
+        self.declare_parameter('square_size', 0.025)  # Ukuran kotak (meter)
+        self.declare_parameter('output_yaml', CALIB_YAML_PATH)  # Path output YAML
+        self.declare_parameter('visualize', True)  # Aktifkan visualisasi
+        self.declare_parameter('camera_frame_id', 'panorama_camera_link')  # Nama frame kamera
+        self.declare_parameter('lidar_frame_id', 'velodyne_link')  # Nama frame LiDAR
+        self.declare_parameter('log_to_file', False)  # Logging ke file
+        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_calibration_process.log'))  # Path log file
+        self.declare_parameter('publish_tf', True)  # Publish TF
+        self.declare_parameter('pattern_retry', 5)  # Retry pattern detection
+        self.declare_parameter('pattern_min_points', 10)  # Minimal point pattern
 
         # Ambil parameter node
         camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value

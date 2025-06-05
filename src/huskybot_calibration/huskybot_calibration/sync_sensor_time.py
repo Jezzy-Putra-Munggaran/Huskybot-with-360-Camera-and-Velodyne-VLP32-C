@@ -5,15 +5,15 @@ import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class untuk node ROS2
 from sensor_msgs.msg import Image, PointCloud2  # Message ROS2 untuk kamera dan LiDAR
 from cv_bridge import CvBridge  # Konversi ROS Image <-> OpenCV
-import numpy as np  # Komputasi numerik
-import cv2  # OpenCV untuk deteksi checkerboard/ArUco
-import yaml  # Untuk baca/tulis file YAML hasil kalibrasi
+import numpy as np  # Komputasi numerik (opsional, untuk validasi/ekstensi)
+import cv2  # OpenCV untuk deteksi checkerboard/ArUco (opsional, untuk validasi gambar)
+import yaml  # Untuk baca/tulis file YAML hasil sinkronisasi (opsional, untuk simpan data)
 import os  # Untuk cek file/folder
 import traceback  # Untuk logging error detail
 from message_filters import ApproximateTimeSynchronizer, Subscriber  # Sinkronisasi data sensor
-from std_msgs.msg import Float64MultiArray  # Untuk publish transformasi extrinsic ke topic
+from std_msgs.msg import Float64MultiArray  # Untuk publish transformasi extrinsic ke topic (opsional, untuk integrasi)
 import logging  # Logging error/info
-import matplotlib.pyplot as plt  # Untuk visualisasi hasil kalibrasi
+import matplotlib.pyplot as plt  # Untuk visualisasi hasil sinkronisasi (opsional)
 import time  # Untuk validasi topic aktif
 
 try:
@@ -26,23 +26,23 @@ try:
 except ImportError:
     DBSCAN = None  # Jika DBSCAN tidak ada, fallback ke centroid
 
-# Path file hasil kalibrasi YAML
+# Path file hasil kalibrasi YAML (default, bisa diubah via parameter/launch)
 CALIB_YAML_PATH = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), 'config', 'extrinsic_lidar_to_camera.yaml'
 )
 
 def setup_file_logger(log_path="~/huskybot_sync_sensor_time.log"):
-    # Setup logger untuk logging ke file
-    log_path = os.path.expanduser(log_path)
-    logger = logging.getLogger("sync_sensor_time_file_logger")
-    logger.setLevel(logging.INFO)
-    if not logger.hasHandlers():
-        fh = logging.FileHandler(log_path)
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
+    # Setup logger untuk logging ke file (audit trail/debugging)
+    log_path = os.path.expanduser(log_path)  # Expand ~ ke home user
+    logger = logging.getLogger("sync_sensor_time_file_logger")  # Nama logger unik
+    logger.setLevel(logging.INFO)  # Level default INFO
+    if not logger.hasHandlers():  # Hindari duplikasi handler
+        fh = logging.FileHandler(log_path)  # File handler
+        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
         logger.addHandler(fh)
     return logger
 
-file_logger = None  # Logger global untuk file
+file_logger = None  # Logger global untuk file, diinisialisasi jika log_to_file True
 
 def log_to_file(msg, level='info'):
     # Logging ke file jika logger sudah diinisialisasi
@@ -62,13 +62,13 @@ def wait_for_topic(node, topic, timeout=10.0, min_publishers=1):
     while time.time() - start < timeout:
         count = node.count_publishers(topic)
         if count >= min_publishers:
-            node.get_logger().info(f"Topic {topic} aktif dengan {count} publisher.")
+            node.get_logger().info(f"Topic {topic} aktif dengan {count} publisher.")  # Info jika aktif
             log_to_file(f"Topic {topic} aktif dengan {count} publisher.")
             return True
-        node.get_logger().warn(f"Menunggu publisher aktif di topic {topic}...")
+        node.get_logger().warn(f"Menunggu publisher aktif di topic {topic}...")  # Warning jika belum aktif
         log_to_file(f"Menunggu publisher aktif di topic {topic}...", level='warn')
         time.sleep(0.5)
-    node.get_logger().error(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.")
+    node.get_logger().error(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.")  # Error jika timeout
     log_to_file(f"Timeout: Topic {topic} tidak punya publisher aktif setelah {timeout} detik.", level='error')
     return False
 
@@ -77,24 +77,23 @@ class SyncSensorTimeNode(Node):  # Node OOP untuk sinkronisasi waktu sensor
         super().__init__('sync_sensor_time')  # Inisialisasi node ROS2
         global file_logger  # Gunakan logger global untuk file
 
-        # Bridge untuk konversi image ROS <-> OpenCV
-        self.bridge = CvBridge()
+        self.bridge = CvBridge()  # Bridge untuk konversi image ROS <-> OpenCV
 
         # Deklarasi parameter node (bisa diubah via launch file)
-        self.declare_parameter('camera_topic', '/panorama/image_raw')
-        self.declare_parameter('lidar_topic', '/velodyne_points')
-        self.declare_parameter('output_yaml', CALIB_YAML_PATH)
-        self.declare_parameter('log_to_file', False)
-        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_sync_sensor_time.log'))
+        self.declare_parameter('camera_topic', '/panorama/image_raw')  # Topic kamera
+        self.declare_parameter('lidar_topic', '/velodyne_points')  # Topic LiDAR
+        self.declare_parameter('output_yaml', CALIB_YAML_PATH)  # Path output YAML
+        self.declare_parameter('log_to_file', False)  # Logging ke file
+        self.declare_parameter('log_file_path', os.path.expanduser('~/huskybot_sync_sensor_time.log'))  # Path log file
         self.declare_parameter('sync_time_slop', 0.1)  # Sinkronisasi toleransi waktu antar sensor
 
         # Ambil parameter node
-        camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
-        lidar_topic = self.get_parameter('lidar_topic').get_parameter_value().string_value
-        self.output_yaml = self.get_parameter('output_yaml').get_parameter_value().string_value
-        self.log_to_file = self.get_parameter('log_to_file').get_parameter_value().bool_value
-        self.log_file_path = self.get_parameter('log_file_path').get_parameter_value().string_value
-        self.sync_time_slop = self.get_parameter('sync_time_slop').get_parameter_value().double_value
+        camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value  # Ambil topic kamera
+        lidar_topic = self.get_parameter('lidar_topic').get_parameter_value().string_value  # Ambil topic LiDAR
+        self.output_yaml = self.get_parameter('output_yaml').get_parameter_value().string_value  # Path output YAML
+        self.log_to_file = self.get_parameter('log_to_file').get_parameter_value().bool_value  # Logging ke file
+        self.log_file_path = self.get_parameter('log_file_path').get_parameter_value().string_value  # Path log file
+        self.sync_time_slop = self.get_parameter('sync_time_slop').get_parameter_value().double_value  # Slop sinkronisasi
 
         # Logging parameter ke terminal dan file
         self.get_logger().info(
@@ -144,12 +143,12 @@ class SyncSensorTimeNode(Node):  # Node OOP untuk sinkronisasi waktu sensor
 
         # Sinkronisasi data kamera dan LiDAR
         try:
-            self.camera_sub = Subscriber(self, Image, camera_topic)
-            self.lidar_sub = Subscriber(self, PointCloud2, lidar_topic)
+            self.camera_sub = Subscriber(self, Image, camera_topic)  # Subscriber kamera
+            self.lidar_sub = Subscriber(self, PointCloud2, lidar_topic)  # Subscriber LiDAR
             self.ts = ApproximateTimeSynchronizer(
-                [self.camera_sub, self.lidar_sub], queue_size=10, slop=self.sync_time_slop
+                [self.camera_sub, self.lidar_sub], queue_size=10, slop=self.sync_time_slop  # Sinkronisasi dengan slop
             )
-            self.ts.registerCallback(self.sync_callback)
+            self.ts.registerCallback(self.sync_callback)  # Register callback sinkronisasi
             self.get_logger().info("Sinkronisasi data kamera dan LiDAR siap.")
             log_to_file("Sinkronisasi data kamera dan LiDAR siap.")
         except Exception as e:
@@ -163,8 +162,7 @@ class SyncSensorTimeNode(Node):  # Node OOP untuk sinkronisasi waktu sensor
     def sync_callback(self, img_msg, lidar_msg):
         # Callback saat data kamera dan LiDAR sinkron
         try:
-            # Konversi image ROS ke OpenCV
-            cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
+            cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')  # Konversi image ROS ke OpenCV
             # Validasi data LiDAR
             if not hasattr(lidar_msg, 'width') or not hasattr(lidar_msg, 'height') or lidar_msg.width == 0 or lidar_msg.height == 0:
                 self.get_logger().error("Data PointCloud2 kosong atau tidak valid!")

@@ -4,11 +4,11 @@
   <name>yolov12_msgs</name>  <!-- Nama package, harus unik di workspace -->
   <version>0.1.0</version>  <!-- Versi package, update jika sudah release/siap digunakan -->
   <description>
-    Custom ROS2 message package for YOLOv12 detection results and panorama inference.
-    Provides InferenceResult and Yolov12Inference message types for multi-camera and panorama object detection.
-    Used by huskybot_recognition and other perception/fusion nodes in the workspace.
-    Fully compatible with ROS2 Humble, Gazebo, and multi-robot simulation.
-    (Update 2025-05-06)
+    Custom ROS2 message package for YOLOv12 detection results and panorama inference. <!-- Deskripsi singkat fungsi utama package -->
+    Provides InferenceResult and Yolov12Inference message types for multi-camera and panorama object detection. <!-- Penjelasan message utama yang disediakan -->
+    Used by huskybot_recognition and other perception/fusion nodes in the workspace. <!-- Penjelasan keterhubungan dengan node lain di workspace -->
+    Fully compatible with ROS2 Humble, Gazebo, and multi-robot simulation. <!-- Penjelasan kompatibilitas dengan ROS2 Humble, Gazebo, multi-robot -->
+    (Update 2025-05-06) <!-- Tanggal update terakhir, best practice untuk tracking -->
   </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
   <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
