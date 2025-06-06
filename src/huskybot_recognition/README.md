@@ -130,7 +130,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('model_path', default_value='~/huskybot/src/huskybot_recognition/scripts/yolo12n.engine'),  # Default TensorRT .engine
+        DeclareLaunchArgument('model_path', default_value='~/jezzy/huskybot/src/huskybot_recognition/scripts/yolo12n.engine'),  # Default TensorRT .engine
         DeclareLaunchArgument('confidence_threshold', default_value='0.25'),
         DeclareLaunchArgument('model_format', default_value='engine'),  # engine/onnx/pt
         Node(

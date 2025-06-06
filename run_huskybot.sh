@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ===================== KONFIGURASI DAN PATH MODEL =====================
-MODEL_DIR="/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts"  # Folder model YOLOv12
+MODEL_DIR="~/jezzy/huskybot/src/huskybot_recognition/scripts"  # Folder model YOLOv12
 MODEL_ENGINE="$MODEL_DIR/yolo12n.engine"  # Path model YOLOv12 TensorRT (.engine, utama)
 MODEL_ONNX="$MODEL_DIR/yolo12n.onnx"      # Path model YOLOv12 ONNX (backup)
 MODEL_PT="$MODEL_DIR/yolo12n.pt"          # Path model YOLOv12 PyTorch (backup)
@@ -63,10 +63,10 @@ fi
 
 # ===================== SOURCE ENVIRONMENT ROS2 DAN WORKSPACE =====================
 source /opt/ros/humble/setup.bash  # Source environment ROS2 Humble (WAJIB)
-source /mnt/nova_ssd/huskybot/install/setup.bash  # Source workspace hasil colcon build (WAJIB)
+source ~/jezzy/huskybot/install/setup.bash  # Source workspace hasil colcon build (WAJIB)
 
 # ===================== CEK PLUGIN ROS2_CONTROL =====================
-PLUGIN_PATH="/mnt/nova_ssd/huskybot/install/gazebo_ros2_control/lib/libgazebo_ros2_control.so"  # Path plugin ros2_control
+PLUGIN_PATH="~/jezzy/huskybot/install/gazebo_ros2_control/lib/libgazebo_ros2_control.so"  # Path plugin ros2_control
 if [ ! -f "$PLUGIN_PATH" ]; then  # Jika plugin tidak ditemukan
   echo "[ERROR] Plugin libgazebo_ros2_control.so tidak ditemukan di $PLUGIN_PATH!"  # Error plugin tidak ada
   echo "Pastikan sudah colcon build dan source workspace."  # Saran solusi
@@ -74,8 +74,8 @@ if [ ! -f "$PLUGIN_PATH" ]; then  # Jika plugin tidak ditemukan
 fi
 
 # ===================== EXPORT ENVIRONMENT GAZEBO =====================
-export GAZEBO_PLUGIN_PATH=/mnt/nova_ssd/huskybot/install/gazebo_ros/lib:/mnt/nova_ssd/huskybot/install/gazebo_plugins/lib:/mnt/nova_ssd/huskybot/install/gazebo_ros2_control/lib:$GAZEBO_PLUGIN_PATH  # Export path plugin Gazebo (WAJIB)
-export GAZEBO_MODEL_PATH=/mnt/nova_ssd/huskybot/install/huskybot_description/share/huskybot_description:/mnt/nova_ssd/huskybot/install/husky_description/share/husky_description:$GAZEBO_MODEL_PATH  # Export path model Gazebo (WAJIB)
+export GAZEBO_PLUGIN_PATH=~/jezzy/huskybot/install/gazebo_ros/lib:~/jezzy/huskybot/install/gazebo_plugins/lib:~/jezzy/huskybot/install/gazebo_ros2_control/lib:$GAZEBO_PLUGIN_PATH  # Export path plugin Gazebo (WAJIB)
+export GAZEBO_MODEL_PATH=~/jezzy/huskybot/install/huskybot_description/share/huskybot_description:~/jezzy/huskybot/install/husky_description/share/husky_description:$GAZEBO_MODEL_PATH  # Export path model Gazebo (WAJIB)
 
 # ===================== CEK WORKSPACE LAIN YANG BENTROK =====================
 if [[ "$GAZEBO_PLUGIN_PATH" == *"gazebo_ros2_ws"* ]]; then  # Cek workspace lain di GAZEBO_PLUGIN_PATH

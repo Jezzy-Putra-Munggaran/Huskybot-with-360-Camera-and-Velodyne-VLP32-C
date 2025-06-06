@@ -80,7 +80,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription (w
         # ===================== ARGUMEN LAUNCH =====================
         calibration_file_arg = DeclareLaunchArgument(
             'calibration_file',
-            default_value='~/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml',
+            default_value='~/jezzy/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml',
             description='Path ke file kalibrasi extrinsic lidar-ke-kamera'  # Penjelasan argumen
         )
         confidence_threshold_arg = DeclareLaunchArgument(
@@ -125,7 +125,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription (w
             package='rviz2',  # Nama package RViz2
             executable='rviz2',  # Executable RViz2
             name='fusion_rviz',  # Nama node RViz2
-            arguments=['-d', '~/huskybot/src/huskybot_fusion/rviz/fusion.rviz'],  # Path config RViz2 (bisa diubah sesuai workspace)
+            arguments=['-d', '~/jezzy/huskybot/src/huskybot_fusion/rviz/fusion.rviz'],  # Path config RViz2 (bisa diubah sesuai workspace)
             output='screen'  # Output ke terminal
         )
 

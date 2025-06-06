@@ -85,7 +85,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 'confidence_threshold', 0.3).get_parameter_value().double_value  # [WAJIB] Default 0.3
 
             self.calibration_file = self.declare_parameter(
-                'calibration_file', '~/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml'
+                'calibration_file', '~/jezzy/huskybot/src/huskybot_calibration/config/extrinsic_lidar_to_camera.yaml'
             ).get_parameter_value().string_value  # [WAJIB] Ambil path file kalibrasi dari parameter
             expanded_calib = os.path.expanduser(self.calibration_file)  # [WAJIB] Expand ~ ke home user
 

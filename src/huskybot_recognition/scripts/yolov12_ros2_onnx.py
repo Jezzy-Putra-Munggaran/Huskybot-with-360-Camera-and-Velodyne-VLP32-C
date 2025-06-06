@@ -64,7 +64,7 @@ class CameraSubscriberONNX(Node):  # Node deteksi YOLOv12 ONNX, FULL OOP
         super().__init__('camera_subscriber_onnx')  # Inisialisasi node dengan nama unik
         try:
             # ===================== PARAMETERISASI NODE =====================
-            self.declare_parameter('model_path', os.path.expanduser('~/huskybot/src/huskybot_recognition/scripts/yolo12n.onnx'))  # Path default model YOLOv12 ONNX
+            self.declare_parameter('model_path', os.path.expanduser('~/jezzy/huskybot/src/huskybot_recognition/scripts/yolo12n.onnx'))  # Path default model YOLOv12 ONNX
             self.declare_parameter('confidence_threshold', 0.25)  # Threshold confidence default
             self.declare_parameter('log_stats', True)  # Logging statistik deteksi ke file
             self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_onnx_stats.csv'))  # Path file statistik
