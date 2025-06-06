@@ -1,13 +1,13 @@
 # ===================== BASE IMAGE =====================
-FROM nvcr.io/nvidia/l4t-base:r36.2.0
+FROM nvcr.io/nvidia/l4t-base:r36.2.0  # [WAJIB] Base image Jetson Orin (JetPack 6, CUDA, TensorRT, cuDNN sudah include)
 
-LABEL maintainer="Jezzy Putra Munggaran <mungguran.jezzy.putra@gmail.com>"
-LABEL description="Docker image for Huskybot 360° + 3D LiDAR AI research (ROS2 Humble, YOLOv12 ONNX/TensorRT, Jetson Orin, JetPack 6)"
+LABEL maintainer="Jezzy Putra Munggaran <mungguran.jezzy.putra@gmail.com>"  # [WAJIB] Metadata maintainer
+LABEL description="Docker image for Huskybot 360° + 3D LiDAR AI research (ROS2 Humble, YOLOv12 ONNX/TensorRT, Jetson Orin, JetPack 6)"  # [WAJIB] Deskripsi image
 
 # ===================== ENV & LOCALE =====================
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive  # [BEST PRACTICE] Non-interaktif agar build tidak stuck
+ENV LANG=en_US.UTF-8  # [WAJIB] Locale UTF-8
+ENV LC_ALL=en_US.UTF-8  # [WAJIB] Locale UTF-8
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -18,8 +18,24 @@ RUN apt-get update && \
         ros-humble-desktop \
         ros-humble-vision-opencv \
         ros-humble-velodyne* \
+        ros-humble-gazebo-* \
+        ros-humble-rviz2 \
+        ros-humble-xacro \
+        ros-humble-joy \
+        ros-humble-controller-manager \
+        ros-humble-robot-state-publisher \
+        ros-humble-ament-cmake \
+        ros-humble-colcon-common-extensions \
+        ros-humble-ament-lint-auto \
+        ros-humble-ament-lint-common \
+        ros-humble-ament-pep257 \
+        python3-colcon-common-extensions python3-rosdep python3-vcstool \
+        python3-pyqt5 python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtnetwork \
+        python3-pyside2.qtwidgets python3-pyside2.qtopengl \
+        python3-pandas python3-matplotlib python3-scipy python3-pillow python3-tqdm \
+        python3-scikit-image python3-scikit-learn python3-open3d python3-pyquaternion \
         python3-msgpack python3-empy python3-pybind11 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*  # [BEST PRACTICE] Bersihkan cache apt
 
 # ===================== ROS2 PYTHON TOOLS TAMBAHAN =====================
 RUN apt-get update && \
@@ -39,7 +55,7 @@ RUN set -e; \
     rosdep update || echo "[WARNING] rosdep update failed"
 
 # ===================== PYTHON DEPENDENCIES (NO ULTRALYTICS) =====================
-RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip  # [BEST PRACTICE] Upgrade pip
 RUN pip3 install --ignore-installed --no-cache-dir \
     onnxruntime-gpu \
     roboflow \
@@ -62,7 +78,7 @@ RUN pip3 install --ignore-installed --no-cache-dir \
 RUN pip3 cache purge
 
 # ===================== PYTORCH, TORCHVISION, TORCHAUDIO (JETSON WHEEL) =====================
-COPY wheels/torch-2.3.0-cp310-cp310-linux_aarch64.whl /tmp/
+COPY wheels/torch-2.3.0-cp310-cp310-linux_aarch64.whl /tmp/  # [WAJIB] Copy wheel PyTorch Jetson Orin
 COPY wheels/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl /tmp/
 COPY wheels/torchaudio-2.3.0+952ea74-cp310-cp310-linux_aarch64.whl /tmp/
 RUN pip3 install --force-reinstall --ignore-installed /tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl && \
