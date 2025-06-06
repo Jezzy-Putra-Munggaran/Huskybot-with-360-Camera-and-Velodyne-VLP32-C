@@ -18,6 +18,7 @@ endif()
 find_package(ament_cmake REQUIRED)                 # [WAJIB] Build system utama ROS2
 find_package(rclpy REQUIRED)                       # [WAJIB] Dependency Python ROS2 (untuk node Python di launch file)
 find_package(gazebo_ros REQUIRED)                  # [WAJIB] Dependency utama integrasi Gazebo-ROS2 (plugin, launch)
+list(APPEND CMAKE_PREFIX_PATH /opt/ros/humble)
 find_package(ament_index_python REQUIRED)          # [WAJIB] Untuk get_package_share_directory di launch file
 
 # ===================== LINTING & TESTING OTOMATIS =====================

@@ -1,14 +1,15 @@
 # ===================== BASE IMAGE =====================
-FROM nvcr.io/nvidia/l4t-base:r36.2.0  # [WAJIB] Base image Jetson Orin (JetPack 6, CUDA, TensorRT, cuDNN sudah include)
+FROM nvcr.io/nvidia/l4t-base:r36.2.0
 
-LABEL maintainer="Jezzy Putra Munggaran <mungguran.jezzy.putra@gmail.com>"  # [WAJIB] Metadata maintainer
-LABEL description="Docker image for Huskybot 360° + 3D LiDAR AI research (ROS2 Humble, YOLOv12 ONNX/TensorRT, Jetson Orin, JetPack 6)"  # [WAJIB] Deskripsi image
+LABEL maintainer="Jezzy Putra Munggaran <mungguran.jezzy.putra@gmail.com>"
+LABEL description="Docker image for Huskybot 360° + 3D LiDAR AI research (ROS2 Humble, YOLOv12 ONNX/TensorRT, Jetson Orin, JetPack 6)"
 
 # ===================== ENV & LOCALE =====================
-ENV DEBIAN_FRONTEND=noninteractive  # [BEST PRACTICE] Non-interaktif agar build tidak stuck
-ENV LANG=en_US.UTF-8  # [WAJIB] Locale UTF-8
-ENV LC_ALL=en_US.UTF-8  # [WAJIB] Locale UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
+# ===================== SYSTEM & ROS2 DEPENDENCIES =====================
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         locales software-properties-common \
@@ -35,7 +36,7 @@ RUN apt-get update && \
         python3-pandas python3-matplotlib python3-scipy python3-pillow python3-tqdm \
         python3-scikit-image python3-scikit-learn python3-open3d python3-pyquaternion \
         python3-msgpack python3-empy python3-pybind11 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*  # [BEST PRACTICE] Bersihkan cache apt
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ===================== ROS2 PYTHON TOOLS TAMBAHAN =====================
 RUN apt-get update && \
@@ -54,8 +55,8 @@ RUN set -e; \
     fi && \
     rosdep update || echo "[WARNING] rosdep update failed"
 
-# ===================== PYTHON DEPENDENCIES (NO ULTRALYTICS) =====================
-RUN pip3 install --upgrade pip  # [BEST PRACTICE] Upgrade pip
+# ===================== PYTHON DEPENDENCIES (INCLUDE ULTRALYTICS) =====================
+RUN pip3 install --upgrade pip
 RUN pip3 install --ignore-installed --no-cache-dir \
     onnxruntime-gpu \
     roboflow \
@@ -73,12 +74,14 @@ RUN pip3 install --ignore-installed --no-cache-dir \
     scikit-learn \
     pandas \
     open3d \
-    pyquaternion
+    pyquaternion \
+    opencv-python \
+    ultralytics[export]
 
 RUN pip3 cache purge
 
 # ===================== PYTORCH, TORCHVISION, TORCHAUDIO (JETSON WHEEL) =====================
-COPY wheels/torch-2.3.0-cp310-cp310-linux_aarch64.whl /tmp/  # [WAJIB] Copy wheel PyTorch Jetson Orin
+COPY wheels/torch-2.3.0-cp310-cp310-linux_aarch64.whl /tmp/
 COPY wheels/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl /tmp/
 COPY wheels/torchaudio-2.3.0+952ea74-cp310-cp310-linux_aarch64.whl /tmp/
 RUN pip3 install --force-reinstall --ignore-installed /tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl && \
@@ -90,10 +93,24 @@ RUN python3 -c "import torch; print('PyTorch:', torch.__version__, 'CUDA:', torc
 RUN python3 -c "import onnxruntime; print('ONNXRuntime:', onnxruntime.__version__)" || (echo '[ERROR] ONNXRuntime not installed!' && exit 1)
 RUN python3 -c "import cv2; print('OpenCV:', cv2.__version__)" || (echo '[ERROR] OpenCV not installed!' && exit 1)
 RUN python3 -c "import rclpy; print('rclpy OK')" || (echo '[ERROR] rclpy not installed!' && exit 1)
+RUN python3 -c "import ultralytics; print('Ultralytics:', ultralytics.__version__)" || (echo '[ERROR] Ultralytics not installed!' && exit 1)
 
-# ===================== WORKDIR & ENTRY =====================
+# ===================== COPY WORKSPACE & BUILD =====================
+COPY . /workspace
 WORKDIR /workspace
 
+RUN . /opt/ros/humble/setup.sh && \
+    colcon build --event-handlers console_direct+ --parallel-workers 1 || (cat log/latest_build/* && exit 1)
+
+# ===================== SOURCE ENVIRONMENT OTOMATIS =====================
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
+RUN echo "source /workspace/install/setup.bash" >> /root/.bashrc
+
+# ===================== VOLUME UNTUK DATA & LOG =====================
 VOLUME ["/workspace/log", "/workspace/dataset", "/workspace/calibration"]
 
+# ===================== ENTRYPOINT =====================
 CMD ["/bin/bash"]
+
+# ===================== HEALTHCHECK (OPSIONAL) =====================
+HEALTHCHECK CMD python3 -c "import torch, onnxruntime, cv2, rclpy, ultralytics"
