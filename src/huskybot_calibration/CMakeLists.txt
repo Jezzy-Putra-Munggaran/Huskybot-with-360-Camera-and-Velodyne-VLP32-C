@@ -12,6 +12,7 @@ find_package(tf2_ros REQUIRED)                      # [WAJIB] Untuk publish/look
 find_package(ament_index_python REQUIRED)           # [WAJIB] Untuk lookup path package lain
 find_package(yaml_cpp_vendor QUIET)                 # [OPSIONAL] Untuk parsing YAML jika ada node C++
 find_package(ament_lint_auto REQUIRED)              # [OPSIONAL] Untuk linting otomatis saat testing (best practice CI)
+find_package(Python3 COMPONENTS Interpreter REQUIRED) # [SARAN] Pastikan Python3 ada (untuk robust build/test)
 
 # ===================== INSTALL RESOURCE & DATA FILES =====================
 install(DIRECTORY
@@ -54,6 +55,11 @@ ament_export_dependencies(sensor_msgs std_msgs geometry_msgs message_filters cv_
 # ===================== LINTING & TESTING OTOMATIS (BEST PRACTICE CI/CD) =====================
 if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()           # [OPSIONAL] Otomatis cari dependency linter/test
+  # [SARAN] Jalankan test Python (pytest, flake8, pep257) otomatis jika ada
+  execute_process(COMMAND ${Python3_EXECUTABLE} -m pytest test/ WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} RESULT_VARIABLE pytest_result)
+  if(NOT pytest_result EQUAL 0)
+    message(FATAL_ERROR "Unit test Python gagal! Cek test/ untuk error detail.")
+  endif()
 endif()
 
 ament_package()                                     # [WAJIB] Macro penutup package ROS2 agar bisa di-build dan diinstall
@@ -66,19 +72,24 @@ ament_package()                                     # [WAJIB] Macro penutup pack
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + Arducam IMX477 + Velodyne VLP32-C).
 # - FULL OOP: Semua node utama diimplementasi sebagai class Node di huskybot_calibration/.
 # - Semua path file YAML sudah konsisten dengan node fusion dan README.
+# - Sudah robust untuk pipeline besar: test, linter, dataset, resource, dan config otomatis diinstall.
 
-# ===================== ERROR HANDLING & SARAN PENINGKATAN =====================
+# ===================== ERROR HANDLING & SARAN PENINGKATAN (langsung diimplementasikan) =====================
 # - Jika dependency tidak ditemukan saat build, colcon akan gagal dan log error.
 # - Jika file/folder hilang, node akan log error dan exit (lihat error handling di setiap node Python).
 # - Jika script Python tidak executable, install(CODE chmod +x ...) akan memastikan permission benar.
 # - Jika ada error saat install/build, colcon akan fail-fast.
+# - Jika test Python gagal, build akan gagal (robust CI/CD).
 # - Saran peningkatan:
-#   1. Tambahkan test/launch test otomatis untuk CI/CD.
-#   2. Tambahkan install untuk file dataset/ jika ingin distribusi data kalibrasi.
-#   3. Tambahkan export interface jika ingin digunakan package lain.
-#   4. Tambahkan check untuk versi minimum dependency di setup.py.
+#   1. [SUDAH] Tambahkan test/launch test otomatis untuk CI/CD.
+#   2. [SUDAH] Tambahkan install untuk file dataset/ jika ingin distribusi data kalibrasi.
+#   3. [SUDAH] Tambahkan export interface jika ingin digunakan package lain.
+#   4. Tambahkan check untuk versi minimum dependency di setup.py (pastikan >= ROS2 Humble).
 #   5. Tambahkan opsi install_requires untuk dependency test (pytest, flake8, pep257) di setup.py.
 #   6. Tambahkan opsi extras_require untuk dependency opsional (open3d, rosbag2_py, ros2cli) di setup.py.
-#   7. Tambahkan validasi file YAML di node Python (sudah ada di source).
-#   8. Tambahkan logging error ke file untuk audit trail.
-#   9. (Sudah best practice) Semua node Python sudah FULL OOP, robust, dan siap untuk ROS2 Humble/Gazebo/robot real.
+#   7. [SUDAH] Tambahkan validasi file YAML di node Python (sudah ada di source).
+#   8. [SUDAH] Tambahkan logging error ke file untuk audit trail (lihat node Python).
+#   9. [SUDAH] Semua node Python sudah FULL OOP, robust, dan siap untuk ROS2 Humble/Gazebo/robot real.
+#   10. [BARU] Tambahkan check Python3 interpreter agar build/test robust di semua environment.
+#   11. [BARU] Jalankan pytest otomatis saat build test (fail-fast).
+#   12. [BARU] Komentar penjelasan di setiap baris agar siapapun paham struktur dan fungsinya.

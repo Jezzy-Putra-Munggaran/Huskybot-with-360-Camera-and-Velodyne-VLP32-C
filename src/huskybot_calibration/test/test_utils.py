@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import os  # Untuk operasi file/folder (cek, hapus, buat folder)
 import tempfile  # Untuk membuat file/folder sementara saat test (isolasi test)
@@ -136,18 +136,37 @@ class TestUtils(unittest.TestCase):  # Kelas unit test untuk fungsi utilitas di 
             result = ensure_dir_exists(bad_dir)
             self.assertFalse(result)  # Harus False jika tidak bisa buat folder
 
+    def test_safe_load_yaml_empty(self):  # Test error handling file YAML kosong
+        with open(self.yaml_path, 'w') as f:
+            f.write("")  # Simpan file kosong
+        self.assertIsNone(safe_load_yaml(self.yaml_path))  # Harus None (uji error handling file kosong)
+
+    def test_validate_extrinsic_yaml_empty(self):  # Test validasi file YAML kosong
+        with open(self.yaml_path, 'w') as f:
+            f.write("")  # Simpan file kosong
+        self.assertFalse(validate_extrinsic_yaml(self.yaml_path))  # Harus False (uji error handling file kosong)
+
+    def test_save_yaml_invalid_path_type(self):  # Test error handling jika path bukan string
+        result = save_yaml({'foo': 1}, None)  # Path None (salah)
+        self.assertFalse(result)  # Harus False jika path tidak valid
+
+    def test_ensure_dir_exists_invalid_path_type(self):  # Test error handling jika path bukan string
+        result = ensure_dir_exists(None)  # Path None (salah)
+        self.assertFalse(result)  # Harus False jika path tidak valid
+
 if __name__ == '__main__':  # Jika file dijalankan langsung
     unittest.main()  # Jalankan semua unit test di file ini
 
 # Penjelasan:
-# - Semua fungsi utilitas di huskybot_calibration/utils.py diuji di sini, termasuk error handling file tidak ada, field kurang, shape salah, file corrupt, permission error, dan konversi quaternion.
+# - Semua fungsi utilitas di huskybot_calibration/utils.py diuji di sini, termasuk error handling file tidak ada, field kurang, shape salah, file corrupt, file kosong, permission error, path tidak valid, dan konversi quaternion.
 # - Test ini tidak tergantung node ROS2, bisa dijalankan langsung dengan python3 -m unittest test/test_utils.py.
 # - Output YAML yang dihasilkan dan divalidasi langsung dipakai node kalibrasi dan pipeline lain di workspace.
 # - Sudah aman untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
 # - Komentar penjelasan di setiap baris agar mudah dipahami siapapun.
 # - Sudah FULL OOP (class unittest), robust, dan best practice Python unit test.
 
-# Saran peningkatan (SUDAH diimplementasikan):
-# - Tambahkan test untuk permission error (uji save_yaml dan ensure_dir_exists gagal tulis/buat folder).
-# - Dokumentasikan cara menjalankan test di README.
+# ===================== SARAN PENINGKATAN (langsung diimplementasikan) =====================
+# - Tambahkan test untuk file YAML kosong dan path tidak valid (SUDAH).
 # - Jika ingin coverage logger ROS2, bisa tambahkan mock logger di test (opsional, tidak wajib).
+# - Dokumentasikan cara menjalankan test di README (sudah ada).
+# - Jika workspace bertambah fungsi baru di utils.py, tambahkan test baru di sini.

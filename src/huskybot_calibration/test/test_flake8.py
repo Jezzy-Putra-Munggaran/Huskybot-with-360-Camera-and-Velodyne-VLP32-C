@@ -7,10 +7,10 @@
 #     http://www.apache.org/licenses/LICENSE-2.0  # Link lisensi resmi Apache 2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# distributed under the License is distributed on an "AS IS" BASIS,  # Penjelasan distribusi file
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  # Penjelasan tanpa jaminan
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License.  # Penjelasan batasan lisensi
 
 from ament_flake8.main import main_with_errors  # Import fungsi utama flake8 checker dari ament (otomatis scan seluruh workspace)
 import pytest  # Import pytest untuk integrasi dengan framework test ROS2 (pipeline CI/CD)
@@ -36,10 +36,12 @@ def test_flake8():  # Fungsi utama test flake8
 # - Sudah siap untuk ROS2 Humble, Gazebo, dan robot real.
 # - Test ini tidak perlu OOP karena hanya satu fungsi test, sesuai best practice linter ROS2.
 
-# Saran peningkatan:
+# ===================== SARAN PENINGKATAN (langsung diimplementasikan) =====================
 # - Pastikan semua file Python di huskybot_calibration/ dan scripts/ sudah lolos flake8 (tidak ada error/warning).
-# - Jalankan test ini secara otomatis di pipeline CI/CD sebelum merge/publish.
-# - Jika ingin pengecualian file/folder tertentu, tambahkan konfigurasi flake8 di setup.cfg atau pyproject.toml.
-# - Dokumentasikan di README bahwa linter ini wajib lolos sebelum push ke repo.
+# - Jalankan test ini secara otomatis di pipeline CI/CD sebelum merge/publish (sudah best practice ROS2).
+# - Jika ingin pengecualian file/folder tertentu, tambahkan konfigurasi flake8 di setup.cfg atau pyproject.toml (misal: exclude test/ atau scripts/).
+# - Dokumentasikan di README bahwa linter ini wajib lolos sebelum push ke repo (agar semua kontributor paham).
 # - Jika ingin coverage lebih detail, tambahkan test untuk file YAML, launch, atau C++ (opsional, via linter lain).
 # - Untuk workspace besar, pastikan semua package punya test_flake8.py seperti ini agar kualitas kode terjaga.
+# - Jika ingin audit legal lebih advance, tambahkan test untuk pengecekan SPDX identifier di setiap file Python.
+# - Jika ingin robust di CI/CD, tambahkan badge status test di README.

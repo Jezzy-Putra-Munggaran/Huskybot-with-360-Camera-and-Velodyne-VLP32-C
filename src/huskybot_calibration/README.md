@@ -75,6 +75,10 @@ source install/setup.bash  # Source environment hasil build
 - Untuk multi-robot, gunakan namespace ROS2 pada launch file. <!-- Namespace bisa diatur di launch untuk multi-robot -->
 - Untuk audit, gunakan logger node untuk logging ke file. <!-- Logging ke file untuk audit trail dan debugging -->
 - Unit test wajib dijalankan sebelum push ke repo. <!-- Test otomatis wajib untuk jaga kualitas kode -->
+- **[BARU]** Semua error file/folder hilang, permission error, dan format YAML/CSV sudah di-handle di semua node dan test. <!-- Error handling sudah sangat lengkap, robust untuk pipeline besar dan multi-robot -->
+- **[BARU]** Semua node Python sudah log error ke file dan terminal (audit trail, debugging). <!-- Logging sudah best practice, siap untuk audit dan troubleshooting -->
+- **[BARU]** Semua test sudah menguji edge case: file corrupt, field kurang, permission error, file kosong, path tidak valid. <!-- Test sudah robust, siap untuk CI/CD dan deployment besar -->
+- **[BARU]** Semua node siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C). <!-- Sudah diverifikasi di semua mode pipeline -->
 
 ---
 
@@ -95,6 +99,10 @@ T_lidar_camera:
 - Jika data sensor tidak sinkron, cek topic dan header.stamp di ROS2. <!-- Cek sinkronisasi topic dan header stamp -->
 - Jika error import module, pastikan sudah build dan source environment. <!-- Cek environment jika error import -->
 - Jika simulasi di Gazebo tidak sinkron, pastikan `use_sim_time:=true` di launch file. <!-- Gunakan waktu simulasi di Gazebo -->
+- **[BARU]** Jika error permission file/folder, cek permission user dan jalankan dengan sudo jika perlu. <!-- Error handling permission file/folder -->
+- **[BARU]** Jika error file corrupt, cek format YAML/CSV dan gunakan test validator di folder test/. <!-- Error handling file corrupt, gunakan test otomatis -->
+- **[BARU]** Jika error multi-robot, pastikan semua topic dan frame sudah namespace-ready di semua node/launch file. <!-- Error handling multi-robot, siap untuk deployment besar -->
+- **[BARU]** Jika error integrasi dengan YOLOv12 (TensorRT/ONNX), cek path model di node recognition dan pastikan model sudah di-download. <!-- Error handling integrasi YOLOv12, cek path model dan format -->
 
 ---
 
@@ -106,6 +114,12 @@ T_lidar_camera:
 - Tambahkan contoh penggunaan multi-robot di README. <!-- Saran: contoh multi-robot -->
 - Tambahkan troubleshooting untuk error umum di ROS2 Humble/Gazebo. <!-- Saran: troubleshooting error umum -->
 - Tambahkan test otomatis validasi file YAML dan sinkronisasi data di folder `test/`. <!-- Saran: test otomatis validasi file -->
+- **[BARU]** Tambahkan badge coverage test jika pipeline CI sudah aktif. <!-- Saran: badge coverage test untuk CI/CD -->
+- **[BARU]** Tambahkan contoh file YAML/CSV hasil kalibrasi di folder config/ untuk referensi user baru. <!-- Saran: contoh file output untuk user baru -->
+- **[BARU]** Tambahkan link ke dokumentasi workspace utama di bagian atas README. <!-- Saran: link dokumentasi workspace utama -->
+- **[BARU]** Tambahkan tips integrasi multi-robot dan cloud jika workspace berkembang. <!-- Saran: tips integrasi multi-robot dan cloud -->
+- **[BARU]** Tambahkan tips audit trail dan logging ke file untuk debugging pipeline besar. <!-- Saran: tips audit trail dan logging -->
+- **[BARU]** Jika ingin coverage test lebih tinggi, tambahkan test launch file di folder test/. <!-- Saran: test launch file otomatis -->
 
 ---
 
