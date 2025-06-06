@@ -1,5 +1,5 @@
-#!/usr/bin/python3 
-# -*- coding: utf-8 -*- 
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os  # Untuk operasi path file
 import sys  # Untuk exit/error handling
@@ -13,12 +13,12 @@ from launch_ros.actions import Node  # Untuk deklarasi node ROS2 di launch file
 
 # ===================== OOP CONFIG WRAPPER =====================
 class RvizDisplayConfig:  # Wrapper OOP untuk konfigurasi RViz2 multi-robot
-    def __init__(self, package_name='huskybot_description', default_rviz='huskybot.rviz'):
+    def __init__(self, package_name='huskybot_description', default_rviz='huskybot.rviz'):  # Konstruktor class
         self.package_name = package_name  # Nama package (default huskybot_description)
         self.default_rviz = default_rviz  # Nama file RViz config default
         self.sensor_topics = {  # Mapping topic sensor utama
-            'velodyne_points': '/velodyne_points',
-            'imu_data': '/imu/data'
+            'velodyne_points': '/velodyne_points',  # Topic pointcloud Velodyne
+            'imu_data': '/imu/data'  # Topic IMU
         }
         self.camera_names = [  # Daftar nama kamera (hexagonal, 6 sisi)
             'front', 'front_left', 'left', 'rear', 'rear_right', 'right'
@@ -52,7 +52,7 @@ class RvizDisplayConfig:  # Wrapper OOP untuk konfigurasi RViz2 multi-robot
 
 # ===================== ERROR HANDLING & LOGGER =====================
 def check_rviz2_dependency(context, *args, **kwargs):  # Cek apakah rviz2 ada di PATH
-    if shutil.which('rviz2') is None:
+    if shutil.which('rviz2') is None:  # Jika rviz2 tidak ditemukan
         print("[ERROR] Dependency 'rviz2' tidak ditemukan di PATH. Install dengan: sudo apt install ros-humble-rviz2", flush=True)
         sys.exit(2)
     else:
@@ -61,7 +61,7 @@ def check_rviz2_dependency(context, *args, **kwargs):  # Cek apakah rviz2 ada di
 
 def validate_rviz_config(context, *args, **kwargs):  # Cek file RViz config ada/tidak
     rvizconfig = LaunchConfiguration('rvizconfig').perform(context)
-    if not os.path.isfile(rvizconfig):
+    if not os.path.isfile(rvizconfig):  # Jika file tidak ada
         print(f"[WARNING] File RViz config tidak ditemukan: {rvizconfig}. RViz2 akan jalan tanpa konfigurasi.", flush=True)
     else:
         print(f"[INFO] File RViz config ditemukan: {rvizconfig}", flush=True)
@@ -69,7 +69,7 @@ def validate_rviz_config(context, *args, **kwargs):  # Cek file RViz config ada/
 
 def check_rviz_config_permission(context, *args, **kwargs):  # Cek permission file RViz config
     rvizconfig = LaunchConfiguration('rvizconfig').perform(context)
-    if os.path.isfile(rvizconfig) and not os.access(rvizconfig, os.R_OK):
+    if os.path.isfile(rvizconfig) and not os.access(rvizconfig, os.R_OK):  # Jika file tidak bisa dibaca
         print(f"[ERROR] File RViz config tidak bisa dibaca (permission denied): {rvizconfig}", flush=True)
         sys.exit(3)
     return []
@@ -84,8 +84,8 @@ def check_sensor_topic_conflict(context, *args, **kwargs):  # Cek duplikasi topi
         camera_topics.add(topic)
     return []
 
-def log_to_file(msg):  # Logging ke file audit trail
-    log_file_path = os.path.expanduser("~/huskybot_rviz_display.log")
+def log_to_file(msg, log_file_path="~/huskybot_rviz_display.log"):  # Logging ke file audit trail
+    log_file_path = os.path.expanduser(log_file_path)
     try:
         with open(log_file_path, "a") as logf:
             logf.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
@@ -150,8 +150,8 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             name='robot_state_publisher',
             output='screen',
             parameters=[{
-                'robot_description': '',
-                'use_sim_time': True
+                'robot_description': '',  # Kosong, hanya untuk RViz2 standalone
+                'use_sim_time': True  # Gunakan waktu simulasi (wajib untuk Gazebo)
             }],
             remappings=[('/robot_description', LaunchConfiguration('robot_description_topic'))]
         )
@@ -176,18 +176,18 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         )
 
         return LaunchDescription([
-            rviz_config_arg,
-            robot_description_topic_arg,
-            tf_prefix_arg,
-            velodyne_topic_arg,
-            imu_data_topic_arg,
-            *camera_args,
-            check_rviz2_action,
-            validate_rviz_action,
-            check_rviz_config_permission_action,
-            check_sensor_topic_conflict_action,
-            robot_state_publisher_node,
-            rviz_node
+            rviz_config_arg,  # Argumen path RViz config
+            robot_description_topic_arg,  # Argumen topic robot_description
+            tf_prefix_arg,  # Argumen TF prefix
+            velodyne_topic_arg,  # Argumen topic Velodyne
+            imu_data_topic_arg,  # Argumen topic IMU
+            *camera_args,  # Argumen semua kamera
+            check_rviz2_action,  # Cek dependency rviz2
+            validate_rviz_action,  # Validasi file config
+            check_rviz_config_permission_action,  # Cek permission file config
+            check_sensor_topic_conflict_action,  # Cek duplikasi topic kamera
+            robot_state_publisher_node,  # Node robot_state_publisher
+            rviz_node  # Node RViz2
         ])
     except Exception as e:
         print(f"[FATAL] Exception saat generate_launch_description: {e}", file=sys.stderr)
@@ -222,5 +222,6 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
 # - Sudah robust untuk multi-robot (tinggal remap topic via launch file).
 # - Sudah best practice ROS2 Python launch file.
 # - Saran: tambahkan validasi file RViz config YAML jika ingin audit lebih advance.
-# - Saran: tambahkan argumen log_file jika ingin log custom per robot.
+# - Saran: tambahkan argumen log_file jika ingin log custom per robot (sudah disiapkan di log_to_file).
 # - Saran: dokumentasikan semua parameter di README dan launch file.
+# - Saran: jika ingin coverage test, tambahkan test launch file di folder test/ untuk CI/CD.

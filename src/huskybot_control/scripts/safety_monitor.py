@@ -1,40 +1,51 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import rclpy  # Import utama ROS2 Python
 from rclpy.node import Node  # Base class Node ROS2
 from rclpy.parameter import Parameter  # Untuk dynamic reconfigure parameter
-from std_msgs.msg import Bool, Float32  # Import pesan Bool untuk safety_stop, Float32 untuk min_range dan direction
+from std_msgs.msg import Bool, Float32  # Import pesan Bool untuk safety_stop, min_range, dan direction
 from sensor_msgs.msg import LaserScan  # Import pesan LaserScan (untuk safety monitor)
-import threading  # Import threading untuk lock (thread-safe)
+import threading  # Untuk lock thread-safe
 import math  # Untuk validasi nilai LaserScan (inf/nan)
 import os  # Untuk operasi file log
 import logging  # Untuk logging ke file
 import time  # Untuk validasi topic aktif
+import sys  # Untuk sys.exit jika error fatal
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
 def setup_file_logger(log_path="~/huskybot_safety_monitor.log"):  # Fungsi setup logger file
     log_path = os.path.expanduser(log_path)  # Expand ~ ke home user
-    logger = logging.getLogger("safety_monitor_file_logger")  # Buat/get logger dengan nama unik
+    logger = logging.getLogger("safety_monitor_file_logger")  # Buat/get logger unik
     logger.setLevel(logging.INFO)  # Set level default INFO
     if not logger.hasHandlers():  # Cegah duplicate handler
-        fh = logging.FileHandler(log_path)  # Handler file log
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
-        logger.addHandler(fh)  # Tambah handler ke logger
+        try:
+            fh = logging.FileHandler(log_path)  # Handler file log
+            fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
+            logger.addHandler(fh)  # Tambah handler ke logger
+        except PermissionError as e:  # Error handling permission file log
+            print(f"[ERROR] Tidak bisa menulis file log: {log_path} ({e})", file=sys.stderr)
+            return None  # Return None jika gagal
+        except Exception as e:  # Error handling lain (misal: disk full)
+            print(f"[ERROR] Gagal setup file logger: {e}", file=sys.stderr)
+            return None
     return logger  # Return logger instance
 
 file_logger = setup_file_logger()  # Inisialisasi logger file global
 
 def log_to_file(msg, level='info'):  # Fungsi log ke file dengan level
     if file_logger:  # Jika logger ada
-        if level == 'error':
-            file_logger.error(msg)  # Log error
-        elif level == 'warn':
-            file_logger.warning(msg)  # Log warning
-        elif level == 'debug':
-            file_logger.debug(msg)  # Log debug
-        else:
-            file_logger.info(msg)  # Log info
+        try:
+            if level == 'error':
+                file_logger.error(msg)  # Log error
+            elif level == 'warn':
+                file_logger.warning(msg)  # Log warning
+            elif level == 'debug':
+                file_logger.debug(msg)  # Log debug
+            else:
+                file_logger.info(msg)  # Log info
+        except Exception as e:  # Error handling log file (misal: disk full)
+            print(f"[ERROR] Gagal log ke file: {e}", file=sys.stderr)
 
 class SafetyMonitor(Node):  # Definisi class SafetyMonitor, turunan dari Node (OOP, best practice ROS2)
     def __init__(self):
@@ -58,7 +69,10 @@ class SafetyMonitor(Node):  # Definisi class SafetyMonitor, turunan dari Node (O
                 f"SafetyMonitor node started, listening to {self._scan_topic} with safe_distance={self._safe_distance}"
             )  # Info node aktif
             log_to_file(f"SafetyMonitor node started, listening to {self._scan_topic} with safe_distance={self._safe_distance}")  # Log ke file
-            self._validate_topic_active(self._scan_topic)  # Health check: cek apakah topic aktif (ada publisher)
+            if not self._validate_topic_active(self._scan_topic):  # Health check: cek apakah topic aktif (ada publisher)
+                warn_msg = f"Topic {self._scan_topic} tidak aktif saat init. Pastikan sensor aktif!"
+                self.get_logger().warn(warn_msg)
+                log_to_file(warn_msg, level='warn')
         except Exception as e:
             self.get_logger().error(f"Error initializing SafetyMonitor: {e}")  # Log error init
             log_to_file(f"Error initializing SafetyMonitor: {e}", level='error')  # Log error ke file

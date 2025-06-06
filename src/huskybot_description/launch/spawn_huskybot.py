@@ -1,15 +1,15 @@
-#!/usr/bin/python3 
-# -*- coding: utf-8 -*- 
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import sys  # Untuk akses argumen CLI dan error handling
-import os  # Untuk operasi path file
-import rclpy  # Import utama ROS2 Python
-from gazebo_msgs.srv import SpawnEntity  # Service untuk spawn entity di Gazebo
+import os  # Untuk operasi path file (cek file, expand path)
+import rclpy  # Import utama ROS2 Python (wajib untuk node/service ROS2)
+from gazebo_msgs.srv import SpawnEntity  # Service ROS2 untuk spawn entity di Gazebo
 import time  # Untuk timestamp log dan timeout
-import logging  # Untuk logging ke file
+import logging  # Untuk logging ke file (audit trail)
 import xml.etree.ElementTree as ET  # Untuk validasi XML URDF/SDF
-import subprocess  # Untuk eksekusi xacro
-import traceback  # Untuk print stack trace error
+import subprocess  # Untuk eksekusi xacro (konversi .xacro ke .urdf)
+import traceback  # Untuk print stack trace error (debugging)
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
 def setup_file_logger(log_path="spawn_huskybot.log"):  # Fungsi setup logger file

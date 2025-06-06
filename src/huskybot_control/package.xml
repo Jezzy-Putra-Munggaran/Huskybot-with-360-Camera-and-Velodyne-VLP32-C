@@ -11,9 +11,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>                            <!-- Dependency utama build tool ROS2 (WAJIB untuk package CMake), wajib agar bisa dibuild dengan colcon/ament -->
 
   <depend>huskybot_description</depend>                                       <!-- Dependency ke package URDF/mesh robot, pastikan package ini ada jika robot butuh URDF -->
-  <!-- <depend>huskybot_gazebo</depend>                                            Dependency ke package simulasi Gazebo, pastikan package ini ada jika butuh plugin/launch Gazebo -->
+  <!-- <depend>huskybot_gazebo</depend> -->                                    <!-- Dependency ke package simulasi Gazebo, aktifkan jika butuh plugin/launch Gazebo -->
 
-  <!-- Dependency Python dan pesan yang digunakan di scripts/robot_control.py -->
+  <!-- Dependency Python dan pesan yang digunakan di scripts/robot_control.py, safety_monitor.py, logger.py -->
   <exec_depend>rclpy</exec_depend>                                            <!-- Dependency runtime untuk node Python ROS2, wajib untuk semua node Python -->
   <exec_depend>geometry_msgs</exec_depend>                                    <!-- Dependency runtime untuk pesan geometry_msgs (Twist), wajib jika publish/subscribe Twist -->
   <exec_depend>sensor_msgs</exec_depend>                                      <!-- Dependency runtime untuk pesan sensor_msgs (Joy, LaserScan), wajib jika pakai Joy/LaserScan -->
@@ -22,6 +22,12 @@
   <exec_depend>logging</exec_depend>                                          <!-- Dependency runtime untuk logging ke file, best practice Python -->
   <exec_depend>python3-threading</exec_depend>                                <!-- Dependency runtime untuk threading, best practice Python multi-thread -->
   <exec_depend>python3-yaml</exec_depend>                                     <!-- Dependency runtime untuk parsing YAML parameter (opsional jika ada param YAML) -->
+  <exec_depend>csv</exec_depend>                                              <!-- [SARAN] Tambahkan dependency csv untuk logger ke CSV -->
+  <exec_depend>json</exec_depend>                                             <!-- [SARAN] Tambahkan dependency json untuk logger ke JSON -->
+  <exec_depend>traceback</exec_depend>                                        <!-- [SARAN] Tambahkan dependency traceback untuk error handling detail -->
+  <exec_depend>os</exec_depend>                                               <!-- [SARAN] Tambahkan dependency os untuk operasi file/rotasi log -->
+  <exec_depend>sys</exec_depend>                                              <!-- [SARAN] Tambahkan dependency sys untuk exit/error handling -->
+  <exec_depend>datetime</exec_depend>                                         <!-- [SARAN] Tambahkan dependency datetime untuk timestamp log -->
 
   <!-- Tambahkan dependency eksternal lain jika ada import di script -->
   <!-- <exec_depend>tf2_ros</exec_depend> -->                                  <!-- Tambahkan jika ada dependency lain, misal: tf2_ros, dsb -->

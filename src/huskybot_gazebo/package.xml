@@ -4,11 +4,11 @@
   <name>huskybot_gazebo</name>                                              <!-- Nama package, harus sama dengan folder dan CMakeLists.txt -->
   <version>0.1.0</version>                                                  <!-- Versi package, update jika sudah release/ada perubahan besar -->
   <description>
-    Gazebo worlds and launch files for Huskybot simulation.
-    Simulasi robot Husky A200 + Velodyne VLP-32C + 6x Arducam IMX477.
-    Siap untuk ROS2 Humble, multi-robot, dan integrasi pipeline workspace.
-    (Update 2025-05-17)
-  </description>                                                            <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
+    Gazebo worlds and launch files for Huskybot simulation.                  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
+    Simulasi robot Husky A200 + Velodyne VLP-32C + 6x Arducam IMX477.       <!-- Penjelasan hardware utama yang disimulasikan -->
+    Siap untuk ROS2 Humble, multi-robot, dan integrasi pipeline workspace.   <!-- Penjelasan kompatibilitas dan integrasi workspace -->
+    (Update 2025-05-17)                                                     <!-- Tanggal update terakhir, best practice untuk tracking -->
+  </description>
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
   <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>         <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license>                                             <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
@@ -21,10 +21,25 @@
   <exec_depend>rclpy</exec_depend>                                          <!-- Dependency runtime node Python ROS2 (untuk launch file Python) -->
   <exec_depend>ament_index_python</exec_depend>                             <!-- Dependency runtime untuk get_package_share_directory di launch file -->
   <exec_depend>huskybot_description</exec_depend>                           <!-- Dependency ke package URDF/Xacro robot Huskybot -->
-  <!-- <exec_depend>huskybot_control</exec_depend>                               Dependency ke package kontrol robot (teleop, safety, autonomous) -->
+  <exec_depend>huskybot_control</exec_depend>                               <!-- [PERBAIKI] WAJIB: Dependency ke package kontrol robot (teleop, safety, autonomous) -->
   <exec_depend>huskybot_recognition</exec_depend>                           <!-- Dependency ke package deteksi YOLOv12 dan panorama -->
   <exec_depend>huskybot_fusion</exec_depend>                                <!-- Dependency ke package fusion sensor kamera-LiDAR -->
   <exec_depend>huskybot_calibration</exec_depend>                           <!-- Dependency ke package kalibrasi kamera-LiDAR -->
+  <exec_depend>joy</exec_depend>                                            <!-- [BARU] WAJIB: Dependency joystick teleop (untuk safety/teleop node) -->
+  <exec_depend>controller_manager</exec_depend>                             <!-- [BARU] WAJIB: Dependency ros2_control node (controller_manager) -->
+  <exec_depend>robot_state_publisher</exec_depend>                          <!-- [BARU] WAJIB: Dependency robot_state_publisher untuk TF -->
+  <exec_depend>xacro</exec_depend>                                          <!-- [BARU] WAJIB: Dependency xacro untuk parsing URDF/Xacro di launch file -->
+  <exec_depend>rviz2</exec_depend>                                          <!-- [BARU] WAJIB: Dependency RViz2 untuk visualisasi otomatis -->
+  <exec_depend>python3-yaml</exec_depend>                                   <!-- [BARU] WAJIB: Dependency parsing YAML config (controller, kalibrasi, dsb) -->
+  <exec_depend>python3-opencv</exec_depend>                                 <!-- [BARU] WAJIB: Dependency OpenCV untuk node deteksi/fusion -->
+  <exec_depend>python3-numpy</exec_depend>                                  <!-- [BARU] WAJIB: Dependency numpy untuk komputasi node Python -->
+  <exec_depend>sensor_msgs</exec_depend>                                    <!-- [BARU] WAJIB: Dependency message sensor_msgs (PointCloud2, Image, dsb) -->
+  <exec_depend>std_msgs</exec_depend>                                       <!-- [BARU] WAJIB: Dependency message std_msgs (String, Header, dsb) -->
+  <exec_depend>geometry_msgs</exec_depend>                                  <!-- [BARU] WAJIB: Dependency message geometry_msgs (Twist, Pose, dsb) -->
+  <exec_depend>nav_msgs</exec_depend>                                       <!-- [BARU] WAJIB: Dependency message nav_msgs (Path, Odometry, dsb) -->
+  <exec_depend>yolov12_msgs</exec_depend>                                   <!-- [BARU] WAJIB: Dependency custom message YOLOv12 -->
+  <exec_depend>huskybot_msgs</exec_depend>                                  <!-- [BARU] WAJIB: Dependency custom message hasil fusion 3D -->
+  <exec_depend>message_filters</exec_depend>                                <!-- [BARU] WAJIB: Dependency sinkronisasi waktu sensor (kalibrasi/fusion) -->
 
   <!-- Test dependencies -->
   <test_depend>ament_lint_auto</test_depend>                                <!-- Dependency untuk linting otomatis saat test -->

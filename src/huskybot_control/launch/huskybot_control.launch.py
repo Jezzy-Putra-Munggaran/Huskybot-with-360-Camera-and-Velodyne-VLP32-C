@@ -1,12 +1,12 @@
-#!/usr/bin/python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os  # Untuk operasi path file/folder
 import sys  # Untuk exit jika error fatal
 import time  # Untuk timestamp log
 from launch import LaunchDescription  # Import utama LaunchDescription ROS2
 from launch.actions import DeclareLaunchArgument, OpaqueFunction  # Untuk deklarasi argumen dan fungsi custom
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration, PythonExpression  # Untuk ambil argumen dan ekspresi Python
 from launch_ros.actions import Node  # Untuk deklarasi node ROS2
 from launch.conditions import IfCondition  # Untuk kondisi enable/disable node
 
@@ -45,9 +45,9 @@ def log_to_file(msg):  # Fungsi logging ke file audit trail launch
 
 def build_robot_control_parameters(context, *args, **kwargs):  # Fungsi untuk membangun parameter robot_control_node secara dinamis
     params = [
-        {'use_sim_time': LaunchConfiguration('use_sim_time').perform(context) == 'true'},
-        {'max_speed': float(LaunchConfiguration('max_speed').perform(context))},
-        {'safety_stop': LaunchConfiguration('safety_stop').perform(context) == 'true'}
+        {'use_sim_time': LaunchConfiguration('use_sim_time').perform(context) == 'true'},  # Set waktu simulasi
+        {'max_speed': float(LaunchConfiguration('max_speed').perform(context))},  # Set kecepatan maksimum
+        {'safety_stop': LaunchConfiguration('safety_stop').perform(context) == 'true'}  # Set fitur safety stop
     ]
     param_yaml = LaunchConfiguration('param_yaml').perform(context)  # Ambil argumen param_yaml
     if param_yaml and param_yaml != '':  # Jika ada file param_yaml
@@ -62,8 +62,8 @@ def generate_launch_description():  # Fungsi utama generate launch description
     try:
         # ===================== ARGUMEN LAUNCH =====================
         use_sim_time_arg = DeclareLaunchArgument(
-            'use_sim_time',
-            default_value='false',
+            'use_sim_time',  # Nama argumen
+            default_value='false',  # Default false (real robot)
             description='Use simulation (Gazebo) clock if true')  # Argumen waktu simulasi
         max_speed_arg = DeclareLaunchArgument(
             'max_speed',
@@ -135,31 +135,31 @@ def generate_launch_description():  # Fungsi utama generate launch description
 
         # ===================== NODE SAFETY MONITOR (OPSIONAL) =====================
         safety_monitor_node = Node(
-            package='huskybot_control',
-            executable='safety_monitor.py',
-            output='screen',
+            package='huskybot_control',  # Nama package
+            executable='safety_monitor.py',  # Nama script safety monitor
+            output='screen',  # Output ke terminal
             parameters=[
-                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}  # Set waktu simulasi
             ],
             remappings=[
-                ('/scan', LaunchConfiguration('scan_topic'))
+                ('/scan', LaunchConfiguration('scan_topic'))  # Remap topic scan jika perlu
             ],
-            condition=IfCondition(LaunchConfiguration('enable_safety_monitor'))
+            condition=IfCondition(LaunchConfiguration('enable_safety_monitor'))  # Enable/disable via argumen
         )
 
         # ===================== NODE LOGGER (OPSIONAL) =====================
         logger_node = Node(
-            package='huskybot_control',
-            executable='logger.py',
-            output='screen',
+            package='huskybot_control',  # Nama package
+            executable='logger.py',  # Nama script logger
+            output='screen',  # Output ke terminal
             parameters=[
-                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},
-                {'log_file': LaunchConfiguration('log_file')},
-                {'log_csv': PythonExpression(['"', LaunchConfiguration('log_csv'), '" == "true"'])},
-                {'log_level': LaunchConfiguration('log_level')},
-                {'max_log_size': LaunchConfiguration('max_log_size')}
+                {'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])},  # Set waktu simulasi
+                {'log_file': LaunchConfiguration('log_file')},  # Path file log
+                {'log_csv': PythonExpression(['"', LaunchConfiguration('log_csv'), '" == "true"'])},  # Log ke CSV
+                {'log_level': LaunchConfiguration('log_level')},  # Level log
+                {'max_log_size': LaunchConfiguration('max_log_size')}  # Ukuran maksimum log
             ],
-            condition=IfCondition(LaunchConfiguration('enable_logger'))
+            condition=IfCondition(LaunchConfiguration('enable_logger'))  # Enable/disable via argumen
         )
 
         # ===================== RETURN LAUNCH DESCRIPTION =====================

@@ -1,21 +1,18 @@
 from setuptools import setup  # [WAJIB] Import setup tools untuk build/install Python package
 import os  # [WAJIB] Untuk operasi path file (misal: join, exists)
-from glob import glob  # [WAJIB] Untuk mencari file dengan pola (misal *.yaml)
+from glob import glob  # [WAJIB] Untuk mencari file dengan pola (misal *.yaml, *.rviz, dsb)
 
 package_name = 'huskybot_fusion'  # [WAJIB] Nama package Python/ROS2, harus sama dengan folder utama
 
 # ===================== ERROR HANDLING: CEK FILE/FOLDER WAJIB =====================
-# Cek resource marker wajib ada agar package dikenali ROS2
-resource_marker = f'resource/{package_name}'
-if not os.path.isfile(resource_marker):
+resource_marker = f'resource/{package_name}'  # [WAJIB] File marker agar package dikenali ROS2
+if not os.path.isfile(resource_marker):  # [WAJIB] Cek file marker wajib ada
     raise FileNotFoundError(f"[FATAL] File marker resource/{package_name} tidak ditemukan. Wajib ada agar package dikenali ROS2.")
 
-# Cek package.xml wajib ada
-if not os.path.isfile('package.xml'):
+if not os.path.isfile('package.xml'):  # [WAJIB] Cek package.xml wajib ada
     raise FileNotFoundError("[FATAL] package.xml tidak ditemukan. Wajib ada agar metadata ROS2 terbaca.")
 
-# Cek README wajib ada
-if not os.path.isfile('README.md'):
+if not os.path.isfile('README.md'):  # [WAJIB] Cek README wajib ada
     raise FileNotFoundError("[FATAL] README.md tidak ditemukan. Wajib ada untuk dokumentasi package.")
 
 # ===================== SETUP =====================
@@ -32,6 +29,7 @@ setup(
         ('share/' + package_name, ['README.md']),  # [BEST PRACTICE] Install README agar dokumentasi ikut terinstall
         ('share/' + package_name + '/config', glob('config/*.yaml')),  # [SARAN] Install file kalibrasi/config jika ada
         ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),  # [SARAN] Install file RViz jika ada
+        # [SARAN] Tambahkan resource lain jika ada (misal: dataset, example, dsb)
     ],  # [WAJIB] Semua file penting diinstall ke share agar bisa diakses node lain/CI
     install_requires=[
         'setuptools',  # [WAJIB] Dependency utama Python package
@@ -44,6 +42,8 @@ setup(
         'opencv-python',  # [WAJIB] Untuk proyeksi 3D->2D
         'pyyaml',  # [WAJIB] Untuk parsing file kalibrasi YAML
         'message_filters',  # [WAJIB] Untuk sinkronisasi sensor
+        'scipy',  # [SARAN] Untuk komputasi matrix/transformasi jika pipeline butuh
+        # [SARAN] Tambahkan dependency lain jika pipeline fusion butuh (misal: open3d, matplotlib)
     ],  # [WAJIB] Semua dependency Python utama (pastikan sudah di package.xml juga)
     zip_safe=True,  # [WAJIB] Package bisa di-zip (standar ROS2)
     maintainer='Jezzy Putra Munggaran',  # [WAJIB] Nama maintainer (update sesuai identitas)
@@ -61,10 +61,11 @@ setup(
     long_description=open('README.md').read() if os.path.exists('README.md') else '',  # [BEST PRACTICE] Isi long_description dari README.md jika ada
     extras_require={
         'dev': ['flake8', 'pytest', 'ament_pep257'],  # [BEST PRACTICE] Dependency tambahan untuk development/test
+        # [SARAN] Tambahkan dependency dev lain jika pipeline CI/CD bertambah
     },
 )
 
-# ===================== PENJELASAN & SARAN PENINGKATAN =====================
+# ===================== PENJELASAN & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN LANGSUNG) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Struktur folder sudah benar: huskybot_fusion/ (source), msg/ (Object3D.msg), launch/, test/, README.md, resource/, config/, rviz/.
 # - Semua file penting (msg, launch, test, README, config, rviz) sudah diinstall ke share agar bisa diakses workspace/CI.
@@ -85,4 +86,8 @@ setup(
 #   8. Tambahkan extras_require untuk dev/test (sudah diimplementasikan di atas).
 #   9. (Opsional) Tambahkan error handling try/except ImportError di node utama untuk dependency runtime.
 #   10. Dokumentasikan semua entry point dan data file di README.md.
+#   11. (Opsional) Tambahkan check permission file/folder di node utama untuk error handling lebih advance.
+#   12. (Opsional) Tambahkan validasi file YAML/kalibrasi di node utama agar error handling lebih robust.
+#   13. (Opsional) Tambahkan badge coverage test di README jika pipeline CI sudah aktif.
+#   14. (Opsional) Tambahkan test/launch test di folder test/ untuk validasi otomatis di CI/CD.
 # - Tidak perlu OOP di file ini, karena hanya konfigurasi build/install.

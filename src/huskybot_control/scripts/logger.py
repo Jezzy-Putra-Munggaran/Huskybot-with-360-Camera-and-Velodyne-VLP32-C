@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import rclpy  # Import utama ROS2 Python
 from rclpy.node import Node  # Base class Node ROS2
@@ -12,6 +12,8 @@ import datetime  # Untuk timestamp log
 import os  # Untuk operasi file (rotasi log)
 import csv  # Untuk log ke format CSV
 import sys  # Untuk exit/error handling
+import json  # Untuk logging ke file JSON (opsional, saran peningkatan)
+import traceback  # Untuk error log detail
 
 class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, sudah benar)
     def __init__(self):
@@ -25,6 +27,7 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             self._imu_topic = self.declare_parameter('imu_topic', '/imu/data').value  # Topic imu
             self._log_file_path = self.declare_parameter('log_file', '').value  # Path file log (bisa kosong)
             self._log_csv = self.declare_parameter('log_csv', False).value  # Log ke CSV (True/False)
+            self._log_json = self.declare_parameter('log_json', False).value  # Log ke JSON (opsional, default False)
             self._log_level = self.declare_parameter('log_level', 'info').value.lower()  # Level log (debug/info/warn)
             self._max_log_size = self.declare_parameter('max_log_size', 5*1024*1024).value  # Ukuran maksimum file log (default 5MB)
             self._file_handle = None  # Handle file log (untuk close di destroy_node)
@@ -35,7 +38,7 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
                 try:
                     self._open_log_file()  # Buka file log, rotasi jika perlu
                 except Exception as e:
-                    self.get_logger().error(f"Error opening log file: {e}")  # Log error ke ROS2 logger
+                    self.get_logger().error(f"Error opening log file: {e}\n{traceback.format_exc()}")  # Log error ke ROS2 logger
                     print(f"[ERROR] Error opening log file: {e}", file=sys.stderr)  # Log error ke stderr
                     sys.exit(2)  # Exit jika gagal buka file log
 
@@ -57,36 +60,44 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             )
 
             self.get_logger().info(
-                f"Logger node started. Logging {self._cmd_vel_topic}, {self._scan_topic}, {self._joy_topic}, {self._odom_topic}, {self._imu_topic} | Level: {self._log_level} | CSV: {self._log_csv}"
+                f"Logger node started. Logging {self._cmd_vel_topic}, {self._scan_topic}, {self._joy_topic}, {self._odom_topic}, {self._imu_topic} | Level: {self._log_level} | CSV: {self._log_csv} | JSON: {self._log_json}"
             )  # Info node aktif dan parameter log
             self._validate_topic_active(self._cmd_vel_topic)  # Validasi topic cmd_vel aktif
             self._validate_topic_active(self._scan_topic)  # Validasi topic scan aktif
         except Exception as e:
-            self.get_logger().error(f"Error initializing LoggerNode: {e}")  # Log error inisialisasi node
+            self.get_logger().error(f"Error initializing LoggerNode: {e}\n{traceback.format_exc()}")  # Log error inisialisasi node
             print(f"[ERROR] Error initializing LoggerNode: {e}", file=sys.stderr)  # Log error ke stderr
             sys.exit(10)  # Exit jika gagal inisialisasi node
 
     def _open_log_file(self):
         # Rotasi file log jika sudah terlalu besar
-        if os.path.exists(self._log_file_path) and os.path.getsize(self._log_file_path) > self._max_log_size:
-            base, ext = os.path.splitext(self._log_file_path)
-            rotated = f"{base}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
-            os.rename(self._log_file_path, rotated)
-            self.get_logger().info(f"Log file rotated: {rotated}")  # Info file log dirotasi
-        self._file_handle = open(self._log_file_path, 'a', newline='' if self._log_csv else None)  # Buka file log
-        if self._log_csv:
-            self._csv_writer = csv.writer(self._file_handle)
-            # Tulis header CSV jika file baru
-            if os.stat(self._log_file_path).st_size == 0:
-                self._csv_writer.writerow(['timestamp', 'type', 'data'])
+        try:
+            if os.path.exists(self._log_file_path) and os.path.getsize(self._log_file_path) > self._max_log_size:
+                base, ext = os.path.splitext(self._log_file_path)
+                rotated = f"{base}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+                os.rename(self._log_file_path, rotated)
+                self.get_logger().info(f"Log file rotated: {rotated}")  # Info file log dirotasi
+            self._file_handle = open(self._log_file_path, 'a', newline='' if self._log_csv else None)  # Buka file log
+            if self._log_csv:
+                self._csv_writer = csv.writer(self._file_handle)
+                # Tulis header CSV jika file baru
+                if os.stat(self._log_file_path).st_size == 0:
+                    self._csv_writer.writerow(['timestamp', 'type', 'data'])
+        except PermissionError as e:
+            self.get_logger().error(f"Permission error saat buka file log: {e}")
+            raise
+        except Exception as e:
+            self.get_logger().error(f"Error saat buka file log: {e}\n{traceback.format_exc()}")
+            raise
 
     def _cmd_vel_callback(self, msg):
         try:
             log_msg = f"[{datetime.datetime.now()}] CMD_VEL: linear.x={msg.linear.x:.2f}, angular.z={msg.angular.z:.2f}"  # Format log cmd_vel
             csv_row = [datetime.datetime.now(), 'cmd_vel', f"{msg.linear.x:.2f},{msg.angular.z:.2f}"]  # Format CSV cmd_vel
-            self._log(log_msg, csv_row, level='info')  # Log ke file/terminal
+            json_row = {"timestamp": str(datetime.datetime.now()), "type": "cmd_vel", "data": {"linear_x": msg.linear.x, "angular_z": msg.angular.z}}
+            self._log(log_msg, csv_row, json_row, level='info')  # Log ke file/terminal
         except Exception as e:
-            self.get_logger().error(f"Error logging cmd_vel: {e}")  # Error handling log cmd_vel
+            self.get_logger().error(f"Error logging cmd_vel: {e}\n{traceback.format_exc()}")  # Error handling log cmd_vel
 
     def _scan_callback(self, msg):
         try:
@@ -96,9 +107,10 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             min_range = min(msg.ranges)
             log_msg = f"[{datetime.datetime.now()}] SCAN: min_range={min_range:.2f}"  # Format log scan
             csv_row = [datetime.datetime.now(), 'scan', f"{min_range:.2f}"]  # Format CSV scan
-            self._log(log_msg, csv_row, level='debug')  # Log ke file/terminal
+            json_row = {"timestamp": str(datetime.datetime.now()), "type": "scan", "data": {"min_range": min_range}}
+            self._log(log_msg, csv_row, json_row, level='debug')  # Log ke file/terminal
         except Exception as e:
-            self.get_logger().error(f"Error logging scan: {e}")  # Error handling log scan
+            self.get_logger().error(f"Error logging scan: {e}\n{traceback.format_exc()}")  # Error handling log scan
 
     def _joy_callback(self, msg):
         try:
@@ -110,9 +122,10 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
                 return
             log_msg = f"[{datetime.datetime.now()}] JOY: axes={list(msg.axes)}, buttons={list(msg.buttons)}"  # Format log joy
             csv_row = [datetime.datetime.now(), 'joy', f"axes={list(msg.axes)},buttons={list(msg.buttons)}"]  # Format CSV joy
-            self._log(log_msg, csv_row, level='debug')  # Log ke file/terminal
+            json_row = {"timestamp": str(datetime.datetime.now()), "type": "joy", "data": {"axes": list(msg.axes), "buttons": list(msg.buttons)}}
+            self._log(log_msg, csv_row, json_row, level='debug')  # Log ke file/terminal
         except Exception as e:
-            self.get_logger().error(f"Error logging joy: {e}")  # Error handling log joy
+            self.get_logger().error(f"Error logging joy: {e}\n{traceback.format_exc()}")  # Error handling log joy
 
     def _odom_callback(self, msg):
         try:
@@ -121,9 +134,10 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             log_msg = (f"[{datetime.datetime.now()}] ODOM: pos=({pos.x:.2f},{pos.y:.2f},{pos.z:.2f}), "
                        f"ori=({ori.x:.2f},{ori.y:.2f},{ori.z:.2f},{ori.w:.2f})")  # Format log odom
             csv_row = [datetime.datetime.now(), 'odom', f"{pos.x:.2f},{pos.y:.2f},{pos.z:.2f},{ori.x:.2f},{ori.y:.2f},{ori.z:.2f},{ori.w:.2f}"]  # Format CSV odom
-            self._log(log_msg, csv_row, level='debug')  # Log ke file/terminal
+            json_row = {"timestamp": str(datetime.datetime.now()), "type": "odom", "data": {"pos": [pos.x, pos.y, pos.z], "ori": [ori.x, ori.y, ori.z, ori.w]}}
+            self._log(log_msg, csv_row, json_row, level='debug')  # Log ke file/terminal
         except Exception as e:
-            self.get_logger().error(f"Error logging odometry: {e}")  # Error handling log odom
+            self.get_logger().error(f"Error logging odometry: {e}\n{traceback.format_exc()}")  # Error handling log odom
 
     def _imu_callback(self, msg):
         try:
@@ -133,11 +147,12 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             log_msg = (f"[{datetime.datetime.now()}] IMU: ori=({ori.x:.2f},{ori.y:.2f},{ori.z:.2f},{ori.w:.2f}), "
                        f"ang=({ang.x:.2f},{ang.y:.2f},{ang.z:.2f}), lin=({lin.x:.2f},{lin.y:.2f},{lin.z:.2f})")  # Format log imu
             csv_row = [datetime.datetime.now(), 'imu', f"{ori.x:.2f},{ori.y:.2f},{ori.z:.2f},{ori.w:.2f},{ang.x:.2f},{ang.y:.2f},{ang.z:.2f},{lin.x:.2f},{lin.y:.2f},{lin.z:.2f}"]  # Format CSV imu
-            self._log(log_msg, csv_row, level='debug')  # Log ke file/terminal
+            json_row = {"timestamp": str(datetime.datetime.now()), "type": "imu", "data": {"ori": [ori.x, ori.y, ori.z, ori.w], "ang": [ang.x, ang.y, ang.z], "lin": [lin.x, lin.y, lin.z]}}
+            self._log(log_msg, csv_row, json_row, level='debug')  # Log ke file/terminal
         except Exception as e:
-            self.get_logger().error(f"Error logging imu: {e}")  # Error handling log imu
+            self.get_logger().error(f"Error logging imu: {e}\n{traceback.format_exc()}")  # Error handling log imu
 
-    def _log(self, log_msg, csv_row=None, level='info'):
+    def _log(self, log_msg, csv_row=None, json_row=None, level='info'):
         try:
             if self._should_log(level):  # Cek level log
                 if level == 'debug':
@@ -149,11 +164,15 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             if self._file_handle:
                 if self._log_csv and csv_row:
                     self._csv_writer.writerow(csv_row)  # Log ke CSV
+                elif self._log_json and json_row:
+                    self._file_handle.write(json.dumps(json_row) + '\n')  # Log ke file JSON
                 else:
                     self._file_handle.write(log_msg + '\n')  # Log ke file biasa
                 self._file_handle.flush()  # Pastikan langsung flush ke disk
+        except PermissionError as e:
+            self.get_logger().error(f"Permission error saat tulis log: {e}")
         except Exception as e:
-            self.get_logger().error(f"Error writing log: {e}")  # Error handling saat tulis log
+            self.get_logger().error(f"Error writing log: {e}\n{traceback.format_exc()}")  # Error handling saat tulis log
 
     def _should_log(self, level):
         levels = {'debug': 0, 'info': 1, 'warn': 2}
@@ -171,12 +190,15 @@ class LoggerNode(Node):  # Definisi class LoggerNode, turunan dari Node (OOP, su
             self.get_logger().warn(f"Topic {topic} tidak aktif setelah {timeout} detik.")  # Warning jika topic tidak aktif
             return False
         except Exception as e:
-            self.get_logger().error(f"Error in _validate_topic_active: {e}")  # Error handling validasi topic
+            self.get_logger().error(f"Error in _validate_topic_active: {e}\n{traceback.format_exc()}")  # Error handling validasi topic
             return False
 
     def destroy_node(self):
-        if self._file_handle:
-            self._file_handle.close()  # Tutup file log jika ada
+        try:
+            if self._file_handle:
+                self._file_handle.close()  # Tutup file log jika ada
+        except Exception as e:
+            self.get_logger().error(f"Error closing log file: {e}\n{traceback.format_exc()}")
         super().destroy_node()  # Destroy node ROS2
 
 def main(args=None):
@@ -188,13 +210,13 @@ def main(args=None):
         except KeyboardInterrupt:
             node.get_logger().info("KeyboardInterrupt, shutting down logger node.")  # Info shutdown via Ctrl+C
         except Exception as e:
-            node.get_logger().error(f"Exception utama: {e}")  # Error handling utama
+            node.get_logger().error(f"Exception utama: {e}\n{traceback.format_exc()}")  # Error handling utama
         finally:
             node.destroy_node()  # Destroy node dan tutup file log
             rclpy.shutdown()  # Shutdown ROS2
             node.get_logger().info("logger node shutdown complete.")  # Info shutdown selesai
     except Exception as e:
-        print(f"[FATAL] Exception di main(): {e}", file=sys.stderr)  # Log fatal error ke stderr
+        print(f"[FATAL] Exception di main(): {e}\n{traceback.format_exc()}", file=sys.stderr)  # Log fatal error ke stderr
         sys.exit(99)  # Exit dengan kode error
 
 if __name__ == '__main__':
@@ -205,16 +227,16 @@ if __name__ == '__main__':
 # - Sudah FULL OOP: LoggerNode class-based, modular, robust.
 # - Sudah terhubung dengan launch file, pipeline kontrol, dan workspace lain (mapping, navigation, dsb).
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + 6x Arducam IMX477 + Velodyne VLP32-C).
-# - Error handling sudah sangat lengkap: cek file log, rotasi log, validasi topic, log ke file/CSV, warning data kosong, try/except di semua callback.
+# - Error handling sudah sangat lengkap: cek file log, rotasi log, validasi topic, log ke file/CSV/JSON, warning data kosong, try/except di semua callback.
 # - Logging ke file dan terminal untuk audit trail dan debugging.
-# - Semua parameter bisa di-set dari launch file (log_file, log_csv, log_level, dsb).
+# - Semua parameter bisa di-set dari launch file (log_file, log_csv, log_json, log_level, dsb).
 # - Sudah robust untuk multi-robot (tinggal remap topic via launch file).
 # - Sudah best practice ROS2 Python node.
 
 # Saran peningkatan (SUDAH diimplementasikan):
 # - Tambahkan validasi isi file log (misal: permission, disk full) jika ingin audit lebih advance.
-# - Tambahkan argumen log_file/log_csv/log_level di launch file agar bisa diatur dari CLI.
-# - Tambahkan logging ke file JSON jika ingin audit lebih detail (opsional).
+# - Tambahkan argumen log_file/log_csv/log_json/log_level di launch file agar bisa diatur dari CLI.
+# - Tambahkan logging ke file JSON jika ingin audit lebih detail (opsional, sudah diimplementasi).
 # - Tambahkan test unit untuk logger di folder test/ agar coverage CI/CD lebih tinggi.
 # - Dokumentasikan semua parameter logger di README dan launch file.
 # - Jika ingin logging multi-robot, tambahkan argumen namespace di launch file.

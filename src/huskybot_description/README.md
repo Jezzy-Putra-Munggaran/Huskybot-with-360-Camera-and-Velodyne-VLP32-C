@@ -1,31 +1,31 @@
-# huskybot_description  <!-- Judul utama README, nama package (harus sama dengan folder) -->
+# huskybot_description  <!-- Judul utama README, nama package (harus sama dengan folder, WAJIB agar colcon build dan ros2 launch/run tidak error) -->
 
-[![Build Status](https://github.com/yourusername/huskybot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/huskybot/actions) <!-- Badge CI, update link jika repo sudah publik dan pipeline aktif -->
+[![Build Status](https://github.com/yourusername/huskybot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/huskybot/actions) <!-- Badge CI, update link jika repo sudah publik dan pipeline aktif, penting untuk monitoring CI/CD -->
 
-Deskripsi model robot Husky A200 beserta mounting sensor (Velodyne VLP-32C dan 6 kamera Arducam IMX477) dalam format URDF/Xacro. <!-- Deskripsi singkat package, menjelaskan fungsi utama dan sensor utama -->
+Deskripsi model robot Husky A200 beserta mounting sensor (Velodyne VLP-32C dan 6 kamera Arducam IMX477) dalam format URDF/Xacro. <!-- Deskripsi singkat package, menjelaskan fungsi utama dan sensor utama, agar user baru langsung paham scope package -->
 
 ---
 
 ## Fitur  <!-- Daftar fitur utama package -->
-- Model robot Husky A200 lengkap dengan semua link dan joint. <!-- Menjelaskan model robot sudah lengkap -->
-- Mounting Velodyne VLP-32C dan 6 kamera 360° (hexagonal). <!-- Menjelaskan mounting sensor utama -->
-- Frame transform (TF) yang konsisten untuk integrasi sensor. <!-- Menjelaskan TF sudah konsisten untuk integrasi -->
-- File kalibrasi sensor (opsional). <!-- Menjelaskan ada file kalibrasi jika diperlukan -->
+- Model robot Husky A200 lengkap dengan semua link dan joint. <!-- Menjelaskan model robot sudah lengkap, siap untuk simulasi dan real robot -->
+- Mounting Velodyne VLP-32C dan 6 kamera 360° (hexagonal). <!-- Menjelaskan mounting sensor utama, sesuai dengan hardware riset -->
+- Frame transform (TF) yang konsisten untuk integrasi sensor. <!-- Menjelaskan TF sudah konsisten untuk integrasi, penting untuk pipeline mapping/fusion -->
+- File kalibrasi sensor (opsional). <!-- Menjelaskan ada file kalibrasi jika diperlukan, baik intrinsic maupun extrinsic -->
 
 ---
 
 ## Struktur Folder  <!-- Penjelasan struktur folder utama package -->
-- `robot/` : File Xacro/URDF robot dan sensor. <!-- Folder robot berisi file deskripsi utama -->
-- `meshes/` : Mesh visual sensor dan robot. <!-- Folder meshes berisi file mesh 3D sensor dan robot -->
-- `calibration/` : File kalibrasi kamera (INTRINSIC SAJA, legacy). <!-- Folder calibration hanya untuk file intrinsic kamera, legacy -->
-- `launch/` : Launch file Python untuk RViz2, spawn robot, dsb. <!-- Folder launch berisi file launch Python -->
-- `rviz/` : File konfigurasi RViz2. <!-- Folder rviz berisi konfigurasi visualisasi RViz -->
-- `README.md` : Dokumentasi package ini. <!-- File ini sendiri sebagai dokumentasi utama -->
-- `CMakeLists.txt`, `package.xml` : Konfigurasi build dan dependency ROS2. <!-- File build system dan dependency -->
+- `robot/` : File Xacro/URDF robot dan sensor. <!-- Folder robot berisi file deskripsi utama, wajib untuk spawn di Gazebo/RViz2 -->
+- `meshes/` : Mesh visual sensor dan robot. <!-- Folder meshes berisi file mesh 3D sensor dan robot, penting untuk visualisasi -->
+- `calibration/` : File kalibrasi kamera (INTRINSIC SAJA, legacy). <!-- Folder calibration hanya untuk file intrinsic kamera, legacy, agar tidak bentrok dengan extrinsic -->
+- `launch/` : Launch file Python untuk RViz2, spawn robot, dsb. <!-- Folder launch berisi file launch Python, wajib untuk ros2 launch -->
+- `rviz/` : File konfigurasi RViz2. <!-- Folder rviz berisi konfigurasi visualisasi RViz, penting untuk debugging dan visualisasi -->
+- `README.md` : Dokumentasi package ini. <!-- File ini sendiri sebagai dokumentasi utama, wajib update jika ada perubahan -->
+- `CMakeLists.txt`, `package.xml` : Konfigurasi build dan dependency ROS2. <!-- File build system dan dependency, wajib agar colcon build sukses -->
 
 > **Catatan:**  
 > File kalibrasi extrinsic (kamera-LiDAR) **sekarang disimpan di** `huskybot_calibration/config/extrinsic_lidar_to_camera.yaml` **bukan di** `calibration/` **lagi!**  
-> Semua node fusion dan pipeline lain WAJIB membaca file extrinsic dari path baru tersebut.
+> Semua node fusion dan pipeline lain WAJIB membaca file extrinsic dari path baru tersebut. <!-- Penjelasan penting agar tidak error integrasi fusion -->
 
 ---
 
@@ -42,11 +42,11 @@ ros2 launch huskybot_description spawn_huskybot_launch.launch.py
 ```
 
 **Parameter penting:** <!-- Penjelasan parameter penting yang sering digunakan -->
-- `robot_description`: Path ke file Xacro/URDF utama.
-- `use_sim_time`: Gunakan waktu simulasi (default: true untuk simulasi).
-- `entity_name`: Nama entity robot di Gazebo (untuk multi-robot).
-- `robot_namespace`: Namespace robot (untuk multi-robot).
-- `pose`: Pose awal robot di Gazebo (x y z roll pitch yaw).
+- `robot_description`: Path ke file Xacro/URDF utama. <!-- Path file robot utama, wajib untuk robot_state_publisher dan spawn_entity -->
+- `use_sim_time`: Gunakan waktu simulasi (default: true untuk simulasi). <!-- Wajib true jika simulasi di Gazebo -->
+- `entity_name`: Nama entity robot di Gazebo (untuk multi-robot). <!-- Untuk multi-robot, entity_name harus unik -->
+- `robot_namespace`: Namespace robot (untuk multi-robot). <!-- Untuk multi-robot, namespace harus unik -->
+- `pose`: Pose awal robot di Gazebo (x y z roll pitch yaw). <!-- Untuk spawn posisi awal robot di world -->
 
 ---
 
@@ -68,17 +68,17 @@ map
 ---
 
 ## Saran CI  <!-- Saran best practice untuk CI/CD agar package selalu aman -->
-- Tambahkan test URDF dengan [xacro test](http://wiki.ros.org/xacro#Testing). <!-- Saran test otomatis validasi Xacro -->
-- Tambahkan check URDF dengan [check_urdf](http://wiki.ros.org/check_urdf). <!-- Saran test otomatis validasi URDF -->
-- Tambahkan unit test/launch test di folder `test/` untuk integrasi CI/CD. <!-- Saran test launch file otomatis -->
-- Gunakan [ament_lint_auto](https://index.ros.org/p/ament_lint_auto/) untuk linting kode Python dan XML. <!-- Saran linting otomatis -->
+- Tambahkan test URDF dengan [xacro test](http://wiki.ros.org/xacro#Testing). <!-- Saran test otomatis validasi Xacro, agar build fail jika URDF error -->
+- Tambahkan check URDF dengan [check_urdf](http://wiki.ros.org/check_urdf). <!-- Saran test otomatis validasi URDF, agar build fail jika URDF error -->
+- Tambahkan unit test/launch test di folder `test/` untuk integrasi CI/CD. <!-- Saran test launch file otomatis, agar pipeline selalu aman -->
+- Gunakan [ament_lint_auto](https://index.ros.org/p/ament_lint_auto/) untuk linting kode Python dan XML. <!-- Saran linting otomatis, agar codebase selalu clean -->
 
 ---
 
 ## Catatan  <!-- Catatan penting untuk integrasi workspace -->
 Pastikan semua frame (`base_link`, `velodyne_link`, `camera_*_link`) konsisten dengan node lain di workspace. <!-- Penjelasan penting agar integrasi sensor dan node lain tidak error -->
 Jika ingin menambah sensor baru, tambahkan mesh, link, joint, dan plugin di file Xacro, serta update file kalibrasi di `calibration/` untuk intrinsic kamera.  
-**Untuk file kalibrasi extrinsic kamera-LiDAR, update hanya di** `huskybot_calibration/config/extrinsic_lidar_to_camera.yaml`.
+**Untuk file kalibrasi extrinsic kamera-LiDAR, update hanya di** `huskybot_calibration/config/extrinsic_lidar_to_camera.yaml`. <!-- Penegasan agar tidak salah path file kalibrasi -->
 
 ---
 
@@ -94,7 +94,7 @@ Jika ingin menambah sensor baru, tambahkan mesh, link, joint, dan plugin di file
          |[velodyne][camera*6] (hexagonal)
          +-------------------+
 ```
-<!-- Penjelasan: Velodyne di atas, 6 kamera di sisi tower hexagonal -->
+<!-- Penjelasan: Velodyne di atas, 6 kamera di sisi tower hexagonal, sesuai hardware real -->
 
 ---
 
@@ -125,11 +125,11 @@ T_lidar_camera:
 
 ## Parameter Penting  <!-- Daftar parameter penting untuk integrasi dan troubleshooting -->
 
-- `robot_description`: Path ke file Xacro utama.
-- `use_sim_time`: true/false.
-- `robot_namespace`: Namespace robot (untuk multi-robot).
-- `entity_name`: Nama entity robot di Gazebo.
-- `pose`: Pose awal robot di Gazebo.
+- `robot_description`: Path ke file Xacro utama. <!-- Wajib untuk robot_state_publisher dan spawn_entity -->
+- `use_sim_time`: true/false. <!-- Wajib true untuk simulasi di Gazebo -->
+- `robot_namespace`: Namespace robot (untuk multi-robot). <!-- Untuk multi-robot, namespace harus unik -->
+- `entity_name`: Nama entity robot di Gazebo. <!-- Untuk multi-robot, entity_name harus unik -->
+- `pose`: Pose awal robot di Gazebo. <!-- Untuk spawn posisi awal robot di world -->
 
 ---
 
@@ -150,6 +150,12 @@ T_lidar_camera:
 - Dokumentasikan semua frame dan topic sensor di README agar integrasi lebih mudah. <!-- Saran: dokumentasi frame/topic -->
 - Tambahkan contoh penggunaan multi-robot di README. <!-- Saran: contoh multi-robot -->
 - Tambahkan troubleshooting untuk error umum di ROS2 Humble/Gazebo. <!-- Saran: troubleshooting error umum -->
+- Tambahkan badge coverage test jika pipeline CI sudah aktif. <!-- Saran: badge coverage test untuk CI/CD -->
+- Tambahkan contoh file YAML/CSV hasil kalibrasi di folder config/ untuk referensi user baru. <!-- Saran: contoh file output untuk user baru -->
+- Tambahkan link ke dokumentasi workspace utama di bagian atas README. <!-- Saran: link dokumentasi workspace utama -->
+- Tambahkan tips integrasi multi-robot dan cloud jika workspace berkembang. <!-- Saran: tips integrasi multi-robot dan cloud -->
+- Tambahkan tips audit trail dan logging ke file untuk debugging pipeline besar. <!-- Saran: tips audit trail dan logging -->
+- Jika ingin coverage test lebih tinggi, tambahkan test launch file di folder test/. <!-- Saran: test launch file untuk coverage test -->
 
 ---
 

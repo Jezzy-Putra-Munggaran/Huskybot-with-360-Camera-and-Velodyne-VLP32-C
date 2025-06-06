@@ -17,7 +17,7 @@ import logging  # [BEST PRACTICE] Untuk logging ke file (opsional)
 import traceback  # [BEST PRACTICE] Untuk logging error detail
 import json  # [BEST PRACTICE] Untuk logging ke file JSON (opsional)
 import datetime  # [BEST PRACTICE] Untuk timestamp log
-from visualization_msgs.msg import Marker, MarkerArray  # Tambah import Marker
+from visualization_msgs.msg import Marker, MarkerArray  # [WAJIB] Untuk visualisasi objek di RViz2
 
 print("[DEBUG] Python executable:", sys.executable, flush=True)  # [DEBUG] Print Python executable yang dipakai saat runtime
 
@@ -74,7 +74,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
 
             # ===================== PUBLISHER =====================
             self.pub_fusion = self.create_publisher(Object3D, self.output_topic, 10)  # [WAJIB] Publisher hasil objek 3D
-            self.marker_pub = self.create_publisher(MarkerArray, '/fusion/objects3d_marker', 10)  # Tambah publisher MarkerArray
+            self.marker_pub = self.create_publisher(MarkerArray, '/fusion/objects3d_marker', 10)  # [WAJIB] Publisher MarkerArray untuk RViz2
 
             # ===================== TF2 =====================
             self.tf_buffer = tf2_ros.Buffer()  # [WAJIB] Buffer TF2
@@ -158,7 +158,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                 return
 
             obj_msgs = []  # [WAJIB] List hasil objek 3D
-            marker_array = MarkerArray()  # MarkerArray untuk label
+            marker_array = MarkerArray()  # [WAJIB] MarkerArray untuk label
 
             for idx, det in enumerate(detections):
                 try:
@@ -246,9 +246,9 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                             log_to_file(f"Error logging to JSON: {e}", level='warn')
 
                     # ========== TAMBAH MARKER LABEL UNTUK RVIZ2 ==========
-                    from huskybot_fusion.fusion_marker_utils import create_object_marker
-                    marker = create_object_marker(obj_msg, idx, frame_id=lidar_msg.header.frame_id)
-                    marker_array.markers.append(marker)
+                    from huskybot_fusion.fusion_marker_utils import create_object_marker  # [WAJIB] Import fungsi marker
+                    marker = create_object_marker(obj_msg, idx, frame_id=lidar_msg.header.frame_id)  # [WAJIB] Buat marker label
+                    marker_array.markers.append(marker)  # [WAJIB] Tambahkan ke MarkerArray
 
                 except Exception as e:
                     self.get_logger().error(f"Exception dalam loop deteksi: {e}\n{traceback.format_exc()}")
@@ -264,7 +264,7 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
                     log_to_file(f"Error publish Object3D: {e}", level='error')
 
             if len(marker_array.markers) > 0:
-                self.marker_pub.publish(marker_array)
+                self.marker_pub.publish(marker_array)  # [WAJIB] Publish MarkerArray ke RViz2
 
         except Exception as e:
             self.get_logger().error(f"Exception utama di fusion_callback: {e}\n{traceback.format_exc()}")
@@ -303,7 +303,7 @@ def main(args=None):  # [WAJIB] Fungsi utama untuk menjalankan node
 if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
     main()  # [WAJIB] Panggil fungsi main
 
-# ===================== REVIEW & SARAN =====================
+# ===================== REVIEW & SARAN PENINGKATAN =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Logger ROS2 dan logging ke file sudah di setiap langkah penting/error.
 # - Semua error/exception di callback dan fungsi utama sudah di-log.
@@ -316,3 +316,8 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 # - Saran: unit test untuk fungsi project_bbox_to_pointcloud dan compute_3d_bbox.
 # - Saran: validasi isi file kalibrasi (cek field matrix, dsb) sebelum digunakan.
 # - Saran: retry otomatis jika file kalibrasi belum ada saat node start (SUDAH).
+# - Saran: jika ingin audit visual, tambahkan marker bounding box 3D (bisa extend Marker.CUBE).
+# - Saran: jika ingin multi-robot, tambahkan parameter namespace di semua publisher/subscriber.
+# - Saran: tambahkan parameter enable_debug agar bisa aktifkan debug log dari launch file.
+# - Saran: tambahkan test/launch test di folder test/ untuk validasi otomatis di CI/CD.
+# - Sudah best practice ROS2, CI/CD, dan aman untuk pipeline besar, simulasi, dan robot real.

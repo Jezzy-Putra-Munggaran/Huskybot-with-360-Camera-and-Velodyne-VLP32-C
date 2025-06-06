@@ -140,16 +140,15 @@ def project_bbox_to_pointcloud(
             return None
 
         # ===================== Tambahan Error Handling: Filter Outlier Point Cloud =====================
-        # Saring point cloud dengan jarak terlalu jauh (>100m) atau NaN/inf
-        dist = np.linalg.norm(points, axis=1)
-        mask_valid = np.isfinite(dist) & (dist < 100.0)
-        if np.count_nonzero(mask_valid) < 5:
+        dist = np.linalg.norm(points, axis=1)  # Hitung jarak tiap point ke origin
+        mask_valid = np.isfinite(dist) & (dist < 100.0)  # Hanya point finite dan <100m
+        if np.count_nonzero(mask_valid) < 5:  # Jika point valid < 5, skip fusion
             msg = f"Peringatan: Hanya {np.count_nonzero(mask_valid)} point cloud valid (outlier atau kosong), fusion dilewati."
             if ros_logger: ros_logger.warn(msg)
             logging.warning(msg)
             log_to_file(msg, level='warn')
             return None
-        points = points[mask_valid]
+        points = points[mask_valid]  # Ambil hanya point valid
 
         if T_lidar_camera is not None:  # Jika ada transformasi extrinsic
             points_h = np.hstack([points, np.ones((points.shape[0], 1))])  # Tambah dimensi homogen
@@ -184,7 +183,7 @@ def project_bbox_to_pointcloud(
                 return None
 
         # ===================== Tambahan Error Handling: Point Cloud Terlalu Sedikit =====================
-        if filtered_points is None or filtered_points.shape[0] < 5:
+        if filtered_points is None or filtered_points.shape[0] < 5:  # Jika hasil filter < 5, skip fusion
             msg = f"Peringatan: Hasil filter point cloud di bbox hanya {0 if filtered_points is None else filtered_points.shape[0]} point, fusion dilewati."
             if ros_logger: ros_logger.warn(msg)
             logging.warning(msg)

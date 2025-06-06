@@ -95,6 +95,10 @@ scan_topic: /scan
 - Jika safety stop aktif terus, cek sensor obstacle.                    <!-- Saran troubleshooting jika robot selalu berhenti -->
 - Jika autonomous tidak jalan, pastikan planner dan mapping aktif.      <!-- Saran troubleshooting untuk mode autonomous -->
 - Jika parameter tidak terbaca, cek path dan format file YAML.          <!-- Saran troubleshooting parameter -->
+- Jika logger tidak menulis file, cek permission folder log dan path log_file di launch file. <!-- Saran troubleshooting logger -->
+- Jika safety_monitor tidak publish, cek remap topic scan dan parameter safe_distance. <!-- Saran troubleshooting safety_monitor -->
+- Jika simulasi di Gazebo tidak sinkron, pastikan `use_sim_time:=true` di launch file. <!-- Saran troubleshooting waktu simulasi -->
+- Jika error import module, pastikan sudah build dan source environment. <!-- Saran troubleshooting environment -->
 
 ---
 

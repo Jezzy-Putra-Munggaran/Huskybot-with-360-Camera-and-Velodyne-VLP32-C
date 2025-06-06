@@ -1,39 +1,45 @@
-#!/usr/bin/env python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import sys  # Import sys untuk exit/error
-import rclpy  # Import utama ROS2 Python
+import sys  # Untuk exit/error handling fatal
+import rclpy  # Core ROS2 Python API
 from rclpy.node import Node  # Base class Node ROS2
-from geometry_msgs.msg import Twist  # Import pesan Twist (untuk cmd_vel)
-from sensor_msgs.msg import Joy  # Import pesan Joy (untuk joystick)
-import threading  # Import threading untuk multi-thread executor dan lock
-import os  # Import os untuk path log
-import time  # Import time untuk validasi topic
-import logging  # Import logging untuk log ke file
+from geometry_msgs.msg import Twist  # Message Twist untuk cmd_vel
+from sensor_msgs.msg import Joy  # Message Joy untuk joystick
+import threading  # Untuk multi-thread executor dan lock
+import os  # Untuk path log file
+import time  # Untuk validasi topic dan delay
+import logging  # Untuk logging ke file
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
-def setup_file_logger(log_path="~/huskybot_robot_control.log"):  # Fungsi setup logger file
+def setup_file_logger(log_path="~/huskybot_robot_control.log"):  # Setup logger file (bisa diubah via argumen/launch)
     log_path = os.path.expanduser(log_path)  # Expand ~ ke home user
-    logger = logging.getLogger("robot_control_file_logger")  # Buat/get logger dengan nama unik
-    logger.setLevel(logging.INFO)  # Set level default INFO
+    logger = logging.getLogger("robot_control_file_logger")  # Buat/get logger unik
+    logger.setLevel(logging.INFO)  # Default level INFO
     if not logger.hasHandlers():  # Cegah duplicate handler
-        fh = logging.FileHandler(log_path)  # Handler file log
-        fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
-        logger.addHandler(fh)  # Tambah handler ke logger
+        try:
+            fh = logging.FileHandler(log_path)  # Handler file log
+            fh.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))  # Format log
+            logger.addHandler(fh)  # Tambah handler ke logger
+        except PermissionError as e:  # Error handling permission file log
+            print(f"[ERROR] Tidak bisa menulis file log: {log_path} ({e})", file=sys.stderr)
     return logger  # Return logger instance
 
 file_logger = setup_file_logger()  # Inisialisasi logger file global
 
 def log_to_file(msg, level='info'):  # Fungsi log ke file dengan level
     if file_logger:  # Jika logger ada
-        if level == 'error':
-            file_logger.error(msg)  # Log error
-        elif level == 'warn':
-            file_logger.warning(msg)  # Log warning
-        elif level == 'debug':
-            file_logger.debug(msg)  # Log debug
-        else:
-            file_logger.info(msg)  # Log info
+        try:
+            if level == 'error':
+                file_logger.error(msg)  # Log error
+            elif level == 'warn':
+                file_logger.warning(msg)  # Log warning
+            elif level == 'debug':
+                file_logger.debug(msg)  # Log debug
+            else:
+                file_logger.info(msg)  # Log info
+        except Exception as e:
+            print(f"[ERROR] Gagal log ke file: {e}", file=sys.stderr)  # Error log ke stderr
 
 # ===================== COMMANDER NODE =====================
 class Commander(Node):  # Node publisher utama ke /huskybot/cmd_vel

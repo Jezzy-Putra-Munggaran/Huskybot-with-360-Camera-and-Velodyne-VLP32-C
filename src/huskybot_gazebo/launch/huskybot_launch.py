@@ -1,5 +1,5 @@
-#!/usr/bin/python3  
-# -*- coding: utf-8 -*-  
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 import os  # Untuk operasi file dan path
 import sys  # Untuk akses error output dan exit
@@ -20,11 +20,11 @@ from launch_ros.parameter_descriptions import ParameterValue  # Untuk parameter 
 
 # Tambahkan node RViz2 untuk huskybot.rviz
 rviz_huskybot_node = Node(
-    package='rviz2',
-    executable='rviz2',
-    name='huskybot_rviz',
-    arguments=['-d', '/mnt/nova_ssd/huskybot/src/huskybot_description/rviz/huskybot.rviz'],
-    output='screen'
+    package='rviz2',  # [WAJIB] Nama package RViz2
+    executable='rviz2',  # [WAJIB] Executable RViz2
+    name='huskybot_rviz',  # Nama node RViz2
+    arguments=['-d', '/mnt/nova_ssd/huskybot/src/huskybot_description/rviz/huskybot.rviz'],  # Path file config RViz2
+    output='screen'  # Output ke terminal
 )
 
 # ---------- Error Handling: cek file sebelum include ----------
@@ -79,27 +79,27 @@ def check_gazebo_plugin(plugin_name):  # Cek plugin Gazebo di $GAZEBO_PLUGIN_PAT
 
 # ---------- Error Handling: cek semua plugin penting sebelum launch ----------
 for plugin in [
-    'libgazebo_ros_factory.so',
-    'libgazebo_ros_state.so',
-    'libgazebo_ros_init.so',
-    'libgazebo_ros2_control.so',
-    'libgazebo_ros_diff_drive.so',
-    'libgazebo_ros_gps_sensor.so',
-    'libgazebo_ros_imu_sensor.so',
-    'libgazebo_ros_camera.so',
-    'libgazebo_ros_ray_sensor.so',
+    'libgazebo_ros_factory.so',  # [WAJIB] Plugin factory untuk spawn_entity
+    'libgazebo_ros_state.so',    # [WAJIB] Plugin state untuk service Gazebo
+    'libgazebo_ros_init.so',     # [WAJIB] Plugin init untuk ROS2-Gazebo
+    'libgazebo_ros2_control.so', # [WAJIB] Plugin ros2_control
+    'libgazebo_ros_diff_drive.so', # [WAJIB] Plugin diff_drive
+    'libgazebo_ros_gps_sensor.so', # [WAJIB] Plugin GPS
+    'libgazebo_ros_imu_sensor.so', # [WAJIB] Plugin IMU
+    'libgazebo_ros_camera.so',     # [WAJIB] Plugin kamera
+    'libgazebo_ros_ray_sensor.so', # [WAJIB] Plugin ray sensor (LiDAR)
 ]:
     check_gazebo_plugin(plugin)  # Cek semua plugin wajib Gazebo
 
 # ---------- Error Handling: cek dependency package ROS2 ----------
 for pkg in [
-    'gazebo_ros',
-    'joy',
-    'huskybot_description',
-    'huskybot_control',
-    'huskybot_recognition',
-    'huskybot_fusion',
-    'huskybot_calibration',
+    'gazebo_ros',  # [WAJIB] Dependency utama simulasi Gazebo
+    'joy',  # [WAJIB] Joystick teleop
+    'huskybot_description',  # [WAJIB] Model robot
+    'huskybot_control',  # [WAJIB] Node kontrol robot
+    'huskybot_recognition',  # [WAJIB] Node deteksi YOLOv12
+    'huskybot_fusion',  # [WAJIB] Node fusion sensor
+    'huskybot_calibration',  # [WAJIB] Node kalibrasi
 ]:
     check_ros_package(pkg)  # Cek semua package dependency wajib
 
@@ -125,9 +125,8 @@ def validate_args(context, *args, **kwargs):  # Validasi argumen world dan robot
         print(f"[ERROR] Robot model file tidak ditemukan: {robot_model}", file=sys.stderr)
         print(f"[ERROR] Robot model file tidak ditemukan: {robot_model}", flush=True)
         sys.exit(12)
-    # Logging info world dan robot_model yang sudah resolve
-    print(f"[INFO] World file (resolved): {world}", flush=True)
-    print(f"[INFO] Robot model (resolved): {robot_model}", flush=True)
+    print(f"[INFO] World file (resolved): {world}", flush=True)  # Logging info world yang sudah resolve
+    print(f"[INFO] Robot model (resolved): {robot_model}", flush=True)  # Logging info robot_model yang sudah resolve
     return []
 
 # ---------- OpaqueFunction: cek topic/service penting setelah launch ----------
@@ -146,7 +145,7 @@ def check_topic_after_launch(context, *args, **kwargs):  # Cek service /gazebo/g
     return []
 
 def wait_for_gazebo_and_entity(context, *args, **kwargs):  # Tunggu entity robot muncul di Gazebo
-    entity_name = 'husky_with_cameras'  # Nama entity robot di Gazebo
+    entity_name = 'husky_with_cameras'  # Nama entity robot di Gazebo (harus sama dengan URDF/Xacro)
     timeout = 60  # Timeout 60 detik
     print(f"[INFO] Menunggu Gazebo dan entity '{entity_name}' muncul...", flush=True)
     rclpy.init(args=None)
@@ -218,15 +217,15 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
 
         # Node joy (joystick), wajib untuk teleop/safety
         joy_node = Node(
-            package="joy",
-            executable="joy_node",
-            output='screen',
-            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
+            package="joy",  # [WAJIB] Package joystick
+            executable="joy_node",  # [WAJIB] Executable joystick
+            output='screen',  # Output ke terminal
+            parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]  # Sinkronisasi waktu simulasi
         )
 
         # Include launch file start_world (Gazebo server)
         start_world = IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(start_world_path),
+            PythonLaunchDescriptionSource(start_world_path),  # Path launch file
             launch_arguments={
                 'gui': LaunchConfiguration('gui'),
                 'world': LaunchConfiguration('world'),
@@ -240,7 +239,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             launch_arguments={
                 'robot_model': LaunchConfiguration('robot_model'),
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'namespace': LaunchConfiguration('namespace'),  # Saran: namespace untuk multi-robot
+                'namespace': LaunchConfiguration('namespace'),  # Namespace untuk multi-robot
             }.items()
         )
 
@@ -249,7 +248,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             PythonLaunchDescriptionSource(control_path),
             launch_arguments={
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'namespace': LaunchConfiguration('namespace'),  # Saran: namespace untuk multi-robot
+                'namespace': LaunchConfiguration('namespace'),  # Namespace untuk multi-robot
             }.items()
         )
 
@@ -258,7 +257,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             PythonLaunchDescriptionSource(fusion_path),
             launch_arguments={
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'namespace': LaunchConfiguration('namespace'),  # Saran: namespace untuk multi-robot
+                'namespace': LaunchConfiguration('namespace'),  # Namespace untuk multi-robot
             }.items(),
             condition=IfCondition(LaunchConfiguration('enable_fusion')),
         )
@@ -268,7 +267,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             PythonLaunchDescriptionSource(calibration_path),
             launch_arguments={
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'namespace': LaunchConfiguration('namespace'),  # Saran: namespace untuk multi-robot
+                'namespace': LaunchConfiguration('namespace'),  # Namespace untuk multi-robot
             }.items(),
             condition=IfCondition(LaunchConfiguration('enable_calibration')),
         )
@@ -276,7 +275,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         # Node YOLOv12 (object detection)
         yolov12_node = Node(
             package='huskybot_recognition',
-            executable='yolov12_ros2_pt.py',
+            executable='yolov12_ros2_pt.py',  # [WAJIB] Bisa diganti ke .engine/.onnx via launch file lain
             output='both',
             condition=IfCondition(LaunchConfiguration('enable_yolo')),
             parameters=[{'use_sim_time': PythonExpression(['"', LaunchConfiguration('use_sim_time'), '" == "true"'])}]
@@ -359,8 +358,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         set_log_level = SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1')  # Buffer log ROS2
         set_ros_log_level = SetEnvironmentVariable('RCUTILS_LOG_SEVERITY_THRESHOLD', 'DEBUG')  # Set log level DEBUG
 
-        # Logging info ke terminal (saran: print string, bukan LaunchConfiguration, dan sudah resolve di OpaqueFunction validate_args)
-        print(f"[INFO] Launching Huskybot Gazebo Simulation...", flush=True)
+        print(f"[INFO] Launching Huskybot Gazebo Simulation...", flush=True)  # Logging info ke terminal
 
         return LaunchDescription([
             set_log_level,  # Set log buffer
@@ -395,7 +393,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
         traceback.print_exc()
         sys.exit(99)
 
-# ===================== PENJELASAN & SARAN PENINGKATAN =====================
+# ===================== PENJELASAN & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN LANGSUNG) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
 # - Struktur folder sudah benar: launch/, worlds/, README.md, package.xml, CMakeLists.txt.
 # - Semua dependency package dan file sudah dicek sebelum launch (robust error handling).
