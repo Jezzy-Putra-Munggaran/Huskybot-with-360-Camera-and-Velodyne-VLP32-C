@@ -23,7 +23,7 @@ rviz_huskybot_node = Node(
     package='rviz2',  # [WAJIB] Nama package RViz2
     executable='rviz2',  # [WAJIB] Executable RViz2
     name='huskybot_rviz',  # Nama node RViz2
-    arguments=['-d', '/mnt/nova_ssd/huskybot/src/huskybot_description/rviz/huskybot.rviz'],  # Path file config RViz2
+    arguments=['-d', '~/huskybot/src/huskybot_description/rviz/huskybot.rviz'],  # Path file config RViz2
     output='screen'  # Output ke terminal
 )
 

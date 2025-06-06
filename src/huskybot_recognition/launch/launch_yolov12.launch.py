@@ -82,7 +82,7 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
         )
         model_path_arg = DeclareLaunchArgument(
             'model_path',  # [WAJIB] Nama argumen
-            default_value='/mnt/nova_ssd/huskybot/src/huskybot_recognition/scripts/yolo12n.engine',  # [WAJIB] Path default model YOLOv12 TensorRT
+            default_value='~/huskybot/src/huskybot_recognition/scripts/yolo12n.engine',  # [WAJIB] Path default model YOLOv12 TensorRT
             description='Path ke file model YOLOv12 (.engine/.onnx/.pt)'  # [WAJIB] Path file model YOLOv12
         )
         confidence_threshold_arg = DeclareLaunchArgument(
