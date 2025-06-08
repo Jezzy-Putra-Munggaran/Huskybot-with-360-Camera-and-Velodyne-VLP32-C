@@ -16,38 +16,6 @@
     </plugin>
   </gazebo>
 
-  <!-- ==================== TAG ros2_control (WAJIB) ==================== -->
-  <!-- Tag ros2_control untuk integrasi dengan ros2_control dan controller_manager -->
-  <ros2_control name="GazeboSystem" type="system">
-    <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin> <!-- Plugin hardware simulation Gazebo -->
-    </hardware>
-    <!-- Joint roda kiri depan -->
-    <joint name="front_left_wheel_joint">
-      <command_interface name="velocity"/> <!-- Interface kontrol kecepatan -->
-      <state_interface name="position"/> <!-- Interface baca posisi -->
-      <state_interface name="velocity"/> <!-- Interface baca kecepatan -->
-    </joint>
-    <!-- Joint roda kanan depan -->
-    <joint name="front_right_wheel_joint">
-      <command_interface name="velocity"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-    <!-- Joint roda kiri belakang -->
-    <joint name="rear_left_wheel_joint">
-      <command_interface name="velocity"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-    <!-- Joint roda kanan belakang -->
-    <joint name="rear_right_wheel_joint">
-      <command_interface name="velocity"/>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-    </joint>
-  </ros2_control>
-
   <!-- ==================== SENSOR IMU ==================== -->
   <!-- Sensor IMU pada link imu_link -->
   <gazebo reference="imu_link">
@@ -64,33 +32,6 @@
       </plugin>
     </sensor>
   </gazebo>
-
-  <!-- ==================== SENSOR GPS ==================== -->
-  <!-- Sensor GPS pada link gps_link -->
-  <!--
-    ERROR HANDLING:
-    - Jangan deklarasi ulang <link name="gps_link"/> dan joint jika sudah ada di base Husky!
-    - Jika ingin custom posisi, override joint dengan nama berbeda atau gunakan xacro argumen.
-    - Jika tetap ingin custom, pastikan hanya ada SATU link dengan nama gps_link di seluruh URDF!
-  -->
-  <gazebo reference="gps_link">
-    <sensor type="gps" name="gps_sensor">
-      <always_on>true</always_on>
-      <update_rate>10</update_rate>
-      <plugin name="gps_sensor_plugin" filename="libgazebo_ros_gps_sensor.so">
-        <ros>
-          <namespace>/huskybot</namespace>
-        </ros>
-        <frame_name>gps_link</frame_name>
-        <topicName>gps/fix</topicName>
-        <velocityTopicName>gps/vel</velocityTopicName>
-      </plugin>
-    </sensor>
-  </gazebo>
-  <!--
-    <link name="gps_link"/> dan joint gps_joint DIHAPUS agar tidak duplikat!
-    Jika ingin custom mounting, edit di base Husky atau override dengan xacro argumen.
-  -->
 
   <!-- ==================== TOWER 3 TINGKAT ==================== -->
   <!-- 1. Box Jetson Orin (paling bawah tower, warna hitam) -->
