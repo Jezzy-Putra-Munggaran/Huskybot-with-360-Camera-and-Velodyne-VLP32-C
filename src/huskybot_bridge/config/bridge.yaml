@@ -1,0 +1,17 @@
+topics:
+  - topic: /cmd_vel
+    type: geometry_msgs/msg/Twist
+    queue_size: 10
+  - topic: /odom
+    type: nav_msgs/msg/Odometry
+    queue_size: 10
+  - topic: /velodyne_points
+    type: sensor_msgs/msg/PointCloud2
+    queue_size: 10
+# Tambahkan topic lain jika perlu, misal:
+# - topic: /scan
+#   type: sensor_msgs/msg/LaserScan
+#   queue_size: 10
+# - topic: /camera/image_raw
+#   type: sensor_msgs/msg/Image
+#   queue_size: 10
