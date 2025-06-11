@@ -9,7 +9,10 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/multicamera.launch.py']),
+        ('share/' + package_name + '/launch', [
+            'launch/multicamera.launch.py',
+            'launch/camera.launch.py',  # <-- tambahkan baris ini!
+        ]),
     ],
     install_requires=[
         'setuptools',
