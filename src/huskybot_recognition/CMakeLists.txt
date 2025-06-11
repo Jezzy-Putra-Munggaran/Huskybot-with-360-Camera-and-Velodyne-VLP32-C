@@ -66,7 +66,7 @@ install(
 install(
   FILES
     scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 (.pt, fallback jika .engine tidak ada)
-    scripts/yolo12n.engine  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
+    scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
     scripts/yolo12n.onnx  # [SARAN] Install file model YOLOv12 ONNX (.onnx, fallback)
   DESTINATION share/${PROJECT_NAME}/scripts/
   OPTIONAL  # [BEST PRACTICE] Tidak error jika file tidak ada (agar build tetap jalan di CI/CD)

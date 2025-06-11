@@ -11,7 +11,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/ros1_bridge.launch.py']),
         ('share/' + package_name + '/config', ['config/bridge.yaml']),
-        ('share/' + package_name, ['README.md']),  # opsional, best practice
     ],
     install_requires=['setuptools'],
     zip_safe=True,

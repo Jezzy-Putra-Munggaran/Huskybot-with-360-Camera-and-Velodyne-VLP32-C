@@ -8,10 +8,10 @@ export PYTHONPATH="$HOME/.local/lib/python3.10/site-packages:$PYTHONPATH"  # [EN
 
 # ===================== KONFIGURASI DAN PATH MODEL =====================
 MODEL_DIR="$HOME/jezzy/huskybot/src/huskybot_recognition/scripts"  # Folder model YOLOv12
-MODEL_ENGINE="$MODEL_DIR/yolo12n.engine"  # Path model YOLOv12 TensorRT (.engine, utama)
+MODEL_ENGINE="$MODEL_DIR/yolo12n.pt"  # Path model YOLOv12 TensorRT (.engine, utama)
 MODEL_ONNX="$MODEL_DIR/yolo12n.onnx"      # Path model YOLOv12 ONNX (backup)
 MODEL_PT="$MODEL_DIR/yolo12n.pt"          # Path model YOLOv12 PyTorch (backup)
-MODEL_URL_ENGINE="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12n.engine"  # URL model .engine
+MODEL_URL_ENGINE="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12n.pt"  # URL model .engine
 MODEL_URL_ONNX="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12n.onnx"      # URL model .onnx
 MODEL_URL_PT="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12n.pt"          # URL model .pt
 
