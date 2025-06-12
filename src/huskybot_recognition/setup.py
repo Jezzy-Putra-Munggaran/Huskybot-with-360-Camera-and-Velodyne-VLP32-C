@@ -1,4 +1,4 @@
-from setuptools import setup  # Import setup tools untuk build/install Python package
+from setuptools import setup, find_packages  # Import setup tools untuk build/install Python package
 import os  # Untuk operasi path (cek file/folder, error handling build)
 from glob import glob  # Untuk mencari file secara glob pattern (otomatis install semua file yang dibutuhkan)
 
@@ -7,7 +7,7 @@ package_name = 'huskybot_recognition'  # Nama package, harus sama dengan folder 
 setup(
     name=package_name,  # Nama package (wajib, harus konsisten dengan folder dan package.xml)
     version='0.1.0',  # Versi package (update jika ada perubahan besar, best practice release)
-    packages=[package_name],  # Daftar package Python yang diinstall (harus ada __init__.py di folder)
+    packages=find_packages(),  # Otomatis temukan semua subpackage (termasuk openstitch)
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),  # Resource index ROS2 (wajib agar dikenali ament)
         ('share/' + package_name, ['package.xml']),  # Install package.xml ke share/package_name/ (wajib ROS2)

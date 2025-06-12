@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Node ROS2 untuk stitching panorama 360° 6 kamera menggunakan openstitch (Lictic-360 style).
+Node ROS2 untuk stitching panorama 360° 6 kamera menggunakan openstitch.
 - Robust, cropping otomatis, parameterisasi, logging, monitoring health kamera.
 - Siap untuk ROS2 Humble, Jetson Orin, dan pipeline YOLOv12.
 """
