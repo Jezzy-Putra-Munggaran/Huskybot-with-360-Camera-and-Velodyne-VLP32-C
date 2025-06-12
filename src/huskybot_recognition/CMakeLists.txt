@@ -54,6 +54,7 @@ install(
     scripts/yolov12_panorama_inference.py  # [WAJIB] Install node panorama inference (YOLOv12 di panorama)
     scripts/yolov12_inference_listener.py  # [WAJIB] Install node listener hasil deteksi (logger/monitoring)
     scripts/yolov12_detection_logger.py  # [BEST PRACTICE] Logger deteksi (opsional, audit trail)
+    scripts/yolov12_stitcher_openstitch.py # [BEST PRACTICE] Node OpenStitch (opsional, alternatif stitcher)
   DESTINATION lib/${PROJECT_NAME}  # [WAJIB] Install ke lib/package_name/ agar bisa di-run via ros2 run
 )
 

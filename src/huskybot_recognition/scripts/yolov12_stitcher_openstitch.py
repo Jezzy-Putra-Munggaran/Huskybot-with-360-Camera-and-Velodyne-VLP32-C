@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Node ROS2 untuk stitching panorama 360° 6 kamera menggunakan openstitch (Lictic-360 style).
+- Robust, cropping otomatis, parameterisasi, logging, monitoring health kamera.
+- Siap untuk ROS2 Humble, Jetson Orin, dan pipeline YOLOv12.
+"""
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
 import os
 import time
 import traceback
 import logging
 import sys
+
+# Import openstitch (pastikan sudah ada di huskybot_recognition/openstitch)
+from openstitch.stitcher import Stitcher
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
 def setup_file_logger(log_path="~/huskybot_panorama_stitcher.log"):
@@ -42,9 +50,9 @@ def log_to_file(msg, level='info'):
         except Exception as e:
             print(f"[ERROR] Gagal logging ke file: {e}")
 
-class PanoramaStitcher(Node):
+class PanoramaStitcherOpenStitch(Node):
     def __init__(self):
-        super().__init__('panorama_stitcher')
+        super().__init__('panorama_stitcher_openstitch')
         self.bridge = CvBridge()
 
         # ===================== PARAMETERISASI NODE =====================
@@ -55,6 +63,10 @@ class PanoramaStitcher(Node):
         self.declare_parameter('log_file_path', os.path.expanduser("~/huskybot_panorama_stitcher.log"))
         self.declare_parameter('output_topic', '/panorama/image_raw')
         self.declare_parameter('detection_input_topic', '/panorama/detection_input')
+        self.declare_parameter('detector', 'sift')
+        self.declare_parameter('confidence_threshold', 0.1)
+        self.declare_parameter('crop', True)
+        self.declare_parameter('warper_type', 'cylindrical')
 
         self.save_dir = self.get_parameter('save_dir').get_parameter_value().string_value
         self.monitor_interval = self.get_parameter('monitor_interval').get_parameter_value().double_value
@@ -63,9 +75,13 @@ class PanoramaStitcher(Node):
         self.log_file_path = self.get_parameter('log_file_path').get_parameter_value().string_value
         self.output_topic = self.get_parameter('output_topic').get_parameter_value().string_value
         self.detection_input_topic = self.get_parameter('detection_input_topic').get_parameter_value().string_value
+        self.detector = self.get_parameter('detector').get_parameter_value().string_value
+        self.confidence_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value
+        self.crop = self.get_parameter('crop').get_parameter_value().bool_value
+        self.warper_type = self.get_parameter('warper_type').get_parameter_value().string_value
 
-        self.get_logger().info(f"Parameter: save_dir={self.save_dir}, monitor_interval={self.monitor_interval}, max_frame_age={self.max_frame_age}, log_to_file={self.log_to_file_flag}, log_file_path={self.log_file_path}, output_topic={self.output_topic}, detection_input_topic={self.detection_input_topic}")
-        log_to_file(f"Parameter: save_dir={self.save_dir}, monitor_interval={self.monitor_interval}, max_frame_age={self.max_frame_age}, log_to_file={self.log_to_file_flag}, log_file_path={self.log_file_path}, output_topic={self.output_topic}, detection_input_topic={self.detection_input_topic}")
+        self.get_logger().info(f"Parameter: save_dir={self.save_dir}, monitor_interval={self.monitor_interval}, max_frame_age={self.max_frame_age}, log_to_file={self.log_to_file_flag}, log_file_path={self.log_file_path}, output_topic={self.output_topic}, detection_input_topic={self.detection_input_topic}, detector={self.detector}, confidence_threshold={self.confidence_threshold}, crop={self.crop}, warper_type={self.warper_type}")
+        log_to_file(f"Parameter: save_dir={self.save_dir}, monitor_interval={self.monitor_interval}, max_frame_age={self.max_frame_age}, log_to_file={self.log_to_file_flag}, log_file_path={self.log_file_path}, output_topic={self.output_topic}, detection_input_topic={self.detection_input_topic}, detector={self.detector}, confidence_threshold={self.confidence_threshold}, crop={self.crop}, warper_type={self.warper_type}")
 
         # ===================== DAFTAR KAMERA DAN TOPIC =====================
         self.camera_topics = [
@@ -98,8 +114,8 @@ class PanoramaStitcher(Node):
                     10
                 )
                 self._my_subscriptions.append(sub)
-                self.get_logger().info(f"Subscribed to camera topic: {topic} ({cam_name})")
-                log_to_file(f"Subscribed to camera topic: {topic} ({cam_name})")
+                self.get_logger().info(f"Subscribed to {topic}")
+                log_to_file(f"Subscribed to {topic}")
             except Exception as e:
                 self.get_logger().error(f"Gagal subscribe ke {topic}: {e}")
                 log_to_file(f"Gagal subscribe ke {topic}: {e}", level='error')
@@ -107,13 +123,20 @@ class PanoramaStitcher(Node):
         # ===================== PUBLISHER PANORAMA =====================
         self.panorama_pub = self.create_publisher(Image, self.output_topic, 1)
         self.panorama_det_pub = self.create_publisher(Image, self.detection_input_topic, 1)
+
+        # ===================== INISIALISASI OPENSTITCH STITCHER =====================
         try:
-            self.stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA)
-            self.get_logger().info("OpenCV Stitcher initialized.")
-            log_to_file("OpenCV Stitcher initialized.")
+            self.stitcher = Stitcher(
+                detector=self.detector,
+                confidence_threshold=self.confidence_threshold,
+                crop=self.crop,
+                warper_type=self.warper_type
+            )
+            self.get_logger().info("OpenStitch Stitcher initialized.")
+            log_to_file("OpenStitch Stitcher initialized.")
         except Exception as e:
-            self.get_logger().error(f"Gagal inisialisasi OpenCV Stitcher: {e}")
-            log_to_file(f"Gagal inisialisasi OpenCV Stitcher: {e}", level='error')
+            self.get_logger().error(f"Error inisialisasi OpenStitch: {e}")
+            log_to_file(f"Error inisialisasi OpenStitch: {e}", level='error')
             raise
 
         # ===================== FOLDER SIMPAN PANORAMA =====================
@@ -148,15 +171,9 @@ class PanoramaStitcher(Node):
 
         # ===================== MONITORING HEALTH KAMERA =====================
         if time.time() - self.last_monitor_time > self.monitor_interval:
-            for cam in self.camera_topics:
-                if cam not in self.latest_images:
-                    self.get_logger().warn(f"Kamera {cam} belum pernah publish frame!")
-                    log_to_file(f"Kamera {cam} belum pernah publish frame!", level='warn')
-                else:
-                    age = now - self.latest_stamps[cam]
-                    if age > self.max_frame_age:
-                        self.get_logger().warn(f"Frame kamera {cam} sudah lama ({age:.2f}s), kemungkinan delay atau drop!")
-                        log_to_file(f"Frame kamera {cam} sudah lama ({age:.2f}s), kemungkinan delay atau drop!", level='warn')
+            info = f"[MONITOR] Kamera aktif: {list(self.latest_images.keys())}, frame age: {[(cam, now - self.latest_stamps[cam]) for cam in self.latest_stamps]}"
+            self.get_logger().info(info)
+            log_to_file(info)
             self.last_monitor_time = time.time()
 
         # ===================== SINKRONISASI DAN STITCHING =====================
@@ -174,29 +191,24 @@ class PanoramaStitcher(Node):
                 images.append(im)
 
             try:
-                status, pano = self.stitcher.stitch(images)
-                if status == cv2.Stitcher_OK:
-                    pano_msg = self.bridge.cv2_to_imgmsg(pano, encoding='bgr8')
-                    pano_msg.header = msg.header
-                    self.panorama_pub.publish(pano_msg)
-                    self.panorama_det_pub.publish(pano_msg)
-                    self.get_logger().info("Panorama berhasil dipublish.")
-                    log_to_file("Panorama berhasil dipublish.")
+                pano = self.stitcher.stitch(images)
+                pano_msg = self.bridge.cv2_to_imgmsg(pano, encoding='bgr8')
+                pano_msg.header = msg.header
+                self.panorama_pub.publish(pano_msg)
+                self.panorama_det_pub.publish(pano_msg)
+                self.get_logger().info("Panorama berhasil dipublish.")
+                log_to_file("Panorama berhasil dipublish.")
 
-                    filename = os.path.join(self.save_dir, f"panorama_{self.save_count:05d}.jpg")
-                    try:
-                        cv2.imwrite(filename, pano)
-                        self.save_count += 1
-                    except Exception as e:
-                        self.get_logger().warn(f"Error simpan file panorama: {e}")
-                        log_to_file(f"Error simpan file panorama: {e}", level='warn')
-                else:
-                    warn_msg = (
-                        f"Stitching gagal, kode error: {status}. "
-                        "Pastikan orientasi mesh tower dan yaw kamera di Xacro sudah benar (kamera menghadap keluar sisi heksagonal)."
-                    )
-                    self.get_logger().warn(warn_msg)
-                    log_to_file(warn_msg, level='warn')
+                filename = os.path.join(self.save_dir, f"panorama_{self.save_count:05d}.jpg")
+                try:
+                    import cv2
+                    cv2.imwrite(filename, pano)
+                    self.save_count += 1
+                    self.get_logger().info(f"Panorama saved: {filename}")
+                    log_to_file(f"Panorama saved: {filename}")
+                except Exception as e:
+                    self.get_logger().warn(f"Gagal simpan panorama: {e}")
+                    log_to_file(f"Gagal simpan panorama: {e}", level='warn')
             except Exception as e:
                 self.get_logger().error(f"Error saat stitching panorama: {e}\n{traceback.format_exc()}")
                 log_to_file(f"Error saat stitching panorama: {e}\n{traceback.format_exc()}", level='error')
@@ -204,20 +216,20 @@ class PanoramaStitcher(Node):
 def main(args=None):
     try:
         rclpy.init(args=args)
-        node = PanoramaStitcher()
+        node = PanoramaStitcherOpenStitch()
         try:
             rclpy.spin(node)
         except KeyboardInterrupt:
-            node.get_logger().info("KeyboardInterrupt, shutting down panorama_stitcher node.")
-            log_to_file("KeyboardInterrupt, shutting down panorama_stitcher node.", level='warn')
+            node.get_logger().info("KeyboardInterrupt, shutting down panorama_stitcher_openstitch node.")
+            log_to_file("KeyboardInterrupt, shutting down panorama_stitcher_openstitch node.", level='warn')
         except Exception as e:
             node.get_logger().error(f"Exception utama: {e}\n{traceback.format_exc()}")
             log_to_file(f"Exception utama: {e}\n{traceback.format_exc()}", level='error')
         finally:
             node.destroy_node()
             rclpy.shutdown()
-            node.get_logger().info("panorama_stitcher node shutdown complete.")
-            log_to_file("panorama_stitcher node shutdown complete.")
+            node.get_logger().info("panorama_stitcher_openstitch node shutdown complete.")
+            log_to_file("panorama_stitcher_openstitch node shutdown complete.")
     except Exception as e:
         print(f"[FATAL] Exception di main(): {e}\n{traceback.format_exc()}")
         log_to_file(f"[FATAL] Exception di main(): {e}\n{traceback.format_exc()}", level='error')

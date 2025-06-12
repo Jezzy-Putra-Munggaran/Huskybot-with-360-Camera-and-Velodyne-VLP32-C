@@ -9,12 +9,12 @@ def generate_launch_description():
     # Mapping device ke topic sesuai urutan fisik dan pipeline Huskybot
     camera_remap = [
         # (device, topic)
-        ('/dev/video0', '/camera_front/image_raw'),
-        ('/dev/video1', '/camera_front_left/image_raw'),
-        ('/dev/video2', '/camera_left/image_raw'),
-        ('/dev/video3', '/camera_rear/image_raw'),
-        ('/dev/video4', '/camera_rear_right/image_raw'),
-        ('/dev/video5', '/camera_right/image_raw'),
+        ('csi://0', '/camera_front/image_raw'),
+        ('csi://1', '/camera_front_left/image_raw'),
+        ('csi://2', '/camera_left/image_raw'),
+        ('csi://3', '/camera_rear/image_raw'),
+        ('csi://4', '/camera_rear_right/image_raw'),
+        ('csi://5', '/camera_right/image_raw'),
     ]
     for i, (dev, topic) in enumerate(camera_remap, start=1):
         args.append(DeclareLaunchArgument(
@@ -39,7 +39,7 @@ def generate_launch_description():
         ))
         args.append(DeclareLaunchArgument(
             f'camera{i}_framerate',
-            default_value='30',
+            default_value='30.0', 
             description=f'Framerate kamera {i}'
         ))
 
@@ -57,6 +57,9 @@ def generate_launch_description():
                     'width': LaunchConfiguration(f'camera{i}_width'),
                     'height': LaunchConfiguration(f'camera{i}_height'),
                     'framerate': LaunchConfiguration(f'camera{i}_framerate'),
+                    'codec': 'unknown',
+                    'loop': 0,
+                    'latency': 2000,
                 }],
                 remappings=[
                     ('/video_source/raw', LaunchConfiguration(f'camera{i}_topic'))

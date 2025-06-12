@@ -91,9 +91,9 @@ install(CODE "execute_process(COMMAND chmod +x ${LAUNCH_DIR}/display.launch.py)"
 # ===================== INSTALL FILE DOKUMENTASI =====================
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION share/${PROJECT_NAME}/)        # [BEST PRACTICE] Install README ke share agar dokumentasi selalu tersedia di package
 
-# ===================== INSTALL FILE KALIBRASI YAML =====================
-file(GLOB CALIB_YAML_FILES "${CALIB_DIR}/*.yaml")                                             # [OTOMATIS] Cari semua file YAML kalibrasi (extrinsic, intrinsic, dsb)
-install(FILES ${CALIB_YAML_FILES} DESTINATION share/${PROJECT_NAME}/calibration)               # [BEST PRACTICE] Install file YAML kalibrasi ke share (agar node lain bisa akses)
+# # ===================== INSTALL FILE KALIBRASI YAML =====================
+# file(GLOB CALIB_YAML_FILES "${CALIB_DIR}/*.yaml")                                             # [OTOMATIS] Cari semua file YAML kalibrasi (extrinsic, intrinsic, dsb)
+# install(FILES ${CALIB_YAML_FILES} DESTINATION share/${PROJECT_NAME}/calibration)               # [BEST PRACTICE] Install file YAML kalibrasi ke share (agar node lain bisa akses)
 
 # ===================== INSTALL FILE YAML CONTROLLER =====================
 file(GLOB CONFIG_YAML_FILES "${CONFIG_DIR}/*.yaml")                                           # [OTOMATIS] Cari semua file YAML di config/
