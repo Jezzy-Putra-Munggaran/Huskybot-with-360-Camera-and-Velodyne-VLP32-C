@@ -38,20 +38,19 @@ endif()
 # ===================== INSTALL SCRIPTS & LAUNCH FILES =====================
 install(
   DIRECTORY
-    scripts  # [WAJIB] Install seluruh folder scripts (berisi node Python, OOP, modular)
-    launch   # [WAJIB] Install seluruh folder launch (berisi launch file Python)
+    huskybot_recognition/scripts  # <--- path baru!
+    launch
   DESTINATION
     share/${PROJECT_NAME}/  # [WAJIB] Install ke share/package_name/ (standar ROS2, agar bisa diakses node lain/CI)
 )
 
 install(
   PROGRAMS
-    scripts/yolov12_ros2_pt.py  # [WAJIB] Install node YOLOv12 utama (harus executable, OOP, deteksi 6 kamera)
-    scripts/yolov12_ros2_trt.py  # [WAJIB] Install node YOLOv12 TensorRT (untuk Jetson Orin, .engine)
-    scripts/yolov12_ros2_onnx.py  # [WAJIB] Install node YOLOv12 ONNX (fallback jika .engine tidak ada)
-    scripts/yolov12_ros2_subscriber.py  # [WAJIB] Install node subscriber hasil deteksi (visualisasi/annotasi)
-    scripts/yolov12_stitcher_node.py  # [WAJIB] Install node stitcher panorama (gabung 6 kamera jadi panorama)
-    scripts/yolov12_panorama_inference.py  # [WAJIB] Install node panorama inference (YOLOv12 di panorama)
+    huskybot_recognition/scripts/yolov12_ros2_pt.py
+    huskybot_recognition/scripts/yolov12_ros2_trt.py
+    huskybot_recognition/scripts/yolov12_ros2_onnx.py
+    huskybot_recognition/scripts/yolov12_stitcher_node.py
+    huskybot_recognition/scripts/yolov12_panorama_inference.py
     scripts/yolov12_inference_listener.py  # [WAJIB] Install node listener hasil deteksi (logger/monitoring)
     scripts/yolov12_detection_logger.py  # [BEST PRACTICE] Logger deteksi (opsional, audit trail)
     scripts/yolov12_stitcher_openstitch.py # [BEST PRACTICE] Node OpenStitch (opsional, alternatif stitcher)

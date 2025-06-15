@@ -18,7 +18,7 @@ import logging
 import sys
 
 # Import openstitch (pastikan sudah ada di huskybot_recognition/openstitch)
-from openstitch.stitcher import Stitcher
+from huskybot_recognition.openstitch.stitcher import Stitcher
 
 # ===================== LOGGING TO FILE (OPSIONAL) =====================
 def setup_file_logger(log_path="~/huskybot_panorama_stitcher.log"):
