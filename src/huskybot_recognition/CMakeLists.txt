@@ -88,6 +88,7 @@ install(
 )
 
 # ===================== AMAN UNTUK ROS2 HUMBLE & GAZEBO =====================
+ament_python_install_package(${PROJECT_NAME})  # [WAJIB] Install package Python ke site-packages
 ament_package()  # [WAJIB] Macro wajib penutup package ROS2 (agar dikenali oleh ament)
 
 # ===================== REVIEW & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN) =====================

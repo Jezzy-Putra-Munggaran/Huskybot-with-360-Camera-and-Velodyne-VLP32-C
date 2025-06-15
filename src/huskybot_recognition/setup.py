@@ -4,6 +4,15 @@ from glob import glob  # Untuk mencari file secara glob pattern (otomatis instal
 
 package_name = 'huskybot_recognition'  # Nama package, harus sama dengan folder dan package.xml
 
+# Create resource directory for package recognition
+resource_dir = os.path.join(os.path.dirname(__file__), 'resource')
+if not os.path.exists(resource_dir):
+    os.makedirs(resource_dir)  # Create resource directory if it doesn't exist
+
+# Create an empty file to register the package
+with open(os.path.join(resource_dir, 'huskybot_recognition'), 'w') as f:
+    pass  # Empty file to register the package
+
 setup(
     name=package_name,  # Nama package (wajib, harus konsisten dengan folder dan package.xml)
     version='0.1.0',  # Versi package (update jika ada perubahan besar, best practice release)
