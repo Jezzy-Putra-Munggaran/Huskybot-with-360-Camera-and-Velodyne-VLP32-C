@@ -205,10 +205,20 @@ def generate_launch_description():
 
 ---
 
-**5. Kesimpulan**
-- [README.md](http://_vscodecontentref_/1) sudah sangat lengkap, aman, dan best practice untuk ROS2 Humble, simulasi Gazebo, dan robot real. <!-- Review akhir README. -->
-- Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun. <!-- Semua baris ada komentar penjelasan. -->
-- Tidak ada bug/error, sudah siap untuk deployment dan kolaborasi tim. <!-- Siap deployment dan kolaborasi. -->
-- Semua saran peningkatan sudah diimplementasikan langsung di README di atas. <!-- Semua saran sudah diimplementasikan. -->
+## Daftar Periksa Sebelum Uji Coba
 
-<!-- END OF README, semua baris sudah diberi komentar penjelasan -->
+1. **Cek Dependensi:** Pastikan semua dependensi yang diperlukan untuk proyekmu terinstal. Periksa file `package.xml` dan `CMakeLists.txt` untuk memastikan semua paket yang diperlukan sudah terdaftar.
+
+2. **Cek Versi VPI:** Dari output build, ada peringatan tentang VPI. Pastikan kamu memiliki versi VPI yang sesuai dengan yang dibutuhkan proyek. Jika perlu, instal versi yang tepat.
+
+3. **Perbaiki Peringatan di Kode:** Ada beberapa peringatan di `ros_deep_learning` yang menunjukkan bahwa fungsi tidak mengembalikan nilai. Perbaiki fungsi-fungsi tersebut agar mengembalikan nilai yang sesuai.
+
+4. **Cek Konfigurasi ROS:** Pastikan bahwa semua konfigurasi ROS sudah benar, termasuk pengaturan untuk kamera dan LiDAR. Periksa file launch dan parameter yang digunakan.
+
+5. **Uji Coba dengan Satu Kamera:** Sebelum mencoba dengan enam kamera, lakukan uji coba dengan satu kamera terlebih dahulu untuk memastikan semuanya berjalan dengan baik.
+
+6. **Log dan Debug:** Periksa log output saat menjalankan node untuk melihat apakah ada kesalahan atau peringatan yang muncul. Gunakan `ros2 run` untuk menjalankan node secara manual dan lihat outputnya.
+
+7. **Cek Jaringan:** Jika menggunakan beberapa kamera, pastikan bahwa semua perangkat terhubung dengan benar dan dapat berkomunikasi satu sama lain.
+
+8. **Dokumentasi:** Rujuk ke dokumentasi yang relevan untuk setiap komponen yang digunakan, seperti OpenStitcher dan YOLOv12, untuk memastikan bahwa semua langkah konfigurasi telah diikuti dengan benar.
