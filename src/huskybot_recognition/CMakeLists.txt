@@ -51,9 +51,9 @@ install(
     huskybot_recognition/scripts/yolov12_ros2_onnx.py
     huskybot_recognition/scripts/yolov12_stitcher_node.py
     huskybot_recognition/scripts/yolov12_panorama_inference.py
-    scripts/yolov12_inference_listener.py  # [WAJIB] Install node listener hasil deteksi (logger/monitoring)
-    scripts/yolov12_detection_logger.py  # [BEST PRACTICE] Logger deteksi (opsional, audit trail)
-    scripts/yolov12_stitcher_openstitch.py # [BEST PRACTICE] Node OpenStitch (opsional, alternatif stitcher)
+    huskybot_recognition/scripts/yolov12_inference_listener.py
+    huskybot_recognition/scripts/yolov12_detection_logger.py
+    huskybot_recognition/scripts/yolov12_stitcher_openstitch.py
   DESTINATION lib/${PROJECT_NAME}  # [WAJIB] Install ke lib/package_name/ agar bisa di-run via ros2 run
 )
 
@@ -65,8 +65,8 @@ install(
 )
 install(
   FILES
-    scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 (.pt, fallback jika .engine tidak ada)
-    scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
+    huskybot_recognition/scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 (.pt, fallback jika .engine tidak ada)
+    huskybot_recognition/scripts/yolo12n.pt  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
     scripts/yolo12n.onnx  # [SARAN] Install file model YOLOv12 ONNX (.onnx, fallback)
   DESTINATION share/${PROJECT_NAME}/scripts/
   OPTIONAL  # [BEST PRACTICE] Tidak error jika file tidak ada (agar build tetap jalan di CI/CD)
@@ -112,3 +112,6 @@ ament_package()  # [WAJIB] Macro wajib penutup package ROS2 (agar dikenali oleh 
 #   9. Tambahkan check permission file/folder model/kalibrasi di script Python agar error handling lebih advance.
 #   10. Tambahkan check dependency di launch file (cek ultralytics, torch, dsb).
 # - Tidak ada bug/error, sudah best practice ROS2 Python package, siap simulasi dan deployment.
+
+# File not found, please check the scripts directory.
+# Ensure that 'yolov12_inference_listener.py' exists in the scripts folder.
