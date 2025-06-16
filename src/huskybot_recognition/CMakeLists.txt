@@ -53,7 +53,6 @@ install(
     huskybot_recognition/scripts/yolov12_panorama_inference.py
     huskybot_recognition/scripts/yolov12_inference_listener.py
     huskybot_recognition/scripts/yolov12_detection_logger.py
-    huskybot_recognition/scripts/yolov12_stitcher_openstitch.py
   DESTINATION lib/${PROJECT_NAME}  # [WAJIB] Install ke lib/package_name/ agar bisa di-run via ros2 run
 )
 

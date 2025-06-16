@@ -67,7 +67,6 @@ setup(
             'yolov12_detection_logger.py = huskybot_recognition.scripts.yolov12_detection_logger:main',  # Node logger deteksi ke CSV
             'yolov12_inference_listener.py = huskybot_recognition.scripts.yolov12_inference_listener:main',  # Node listener hasil deteksi
             'yolov12_ros2_subscriber.py = huskybot_recognition.scripts.yolov12_ros2_subscriber:main',  # Node subscriber visualisasi deteksi
-            'yolov12_stitcher_openstitch.py = huskybot_recognition.scripts.yolov12_stitcher_openstitch:main',  # Node stitcher OpenStitch (opsional)
         ],
     },
 )
