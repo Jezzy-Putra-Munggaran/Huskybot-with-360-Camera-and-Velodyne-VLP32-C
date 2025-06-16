@@ -1,0 +1,13 @@
+cam_count: 6
+cam_center: 150
+fov_h: 60.0
+view_p: 0.25
+view_h: 0.10
+segmentation_model: "yolo12n.engine"
+camera_topics:
+  - /camera_front/image_raw
+  - /camera_front_left/image_raw
+  - /camera_left/image_raw
+  - /camera_rear/image_raw
+  - /camera_rear_right/image_raw
+  - /camera_right/image_raw
