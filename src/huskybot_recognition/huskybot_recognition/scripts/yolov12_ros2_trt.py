@@ -56,7 +56,7 @@ class CameraSubscriberTRT(Node):  # Node deteksi YOLOv12 TensorRT, FULL OOP
         super().__init__('camera_subscriber_trt')  # Inisialisasi node dengan nama unik
         try:
             # ===================== PARAMETERISASI NODE =====================
-            self.declare_parameter('model_path', os.path.expanduser('~/jezzy/huskybot/src/huskybot_recognition/huskybot_recognition/scripts/yolo12n.pt'))  # Path default model YOLOv12 TensorRT
+            self.declare_parameter('model_path', os.path.expanduser('~/jezzy/huskybot/src/huskybot_recognition/huskybot_recognition/scripts/yolo12n.engine'))  # Path default model YOLOv12 TensorRT
             self.declare_parameter('confidence_threshold', 0.25)  # Threshold confidence default
             self.declare_parameter('log_stats', True)  # Logging statistik deteksi ke file
             self.declare_parameter('log_stats_path', os.path.expanduser('~/huskybot_detection_log/yolov12_trt_stats.csv'))  # Path file statistik
