@@ -1,6 +1,10 @@
-string class_name   # Nama kelas objek hasil deteksi (misal: "person", "car", "dog", dst). WAJIB: Untuk identifikasi class hasil deteksi YOLOv12. Digunakan di semua node deteksi, logger, fusion, dsb.
-float32 confidence  # Skor confidence deteksi (0.0 - 1.0). WAJIB: Nilai confidence hasil deteksi YOLOv12. Digunakan untuk thresholding di node deteksi, logger, fusion, dsb.
-int64 top           # Koordinat atas bounding box (pixel, biasanya y1). WAJIB: Posisi pixel bounding box atas. Digunakan untuk visualisasi dan evaluasi deteksi.
-int64 left          # Koordinat kiri bounding box (pixel, biasanya x1). WAJIB: Posisi pixel bounding box kiri. Digunakan untuk visualisasi dan evaluasi deteksi.
-int64 bottom        # Koordinat bawah bounding box (pixel, biasanya y2). WAJIB: Posisi pixel bounding box bawah. Digunakan untuk visualisasi dan evaluasi deteksi.
-int64 right         # Koordinat kanan bounding box (pixel, biasanya x2). WAJIB: Posisi pixel bounding box kanan. Digunakan untuk visualisasi dan evaluasi deteksi.
+string class_name
+float32 confidence
+int64 top
+int64 left
+int64 bottom
+int64 right
+# Tambahkan field berikut:
+int64 track_id         # (opsional) ID tracking objek
+int64 obb_angle        # (opsional) Sudut OBB (derajat/radian)
+int64[] mask_indices   # (opsional) Indeks pixel mask segmentasi (atau gunakan format lain sesuai kebutuhan)
