@@ -130,7 +130,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('model_path', default_value='~/jezzy/huskybot/src/huskybot_recognition/huskybot_recognition/scripts/yolo12n.engine'),  # Default TensorRT .engine
+        DeclareLaunchArgument('model_path', default_value='~/jezzy/huskybot/src/huskybot_recognition/huskybot_recognition/scripts/yolo12x.engine'),  # Default TensorRT .engine
         DeclareLaunchArgument('confidence_threshold', default_value='0.25'),
         DeclareLaunchArgument('model_format', default_value='engine'),  # engine/onnx/pt
         Node(
@@ -184,7 +184,7 @@ def generate_launch_description():
 
 ## File Kalibrasi & Model
 
-- File model YOLOv12 (`yolo12n.engine`, `yolo12n.engine`, `yolo12n.onnx`) ada di `scripts/`. <!-- File model YOLOv12 wajib ada di scripts/. -->
+- File model YOLOv12 (`yolo12x.engine`, `yolo12x.engine`, `yolo12x.onnx`) ada di `scripts/`. <!-- File model YOLOv12 wajib ada di scripts/. -->
 - File kalibrasi kamera (`intrinsic_camera_*.yaml`) ada di `huskybot_description/calibration/`. <!-- File kalibrasi wajib ada di folder ini. -->
 - Pastikan path file model dan kalibrasi sudah benar di parameter/launch file. <!-- Saran agar tidak error file hilang. -->
 - Untuk Jetson Orin, gunakan model .engine (TensorRT) untuk performa maksimal, fallback ke .onnx jika perlu. <!-- Best practice Jetson Orin. -->

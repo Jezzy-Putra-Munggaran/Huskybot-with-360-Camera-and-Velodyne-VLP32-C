@@ -12,7 +12,7 @@ class MultiCamClassificationNode(Node):
     def __init__(self):
         super().__init__('multicam_classification')
         self.declare_parameter('cam_count', 6)
-        self.declare_parameter('model_path', "yolo12n-cls.engine")
+        self.declare_parameter('model_path', "yolo12x-cls.engine")
         self.declare_parameter('camera_topics', [
             '/camera_front/image_raw',
             '/camera_right/image_raw',

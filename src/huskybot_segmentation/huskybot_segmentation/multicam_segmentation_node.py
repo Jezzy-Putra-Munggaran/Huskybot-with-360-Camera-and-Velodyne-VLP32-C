@@ -12,7 +12,7 @@ class MultiCamSegmentationNode(Node):
     def __init__(self):
         super().__init__('multicam_segmentation')
         self.declare_parameter('cam_count', 6)
-        self.declare_parameter('model_path', "yolo12n-seg.engine")
+        self.declare_parameter('model_path', "yolo12x-seg.engine")
         self.declare_parameter('camera_topics', [
             '/camera_front/image_raw',
             '/camera_right/image_raw',
