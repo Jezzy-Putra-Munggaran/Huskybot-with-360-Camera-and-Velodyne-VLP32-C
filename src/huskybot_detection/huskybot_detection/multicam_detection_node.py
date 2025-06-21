@@ -5,6 +5,8 @@ from cv_bridge import CvBridge
 from ultralytics import YOLO
 import numpy as np
 import cv2
+from yolov12_msgs.msg import InferenceResult, Yolov12Inference
+from std_msgs.msg import Header
 
 class MultiCamDetectionNode(Node):
     def __init__(self):
@@ -26,6 +28,8 @@ class MultiCamDetectionNode(Node):
         self.bridge = CvBridge()
         self.model = YOLO(self.model_path, task="detect")
         self.images = [None] * self.cam_count
+
+        self.publisher = self.create_publisher(Yolov12Inference, '/detection', 10)
 
         for i, topic in enumerate(self.camera_topics):
             self.create_subscription(
@@ -51,6 +55,7 @@ class MultiCamDetectionNode(Node):
                         class_id = int(box.cls.item())
                         conf = float(box.conf.item())
                         self.get_logger().info(f"[Detection] Camera {idx+1}: class={class_id}, conf={conf:.2f}")
+                        self.publish_results(results, f"Camera_{idx+1}")
                 target_height = 240
                 resized_images = []
                 for image in annotated_images:
@@ -76,6 +81,30 @@ class MultiCamDetectionNode(Node):
         else:
             available = sum(1 for img in self.images if img is not None)
             self.get_logger().info(f"Available camera feeds: {available}/{self.cam_count}")
+
+    def publish_results(self, results, camera_name):
+        msg = Yolov12Inference()
+        msg.header = Header()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = camera_name
+        msg.camera_name = camera_name
+        msg.frame_type = "raw"
+        msg.task = "detect"
+        msg.note = ""
+        msg.yolov12_inference = []
+        for box in results[0].boxes:
+            det = InferenceResult()
+            det.class_name = str(box.cls.item())
+            det.confidence = float(box.conf.item())
+            det.top = int(box.xyxy[0][1])
+            det.left = int(box.xyxy[0][0])
+            det.bottom = int(box.xyxy[0][3])
+            det.right = int(box.xyxy[0][2])
+            det.track_id = int(box.id.item()) if hasattr(box, "id") and box.id is not None else -1
+            det.obb_angle = 0  # isi jika OBB
+            det.mask_indices = []  # isi jika segmentation
+            msg.yolov12_inference.append(det)
+        self.publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

@@ -5,6 +5,8 @@ from cv_bridge import CvBridge
 from ultralytics import YOLO
 import numpy as np
 import cv2
+from yolov12_msgs.msg import InferenceResult, Yolov12Inference
+from std_msgs.msg import Header
 
 class MultiCamSegmentationNode(Node):
     def __init__(self):
@@ -32,6 +34,7 @@ class MultiCamSegmentationNode(Node):
                 Image, topic, lambda msg, idx=i: self.image_callback(msg, idx), 10
             )
         self.timer = self.create_timer(0.2, self.display_images)
+        self.publisher = self.create_publisher(Yolov12Inference, '/detection', 10)
 
     def image_callback(self, msg, idx):
         try:
@@ -74,6 +77,30 @@ class MultiCamSegmentationNode(Node):
         else:
             available = sum(1 for img in self.images if img is not None)
             self.get_logger().info(f"Available camera feeds: {available}/{self.cam_count}")
+
+    def publish_results(self, results, camera_name):
+        msg = Yolov12Inference()
+        msg.header = Header()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = camera_name
+        msg.camera_name = camera_name
+        msg.frame_type = "raw"
+        msg.task = "detect"
+        msg.note = ""
+        msg.yolov12_inference = []
+        for box in results[0].boxes:
+            det = InferenceResult()
+            det.class_name = str(box.cls.item())
+            det.confidence = float(box.conf.item())
+            det.top = int(box.xyxy[0][1])
+            det.left = int(box.xyxy[0][0])
+            det.bottom = int(box.xyxy[0][3])
+            det.right = int(box.xyxy[0][2])
+            det.track_id = int(box.id.item()) if hasattr(box, "id") and box.id is not None else -1
+            det.obb_angle = 0  # isi jika OBB
+            det.mask_indices = []  # isi jika segmentation
+            msg.yolov12_inference.append(det)
+        self.publisher.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

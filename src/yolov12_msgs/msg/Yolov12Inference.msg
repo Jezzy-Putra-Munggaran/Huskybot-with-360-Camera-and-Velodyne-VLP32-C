@@ -1,3 +1,6 @@
-std_msgs/Header header              # Header ROS2 (timestamp dan frame_id, untuk sinkronisasi waktu dan referensi frame). WAJIB: Digunakan untuk time sync antar node, evaluasi, dan integrasi TF. Semua node deteksi, logger, fusion WAJIB isi header ini.
-InferenceResult[] yolov12_inference # Array hasil deteksi (list bounding box dan class, satu frame bisa banyak deteksi). WAJIB: List hasil deteksi per frame, bisa kosong jika tidak ada deteksi. Digunakan di semua node deteksi, logger, fusion, dsb.
-string camera_name                  # Nama kamera sumber deteksi (misal: "camera_front", "panorama", dsb). WAJIB: Untuk identifikasi sumber deteksi (multi-kamera/panorama). Digunakan untuk audit, logger, fusion, dsb.
+std_msgs/Header header
+InferenceResult[] yolov12_inference
+string camera_name
+string frame_type    # (opsional) "raw"/"stitch"/"panorama"
+string task          # (opsional) "detect"/"segment"/"classify"/"obb"/"track"
+string note          # (opsional) Catatan tambahan (misal: kondisi sensor, dsb)

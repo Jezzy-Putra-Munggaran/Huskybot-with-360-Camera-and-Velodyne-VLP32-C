@@ -4,7 +4,7 @@
 import rclpy  # [WAJIB] Library utama ROS2 Python
 from rclpy.node import Node  # [WAJIB] Base class untuk node ROS2
 from sensor_msgs.msg import PointCloud2  # [WAJIB] Message point cloud dari Velodyne
-from yolov12_msgs.msg import Yolov12Inference  # [WAJIB] Message hasil deteksi YOLOv12 (dari kamera 360°)
+from yolov12_msgs.msg import Yolov12Inference
 from huskybot_msgs.msg import Object3D  # [WAJIB] Custom message untuk hasil deteksi objek 3D
 import message_filters  # [WAJIB] Untuk sinkronisasi data multi sensor (kamera & lidar)
 import numpy as np  # [WAJIB] Untuk pemrosesan data numerik/array
@@ -120,6 +120,15 @@ class FusionNode(Node):  # [WAJIB] Node OOP untuk fusion deteksi kamera 360° da
             self.get_logger().error(f"Error initializing FusionNode: {e}\n{traceback.format_exc()}")
             log_to_file(f"Error initializing FusionNode: {e}\n{traceback.format_exc()}", level='error')
             sys.exit(10)  # [WAJIB] Exit jika error fatal saat init
+
+        self.subs = []
+        for topic in ['/detection', '/segmentation', '/obb', '/tracking']:
+            self.subs.append(self.create_subscription(
+                Yolov12Inference, topic, self.yolo_callback, 10))
+
+    def yolo_callback(self, msg):
+        # Simpan hasil deteksi untuk diproses bersama point cloud
+        self.latest_yolo[msg.task] = msg
 
     def fusion_callback(self, lidar_msg, yolo_msg):  # [WAJIB] Callback utama fusion
         try:
