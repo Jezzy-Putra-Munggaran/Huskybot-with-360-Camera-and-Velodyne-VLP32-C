@@ -8,12 +8,12 @@ export PYTHONPATH="$HOME/.local/lib/python3.10/site-packages:$PYTHONPATH"  # [EN
 
 # ===================== KONFIGURASI DAN PATH MODEL =====================
 MODEL_DIR="$HOME/jezzy/huskybot/src/huskybot_recognition/scripts"  # Folder model YOLOv12
-MODEL_ENGINE="$MODEL_DIR/yolo12x.pt"  # Path model YOLOv12 TensorRT (.engine, utama)
-MODEL_ONNX="$MODEL_DIR/yolo12x.onnx"      # Path model YOLOv12 ONNX (backup)
-MODEL_PT="$MODEL_DIR/yolo12x.pt"          # Path model YOLOv12 PyTorch (backup)
-MODEL_URL_ENGINE="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12x.pt"  # URL model .engine
-MODEL_URL_ONNX="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12x.onnx"      # URL model .onnx
-MODEL_URL_PT="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo12x.pt"          # URL model .pt
+MODEL_ENGINE="$MODEL_DIR/yolo11x.pt"  # Path model YOLOv12 TensorRT (.engine, utama)
+MODEL_ONNX="$MODEL_DIR/yolo11x.onnx"      # Path model YOLOv12 ONNX (backup)
+MODEL_PT="$MODEL_DIR/yolo11x.pt"          # Path model YOLOv12 PyTorch (backup)
+MODEL_URL_ENGINE="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt"  # URL model .engine
+MODEL_URL_ONNX="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.onnx"      # URL model .onnx
+MODEL_URL_PT="https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt"          # URL model .pt
 
 LOG_FILE="$HOME/huskybot_run.log"  # Path file log utama
 touch "$LOG_FILE" 2>/dev/null || LOG_FILE="/tmp/huskybot_run.log"  # [ERROR HANDLING] Fallback ke /tmp jika gagal

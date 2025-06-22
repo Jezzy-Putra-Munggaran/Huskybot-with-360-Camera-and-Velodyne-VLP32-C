@@ -15,7 +15,7 @@ class MultiCamSegmentationNode(Node):  # Node deteksi multicam YOLOv12 segmentas
     def __init__(self):
         super().__init__('multicam_segmentation')  # Inisialisasi node ROS2 dengan nama unik
         self.declare_parameter('cam_count', 6)  # Jumlah kamera (default 6, hexagonal)
-        self.declare_parameter('model_path', "yolo12x-seg.engine")  # Path model YOLOv12 segmentasi
+        self.declare_parameter('model_path', "yolo11x-seg.engine")  # Path model YOLOv12 segmentasi
         self.declare_parameter('camera_topics', [  # Daftar topic kamera (default urutan hexagonal)
             '/camera_front/image_raw',
             '/camera_right/image_raw',
