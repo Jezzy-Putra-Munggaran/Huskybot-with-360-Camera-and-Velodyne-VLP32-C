@@ -29,7 +29,7 @@
   <export>
     <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
     <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python) -->
-    <description lang="en">YOLOv12 multicam tracking & fusion node for Huskybot 360° perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
+    <description lang="en">YOLOv12 multicam tracking dan fusion node for Huskybot 360° perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
     <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
     <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- (Opsional) URL website/repo utama package -->
     <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
