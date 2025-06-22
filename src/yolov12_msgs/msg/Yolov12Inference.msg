@@ -1,6 +1,6 @@
-std_msgs/Header header
-InferenceResult[] yolov12_inference
-string camera_name
-string frame_type    # (opsional) "raw"/"stitch"/"panorama"
-string task          # (opsional) "detect"/"segment"/"classify"/"obb"/"track"
-string note          # (opsional) Catatan tambahan (misal: kondisi sensor, dsb)
+std_msgs/Header header           # Header ROS2 standar (waktu, frame_id). WAJIB. Untuk sinkronisasi waktu, TF, dan integrasi multi-sensor. Digunakan di semua node, logger, fusion, dsb.
+InferenceResult[] yolov12_inference  # Array hasil deteksi (list InferenceResult). WAJIB. Satu frame bisa punya banyak deteksi. Dipakai semua node multicam, logger, fusion, visualizer.
+string camera_name               # Nama kamera/sumber deteksi (misal: "front", "panorama", "cam_1"). WAJIB. Untuk multi-kamera, panorama, dan audit trail. Digunakan logger, fusion, dsb.
+string frame_type                # (opsional) Jenis frame: "raw", "stitch", "panorama". Untuk identifikasi pipeline (misal: hasil stitching/panorama). Bisa dikosongkan jika tidak perlu.
+string task                      # (opsional) Task YOLO: "detect", "segment", "classify", "obb", "track". Untuk identifikasi jenis inference. Penting untuk fusion multi-task.
+string note                      # (opsional) Catatan tambahan (misal: kondisi sensor, error, dsb). Untuk debugging, audit, atau metadata tambahan. Bisa dikosongkan jika tidak perlu.

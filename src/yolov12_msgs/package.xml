@@ -11,7 +11,6 @@
     (Update 2025-05-06) <!-- Tanggal update terakhir, best practice untuk tracking -->
   </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
-  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: MIT, Apache-2.0, BSD-3-Clause, dsb) -->
 
   <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Build tool utama ROS2 (ament_cmake) -->
