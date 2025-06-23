@@ -1,40 +1,41 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration
-from launch.conditions import IfCondition, UnlessCondition
-from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
-    # Path ke package
-    perception_dir = get_package_share_directory('huskybot_perception')
+    # Directory
+    huskybot_perception_dir = get_package_share_directory('huskybot_perception')
     
-    # Arguments
+    # Launch arguments
+    model_type = LaunchConfiguration('model_type', default='detection')
+    
+    # Model type argument
     model_type_arg = DeclareLaunchArgument(
-        'model_type', 
+        'model_type',
         default_value='detection',
-        description='Model type to use: "detection" or "segmentation"'
+        description='Type of model to use: detection or segmentation'
     )
     
-    def launch_setup(context):
-        model_type = LaunchConfiguration('model_type').perform(context)
-        
-        # Choose launch file based on model_type
-        if model_type == 'segmentation':
-            launch_file = os.path.join(perception_dir, 'launch', 'simple_segmentation.launch.py')
-        else:
-            launch_file = os.path.join(perception_dir, 'launch', 'simple_detection.launch.py')
-            
-        return [
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(launch_file)
-            )
-        ]
+    # Select launch file based on model_type
+    detection_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(huskybot_perception_dir, 'launch', 'simple_detection.launch.py')
+        ]),
+        condition=LaunchConfiguration('model_type').perform(context=None) == 'detection'
+    )
+    
+    segmentation_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(huskybot_perception_dir, 'launch', 'simple_segmentation.launch.py')
+        ]),
+        condition=LaunchConfiguration('model_type').perform(context=None) == 'segmentation'
+    )
     
     return LaunchDescription([
         model_type_arg,
-        OpaqueFunction(function=launch_setup)
+        detection_launch,
+        segmentation_launch
     ])

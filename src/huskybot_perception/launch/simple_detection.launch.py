@@ -14,7 +14,7 @@ def generate_launch_description():
     # Launch camera dari huskybot_camera
     camera_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')  # Diubah dari multicam.launch.py
+            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')
         )
     )
     
@@ -24,10 +24,10 @@ def generate_launch_description():
         executable='multicam_detection_node',
         name='multicam_detection',
         parameters=[
-            {'model_path': 'yolo12x.engine'},  # Memastikan menggunakan model yang benar
+            {'model_path': os.path.join(huskybot_detection_dir, 'models', 'yolo12x.engine')},
             {'cam_count': 6},
             {'confidence_threshold': 0.5},
-            {'publish_topic': '/detection'},
+            {'publish_topic': '/detection'},  # Use same topic for fusion
             {'enable_visualization': True}
         ],
         output='screen'
@@ -48,7 +48,11 @@ def generate_launch_description():
         parameters=[
             {'use_calibration': False},
             {'max_laser_distance': 100.0},
-            {'confidence_threshold': 0.25}
+            {'confidence_threshold': 0.25},
+            {'detection_topics': ['/detection']},
+            {'laserscan_topic': '/scan'},
+            {'pointcloud_topic': '/velodyne_points'},
+            {'output_topic': '/fusion/objects3d'}
         ],
         output='screen'
     )

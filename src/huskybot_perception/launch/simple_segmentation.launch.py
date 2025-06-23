@@ -14,7 +14,7 @@ def generate_launch_description():
     # Launch camera dari huskybot_camera
     camera_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')  # Diubah dari multicam.launch.py
+            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')
         )
     )
     
@@ -24,10 +24,10 @@ def generate_launch_description():
         executable='multicam_segmentation_node',
         name='multicam_segmentation',
         parameters=[
-            {'model_path': 'yolo11x-seg.engine'},  # Memastikan menggunakan model yang benar
+            {'model_path': os.path.join(huskybot_segmentation_dir, 'models', 'yolo11x-seg.engine')},
             {'cam_count': 6},
             {'confidence_threshold': 0.5},
-            {'publish_topic': '/segmentation'},
+            {'publish_topic': '/detection'},  # Use same topic for fusion
             {'enable_visualization': True},
             {'show_masks': True}
         ],
@@ -49,13 +49,11 @@ def generate_launch_description():
         parameters=[
             {'use_calibration': False},
             {'max_laser_distance': 100.0},
-            {'confidence_threshold': 0.25}
-        ],
-        remappings=[
-            ('/detection', '/segmentation'),  # Menerima hasil dari segmentation
-            ('/velodyne_points', '/velodyne_points'),
-            ('/scan', '/scan'),
-            ('/fusion/objects3d', '/fusion/objects3d')
+            {'confidence_threshold': 0.25},
+            {'detection_topics': ['/detection']},
+            {'laserscan_topic': '/scan'},
+            {'pointcloud_topic': '/velodyne_points'},
+            {'output_topic': '/fusion/objects3d'}
         ],
         output='screen'
     )
