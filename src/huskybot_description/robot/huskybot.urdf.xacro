@@ -210,9 +210,12 @@
         </noise>
       </ray>
       <plugin name="velodyne_plugin" filename="libgazebo_ros_ray_sensor.so">
-        <topicName>/velodyne_points</topicName>
-        <frameName>velodyne_link</frameName>
-        <!-- ERROR HANDLING: Pastikan plugin sudah di-build dan path sudah di-export ke $GAZEBO_PLUGIN_PATH -->
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=/velodyne_points</remapping>
+        </ros>
+        <output_type>sensor_msgs/PointCloud2</output_type>
+        <frame_name>velodyne_link</frame_name>
       </plugin>
     </sensor>
   </gazebo>

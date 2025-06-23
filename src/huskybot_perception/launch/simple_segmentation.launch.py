@@ -11,18 +11,27 @@ def generate_launch_description():
     huskybot_segmentation_dir = get_package_share_directory('huskybot_segmentation')
     velodyne_dir = get_package_share_directory('velodyne')
     
-    # Launch multicam dari huskybot_camera
+    # Launch camera dari huskybot_camera
     camera_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(huskybot_camera_dir, 'launch', 'multicam.launch.py')
+            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')  # Diubah dari multicam.launch.py
         )
     )
     
-    # Launch segmentation
-    segmentation_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(huskybot_segmentation_dir, 'launch', 'segmentation.launch.py')
-        )
+    # Launch segmentation dengan model yang benar
+    segmentation_launch = Node(
+        package='huskybot_segmentation',
+        executable='multicam_segmentation_node',
+        name='multicam_segmentation',
+        parameters=[
+            {'model_path': 'yolo11x-seg.engine'},  # Memastikan menggunakan model yang benar
+            {'cam_count': 6},
+            {'confidence_threshold': 0.5},
+            {'publish_topic': '/segmentation'},
+            {'enable_visualization': True},
+            {'show_masks': True}
+        ],
+        output='screen'
     )
     
     # Launch velodyne
@@ -35,12 +44,12 @@ def generate_launch_description():
     # Node fusion yang sederhana (tanpa calibration)
     fusion_node = Node(
         package='huskybot_fusion',
-        executable='simple_fusion_node',  # Akan kita buat
+        executable='simple_fusion_node',
         name='simple_fusion',
         parameters=[
-            {'use_calibration': False},  # Tidak menggunakan calibration
-            {'max_laser_distance': 100.0},  # Jarak maksimum untuk LaserScan (meter)
-            {'confidence_threshold': 0.25}  # Threshold untuk deteksi
+            {'use_calibration': False},
+            {'max_laser_distance': 100.0},
+            {'confidence_threshold': 0.25}
         ],
         remappings=[
             ('/detection', '/segmentation'),  # Menerima hasil dari segmentation
@@ -54,7 +63,7 @@ def generate_launch_description():
     # Visualizer node
     visualizer_node = Node(
         package='huskybot_perception',
-        executable='fusion_visualizer_node',  # Akan kita buat
+        executable='fusion_visualizer_node',
         name='fusion_visualizer',
         parameters=[
             {'show_bounding_box': True},

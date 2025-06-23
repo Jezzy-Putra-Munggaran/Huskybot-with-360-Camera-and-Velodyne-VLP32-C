@@ -11,18 +11,26 @@ def generate_launch_description():
     huskybot_detection_dir = get_package_share_directory('huskybot_detection')
     velodyne_dir = get_package_share_directory('velodyne')
     
-    # Launch multicam dari huskybot_camera
+    # Launch camera dari huskybot_camera
     camera_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(huskybot_camera_dir, 'launch', 'multicam.launch.py')
+            os.path.join(huskybot_camera_dir, 'launch', 'camera.launch.py')  # Diubah dari multicam.launch.py
         )
     )
     
-    # Launch detection
-    detection_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(huskybot_detection_dir, 'launch', 'detection.launch.py')
-        )
+    # Launch detection dengan model yang benar
+    detection_launch = Node(
+        package='huskybot_detection',
+        executable='multicam_detection_node',
+        name='multicam_detection',
+        parameters=[
+            {'model_path': 'yolo12x.engine'},  # Memastikan menggunakan model yang benar
+            {'cam_count': 6},
+            {'confidence_threshold': 0.5},
+            {'publish_topic': '/detection'},
+            {'enable_visualization': True}
+        ],
+        output='screen'
     )
     
     # Launch velodyne
@@ -35,12 +43,12 @@ def generate_launch_description():
     # Node fusion yang sederhana (tanpa calibration)
     fusion_node = Node(
         package='huskybot_fusion',
-        executable='simple_fusion_node',  # Akan kita buat
+        executable='simple_fusion_node',
         name='simple_fusion',
         parameters=[
-            {'use_calibration': False},  # Tidak menggunakan calibration
-            {'max_laser_distance': 100.0},  # Jarak maksimum untuk LaserScan (meter)
-            {'confidence_threshold': 0.25}  # Threshold untuk deteksi
+            {'use_calibration': False},
+            {'max_laser_distance': 100.0},
+            {'confidence_threshold': 0.25}
         ],
         output='screen'
     )
@@ -48,7 +56,7 @@ def generate_launch_description():
     # Visualizer node
     visualizer_node = Node(
         package='huskybot_perception',
-        executable='fusion_visualizer_node',  # Akan kita buat
+        executable='fusion_visualizer_node',
         name='fusion_visualizer',
         parameters=[
             {'show_bounding_box': True},
