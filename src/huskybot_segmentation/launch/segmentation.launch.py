@@ -16,7 +16,7 @@ def generate_launch_description():  # Fungsi utama generate LaunchDescription
             output='screen',  # Output log ke terminal
             parameters=[
                 {'cam_count': 6},  # Jumlah kamera (default 6, hexagonal)
-                {'model_path': 'yolo11x-seg.engine'},  # Path model YOLOv12 segmentasi (bisa diubah ke .engine/.onnx/.pt)
+                {'model_path': 'yolo11n-seg.engine'},  # Path model YOLOv12 segmentasi (bisa diubah ke .engine/.onnx/.pt)
                 {'camera_topics': [
                     '/camera_front/image_raw',
                     '/camera_right/image_raw',

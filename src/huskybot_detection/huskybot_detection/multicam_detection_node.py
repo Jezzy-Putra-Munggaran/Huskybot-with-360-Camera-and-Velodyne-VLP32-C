@@ -15,7 +15,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def __init__(self):
         super().__init__('multicam_detection')  # Inisialisasi node ROS2 dengan nama unik
         self.declare_parameter('cam_count', 6)  # Jumlah kamera (default 6, hexagonal)
-        self.declare_parameter('model_path', "yolo12x.engine")  # Path model YOLOv12 (TensorRT engine)
+        self.declare_parameter('model_path', "yolo12n.engine")  # Path model YOLOv12 (TensorRT engine)
         self.declare_parameter('camera_topics', [  # Daftar topic kamera (default urutan hexagonal)
             '/camera_front/image_raw',
             '/camera_right/image_raw',

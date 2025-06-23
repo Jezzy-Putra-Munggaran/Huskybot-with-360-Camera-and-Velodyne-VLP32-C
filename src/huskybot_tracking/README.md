@@ -40,7 +40,7 @@ ros2 launch huskybot_tracking tracking.launch.py  # Jalankan node multicam YOLOv
 
 ## Parameter Launch File  <!-- Penjelasan parameter utama di launch file -->
 - `cam_count`: Jumlah kamera (default 6, hexagonal). <!-- Parameter jumlah kamera -->
-- `model_path`: Path file model YOLOv12 tracking (default "yolo12x.engine"). <!-- Parameter path model YOLOv12 tracking -->
+- `model_path`: Path file model YOLOv12 tracking (default "yolo12n.engine"). <!-- Parameter path model YOLOv12 tracking -->
 - `camera_topics`: List topic kamera (default urutan hexagonal). <!-- Parameter list topic kamera -->
 - Semua parameter bisa diubah dari CLI/launch file lain. <!-- Parameterisasi siap untuk deployment besar/multi-robot -->
 

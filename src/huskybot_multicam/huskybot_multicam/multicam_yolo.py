@@ -11,7 +11,7 @@ class MultiCamYoloNode(Node):
         super().__init__('multicam_yolo')
         # Parameterisasi sesuai lictic
         self.declare_parameter('cam_count', 6)
-        self.declare_parameter('segmentation_model', "yolo12x.engine")
+        self.declare_parameter('segmentation_model', "yolo12n.engine")
         self.declare_parameter('camera_topics', [
             '/camera_front/image_raw',
             '/camera_right/image_raw',
