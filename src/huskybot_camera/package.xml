@@ -1,20 +1,43 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_camera</name>
-  <version>0.0.1</version>
-  <description>Publisher kamera Arducam IMX477 asli untuk pipeline Huskybot</description>
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>
-  <license>MIT</license>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>opencv-python</exec_depend>
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
+<?xml version="1.0"?> <!-- XML declaration -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Schema reference for ROS2 package format -->
+<package format="3"> <!-- Using ROS package format 3 which supports modern ROS2 features -->
+  <name>huskybot_camera</name> <!-- Package name, must match folder name for colcon build -->
+  <version>0.0.1</version> <!-- Package version, using semantic versioning -->
+  <description>Publisher kamera Arducam IMX477 asli untuk pipeline Huskybot (360° array). Mendukung konfigurasi hexagonal dengan 6 kamera dan integrasi dengan YOLOv12 untuk deteksi objek. Kompatibel dengan ROS2 Humble, simulasi Gazebo, dan robot Husky A200 + Jetson AGX Orin.</description> <!-- Detailed description including hardware compatibility -->
+  
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Maintainer info for contact purposes -->
+  
+  <license>MIT</license> <!-- License under which the package is distributed -->
+  
+  <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url> <!-- URL to source code repository -->
+  <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url> <!-- URL to issue tracker -->
+  
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author> <!-- Original author of the package -->
+  
+  <!-- Build tool dependencies -->
+  <buildtool_depend>ament_python</buildtool_depend> <!-- Primary build tool for Python ROS2 packages -->
+  
+  <!-- Runtime dependencies -->
+  <exec_depend>rclpy</exec_depend> <!-- ROS2 Python client library - required for all ROS2 Python nodes -->
+  <exec_depend>sensor_msgs</exec_depend> <!-- For Image and CameraInfo message types -->
+  <exec_depend>std_msgs</exec_depend> <!-- For Header and other standard message types -->
+  <exec_depend>std_srvs</exec_depend> <!-- For Trigger service used in camera restart -->
+  <exec_depend>cv_bridge</exec_depend> <!-- For converting between ROS2 and OpenCV images -->
+  <exec_depend>opencv-python</exec_depend> <!-- For camera access and image processing -->
+  <exec_depend>python3-yaml</exec_depend> <!-- For parsing YAML camera configuration files -->
+  <exec_depend>python3-numpy</exec_depend> <!-- For image array operations -->
+  <exec_depend>ros2launch</exec_depend> <!-- For running launch files -->
+  <exec_depend>ros_deep_learning</exec_depend> <!-- For video_source node (fallback in camera.launch.py) -->
+  <exec_depend>launch_ros</exec_depend> <!-- For ROS2 launch utilities in launch files -->
+  <exec_depend>launch_xml</exec_depend> <!-- For XML launch description parsing in camera.launch.py -->
+  
+  <!-- Test dependencies -->
+  <test_depend>ament_copyright</test_depend> <!-- For checking copyright headers -->
+  <test_depend>ament_flake8</test_depend> <!-- For checking Python code style -->
+  <test_depend>ament_pep257</test_depend> <!-- For checking Python docstring style -->
+  <test_depend>python3-pytest</test_depend> <!-- For running Python unit tests -->
+  
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_python</build_type> <!-- Declare this as a Python package for ROS2 -->
   </export>
 </package>
