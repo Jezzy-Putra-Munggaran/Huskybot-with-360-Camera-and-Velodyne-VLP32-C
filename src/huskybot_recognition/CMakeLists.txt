@@ -64,9 +64,9 @@ install(
 )
 install(
   FILES
-    huskybot_recognition/scripts/yolo12n.engine  # [SARAN] Install file model YOLOv12 (.pt, fallback jika .engine tidak ada)
-    huskybot_recognition/scripts/yolo12n.engine  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
-    huskybot_recognition/scripts/yolo11n.onnx  # [SARAN] Install file model YOLOv12 ONNX (.onnx, fallback)
+    huskybot_recognition/scripts/yolo12x.engine  # [SARAN] Install file model YOLOv12 (.pt, fallback jika .engine tidak ada)
+    huskybot_recognition/scripts/yolo12x.engine  # [SARAN] Install file model YOLOv12 TensorRT (.engine, Jetson Orin)
+    huskybot_recognition/scripts/yolo11x.onnx  # [SARAN] Install file model YOLOv12 ONNX (.onnx, fallback)
   DESTINATION share/${PROJECT_NAME}/scripts/
   OPTIONAL  # [BEST PRACTICE] Tidak error jika file tidak ada (agar build tetap jalan di CI/CD)
 )

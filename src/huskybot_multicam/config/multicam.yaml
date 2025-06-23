@@ -5,7 +5,7 @@ multicam_yolo:
     fov_h: 85.0
     view_p: 0.30
     view_h: 0.30
-    segmentation_model: "yolo12n.engine"
+    segmentation_model: "yolo12x.engine"
     camera_topics:
       - '/camera_front/image_raw'
       - '/camera_right/image_raw'

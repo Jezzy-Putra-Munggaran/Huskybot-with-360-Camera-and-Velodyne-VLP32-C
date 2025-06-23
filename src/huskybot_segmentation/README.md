@@ -40,7 +40,7 @@ ros2 launch huskybot_segmentation segmentation.launch.py  # Jalankan node multic
 
 ## Parameter Launch File  <!-- Penjelasan parameter utama di launch file -->
 - `cam_count`: Jumlah kamera (default 6, hexagonal). <!-- Parameter jumlah kamera -->
-- `model_path`: Path file model YOLOv12 segmentasi (default "yolo11n-seg.engine"). <!-- Parameter path model YOLOv12 segmentasi -->
+- `model_path`: Path file model YOLOv12 segmentasi (default "yolo11x-seg.engine"). <!-- Parameter path model YOLOv12 segmentasi -->
 - `camera_topics`: List topic kamera (default urutan hexagonal). <!-- Parameter list topic kamera -->
 - Semua parameter bisa diubah dari CLI/launch file lain. <!-- Parameterisasi siap untuk deployment besar/multi-robot -->
 
