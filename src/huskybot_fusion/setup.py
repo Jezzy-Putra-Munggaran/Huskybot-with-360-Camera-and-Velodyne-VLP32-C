@@ -54,6 +54,7 @@ setup(
     entry_points={
         'console_scripts': [
             'fusion_node = huskybot_fusion.fusion_node:main',  # [WAJIB] Entry point agar bisa ros2 run huskybot_fusion fusion_node
+            'simple_fusion_node = huskybot_fusion.simple_fusion_node:main',
         ],
     },  # [WAJIB] Daftarkan script utama agar bisa di-run via ros2 run
     include_package_data=True,  # [WAJIB] Pastikan semua data package diikutkan (msg, launch, dsb)

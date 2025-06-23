@@ -34,6 +34,8 @@ setup(
         'console_scripts': [
             'visualizer_node = huskybot_perception.visualizer_node:main',  # Daftarkan node visualizer agar bisa di-run via ros2 run/launch
             'logger_node = huskybot_perception.logger_node:main',  # Daftarkan node logger agar bisa di-run via ros2 run/launch
+            'perception_node = huskybot_perception.perception_node:main',
+            'fusion_visualizer_node = huskybot_perception.fusion_visualizer_node:main',
         ],
     },
 )
