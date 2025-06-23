@@ -5,12 +5,12 @@ from cv_bridge import CvBridge
 import cv2
 
 CAMERA_CONFIG = [
-    ('/camera_front/image_raw', '/dev/video0'),
-    ('/camera_left/image_raw', '/dev/video1'),
-    ('/camera_right/image_raw', '/dev/video2'),
-    ('/camera_rear/image_raw', '/dev/video3'),
-    ('/camera_front_left/image_raw', '/dev/video4'),
-    ('/camera_rear_right/image_raw', '/dev/video5'),
+    ('/camera_front/image_raw', 'csi://0'),
+    ('/camera_front_left/image_raw', 'csi://1'),
+    ('/camera_left/image_raw', 'csi://2'),
+    ('/camera_rear/image_raw', 'csi://3'),
+    ('/camera_rear_right/image_raw', 'csi://4'),
+    ('/camera_right/image_raw', 'csi://5'),
 ]
 
 class CameraPublisher(Node):
