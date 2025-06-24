@@ -11,23 +11,32 @@
     (Update 2025-05-06)
   </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
-  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
   <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (disarankan open source, misal Apache-2.0) -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- (Opsional tapi disarankan) Author package, untuk metadata tambahan -->
 
   <!-- ===================== BUILD DEPENDENCIES ===================== -->
   <buildtool_depend>ament_python</buildtool_depend>  <!-- Build tool utama ROS2 Python -->
   <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Build tool utama ROS2 CMake (untuk message) -->
   <buildtool_depend>rosidl_default_generators</buildtool_depend>  <!-- Build tool untuk generate message interface ROS2 -->
   <build_depend>rclpy</build_depend>  <!-- Dependency utama node ROS2 Python -->
+  <build_depend>rclcpp</build_depend>  <!-- Dependency utama node ROS2 C++ (untuk compatibility) -->
   <build_depend>sensor_msgs</build_depend>  <!-- Dependency message sensor_msgs (PointCloud2) -->
   <build_depend>std_msgs</build_depend>  <!-- Dependency message std_msgs (Header) -->
+  <build_depend>geometry_msgs</build_depend>  <!-- Dependency message geometry_msgs (Point, Vector3, Quaternion) -->
+  <build_depend>visualization_msgs</build_depend>  <!-- Dependency message visualization_msgs (Marker, MarkerArray) -->
   <build_depend>yolov12_msgs</build_depend>  <!-- Dependency custom message YOLOv12 (hasil deteksi 2D) -->
   <build_depend>huskybot_msgs</build_depend>  <!-- Dependency custom message Huskybot (hasil deteksi 3D) -->
+  <build_depend>tf2_ros</build_depend>  <!-- Dependency tf2_ros (transformasi koordinat) -->
+  <build_depend>tf2_geometry_msgs</build_depend>  <!-- Dependency tf2_geometry_msgs (transformasi geometry_msgs) -->
+  <build_depend>message_filters</build_depend>  <!-- Dependency message_filters (untuk sinkronisasi message) -->
 
   <!-- ===================== EXECUTION DEPENDENCIES ===================== -->
   <exec_depend>rclpy</exec_depend>  <!-- Dependency runtime node ROS2 Python -->
+  <exec_depend>rclcpp</exec_depend>  <!-- Dependency runtime node ROS2 C++ (untuk compatibility) -->
   <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency runtime message sensor_msgs -->
   <exec_depend>std_msgs</exec_depend>  <!-- Dependency runtime message std_msgs -->
+  <exec_depend>geometry_msgs</exec_depend>  <!-- Dependency runtime geometry_msgs (Point, Vector3, Quaternion) -->
+  <exec_depend>visualization_msgs</exec_depend>  <!-- Dependency runtime visualization_msgs (Marker, MarkerArray) -->
   <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency runtime custom message YOLOv12 -->
   <exec_depend>rosidl_default_runtime</exec_depend>  <!-- Dependency runtime ROS2 untuk message interface -->
   <exec_depend>python3-numpy</exec_depend>  <!-- Dependency Python numpy (untuk proyeksi dan komputasi) -->
@@ -35,8 +44,11 @@
   <exec_depend>python3-yaml</exec_depend>  <!-- Dependency Python YAML (untuk parsing file kalibrasi) -->
   <exec_depend>message_filters</exec_depend>  <!-- Dependency message_filters (sinkronisasi sensor) -->
   <exec_depend>huskybot_msgs</exec_depend> <!-- Dependency runtime custom message Huskybot (hasil deteksi 3D) -->
-  <!-- SARAN: Tambahkan dependency python3-scipy jika pipeline fusion butuh komputasi matrix lebih advance -->
-  <exec_depend>python3-scipy</exec_depend> <!-- [SARAN] Tambahkan scipy untuk komputasi matrix/transformasi jika diperlukan -->
+  <exec_depend>python3-scipy</exec_depend> <!-- Dependency scipy untuk komputasi matrix/transformasi -->
+  <exec_depend>tf2_ros</exec_depend>  <!-- Dependency runtime tf2_ros (transformasi koordinat) -->
+  <exec_depend>tf2_geometry_msgs</exec_depend>  <!-- Dependency runtime tf2_geometry_msgs (transformasi geometry_msgs) -->
+  <exec_depend>rviz2</exec_depend>  <!-- Dependency runtime untuk visualisasi data (opsional tapi membantu) -->
+  <exec_depend>gazebo_ros</exec_depend>  <!-- Dependency runtime untuk integrasi Gazebo (opsional untuk sim) -->
 
   <!-- ===================== MESSAGE GENERATION ===================== -->
   <member_of_group>rosidl_interface_packages</member_of_group>  <!-- Agar dikenali sebagai package interface ROS2 -->
@@ -47,16 +59,19 @@
   <test_depend>pytest</test_depend>  <!-- Dependency unit test Python -->
   <test_depend>flake8</test_depend>  <!-- Linter Python untuk CI/CD -->
   <test_depend>ament_pep257</test_depend>  <!-- Linter docstring Python untuk CI/CD -->
-  <doc_depend>doxygen</doc_depend>  <!-- (Opsional) Dependency dokumentasi otomatis -->
+  <test_depend>ament_copyright</test_depend>  <!-- Linter copyright header untuk CI/CD -->
+  <test_depend>ament_flake8</test_depend>  <!-- Linter flake8 untuk CI/CD -->
+  <doc_depend>doxygen</doc_depend>  <!-- Dependency untuk dokumentasi otomatis -->
 
   <!-- ===================== EXPORT & METADATA ===================== -->
   <export>
     <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
     <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python/message) -->
-    <description lang="en">Fusion node and 3D object message for Huskybot multi-sensor perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
-    <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
-    <url type="website">https://github.com/jezzy/huskybot</url>  <!-- (Opsional) URL website/repo utama package -->
-    <url type="bugtracker">https://github.com/jezzy/huskybot/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
+    <gazebo_ros gazebo_model_path="${prefix}/models"/>  <!-- Path model Gazebo untuk simulasi -->
+    <description lang="en">Fusion node and 3D object message for Huskybot multi-sensor perception.</description>  <!-- Deskripsi tambahan multi-bahasa -->
+    <readme>README.md</readme>  <!-- Path ke file README untuk dokumentasi package -->
+    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- URL repository utama package -->
+    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- URL bugtracker/issues -->
   </export>
 </package>
 

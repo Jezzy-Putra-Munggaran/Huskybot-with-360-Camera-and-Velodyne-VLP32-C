@@ -1,39 +1,130 @@
-Visualization Manager:  # Root konfigurasi RViz2 (wajib, semua display diatur di sini)
-  Displays:  # Daftar display yang akan muncul di RViz2
-    - Class: rviz/MarkerArray  # Tipe display: MarkerArray (untuk visualisasi marker hasil fusion 3D)
-      Name: FusionMarkers  # Nama display di panel RViz2 (bisa diubah sesuai kebutuhan)
-      Enabled: true  # Aktifkan display ini (wajib true agar marker muncul)
-      Marker Topic: /fusion/objects3d_marker  # Topic ROS2 tempat MarkerArray dipublish (harus sama dengan publisher di fusion_node.py)
-      Queue Size: 100  # Ukuran queue pesan marker (besar agar tidak drop marker jika publish cepat)
-      Alpha: 1.0  # Transparansi marker (1.0 = solid, 0.0 = transparan)
-      # ...display lain tetap...  # Placeholder: bisa tambahkan display lain (misal PointCloud2, Image, dsb)
-  Global Options:  # Opsi global RViz2
-    Fixed Frame: base_link  # Frame referensi utama (harus sama dengan frame_id marker dan sensor, biasanya base_link atau velodyne_link)
+Panels:  # Main Panels configuration section for RViz2 UI layout
+  - Class: rviz_common/Displays  # Primary panel for visualization displays
+    Help Height: 78  # Height of help section in pixels
+    Name: Displays  # Name of the panel in the RViz2 interface
+    Property Tree Widget:  # Widget for organizing property display
+      Expanded:  # List of expanded categories in the display tree
+        - /Global Options1  # Global options expanded by default
+        - /FusionMarkers1  # Fusion markers expanded by default
+        - /PointCloud21  # PointCloud2 expanded by default
+      Splitter Ratio: 0.5  # Ratio for the property tree splitter position
+    Tree Height: 728  # Height of the tree widget in pixels
+  - Class: rviz_common/Selection  # Panel for selection tool options
+    Name: Selection  # Name of the selection panel
+  - Class: rviz_common/Tool Properties  # Panel for tool properties
+    Expanded:  # List of expanded tool properties
+      - /2D Goal Pose1  # 2D navigation goal tool expanded
+    Name: Tool Properties  # Name of the tool properties panel
+    Splitter Ratio: 0.5  # Ratio for the tool property splitter position
+  - Class: rviz_common/Views  # Panel for view controls
+    Expanded:  # List of expanded view controls
+      - /Current View1  # Current view controls expanded
+    Name: Views  # Name of the views panel
+    Splitter Ratio: 0.5  # Ratio for the view controls splitter position
+  - Class: rviz_common/Time  # Panel for time controls (important for simulation)
+    Experimental: false  # Flag for experimental features
+    Name: Time  # Name of the time panel
+    SyncMode: 0  # Synchronization mode (0 = wall time)
+    SyncSource: ""  # Source for time synchronization (empty = independent)
 
-# ===================== PENJELASAN & REVIEW BARIS PER BARIS =====================
-# - Semua baris sudah diberi komentar penjelasan agar siapapun paham fungsi tiap field.
-# - Sudah sesuai best practice RViz2 untuk ROS2 Humble, simulasi Gazebo, dan robot real.
-# - Sudah terhubung otomatis ke node fusion_node.py (topic /fusion/objects3d_marker).
-# - Sudah siap untuk visualisasi label 3D hasil fusion YOLOv12 + LiDAR di RViz2.
-# - Tidak ada bug/error, tidak ada field yang kurang untuk kebutuhan visualisasi marker 3D.
-# - Sudah bisa di-load otomatis dari launch file (lihat fusion.launch.py).
-# - Sudah siap untuk multi-robot (tinggal remap topic dan frame jika perlu).
-# - Sudah bisa di-extend: tambahkan display PointCloud2, Image, TF, dsb sesuai kebutuhan audit visual.
-# - Sudah konsisten dengan instruksi di README.md dan pipeline workspace.
-# - Sudah aman untuk colcon build dan tidak error di ROS2 Humble.
+Visualization Manager:  # Root configuration for RViz2 visualization (all displays configured here)
+  Class: ""  # Class name (empty for root manager)
+  Displays:  # List of all visual displays in RViz2
+    - Class: rviz_default_plugins/MarkerArray  # Type of display: MarkerArray (for 3D object visualization)
+      Name: FusionMarkers  # Display name shown in RViz2 (descriptive for users)
+      Enabled: true  # Display is active when RViz2 starts (important for immediate visualization)
+      Marker Topic: /fusion/objects3d_marker  # ROS2 topic this display subscribes to (published by fusion_node.py)
+      Queue Size: 100  # Maximum messages to queue (increased for high-frequency publishing)
+      Alpha: 1.0  # Opacity of markers (1.0 = fully opaque, 0.0 = invisible)
+      Namespaces:  # Marker namespaces to show (filled at runtime)
+        {}  # Initially empty, will populate with detected objects
+      Value: true  # Enable/disable status
+      
+    - Class: rviz_default_plugins/PointCloud2  # Display for LiDAR point cloud data
+      Name: VelodynePointCloud  # Display name for the point cloud visualization
+      Enabled: true  # Point cloud visible at startup
+      Topic: /velodyne_points  # ROS2 topic for Velodyne VLP-32C point cloud
+      Queue Size: 10  # Message queue length for point cloud (reduced due to large data size)
+      Alpha: 1.0  # Opacity of point cloud
+      Autocompute Intensity Bounds: true  # Automatically scale intensity colors
+      Decay Time: 0  # Time before points disappear (0 = no decay)
+      Max Intensity: 10  # Maximum intensity value for coloring
+      Min Intensity: 0  # Minimum intensity value for coloring
+      Position Transformer: XYZ  # How to interpret position data
+      Selectable: true  # Allow selection of points
+      Size (Pixels): 2  # Size of each point in display
+      Style: Points  # Visualization style (Points/Spheres/Boxes)
+      Value: true  # Enable/disable status
+      
+    - Class: rviz_default_plugins/Image  # Display for camera image
+      Name: CameraImage  # Display name for the camera feed
+      Enabled: true  # Camera image visible at startup
+      Topic: /panorama/image_raw  # ROS2 topic for camera feed
+      Queue Size: 2  # Small queue due to large image data
+      Value: true  # Enable/disable status
+      
+    - Class: rviz_default_plugins/TF  # Display for coordinate frames
+      Name: TF  # Display name for transform frames
+      Enabled: true  # TF visible at startup
+      Frame Timeout: 15  # How long to display disconnected frames
+      Marker Scale: 1  # Size of coordinate frame markers
+      Show Arrows: true  # Show rotation axes as arrows
+      Show Axes: true  # Show coordinate axes
+      Show Names: true  # Show frame names
+      Value: true  # Enable/disable status
+      
+  Global Options:  # Global settings for the entire visualization
+    Background Color: 48; 48; 48  # Gray background (easier on the eyes than black)
+    Fixed Frame: base_link  # Reference frame for all visualizations (base_link is the robot's body frame)
+    Frame Rate: 30  # Target frame rate for rendering
+    
+  Tools:  # Interactive tools available in RViz2
+    - Class: rviz_default_plugins/MoveCamera  # Tool for camera movement
+    - Class: rviz_default_plugins/Select  # Tool for selecting elements
+    - Class: rviz_default_plugins/FocusCamera  # Tool for focusing camera on objects
+    - Class: rviz_default_plugins/Measure  # Tool for measuring distances
+    - Class: rviz_default_plugins/PublishPoint  # Tool for publishing 3D points
+    - Class: rviz_default_plugins/SetInitialPose  # Tool for setting the robot's initial pose
+    - Class: rviz_default_plugins/SetGoal  # Tool for setting navigation goals
+    - Class: rviz_default_plugins/PublishPointCloud2  # Tool for publishing point cloud data
 
-# ===================== SARAN PENINGKATAN (LANGSUNG DIIMPLEMENTASIKAN) =====================
-# - [SUDAH] Tambahkan komentar penjelasan di setiap baris agar siapapun paham.
-# - [SUDAH] Pastikan Marker Topic sesuai dengan publisher di fusion_node.py (/fusion/objects3d_marker).
-# - [SUDAH] Fixed Frame harus konsisten dengan frame_id sensor dan marker (base_link/velodyne_link).
-# - [SUDAH] Tambahkan placeholder # ...display lain tetap... agar mudah extend display lain.
-# - [SUDAH] Queue Size diperbesar agar marker tidak drop saat publish cepat.
-# - [SUDAH] Alpha di-set 1.0 agar marker solid, bisa diubah jika ingin transparan.
-# - [SUDAH] Siap untuk multi-robot, tinggal remap topic dan frame di launch file.
-# - [SUDAH] Dokumentasikan cara pakai dan troubleshooting di README.md.
-# - [SUDAH] Tidak ada field yang kurang, sudah best practice RViz2 config.
-# - [SUDAH] Tidak ada urutan yang salah, semua field sudah sesuai urutan RViz2 YAML.
-# - [SUDAH] Tidak ada error handling di file ini karena RViz2 config hanya YAML statis, error handling dilakukan di node/launch file.
-# - [SUDAH] Jika ingin audit visual lebih advance, tambahkan display PointCloud2 (topic /velodyne_points), Image (topic kamera), TF, dsb.
-# - [SUDAH] Jika ingin troubleshooting, cek log RViz2 di terminal jika marker tidak muncul (biasanya error topic atau frame_id).
-# - [SUDAH] Jika ingin coverage test lebih tinggi, tambahkan test load RViz2 config di CI/CD (opsional).
+  Value: true  # Enable the entire visualization
+  
+  Views:  # Camera view configurations
+    Current:  # Current active view
+      Class: rviz_default_plugins/Orbit  # Orbital camera type
+      Distance: 10.0  # Distance from focal point
+      Enable Stereo Rendering: false  # Disable stereo rendering
+      Focal Point:  # Center point for camera orbit
+        X: 0.0  # X coordinate in meters
+        Y: 0.0  # Y coordinate in meters
+        Z: 0.0  # Z coordinate in meters
+      Focal Shape Fixed Size: true  # Keep focal shape constant size
+      Focal Shape Size: 0.05  # Size of focal point indicator
+      Invert Z Axis: false  # Don't invert Z axis
+      Name: Current View  # Name of this view
+      Near Clip Distance: 0.01  # Nearest visible distance
+      Pitch: 0.5  # Camera pitch angle in radians
+      Target Frame: <Fixed Frame>  # Frame to track (uses fixed frame)
+      Value: Orbit (rviz)  # View type
+      Yaw: 0.5  # Camera yaw angle in radians
+    Saved: ~  # No saved views yet
+    
+Window Geometry:  # RViz2 window layout settings
+  Displays:  # Position of Displays panel
+    collapsed: false  # Not collapsed
+  Height: 1025  # Window height in pixels
+  Hide Left Dock: false  # Show left dock
+  Hide Right Dock: false  # Show right dock
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003a7fc0200000008fb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000003a7fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000003a7000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f00000039fc0100000003fb000000120049006d0061006700650020005200610077010000000000000451000000000000000000fb0000000a00560069006500770073030000004e00000080000002e100000197fb0000000a0049006d0061006700650000000000000007290000000000000000000000030000073d0000003efc0100000002fb0000000800540069006d006501000000000000073d000002fb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004c8000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:  # Position of Selection panel
+    collapsed: false  # Not collapsed
+  Time:  # Position of Time panel
+    collapsed: false  # Not collapsed
+  Tool Properties:  # Position of Tool Properties panel
+    collapsed: false  # Not collapsed
+  Views:  # Position of Views panel
+    collapsed: false  # Not collapsed
+  Width: 1853  # Window width in pixels
+  X: 67  # Window X position
+  Y: 27  # Window Y position

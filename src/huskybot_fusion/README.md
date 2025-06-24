@@ -1,21 +1,25 @@
 # huskybot_fusion  <!-- Judul utama README, nama package (harus sama dengan folder, WAJIB agar colcon build dan ros2 launch/run tidak error) -->
 
-[![Build Status](https://github.com/yourusername/huskybot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/huskybot/actions)  <!-- Badge CI, update link jika pipeline sudah aktif, penting untuk monitoring CI/CD -->
+[![Build Status](https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions/workflows/ci.yml/badge.svg)](https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions)  <!-- Badge CI, update link ke repository Anda yang benar untuk monitoring CI/CD -->
 
-Node fusion data deteksi objek kamera 360° (YOLO) dan point cloud Velodyne VLP-32C untuk deteksi objek 3D.  <!-- Deskripsi singkat package, menjelaskan fungsi utama dan sensor utama, agar user baru langsung paham scope package -->
+Node fusion data deteksi objek kamera 360° (YOLOv12) dan point cloud Velodyne VLP-32C untuk deteksi objek 3D. Mendukung YOLOv12 (TensorRT/ONNX).  <!-- Deskripsi singkat package dengan penjelasan dukungan untuk model YOLOv12 yang berjalan pada Jetson AGX Orin -->
 
 ---
 
 ## Fitur  <!-- Daftar fitur utama package -->
-- Subscribe ke `/velodyne_points` dan `/panorama/yolov12_inference`.  <!-- Node ini menerima data point cloud dan deteksi YOLO dari workspace, wajib agar pipeline fusion berjalan -->
-- Proyeksi bounding box 2D ke 3D (menggunakan kalibrasi).  <!-- Fungsi utama: proyeksi hasil deteksi kamera ke 3D menggunakan kalibrasi extrinsic, wajib untuk integrasi sensor -->
-- Publish hasil deteksi objek 3D ke `/fusion/objects3d`.  <!-- Output utama: publish hasil deteksi objek 3D ke topic baru untuk pipeline navigasi/obstacle avoidance -->
+- Subscribe ke `/velodyne_points` dan hasil deteksi YOLOv12 dari semua kamera.  <!-- Node ini menerima data point cloud dan deteksi YOLO dari semua kamera, bukan hanya panorama -->
+- Support multi-task YOLOv12: `/detection`, `/segmentation`, `/obb`, `/tracking`.  <!-- Support semua tipe task YOLOv12 untuk peningkatan fleksibilitas pipeline -->
+- Proyeksi bounding box 2D ke 3D menggunakan kalibrasi extrinsic kamera-LiDAR.  <!-- Fungsi utama: proyeksi hasil deteksi kamera ke 3D menggunakan data kalibrasi -->
+- Publish hasil fusion objek 3D ke `/fusion/objects3d` dan marker visualisasi.  <!-- Output utama untuk pipeline navigasi dan visualisasi -->
+- FULL OOP dengan error handling komprehensif di semua tahapan.  <!-- Implementasi OOP lengkap dengan error handling di semua fungsi -->
+- Logging debug dan audit trail untuk analisis hasil.  <!-- Sistem logging untuk debugging dan evaluasi hasil -->
+- Optimized untuk Nvidia Jetson AGX Orin 32GB.  <!-- Optimasi khusus untuk platform Jetson -->
+- Mendukung simulasi Gazebo dan robot real Husky A200.  <!-- Dukungan untuk simulasi dan deployment ke robot nyata -->
 
 ---
 
 ## Struktur Folder  <!-- Penjelasan struktur folder utama package -->
 - `huskybot_fusion/` : Source code node fusion.  <!-- Folder utama source code Python (fusion_node.py, fusion_utils.py), semua OOP dan robust error handling -->
-- `msg/` : Custom message `Object3D`.  <!-- Folder message custom hasil deteksi 3D, wajib untuk komunikasi antar node -->
 - `launch/` : Launch file fusion.  <!-- Folder launch file untuk menjalankan node fusion, wajib untuk ros2 launch -->
 - `test/` : Unit test dan linter (flake8, pep257, copyright).  <!-- Folder test untuk CI/CD, wajib untuk coverage dan kualitas kode -->
 - `resource/` : Resource ROS2 (wajib untuk ament_python).  <!-- Folder resource agar package dikenali ROS2, wajib untuk ros2 run/launch -->
@@ -23,8 +27,50 @@ Node fusion data deteksi objek kamera 360° (YOLO) dan point cloud Velodyne VLP-
 - `rviz/` : File konfigurasi RViz2 untuk visualisasi hasil fusion.  <!-- Folder rviz untuk file RViz2, wajib untuk visualisasi marker 3D -->
 - `README.md` : Dokumentasi package ini.  <!-- File dokumentasi utama, wajib untuk kolaborasi dan troubleshooting -->
 - `CMakeLists.txt`, `package.xml` : Konfigurasi build dan dependency ROS2.  <!-- File build system dan dependency, wajib untuk colcon build -->
+- `setup.py`, `setup.cfg` : Konfigurasi Python package.  <!-- File konfigurasi Python package, wajib untuk install dan run -->
 
 ---
+
+## Diagram Arsitektur Pipeline  <!-- Diagram visual menunjukkan posisi fusion node dalam pipeline keseluruhan -->
+                ┌───────────────────────────┐
+                │    6x Arducam IMX477      │
+                │   (Konfigurasi Hexagon)   │
+                └─────────────┬─────────────┘
+                              │ 
+                ┌─────────────▼─────────────┐
+                │      YOLOv12 (ONNX/       │
+                │     TensorRT) Jetson      │
+                └┬────────────┬────────────┬┘
+                 │            │            │
+        ┌────────▼─┐    ┌─────▼────┐   ┌──▼───────┐
+        │/detection │    │/segment  │   │/tracking │
+        └────────┬─┘    └─────┬────┘   └──┬───────┘
+                 │            │            │
+                 └────────────┼────────────┘
+                              │          ┌──────────────────┐
+                              │          │   Velodyne       │
+                              │          │   VLP-32C        │
+                              │          └─────────┬────────┘
+                              │                    │
+                              │                    │
+                              │          ┌─────────▼────────┐
+                              │          │ /velodyne_points │
+                              │          └─────────┬────────┘
+                              │                    │
+                   ┌──────────▼────────────────────▼────────┐
+                   │             huskybot_fusion            │
+                   │     (Kamera-LiDAR Fusion Node)         │
+                   └───┬───────────────────────────────┬────┘
+                       │                               │
+            ┌──────────▼────────────┐     ┌────────────▼───────────┐
+            │  /fusion/objects3d    │     │ /fusion/objects3d_marker│
+            │  (Hasil Deteksi 3D)   │     │  (Visualisasi RViz)     │
+            └──────────┬────────────┘     └────────────────────────┘
+                       │
+            ┌──────────▼────────────┐
+            │  Navigation & Obstacle │
+            │      Avoidance         │
+            └───────────────────────┘
 
 ## Cara Pakai  <!-- Cara menjalankan package ini di ROS2 Humble/Gazebo -->
 
