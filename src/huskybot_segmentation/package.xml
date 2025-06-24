@@ -15,6 +15,10 @@
   <buildtool_depend>ament_python</buildtool_depend>  <!-- Build tool utama ROS2 Python -->
   <exec_depend>rclpy</exec_depend>  <!-- Dependency utama node ROS2 Python -->
   <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency message sensor_msgs (Image) -->
+  <exec_depend>std_msgs</exec_depend>  <!-- Dependency untuk Header dan tipe message standar -->
+  <exec_depend>std_srvs</exec_depend>  <!-- Dependency untuk service Trigger (restart_model, get_status) -->
+  <exec_depend>diagnostic_msgs</exec_depend>  <!-- Dependency untuk DiagnosticArray (monitoring node) -->
+  <exec_depend>rcl_interfaces</exec_depend>  <!-- Dependency untuk parameter descriptor dan handling -->
   <exec_depend>cv_bridge</exec_depend>  <!-- Dependency konversi ROS <-> OpenCV -->
   <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency custom message YOLOv12 -->
   <exec_depend>ultralytics</exec_depend>  <!-- Dependency YOLOv12 Python -->
@@ -33,5 +37,6 @@
     <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
     <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- (Opsional) URL website/repo utama package -->
     <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
+    <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- (Opsional) URL repository untuk source code -->
   </export>
 </package>
