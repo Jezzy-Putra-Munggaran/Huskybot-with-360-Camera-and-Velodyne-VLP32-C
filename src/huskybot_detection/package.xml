@@ -1,37 +1,53 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>huskybot_detection</name>
-  <version>0.1.0</version>
+<?xml version="1.0"?>  <!-- XML declaration, required for all XML files -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- XML schema reference for ROS2 package format 3 validation -->
+<package format="3">  <!-- Root element for ROS2 package with format version 3 (latest for ROS2 Humble) -->
+  <name>huskybot_detection</name>  <!-- Package name, must match folder name for colcon build to work correctly -->
+  <version>0.1.0</version>  <!-- Semantic version (MAJOR.MINOR.PATCH) for tracking package releases -->
   <description>
     Node deteksi YOLOv12 multicamera untuk Huskybot (360° Arducam IMX477). <!-- Deskripsi singkat fungsi utama package -->
     Publish hasil deteksi ke topic /detection (Yolov12Inference). <!-- Penjelasan keterhubungan dengan message dan node lain -->
     Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + Velodyne VLP32-C). <!-- Penjelasan kompatibilitas hardware dan simulasi -->
-    (Update 2025-06-22) <!-- Tanggal update terakhir, best practice untuk tracking -->
-  </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
-  <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: MIT, Apache-2.0, BSD-3-Clause, dsb) -->
+    (Update 2025-06-24) <!-- Tanggal update terakhir, best practice untuk tracking -->
+  </description>  <!-- Deskripsi package yang komprehensif untuk indexing dan dokumentasi -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi untuk kontak dan authorship -->
+  <license>Apache-2.0</license>  <!-- Lisensi package, mendefinisikan bagaimana kode dapat digunakan dan didistribusikan -->
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- Author utama package, menunjukkan original creator -->
 
-  <buildtool_depend>ament_python</buildtool_depend>  <!-- Build tool utama ROS2 Python -->
-  <exec_depend>rclpy</exec_depend>  <!-- Dependency utama node ROS2 Python -->
-  <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency message sensor_msgs (Image) -->
-  <exec_depend>cv_bridge</exec_depend>  <!-- Dependency konversi ROS <-> OpenCV -->
-  <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency custom message YOLOv12 -->
-  <exec_depend>ultralytics</exec_depend>  <!-- Dependency YOLOv12 Python -->
-  <exec_depend>numpy</exec_depend>  <!-- Dependency numpy untuk array/matrix -->
-  <exec_depend>opencv-python</exec_depend>  <!-- Dependency OpenCV untuk image processing -->
+  <!-- Build tool dependencies - tools needed to build this package -->
+  <buildtool_depend>ament_python</buildtool_depend>  <!-- Build system untuk Python packages di ROS2 -->
+  
+  <!-- Runtime dependencies - packages needed when this package is running -->
+  <exec_depend>rclpy</exec_depend>  <!-- ROS2 Python Client Library, fundamental untuk semua node Python -->
+  <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency untuk message type Image dari kamera -->
+  <exec_depend>cv_bridge</exec_depend>  <!-- Konversi antara ROS Image messages dan OpenCV images -->
+  <exec_depend>yolov12_msgs</exec_depend>  <!-- Custom messages untuk hasil deteksi YOLOv12 -->
+  <exec_depend>ultralytics</exec_depend>  <!-- Package Python untuk YOLOv12 inference dan processing -->
+  <exec_depend>numpy</exec_depend>  <!-- Library untuk array dan operasi matematika -->
+  <exec_depend>opencv-python</exec_depend>  <!-- Library computer vision untuk pemrosesan gambar -->
+  <exec_depend>diagnostic_msgs</exec_depend>  <!-- Untuk publish diagnostic status ke /diagnostics topic -->
+  <exec_depend>std_srvs</exec_depend>  <!-- Untuk service types seperti Trigger yang digunakan di node -->
+  <exec_depend>std_msgs</exec_depend>  <!-- Untuk message type Header yang digunakan di node -->
+  <exec_depend>rcl_interfaces</exec_depend>  <!-- Untuk parameter interfaces dan validasi -->
+  <exec_depend>python3-yaml</exec_depend>  <!-- Untuk parsing file YAML (konfigurasi dan parameter) -->
 
-  <test_depend>ament_copyright</test_depend>  <!-- Dependency untuk copyright linter -->
-  <test_depend>ament_flake8</test_depend>  <!-- Dependency untuk flake8 linter -->
-  <test_depend>ament_pep257</test_depend>  <!-- Dependency untuk pep257 linter -->
-  <test_depend>python3-pytest</test_depend>  <!-- Dependency untuk pytest unit test -->
+  <!-- Test dependencies - packages needed for testing only -->
+  <test_depend>ament_copyright</test_depend>  <!-- Test untuk validasi header copyright -->
+  <test_depend>ament_flake8</test_depend>  <!-- Test untuk validasi Python code style -->
+  <test_depend>ament_pep257</test_depend>  <!-- Test untuk validasi Python docstring style -->
+  <test_depend>python3-pytest</test_depend>  <!-- Framework untuk Python unit testing -->
 
+  <!-- Package export section for metadata and build information -->
   <export>
-    <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
-    <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python) -->
-    <description lang="en">YOLOv12 multicam detection node for Huskybot 360° perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
-    <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
-    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- (Opsional) URL website/repo utama package -->
-    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
+    <build_type>ament_python</build_type>  <!-- Mendefinisikan jenis build system yang digunakan (ament_python) -->
+    <architecture_independent/>  <!-- Menandakan package berisi pure Python code yang tidak bergantung arsitektur -->
+    <description lang="en">YOLOv12 multicam detection node for Huskybot 360° perception.</description>  <!-- Deskripsi dalam bahasa Inggris untuk internasional -->
+    <readme>README.md</readme>  <!-- Path ke file dokumentasi utama package -->
+    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- URL ke halaman website/repo utama -->
+    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- URL ke issue tracker -->
+    <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- URL ke repository source code -->
+    <!-- Metadata tambahan untuk integrasi pipeline ROS2 -->
+    <gazebo gazebo_version="11.0">
+      <feature name="detection" value="true" />  <!-- Flag untuk menandai fitur deteksi aktif di Gazebo -->
+    </gazebo>
   </export>
 </package>
