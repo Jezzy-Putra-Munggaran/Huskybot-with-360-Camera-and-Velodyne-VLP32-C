@@ -8,27 +8,36 @@ from glob import glob
 
 package_name = 'huskybot_fusion'
 
-# Find all necessary files
+# Find necessary files
 launch_files = glob('launch/*.py') if os.path.isdir('launch') else []
 test_files = glob('test/*.py') if os.path.isdir('test') else []
 config_files = glob('config/*.yaml') if os.path.isdir('config') else []
 rviz_files = glob('rviz/*.rviz') if os.path.isdir('rviz') else []
 readme_path = 'README.md'
 
-# Simple setup with no prints
+# Build data_files list, all items must be valid (no None entries)
+data_files = [
+    ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+    ('share/' + package_name, ['package.xml']),
+]
+
+# Add conditional entries only if they exist
+if launch_files:
+    data_files.append(('share/' + package_name + '/launch', launch_files))
+if test_files:
+    data_files.append(('share/' + package_name + '/test', test_files))
+if os.path.isfile(readme_path):
+    data_files.append(('share/' + package_name, [readme_path]))
+if config_files:
+    data_files.append(('share/' + package_name + '/config', config_files))
+if rviz_files:
+    data_files.append(('share/' + package_name + '/rviz', rviz_files))
+
 setup(
     name=package_name,
     version='0.1.0',
     packages=[package_name],
-    data_files=[
-        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', launch_files) if launch_files else None,
-        ('share/' + package_name + '/test', test_files) if test_files else None,
-        ('share/' + package_name, [readme_path]) if os.path.isfile(readme_path) else None,
-        ('share/' + package_name + '/config', config_files) if config_files else None,
-        ('share/' + package_name + '/rviz', rviz_files) if rviz_files else None,
-    ],
+    data_files=data_files,
     install_requires=[
         'setuptools',
         'rclpy>=0.9.0',
@@ -66,7 +75,3 @@ setup(
         'viz': ['matplotlib', 'open3d'],
     },
 )
-
-# Print statements only when script is run directly, not during build
-if __name__ == '__main__':
-    print(f"[INFO] Setup package '{package_name}' completed successfully.")
