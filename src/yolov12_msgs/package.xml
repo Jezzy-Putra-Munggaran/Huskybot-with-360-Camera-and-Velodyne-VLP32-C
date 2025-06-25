@@ -14,7 +14,6 @@
   </description>  <!-- Deskripsi package, WAJIB detail untuk dokumentasi dan integrasi -->
   
   <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Maintainer utama dengan email valid untuk kontak -->
-  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author>  <!-- Penulis asli package, untuk kredit dan identifikasi -->
   
   <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB untuk legalitas (Apache-2.0 mendukung komersial & modifikasi) -->
 
