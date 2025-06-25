@@ -1,38 +1,71 @@
-<?xml version="1.0"?>  <!-- Deklarasi XML, wajib di awal file XML -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Validasi schema package.xml ROS2 -->
-<package format="3">  <!-- Format package.xml ROS2 (format 3, standar ROS2 Humble) -->
-  <name>huskybot_perception</name>  <!-- Nama package, harus unik di workspace -->
-  <version>0.1.0</version>  <!-- Versi package, update jika sudah release/siap digunakan -->
+<?xml version="1.0"?>  <!-- XML declaration required at start of file -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Schema definition for ROS2 package format -->
+<package format="3">  <!-- Package format 3 is the current standard for ROS2 Humble -->
+  <name>huskybot_perception</name>  <!-- Package name, must match directory name and CMakeLists.txt project name -->
+  <version>0.1.0</version>  <!-- Semantic version (major.minor.patch) - increment as features are added -->
   <description>
-    Node visualizer dan logger multitask YOLOv12 untuk Huskybot (360° Arducam IMX477, Velodyne VLP32-C). <!-- Deskripsi singkat fungsi utama package -->
-    Visualisasi hasil multitask ke window dan logging ke CSV. <!-- Penjelasan keterhubungan dengan message dan node lain -->
-    Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + Velodyne VLP32-C). <!-- Penjelasan kompatibilitas hardware dan simulasi -->
-    (Update 2025-06-22) <!-- Tanggal update terakhir, best practice untuk tracking -->
-  </description>  <!-- Deskripsi package, WAJIB diisi detail fungsi dan integrasi -->
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Nama & email maintainer, WAJIB diisi dengan email aktif -->
-  <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB diisi (misal: MIT, Apache-2.0, BSD-3-Clause, dsb) -->
+    Node visualizer dan logger multitask YOLOv12 untuk Huskybot (360° Arducam IMX477, Velodyne VLP32-C).  <!-- Brief description of primary functionality -->
+    Visualisasi hasil multitask ke window dan logging ke CSV.  <!-- Details on visualization and logging capabilities -->
+    Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + Velodyne VLP32-C).  <!-- Hardware/platform compatibility -->
+    (Update 2025-06-22)  <!-- Date of last significant update -->
+  </description>  <!-- Comprehensive package description improves discoverability -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Primary contact for package maintenance -->
+  <license>Apache-2.0</license>  <!-- Open source license for the package -->
 
-  <buildtool_depend>ament_python</buildtool_depend>  <!-- Build tool utama ROS2 Python -->
-  <exec_depend>rclpy</exec_depend>  <!-- Dependency utama node ROS2 Python -->
-  <exec_depend>sensor_msgs</exec_depend>  <!-- Dependency message sensor_msgs (Image, PointCloud2) -->
-  <exec_depend>cv_bridge</exec_depend>  <!-- Dependency konversi ROS <-> OpenCV -->
-  <exec_depend>yolov12_msgs</exec_depend>  <!-- Dependency custom message YOLOv12 -->
-  <exec_depend>ultralytics</exec_depend>  <!-- Dependency YOLOv12 Python -->
-  <exec_depend>numpy</exec_depend>  <!-- Dependency numpy untuk array/matrix -->
-  <exec_depend>opencv-python</exec_depend>  <!-- Dependency OpenCV untuk image processing -->
-  <exec_depend>python3-csv</exec_depend>  <!-- Dependency Python CSV (untuk logger) -->
+  <!-- Build Dependencies -->
+  <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Build system for C++ components -->
+  <buildtool_depend>ament_cmake_python</buildtool_depend>  <!-- Build system for Python components -->
+  <buildtool_depend>ament_python</buildtool_depend>  <!-- Pure Python build system if using setup.py only -->
 
-  <test_depend>ament_copyright</test_depend>  <!-- Dependency untuk copyright linter -->
-  <test_depend>ament_flake8</test_depend>  <!-- Dependency untuk flake8 linter -->
-  <test_depend>ament_pep257</test_depend>  <!-- Dependency untuk pep257 linter -->
-  <test_depend>python3-pytest</test_depend>  <!-- Dependency untuk pytest unit test -->
+  <!-- Python/ROS Core Dependencies -->
+  <depend>rclpy</depend>  <!-- ROS2 Python client library -->
+  <depend>rclcpp</depend>  <!-- ROS2 C++ client library for CMake components -->
+  
+  <!-- Message Type Dependencies -->
+  <depend>sensor_msgs</depend>  <!-- For Image, PointCloud2, LaserScan messages -->
+  <depend>std_msgs</depend>  <!-- For standard ROS2 message types -->
+  <depend>geometry_msgs</depend>  <!-- For pose, point, transform messages -->
+  <depend>visualization_msgs</depend>  <!-- For markers in RViz visualization -->
+  <depend>yolov12_msgs</depend>  <!-- Custom messages for YOLOv12 inference results -->
+  
+  <!-- ROS2 Tool Dependencies -->
+  <depend>cv_bridge</depend>  <!-- Bridge between ROS2 Image messages and OpenCV -->
+  <depend>image_transport</depend>  <!-- Efficient image transport over ROS2 -->
+  <depend>tf2_ros</depend>  <!-- Transform library for 3D coordinate conversions -->
+  <depend>launch_ros</depend>  <!-- For ROS2-specific launch file functionality -->
+  <depend>launch</depend>  <!-- For basic launch file functionality -->
+  
+  <!-- Python Library Dependencies -->
+  <exec_depend>python3-numpy</exec_depend>  <!-- For numerical operations and arrays -->
+  <exec_depend>python3-opencv</exec_depend>  <!-- For image processing (ROS2 packaged version) -->
+  <exec_depend>opencv-python</exec_depend>  <!-- Alternative OpenCV source if needed -->
+  <exec_depend>ultralytics</exec_depend>  <!-- For YOLOv12 inference -->
+  <exec_depend>python3-yaml</exec_depend>  <!-- For YAML config parsing -->
+  <exec_depend>python3-csv</exec_depend>  <!-- For CSV logging functionality -->
+  
+  <!-- Simulation Dependencies -->
+  <exec_depend>gazebo_ros</exec_depend>  <!-- For Gazebo simulation integration -->
+  
+  <!-- Test Dependencies -->
+  <test_depend>ament_copyright</test_depend>  <!-- For testing copyright headers -->
+  <test_depend>ament_flake8</test_depend>  <!-- For Python style checking -->
+  <test_depend>ament_pep257</test_depend>  <!-- For Python docstring checking -->
+  <test_depend>python3-pytest</test_depend>  <!-- For Python unit tests -->
 
   <export>
-    <build_type>ament_python</build_type>  <!-- Build type package ini (ament_python) -->
-    <architecture_independent/>  <!-- Package ini tidak tergantung arsitektur (pure Python) -->
-    <description lang="en">YOLOv12 multitask visualizer dan logger node for Huskybot 360° perception.</description>  <!-- (Opsional) Deskripsi tambahan multi-bahasa -->
-    <readme>README.md</readme>  <!-- (Opsional) Path ke file README untuk dokumentasi package -->
-    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- (Opsional) URL website/repo utama package -->
-    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- (Opsional) URL bugtracker/issues -->
+    <build_type>ament_python</build_type>  <!-- Primary build type for the package -->
+    <architecture_independent/>  <!-- Package works on any architecture (pure Python) -->
+    <description lang="en">YOLOv12 multitask visualizer dan logger node for Huskybot 360° perception.</description>  <!-- Alternative language description -->
+    <readme>README.md</readme>  <!-- Path to README file for documentation -->
+    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- Project repository URL -->
+    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- Issue tracker URL -->
+    
+    <!-- Related packages being used in this workspace -->
+    <depend>huskybot_description</depend>  <!-- Robot description package -->
+    <depend>huskybot_gazebo</depend>  <!-- Gazebo simulation package -->
+    <depend>huskybot_detection</depend>  <!-- YOLOv12 detection package -->
+    <depend>huskybot_segmentation</depend>  <!-- YOLOv12 segmentation package -->
+    <depend>huskybot_fusion</depend>  <!-- Sensor fusion package -->
+    <depend>velodyne</depend>  <!-- Velodyne LiDAR driver package -->
   </export>
 </package>
