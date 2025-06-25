@@ -50,9 +50,6 @@
   <exec_depend>rviz2</exec_depend>  <!-- Dependency runtime untuk visualisasi data (opsional tapi membantu) -->
   <exec_depend>gazebo_ros</exec_depend>  <!-- Dependency runtime untuk integrasi Gazebo (opsional untuk sim) -->
 
-  <!-- ===================== MESSAGE GENERATION ===================== -->
-  <member_of_group>rosidl_interface_packages</member_of_group>  <!-- Agar dikenali sebagai package interface ROS2 -->
-
   <!-- ===================== TEST DEPENDENCIES ===================== -->
   <test_depend>ament_lint_auto</test_depend>  <!-- Dependency linting otomatis saat testing -->
   <test_depend>ament_lint_common</test_depend>  <!-- Dependency linting umum ROS2 -->
@@ -62,6 +59,9 @@
   <test_depend>ament_copyright</test_depend>  <!-- Linter copyright header untuk CI/CD -->
   <test_depend>ament_flake8</test_depend>  <!-- Linter flake8 untuk CI/CD -->
   <doc_depend>doxygen</doc_depend>  <!-- Dependency untuk dokumentasi otomatis -->
+
+  <!-- ===================== MESSAGE GENERATION ===================== -->
+  <member_of_group>rosidl_interface_packages</member_of_group>  <!-- Agar dikenali sebagai package interface ROS2 -->
 
   <!-- ===================== EXPORT & METADATA ===================== -->
   <export>

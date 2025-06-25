@@ -102,35 +102,37 @@ potential_nodes = [                           # Cek file Python yang mungkin nod
     and os.path.isfile(f)
 ]
 
-# Pesan informasi versi
-print(f"\n=== {package_name} v0.0.1 setup completed ===")
+# Move all these print statements inside a conditional
+if __name__ == '__main__':
+    # Pesan informasi versi
+    print("\n=== huskybot_camera v0.0.1 setup completed ===")
 
-# Tampilkan warning untuk file yang bisa jadi node tapi tidak terdaftar
-if potential_nodes:                           # Jika ada file yang berpotensi sebagai node
-    print("\n[WARNING] File Python yang belum terdaftar sebagai entry points:")
-    for node in potential_nodes:              # Tampilkan setiap file
-        print(f"  - {node}.py")
-    print("[TIP] Tambahkan ke section 'entry_points' jika perlu dieksekusi sebagai executable\n")
+    # Tampilkan warning untuk file yang bisa jadi node tapi tidak terdaftar
+    if potential_nodes:                           # Jika ada file yang berpotensi sebagai node
+        print("\n[WARNING] File Python yang belum terdaftar sebagai entry points:")
+        for node in potential_nodes:              # Tampilkan setiap file
+            print(f"  - {node}.py")
+        print("[TIP] Tambahkan ke section 'entry_points' jika perlu dieksekusi sebagai executable\n")
+    
+    # Tampilkan pesan langkah selanjutnya
+    print("Langkah selanjutnya:")
+    print(f"1. Build package: 'colcon build --packages-select {package_name}'")
+    print(f"2. Source workspace: 'source install/setup.bash'")
+    print(f"3. Jalankan dengan: 'ros2 launch {package_name} multicamera.launch.py'\n")
+    
+    # Verifikasi konfigurasi launch file
+    try:
+        from launch.frontend import Parser        # Import parser untuk memvalidasi launch file
+        for launch_file in ['launch/multicamera.launch.py', 'launch/camera.launch.py']:
+            if os.path.exists(launch_file):       # Jika file launch ada
+                print(f"[INFO] Memvalidasi launch file: {launch_file}")
+                # Tambahan validasi launch file bisa ditambahkan di sini
+    except ImportError:
+        print("[INFO] launch.frontend tidak tersedia, skip validasi launch file")
 
-# Tampilkan pesan langkah selanjutnya
-print("Langkah selanjutnya:")
-print(f"1. Build package: 'colcon build --packages-select {package_name}'")
-print(f"2. Source workspace: 'source install/setup.bash'")
-print(f"3. Jalankan dengan: 'ros2 launch {package_name} multicamera.launch.py'\n")
-
-# Verifikasi konfigurasi launch file
-try:
-    from launch.frontend import Parser        # Import parser untuk memvalidasi launch file
-    for launch_file in ['launch/multicamera.launch.py', 'launch/camera.launch.py']:
-        if os.path.exists(launch_file):       # Jika file launch ada
-            print(f"[INFO] Memvalidasi launch file: {launch_file}")
-            # Tambahan validasi launch file bisa ditambahkan di sini
-except ImportError:
-    print("[INFO] launch.frontend tidak tersedia, skip validasi launch file")
-
-# Tampilkan pesan tentang kompatibilitas dengan sistem
-print("\n[INFO] Package ini kompatibel dengan:")
-print("- ROS2 Humble Hawksbill")
-print("- Gazebo Classic 11 (simulasi)")
-print("- Clearpath Husky A200 Jetson AGX Orin Arducam Velodyne (real robot)")
-print("- YOLOv12 (TensorRT/ONNX/PyTorch) untuk deteksi dan segmentasi\n")
+    # Tampilkan pesan tentang kompatibilitas dengan sistem
+    print("\n[INFO] Package ini kompatibel dengan:")
+    print("- ROS2 Humble Hawksbill")
+    print("- Gazebo Classic 11 (simulasi)")
+    print("- Clearpath Husky A200 Jetson AGX Orin Arducam Velodyne (real robot)")
+    print("- YOLOv12 (TensorRT/ONNX/PyTorch) untuk deteksi dan segmentasi\n")
