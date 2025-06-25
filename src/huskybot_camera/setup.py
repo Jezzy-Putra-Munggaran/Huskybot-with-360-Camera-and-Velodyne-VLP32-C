@@ -132,5 +132,5 @@ except ImportError:
 print("\n[INFO] Package ini kompatibel dengan:")
 print("- ROS2 Humble Hawksbill")
 print("- Gazebo Classic 11 (simulasi)")
-print("- Clearpath Husky A200 Jetson AGX Orin 6x Arducam IMX477 Velodyne VLP32-C (real robot)")
+print("- Clearpath Husky A200 Jetson AGX Orin Arducam Velodyne (real robot)")
 print("- YOLOv12 (TensorRT/ONNX/PyTorch) untuk deteksi dan segmentasi\n")
