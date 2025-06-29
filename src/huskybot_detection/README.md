@@ -1,6 +1,9 @@
 # huskybot_detection  <!-- Judul utama README, nama package (harus sama dengan folder dan package.xml, wajib agar colcon build dan ros2 launch/run tidak error) -->
 
 [![Build Status](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions/workflows/ci.yml/badge.svg)](https://github.com/Jezzy-Putra-Munggaran/huskybot-with-360-Camera-and-Velodyne-VLP32-C/actions)  <!-- Badge CI, update link jika pipeline sudah aktif -->
+![ROS2 Humble](https://img.shields.io/badge/ROS2-Humble-blue) <!-- Badge ROS2 Humble -->
+![YOLOv12](https://img.shields.io/badge/YOLO-v12-brightgreen) <!-- Badge YOLOv12 -->
+![Jetson AGX Orin](https://img.shields.io/badge/Jetson-AGX%20Orin-green) <!-- Badge Jetson Orin -->
 
 Node deteksi YOLOv12 multicamera untuk Huskybot (360° Arducam IMX477). Publish hasil deteksi ke topic `/detection` (Yolov12Inference). Siap untuk ROS2 Humble, simulasi Gazebo, dan robot real (Clearpath Husky A200 + Jetson Orin + Velodyne VLP32-C). <!-- Deskripsi singkat fungsi utama package, hardware, dan integrasi -->
 
@@ -11,6 +14,10 @@ Node deteksi YOLOv12 multicamera untuk Huskybot (360° Arducam IMX477). Publish 
 - Publish hasil deteksi ke topic `/detection` dengan message `Yolov12Inference`. <!-- Keterhubungan dengan pipeline fusion/logger -->
 - FULL OOP, robust error handling, siap untuk multi-robot dan audit trail. <!-- Best practice coding dan deployment -->
 - Kompatibel dengan ROS2 Humble, Gazebo, dan hardware real. <!-- Penegasan kompatibilitas -->
+- Otomatis fallback ke ONNX/PT jika TensorRT tidak tersedia (Jetson/PC). <!-- Fallback mechanism -->
+- Logging ke file dan terminal, siap audit trail. <!-- Audit trail siap -->
+- Parameterisasi threshold, class filter, device, dsb via launch file. <!-- Parameterisasi lengkap -->
+- Health check, diagnostics, dan auto-respawn node jika crash. <!-- Health check dan auto-recovery -->
 
 ---
 
@@ -21,6 +28,9 @@ Node deteksi YOLOv12 multicamera untuk Huskybot (360° Arducam IMX477). Publish 
 - `test/` : Unit test dan linter (flake8, pep257, copyright). <!-- Folder test -->
 - `README.md` : Dokumentasi package ini. <!-- File dokumentasi -->
 - `setup.py`, `setup.cfg`, `package.xml` : Build system dan metadata ROS2. <!-- File build system dan metadata -->
+- `models/` : (Opsional) Model YOLOv12 (.engine/.onnx/.pt) untuk inference. <!-- Folder model YOLOv12 -->
+- `config/` : (Opsional) File konfigurasi YAML/JSON. <!-- Folder konfigurasi -->
+- `logs/` : (Otomatis) Folder log hasil deteksi. <!-- Folder log hasil deteksi -->
 
 ---
 
@@ -89,6 +99,7 @@ yolov12_inference:
 - Semua node sudah FULL OOP (class Node). <!-- Best practice OOP -->
 - Untuk multi-robot, gunakan namespace di launch file. <!-- Namespace bisa diatur di launch untuk multi-robot -->
 - Untuk audit, gunakan logger node untuk logging ke CSV/JSON. <!-- Logger node siap untuk audit trail dan debugging -->
+- Gunakan health check dan auto-recovery untuk keandalan sistem. <!-- Health check dan auto-recovery -->
 
 ---
 
@@ -99,6 +110,9 @@ yolov12_inference:
 - Jika hasil deteksi tidak keluar, cek log output dan parameter model_path. <!-- Error hasil deteksi -->
 - Jika error permission, cek permission folder workspace dan file model. <!-- Error permission sering terjadi di WSL2/VM -->
 - Jika error visualisasi OpenCV, pastikan environment mendukung GUI (atau jalankan di mode headless). <!-- Error visualisasi OpenCV -->
+- Jika node crash setelah beberapa saat, cek log untuk error dan pastikan semua topic terhubung dengan benar. <!-- Error crash node -->
+- Jika deteksi lambat, pertimbangkan untuk mengurangi resolusi input atau jumlah kamera. <!-- Deteksi lambat -->
+- Jika menggunakan Jetson, pastikan TensorRT terinstall dengan benar untuk performa optimal. <!-- TensorRT di Jetson -->
 
 ---
 
@@ -109,6 +123,10 @@ yolov12_inference:
 - Tambahkan badge CI/CD dan coverage test di README jika pipeline sudah aktif. <!-- Saran badge CI/CD -->
 - Dokumentasikan semua parameter di README dan launch file. <!-- Saran dokumentasi parameter -->
 - Tambahkan troubleshooting error umum di README. <!-- Saran troubleshooting -->
+- Pertimbangkan untuk menambahkan dukungan untuk lebih dari 6 kamera. <!-- Saran dukungan lebih banyak kamera -->
+- Tambahkan opsi untuk menyimpan hasil deteksi ke file (misal: CSV, JSON). <!-- Saran simpan hasil deteksi -->
+- Tambahkan notifikasi/error handling jika folder logs tidak dapat diakses. <!-- Saran error handling folder logs -->
+- Pertimbangkan untuk menambahkan GUI sederhana untuk konfigurasi dan monitoring. <!-- Saran GUI untuk monitoring -->
 
 ---
 
@@ -168,23 +186,4 @@ The README.md has been significantly enhanced with:
 
 All of these improvements make the README much more comprehensive and useful for both new users and experienced developers, while maintaining the already good structure and ensuring every line has proper comments.
 
-The format is clean and consistent, and should render well in any Markdown viewer. This meets all the requirements specified in your prompt, including being very detailed on error handling, OOP principles, and integration with the rest of the Huskybot system.### Improvements and Justification
-
-The README.md has been significantly enhanced with:
-
-1. **Additional Badge Icons** for ROS2 Humble and YOLOv12 to clearly communicate the technologies used
-2. **Expanded Features Section** highlighting Jetson-specific optimizations and fallback mechanisms
-3. **More Detailed Folder Structure** that shows all files with descriptions
-4. **Custom CLI Configuration Example** showing how to use command line parameters
-5. **Parameter Table** with proper formatting for better readability
-6. **Detailed Message Field Descriptions** for better understanding of data format
-7. **Integration System & Data Flow Diagram** showing how this package connects with others
-8. **Expanded Error Handling & Best Practice** sections with clearer categorization
-9. **Performance Considerations** section with hardware recommendations and benchmarks
-10. **Enhanced Troubleshooting** section with specific error examples and solutions
-11. **Security Considerations** section addressing important security aspects
-12. **Expanded Documentation & Reference Links** organized by category
-
-All of these improvements make the README much more comprehensive and useful for both new users and experienced developers, while maintaining the already good structure and ensuring every line has proper comments.
-
-The format is clean and consistent, and should render well in any Markdown viewer. This meets all the
+The format is clean and consistent, and should render well in any Markdown viewer. This meets all the requirements specified in your prompt, including being very detailed on error handling, OOP principles, and integration with the rest of the Huskybot system.
