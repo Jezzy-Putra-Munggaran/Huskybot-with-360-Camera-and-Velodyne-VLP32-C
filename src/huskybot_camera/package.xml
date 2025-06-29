@@ -1,43 +1,53 @@
-<?xml version="1.0"?> <!-- XML declaration -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Schema reference for ROS2 package format -->
-<package format="3"> <!-- Using ROS package format 3 which supports modern ROS2 features -->
-  <name>huskybot_camera</name> <!-- Package name, must match folder name for colcon build -->
-  <version>0.0.1</version> <!-- Package version, using semantic versioning -->
-  <description>Publisher kamera Arducam IMX477 asli untuk pipeline Huskybot (360° array). Mendukung konfigurasi hexagonal dengan 6 kamera dan integrasi dengan YOLOv12 untuk deteksi objek. Kompatibel dengan ROS2 Humble, simulasi Gazebo, dan robot Husky A200 + Jetson AGX Orin.</description> <!-- Detailed description including hardware compatibility -->
-  
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Maintainer info for contact purposes -->
-  
-  <license>MIT</license> <!-- License under which the package is distributed -->
-  
-  <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url> <!-- URL to source code repository -->
-  <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url> <!-- URL to issue tracker -->
-  
-  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author> <!-- Original author of the package -->
-  
-  <!-- Build tool dependencies -->
-  <buildtool_depend>ament_python</buildtool_depend> <!-- Primary build tool for Python ROS2 packages -->
-  
-  <!-- Runtime dependencies -->
-  <exec_depend>rclpy</exec_depend> <!-- ROS2 Python client library - required for all ROS2 Python nodes -->
-  <exec_depend>sensor_msgs</exec_depend> <!-- For Image and CameraInfo message types -->
-  <exec_depend>std_msgs</exec_depend> <!-- For Header and other standard message types -->
-  <exec_depend>std_srvs</exec_depend> <!-- For Trigger service used in camera restart -->
-  <exec_depend>cv_bridge</exec_depend> <!-- For converting between ROS2 and OpenCV images -->
-  <exec_depend>opencv-python</exec_depend> <!-- For camera access and image processing -->
-  <exec_depend>python3-yaml</exec_depend> <!-- For parsing YAML camera configuration files -->
-  <exec_depend>python3-numpy</exec_depend> <!-- For image array operations -->
-  <exec_depend>ros2launch</exec_depend> <!-- For running launch files -->
-  <exec_depend>ros_deep_learning</exec_depend> <!-- For video_source node (fallback in camera.launch.py) -->
-  <exec_depend>launch_ros</exec_depend> <!-- For ROS2 launch utilities in launch files -->
-  <exec_depend>launch_xml</exec_depend> <!-- For XML launch description parsing in camera.launch.py -->
-  
-  <!-- Test dependencies -->
-  <test_depend>ament_copyright</test_depend> <!-- For checking copyright headers -->
-  <test_depend>ament_flake8</test_depend> <!-- For checking Python code style -->
-  <test_depend>ament_pep257</test_depend> <!-- For checking Python docstring style -->
-  <test_depend>python3-pytest</test_depend> <!-- For running Python unit tests -->
-  
+<?xml version="1.0"?> <!-- XML declaration, wajib di awal file XML -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?> <!-- Schema reference untuk validasi package format 3 -->
+<package format="3"> <!-- Mulai deklarasi package, format 3 wajib untuk ROS2 Humble -->
+
+  <name>huskybot_camera</name> <!-- Nama package, WAJIB sama dengan folder dan setup.py agar colcon build tidak error -->
+  <version>0.0.1</version> <!-- Versi package, gunakan semantic versioning (major.minor.patch) -->
+  <description>
+    Publisher kamera Arducam IMX477 asli untuk pipeline Huskybot (360° array). 
+    Mendukung konfigurasi hexagonal dengan 6 kamera dan integrasi dengan YOLOv12 untuk deteksi objek. 
+    Kompatibel dengan ROS2 Humble, simulasi Gazebo, dan robot Husky A200 + Jetson AGX Orin.
+  </description> <!-- Deskripsi lengkap, jelaskan hardware, pipeline, dan kompatibilitas -->
+
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer> <!-- Nama dan email maintainer, wajib untuk support dan metadata -->
+
+  <license>MIT</license> <!-- Lisensi package, harus sama dengan setup.py dan README.md -->
+
+  <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url> <!-- URL repo utama, penting untuk traceability -->
+  <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url> <!-- URL issue tracker, penting untuk bug report -->
+
+  <author email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</author> <!-- Nama author asli, bisa sama dengan maintainer -->
+
+  <!-- ===================== BUILD TOOL DEPENDENCIES ===================== -->
+  <buildtool_depend>ament_python</buildtool_depend> <!-- Build tool utama untuk package Python ROS2 -->
+
+  <!-- ===================== RUNTIME DEPENDENCIES ===================== -->
+  <exec_depend>rclpy</exec_depend> <!-- Library utama ROS2 Python -->
+  <exec_depend>sensor_msgs</exec_depend> <!-- Message type Image, CameraInfo -->
+  <exec_depend>std_msgs</exec_depend> <!-- Message type Header, dsb -->
+  <exec_depend>std_srvs</exec_depend> <!-- Service type Trigger (restart kamera) -->
+  <exec_depend>cv_bridge</exec_depend> <!-- Konversi ROS <-> OpenCV images -->
+  <exec_depend>opencv-python</exec_depend> <!-- Library OpenCV untuk akses kamera -->
+  <exec_depend>python3-yaml</exec_depend> <!-- Parsing file YAML konfigurasi kamera -->
+  <exec_depend>python3-numpy</exec_depend> <!-- Operasi array pada gambar -->
+  <exec_depend>ros2launch</exec_depend> <!-- Untuk menjalankan launch file -->
+  <exec_depend>ros_deep_learning</exec_depend> <!-- Untuk fallback video_source node (jika tidak pakai multicamera_publisher) -->
+  <exec_depend>launch_ros</exec_depend> <!-- Untuk launch file Python ROS2 -->
+  <exec_depend>launch_xml</exec_depend> <!-- Untuk parsing launch XML (opsional, best practice) -->
+  <exec_depend>diagnostic_updater</exec_depend> <!-- Untuk diagnostics monitoring kamera (opsional, best practice) -->
+  <exec_depend>diagnostic_aggregator</exec_depend> <!-- Untuk diagnostics aggregator (opsional, best practice) -->
+  <exec_depend>ament_index_python</exec_depend> <!-- Untuk validasi package dependency di launch file (opsional, best practice) -->
+
+  <!-- ===================== TEST DEPENDENCIES ===================== -->
+  <test_depend>ament_copyright</test_depend> <!-- Test copyright -->
+  <test_depend>ament_flake8</test_depend> <!-- Test code style Python -->
+  <test_depend>ament_pep257</test_depend> <!-- Test docstring style Python -->
+  <test_depend>python3-pytest</test_depend> <!-- Test framework Python -->
+
+  <!-- ===================== EXPORT SECTION ===================== -->
   <export>
-    <build_type>ament_python</build_type> <!-- Declare this as a Python package for ROS2 -->
+    <build_type>ament_python</build_type> <!-- Wajib untuk package Python agar colcon build benar -->
+    <!-- Saran: tambahkan plugin atau export lain jika ingin integrasi downstream package -->
   </export>
 </package>
