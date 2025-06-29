@@ -1,52 +1,52 @@
-<?xml version="1.0"?>  <!-- Deklarasi XML standar, WAJIB ada di baris pertama untuk semua package ROS2 Humble -->
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- Validasi schema ROS2, memastikan format sesuai standar REP-149 -->
-<package format="3">  <!-- Format package.xml ROS2 versi 3, standar terbaru untuk ROS2 Humble, sesuai REP-149 -->
-  <name>yolov12_msgs</name>  <!-- Nama package, WAJIB unik di workspace, digunakan saat rosrun/launch -->
-  <version>0.1.0</version>  <!-- Versi package (MAJOR.MINOR.PATCH), update jika ada perubahan API/fitur -->
+<?xml version="1.0"?>  <!-- [WAJIB] Deklarasi XML standar, harus di baris pertama agar parser ROS2 mengenali file ini. -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>  <!-- [WAJIB] Validasi schema package.xml ROS2, memastikan format sesuai standar REP-149. -->
+<package format="3">  <!-- [WAJIB] Format package.xml ROS2 versi 3, standar terbaru untuk ROS2 Humble, sesuai REP-149. -->
+  <name>yolov12_msgs</name>  <!-- [WAJIB] Nama package, harus unik di workspace, digunakan saat build, run, dan launch. -->
+  <version>0.1.0</version>  <!-- [WAJIB] Versi package (MAJOR.MINOR.PATCH), update jika ada perubahan API/fitur. -->
   <description>
-    Custom ROS2 message package for YOLOv12 detection results and panorama inference. <!-- Deskripsi singkat fungsi utama package -->
-    Provides InferenceResult and Yolov12Inference message types for multi-camera and panorama object detection. <!-- Berisi 2 message type utama -->
-    Used by huskybot_detection, huskybot_segmentation, huskybot_fusion, and huskybot_perception nodes. <!-- Digunakan oleh 4 node utama -->
-    Supports both yolo12x.engine (detection) and yolo11x-seg.engine (segmentation) models. <!-- Mendukung 2 model YOLO -->
-    Fully compatible with ROS2 Humble, Gazebo, multi-robot simulation, and Jetson AGX Orin deployment. <!-- Kompatibilitas dengan hardware/software -->
-    For LiDAR-camera fusion, use the note field in Yolov12Inference to store distance and coordinate data. <!-- Panduan untuk fusion -->
-    (Update 2025-06-23) <!-- Tanggal update terakhir, untuk tracking perubahan -->
-  </description>  <!-- Deskripsi package, WAJIB detail untuk dokumentasi dan integrasi -->
+    Custom ROS2 message package for YOLOv12 detection results and panorama inference. <!-- [WAJIB] Deskripsi singkat fungsi utama package, penting untuk dokumentasi dan integrasi. -->
+    Provides InferenceResult and Yolov12Inference message types for multi-camera and panorama object detection. <!-- [WAJIB] Berisi 2 message type utama, penting untuk pipeline deteksi dan fusion. -->
+    Used by huskybot_detection, huskybot_segmentation, huskybot_fusion, and huskybot_perception nodes. <!-- [WAJIB] Daftar package pengguna, penting untuk tracking dependency dan integrasi workspace. -->
+    Supports both yolo12x.engine (detection) and yolo11x-seg.engine (segmentation) models. <!-- [WAJIB] Kompatibilitas model YOLO, penting untuk deployment. -->
+    Fully compatible with ROS2 Humble, Gazebo, multi-robot simulation, and Jetson AGX Orin deployment. <!-- [WAJIB] Kompatibilitas dengan hardware/software utama pipeline. -->
+    For LiDAR-camera fusion, use the note field in Yolov12Inference to store distance and coordinate data. <!-- [WAJIB] Panduan untuk fusion, penting untuk integrasi node fusion. -->
+    (Update 2025-06-23) <!-- [WAJIB] Tanggal update terakhir, untuk tracking perubahan dan troubleshooting. -->
+  </description>  <!-- [WAJIB] Deskripsi package, harus detail untuk dokumentasi dan integrasi. -->
   
-  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- Maintainer utama dengan email valid untuk kontak -->
+  <maintainer email="mungguran.jezzy.putra@gmail.com">Jezzy Putra Munggaran</maintainer>  <!-- [WAJIB] Maintainer utama dengan email valid untuk kontak support dan kolaborasi. -->
   
-  <license>Apache-2.0</license>  <!-- Lisensi package, WAJIB untuk legalitas (Apache-2.0 mendukung komersial & modifikasi) -->
+  <license>Apache-2.0</license>  <!-- [WAJIB] Lisensi package, penting untuk legalitas (Apache-2.0 mendukung komersial & modifikasi). -->
 
   <!-- Build tools: Dependencies untuk kompilasi package -->
-  <buildtool_depend>ament_cmake</buildtool_depend>  <!-- Build system ROS2, WAJIB untuk package message -->
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>  <!-- Generator interface (.msg -> C++/Python), WAJIB -->
+  <buildtool_depend>ament_cmake</buildtool_depend>  <!-- [WAJIB] Build system ROS2, harus ada agar package message bisa di-build. -->
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>  <!-- [WAJIB] Generator interface (.msg -> C++/Python), harus ada untuk message. -->
 
   <!-- Main dependencies: Package yang diperlukan saat build dan runtime -->
-  <depend>std_msgs</depend>  <!-- Untuk std_msgs/Header, WAJIB untuk timestamp dan frame_id -->
-  <depend>builtin_interfaces</depend>  <!-- Untuk tipe data bawaan ROS2, WAJIB untuk Header -->
-  <depend>sensor_msgs</depend>  <!-- Untuk integrasi dengan data sensor (LaserScan, PointCloud2), PENTING untuk fusion -->
+  <depend>std_msgs</depend>  <!-- [WAJIB] Untuk std_msgs/Header, penting untuk timestamp dan frame_id di message. -->
+  <depend>builtin_interfaces</depend>  <!-- [WAJIB] Untuk tipe data bawaan ROS2, penting untuk Header dan waktu. -->
+  <depend>sensor_msgs</depend>  <!-- [WAJIB] Untuk integrasi dengan data sensor (LaserScan, PointCloud2), penting untuk fusion dan pipeline 3D. -->
   
   <!-- Runtime dependencies: Khusus saat runtime saja -->
-  <exec_depend>rosidl_default_runtime</exec_depend>  <!-- Runtime library interface, WAJIB untuk custom message -->
+  <exec_depend>rosidl_default_runtime</exec_depend>  <!-- [WAJIB] Runtime library interface, harus ada agar message bisa diimport node lain. -->
   
   <!-- Test dependencies: Untuk testing dan linting -->
-  <test_depend>ament_lint_auto</test_depend>  <!-- Automated linting, PENTING untuk kualitas kode -->
-  <test_depend>ament_lint_common</test_depend>  <!-- Common linter ROS2, PENTING untuk CI/CD -->
+  <test_depend>ament_lint_auto</test_depend>  <!-- [BEST PRACTICE] Automated linting, penting untuk kualitas kode dan CI/CD. -->
+  <test_depend>ament_lint_common</test_depend>  <!-- [BEST PRACTICE] Common linter ROS2, penting untuk CI/CD dan menjaga kualitas message. -->
   
   <!-- Group membership: Identifikasi tipe package -->
-  <member_of_group>rosidl_interface_packages</member_of_group>  <!-- WAJIB untuk package message -->
+  <member_of_group>rosidl_interface_packages</member_of_group>  <!-- [WAJIB] Untuk package message, agar bisa di-detect dependency oleh package lain. -->
 
   <!-- Export tags: Metadata tambahan -->
   <export>
-    <build_type>ament_cmake</build_type>  <!-- WAJIB sesuai build system (ament_cmake) -->
-    <architecture_independent/>  <!-- Package bersifat architecture-independent -->
-    <description lang="en">YOLOv12 detection result messages for Huskybot multi-camera perception system with LiDAR fusion capabilities.</description>  <!-- Deskripsi singkat bahasa Inggris -->
-    <readme>README.md</readme>  <!-- Path ke file dokumentasi utama -->
-    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- URL utama repository -->
-    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- URL untuk bug reports -->
-    <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C.git</url>  <!-- URL git repository -->
+    <build_type>ament_cmake</build_type>  <!-- [WAJIB] Build system yang digunakan (ament_cmake), harus sinkron dengan CMakeLists.txt. -->
+    <architecture_independent/>  <!-- [WAJIB] Package message bersifat architecture-independent, penting untuk portability. -->
+    <description lang="en">YOLOv12 detection result messages for Huskybot multi-camera perception system with LiDAR fusion capabilities.</description>  <!-- [BEST PRACTICE] Deskripsi singkat bahasa Inggris, penting untuk indexing dan integrasi. -->
+    <readme>README.md</readme>  <!-- [BEST PRACTICE] Path ke file dokumentasi utama, agar dokumentasi ikut diinstall ke share/. -->
+    <url type="website">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C</url>  <!-- [BEST PRACTICE] URL utama repository, penting untuk tracking dan kolaborasi. -->
+    <url type="bugtracker">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C/issues</url>  <!-- [BEST PRACTICE] URL untuk bug reports, penting untuk support dan troubleshooting. -->
+    <url type="repository">https://github.com/Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C.git</url>  <!-- [BEST PRACTICE] URL git repository, penting untuk CI/CD dan tracking. -->
     
     <!-- ERROR HANDLING NOTE: Bagian ini penting untuk melihat error dan solusi umum package ini -->
-    <ros1_bridge mapping_rules="mapping_rules.yaml"/>  <!-- Untuk compatibility dengan ROS1 jika diperlukan -->
+    <ros1_bridge mapping_rules="mapping_rules.yaml"/>  <!-- [OPSIONAL] Untuk compatibility dengan ROS1 jika diperlukan, bisa dihapus jika tidak perlu bridge ROS1. -->
   </export>
 </package>

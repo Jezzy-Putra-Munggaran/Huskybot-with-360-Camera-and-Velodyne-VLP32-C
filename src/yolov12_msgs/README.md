@@ -213,33 +213,24 @@ note: ""
 
 ## 🚀 Perubahan dan Peningkatan
 
-1. **Diagram Flow Message**: Ditambahkan diagram ASCII yang menunjukkan aliran data dari kamera dan LiDAR ke node-node yang menggunakan message.
-
-2. **Integrasi dengan Package Lain**: Menambahkan bagian khusus yang menjelaskan bagaimana yolov12_msgs terintegrasi dengan package lain dalam workspace.
-
-3. **Contoh Validasi Message**: Menambahkan contoh kode Python dan C++ untuk validasi message, sebagai implementasi best practice.
-
-4. **Error Handling Comprehensive**: Menambahkan tabel error umum beserta solusinya.
-
-5. **QoS Settings**: Menambahkan contoh konfigurasi QoS yang optimal untuk camera topics vs. detection topics.
-
-6. **Performance di Jetson**: Menambahkan bagian khusus tentang performa di Jetson AGX Orin.
-
-7. **Versioning**: Menambahkan bagian version tracking untuk memudahkan manajemen perubahan API.
-
-8. **Troubleshooting Spesifik**: Menambahkan troubleshooting untuk Gazebo simulation dan Jetson.
-
-9. **URL Update**: Memperbaiki semua URL GitHub dari "yourusername/huskybot" menjadi "Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C".
-
-10. **Validasi Field Wajib**: Menambahkan validasi lebih detail untuk field-field wajib seperti header.stamp dan header.frame_id.
+1. **Diagram Flow Message**: Ditambahkan diagram ASCII yang menunjukkan aliran data dari kamera dan LiDAR ke node-node yang menggunakan message. <!-- Visualisasi flow message untuk debugging dan integrasi. -->
+2. **Integrasi dengan Package Lain**: Menambahkan bagian khusus yang menjelaskan bagaimana yolov12_msgs terintegrasi dengan package lain dalam workspace. <!-- Penjelasan integrasi antar package. -->
+3. **Contoh Validasi Message**: Menambahkan contoh kode Python dan C++ untuk validasi message, sebagai implementasi best practice. <!-- Contoh validasi untuk robust pipeline. -->
+4. **Error Handling Comprehensive**: Menambahkan tabel error umum beserta solusinya. <!-- Tabel error handling untuk troubleshooting. -->
+5. **QoS Settings**: Menambahkan contoh konfigurasi QoS yang optimal untuk camera topics vs. detection topics. <!-- Saran QoS untuk robust ROS2. -->
+6. **Performance di Jetson**: Menambahkan bagian khusus tentang performa di Jetson AGX Orin. <!-- Saran optimasi Jetson. -->
+7. **Versioning**: Menambahkan bagian version tracking untuk memudahkan manajemen perubahan API. <!-- Tracking perubahan API. -->
+8. **Troubleshooting Spesifik**: Menambahkan troubleshooting untuk Gazebo simulation dan Jetson. <!-- Troubleshooting spesifik platform. -->
+9. **URL Update**: Memperbaiki semua URL GitHub dari "yourusername/huskybot" menjadi "Jezzy-Putra-Munggaran/Huskybot-with-360-Camera-and-Velodyne-VLP32-C". <!-- Konsistensi URL repo. -->
+10. **Validasi Field Wajib**: Menambahkan validasi lebih detail untuk field-field wajib seperti header.stamp dan header.frame_id. <!-- Saran validasi field wajib. -->
 
 ## 📋 Kesimpulan
 
 README.md yang dioptimalkan ini sekarang memberikan dokumentasi yang jauh lebih kaya untuk package `yolov12_msgs`, dengan:
-- Error handling yang jauh lebih komprehensif
-- Contoh kode untuk validasi
-- Diagram alur untuk memahami hubungan antara package
-- Troubleshooting untuk berbagai skenario
-- Panduan optimasi performa untuk Jetson AGX Orin
+- Error handling yang jauh lebih komprehensif <!-- Penjelasan error handling sudah advance. -->
+- Contoh kode untuk validasi <!-- Contoh validasi message sudah ada. -->
+- Diagram alur untuk memahami hubungan antara package <!-- Diagram flow message sudah jelas. -->
+- Troubleshooting untuk berbagai skenario <!-- Troubleshooting lengkap. -->
+- Panduan optimasi performa untuk Jetson AGX Orin <!-- Saran Jetson sudah ada. -->
 
-File ini sekarang sangat mendukung pengembangan sistem deteksi halangan 360° pada robot Huskybot menggunakan kombinasi kamera ArduCam IMX477 dan LiDAR Velodyne VLP32-C di platform Clearpath Husky A200 dengan Jetson AGX Orin.
+File ini sekarang sangat mendukung pengembangan sistem deteksi halangan 360° pada robot Huskybot menggunakan kombinasi kamera ArduCam IMX477 dan LiDAR Velodyne VLP32-C di platform Clearpath Husky A200 dengan Jetson AGX Orin. <!-- Penegasan integrasi dan dukungan riset. -->

@@ -1,7 +1,7 @@
-# Deskripsi: Message untuk menyimpan satu hasil deteksi YOLOv12 (single bounding box dengan kelasnya)
-# Digunakan di: huskybot_detection, huskybot_segmentation, huskybot_fusion, huskybot_perception
-# Kompatibel dengan: ROS2 Humble, Gazebo, yolo12x.engine (detection), yolo11x-seg.engine (segmentation)
-# Update terakhir: 2025-06-23
+# Deskripsi: Message untuk menyimpan satu hasil deteksi YOLOv12 (single bounding box dengan kelasnya)  # WAJIB: Penjelasan fungsi utama
+# Digunakan di: huskybot_detection, huskybot_segmentation, huskybot_fusion, huskybot_perception  # WAJIB: Daftar package pengguna
+# Kompatibel dengan: ROS2 Humble, Gazebo, yolo12x.engine (detection), yolo11x-seg.engine (segmentation)  # WAJIB: Kompatibilitas
+# Update terakhir: 2025-06-23  # WAJIB: Tanggal update
 
 # ===================== FIELD WAJIB (SELALU DIISI) =====================
 string class_name         # Nama class hasil deteksi (misal: "person", "car"). WAJIB diisi, digunakan untuk label visualisasi, logger, dan evaluasi.

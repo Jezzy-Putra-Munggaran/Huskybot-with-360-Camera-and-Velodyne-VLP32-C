@@ -1,8 +1,8 @@
-# Deskripsi: Message untuk menyimpan hasil deteksi YOLOv12 dari satu frame/gambar
-# Digunakan di: huskybot_detection, huskybot_segmentation, huskybot_fusion, huskybot_perception
-# Kompatibel dengan: ROS2 Humble, Gazebo, yolo12x.engine (detection), yolo11x-seg.engine (segmentation)
-# Update terakhir: 2025-06-23
-# Versi: 1.0
+# Deskripsi: Message untuk menyimpan hasil deteksi YOLOv12 dari satu frame/gambar  # WAJIB: Penjelasan fungsi utama message ini, untuk dokumentasi dan integrasi node lain
+# Digunakan di: huskybot_detection, huskybot_segmentation, huskybot_fusion, huskybot_perception  # WAJIB: Daftar package pengguna, penting untuk tracking dependency
+# Kompatibel dengan: ROS2 Humble, Gazebo, yolo12x.engine (detection), yolo11x-seg.engine (segmentation)  # WAJIB: Kompatibilitas platform dan model
+# Update terakhir: 2025-06-23  # WAJIB: Tanggal update, penting untuk tracking perubahan
+# Versi: 1.0  # WAJIB: Versi message, penting untuk tracking perubahan API
 
 # ===================== FIELD WAJIB (SELALU DIISI) =====================
 std_msgs/Header header           # Header ROS2 standar (waktu, frame_id). WAJIB diisi. Untuk sinkronisasi waktu, TF, dan integrasi multi-sensor. Timestamp harus valid (tidak terlalu lama dari waktu sekarang). Frame_id harus valid (ada di TF tree), misal: "camera_front", "lidar", "map", dsb.
