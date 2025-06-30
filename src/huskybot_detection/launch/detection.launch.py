@@ -366,7 +366,7 @@ def generate_launch_description():
             'tensor_cores_available': platform_info.get('tensor_cores', False),  # <-- sudah benar (bool)
             'cuda_available': platform_info.get('cuda_available', False),  # <-- sudah benar (bool)
         }],
-        respawn=IfCondition(LaunchConfiguration('respawn')),  # Sudah benar
+        respawn=LaunchConfiguration('respawn'),  # PATCH: gunakan LaunchConfiguration, bukan IfCondition
         respawn_delay=1.0,
         remappings=[
             ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),
