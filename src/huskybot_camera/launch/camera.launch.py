@@ -33,35 +33,31 @@ class CameraLaunchConfig:
         self.start_time = datetime.now().strftime("%Y%m%d_%H%M%S")  # Timestamp unik
         # Mapping device ke topic dan frame_id
         self.camera_remap = [
-            ('csi://0', '/camera_front/image_raw', 'camera_front_optical_frame'),
-            ('csi://1', '/camera_front_left/image_raw', 'camera_front_left_optical_frame'),
-            ('csi://2', '/camera_left/image_raw', 'camera_left_optical_frame'),
-            ('csi://3', '/camera_rear/image_raw', 'camera_rear_optical_frame'),
-            ('csi://4', '/camera_rear_right/image_raw', 'camera_rear_right_optical_frame'),
-            ('csi://5', '/camera_right/image_raw', 'camera_right_optical_frame'),
+            ('csi://0', '/camera_front/image_raw', 'camera_front_optical_frame'),  # Kamera depan
+            ('csi://1', '/camera_front_left/image_raw', 'camera_front_left_optical_frame'),  # Kamera depan kiri
+            ('csi://2', '/camera_left/image_raw', 'camera_left_optical_frame'),  # Kamera kiri
+            ('csi://3', '/camera_rear/image_raw', 'camera_rear_optical_frame'),  # Kamera belakang
+            ('csi://4', '/camera_rear_right/image_raw', 'camera_rear_right_optical_frame'),  # Kamera belakang kanan
+            ('csi://5', '/camera_right/image_raw', 'camera_right_optical_frame'),  # Kamera kanan
         ]
         self.default_width = '1920'  # Default resolusi width
         self.default_height = '1080'  # Default resolusi height
         self.default_framerate = '30.0'  # Default framerate
         self.default_codec = 'unknown'  # Codec default
-        self.default_latency = '2000'  # Latency buffer ms, HARUS string
+        self.default_latency = 2000  # Latency buffer ms, HARUS integer untuk ros_deep_learning
         self.log_dir = os.path.expanduser('~/huskybot_camera_log')  # Folder log
-        # Fallback log dir
-        self.fallback_log_dir = '/tmp' if platform.system() == 'Linux' else os.path.expanduser('~')
-        # Buat folder log jika belum ada
+        self.fallback_log_dir = '/tmp' if platform.system() == 'Linux' else os.path.expanduser('~')  # Fallback log dir
         try:
-            if not os.path.exists(self.log_dir):
-                os.makedirs(self.log_dir)
+            if not os.path.exists(self.log_dir):  # Cek folder log
+                os.makedirs(self.log_dir)  # Buat folder log jika belum ada
                 self.log_to_file("Direktori log dibuat", level='info')
         except Exception as e:
             self.log_to_file(f"Gagal membuat direktori log: {e}", level='warning')
-            self.log_dir = self.fallback_log_dir
-        # Deteksi Jetson
-        self.is_jetson = self._detect_jetson()
+            self.log_dir = self.fallback_log_dir  # Fallback ke /tmp jika gagal
+        self.is_jetson = self._detect_jetson()  # Deteksi Jetson
         if self.is_jetson:
             self.log_to_file("Terdeteksi platform Jetson, optimasi untuk CSI cameras diaktifkan", level='info')
-        # Validasi package penting
-        self.validate_core_packages()
+        self.validate_core_packages()  # Validasi package penting
 
     def _detect_jetson(self):
         """Deteksi apakah berjalan di Nvidia Jetson."""
@@ -174,39 +170,37 @@ class CameraLaunchConfig:
     def generate_camera_args(self):
         """Generate launch arguments untuk semua kamera."""
         args = []
-        args.append(DeclareLaunchArgument('use_sim_time', default_value='false', description='Gunakan waktu simulasi (true untuk Gazebo, false untuk hardware real)'))
-        args.append(DeclareLaunchArgument('namespace', default_value='', description='Namespace untuk multi-robot deployment'))
-        args.append(DeclareLaunchArgument('respawn_cameras', default_value='true', description='Auto-respawn camera nodes jika crash (true/false)'))
-        args.append(DeclareLaunchArgument('log_level', default_value='info', description='Log level untuk nodes (debug|info|warn|error|fatal)'))
-        args.append(DeclareLaunchArgument('log_file_path', default_value=os.path.join(self.log_dir, f'camera_{self.start_time}.log'), description='Path untuk file log kamera'))
-        args.append(DeclareLaunchArgument('camera_logger_enabled', default_value='true', description='Enable/disable camera logger node'))
-        args.append(DeclareLaunchArgument('capture_method', default_value='gstreamer' if self.is_jetson else 'opencv', description='Metode capture kamera (gstreamer, opencv, v4l2)'))
-        args.append(DeclareLaunchArgument('enable_yolo_integration', default_value='true', description='Enable integrasi langsung dengan node YOLOv12 detection/segmentation'))
-        args.append(DeclareLaunchArgument('yolo_model_type', default_value='detection', description='Tipe model YOLOv12 (detection, segmentation, obb)'))
-        args.append(DeclareLaunchArgument('diagnostics_enabled', default_value='true', description='Enable diagnostics untuk monitoring kamera'))
-        args.append(DeclareLaunchArgument('camera_mode', default_value='high_quality', description='Mode kamera (high_quality, balanced, high_fps)'))
+        args.append(DeclareLaunchArgument('use_sim_time', default_value='false', description='Gunakan waktu simulasi (true untuk Gazebo, false untuk hardware real)'))  # Argumen waktu simulasi
+        args.append(DeclareLaunchArgument('namespace', default_value='', description='Namespace untuk multi-robot deployment'))  # Argumen namespace
+        args.append(DeclareLaunchArgument('respawn_cameras', default_value='true', description='Auto-respawn camera nodes jika crash (true/false)'))  # Argumen auto-respawn
+        args.append(DeclareLaunchArgument('log_level', default_value='info', description='Log level untuk nodes (debug|info|warn|error|fatal)'))  # Argumen log level
+        args.append(DeclareLaunchArgument('log_file_path', default_value=os.path.join(self.log_dir, f'camera_{self.start_time}.log'), description='Path untuk file log kamera'))  # Argumen path log
+        args.append(DeclareLaunchArgument('camera_logger_enabled', default_value='true', description='Enable/disable camera logger node'))  # Argumen logger
+        args.append(DeclareLaunchArgument('capture_method', default_value='gstreamer' if self.is_jetson else 'opencv', description='Metode capture kamera (gstreamer, opencv, v4l2)'))  # Argumen capture method
+        args.append(DeclareLaunchArgument('enable_yolo_integration', default_value='true', description='Enable integrasi langsung dengan node YOLOv12 detection/segmentation'))  # Argumen YOLO
+        args.append(DeclareLaunchArgument('yolo_model_type', default_value='detection', description='Tipe model YOLOv12 (detection, segmentation, obb)'))  # Argumen tipe YOLO
+        args.append(DeclareLaunchArgument('diagnostics_enabled', default_value='true', description='Enable diagnostics untuk monitoring kamera'))  # Argumen diagnostics
+        args.append(DeclareLaunchArgument('camera_mode', default_value='high_quality', description='Mode kamera (high_quality, balanced, high_fps)'))  # Argumen mode kamera
         for i, (dev, topic, frame_id) in enumerate(self.camera_remap, start=1):
-            args.append(DeclareLaunchArgument(f'camera{i}_enable', default_value='true', description=f'Enable/disable kamera {i} (true/false)'))
-            args.append(DeclareLaunchArgument(f'camera{i}_device', default_value=dev, description=f'Device kamera {i} (misal: {dev})'))
-            args.append(DeclareLaunchArgument(f'camera{i}_topic', default_value=topic, description=f'Topic output kamera {i} (misal: {topic})'))
-            args.append(DeclareLaunchArgument(f'camera{i}_frame_id', default_value=frame_id, description=f'Frame ID kamera {i} untuk TF dan visualisasi'))
-            args.append(DeclareLaunchArgument(f'camera{i}_width', default_value=self.default_width, description=f'Resolution width kamera {i}'))
-            args.append(DeclareLaunchArgument(f'camera{i}_height', default_value=self.default_height, description=f'Resolution height kamera {i}'))
-            args.append(DeclareLaunchArgument(f'camera{i}_framerate', default_value=self.default_framerate, description=f'Framerate kamera {i}'))
-            # GANTI default_value='false' MENJADI default_value='' (string kosong)
-            args.append(DeclareLaunchArgument(f'camera{i}_flip', default_value='', description=f'Flip image kamera {i} (opsi: \"\", \"horizontal\", \"vertical\", \"both\")'))
-            args.append(DeclareLaunchArgument(f'camera{i}_quality', default_value='85', description=f'JPEG compression quality kamera {i} (0-100)'))
-            args.append(DeclareLaunchArgument(f'camera{i}_exposure', default_value='-1', description=f'Exposure setting untuk kamera {i} (-1=auto)'))
-            args.append(DeclareLaunchArgument(f'camera{i}_white_balance', default_value='-1', description=f'White balance untuk kamera {i} (-1=auto)'))
-            args.append(DeclareLaunchArgument(f'camera{i}_gain', default_value='-1', description=f'Gain setting untuk kamera {i} (-1=auto)'))
-            args.append(DeclareLaunchArgument(f'camera{i}_calib_file', default_value='', description=f'Path ke file kalibrasi untuk kamera {i} (kosong=tanpa kalibrasi)'))
+            args.append(DeclareLaunchArgument(f'camera{i}_enable', default_value='true', description=f'Enable/disable kamera {i} (true/false)'))  # Enable kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_device', default_value=dev, description=f'Device kamera {i} (misal: {dev})'))  # Device kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_topic', default_value=topic, description=f'Topic output kamera {i} (misal: {topic})'))  # Topic kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_frame_id', default_value=frame_id, description=f'Frame ID kamera {i} untuk TF dan visualisasi'))  # Frame ID kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_width', default_value=self.default_width, description=f'Resolution width kamera {i}'))  # Width kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_height', default_value=self.default_height, description=f'Resolution height kamera {i}'))  # Height kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_framerate', default_value=self.default_framerate, description=f'Framerate kamera {i}'))  # Framerate kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_flip', default_value='', description=f'Flip image kamera {i} (opsi: \"\", \"horizontal\", \"vertical\", \"both\")'))  # Flip kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_quality', default_value='85', description=f'JPEG compression quality kamera {i} (0-100)'))  # Quality kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_exposure', default_value='-1', description=f'Exposure setting untuk kamera {i} (-1=auto)'))  # Exposure kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_white_balance', default_value='-1', description=f'White balance untuk kamera {i} (-1=auto)'))  # White balance kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_gain', default_value='-1', description=f'Gain setting untuk kamera {i} (-1=auto)'))  # Gain kamera
+            args.append(DeclareLaunchArgument(f'camera{i}_calib_file', default_value='', description=f'Path ke file kalibrasi untuk kamera {i} (kosong=tanpa kalibrasi)'))  # Kalibrasi kamera
         return args
 
     def generate_camera_nodes(self):
         """Generate node ROS untuk semua kamera."""
         nodes = []
-        # Fallback ke multicamera_publisher jika ros_deep_learning tidak ada
-        if not self.validate_dependency('ros_deep_learning'):
+        if not self.validate_dependency('ros_deep_learning'):  # Fallback jika ros_deep_learning tidak ada
             self.log_to_file("ERROR: Package ros_deep_learning tidak ditemukan!", level='error')
             self.log_to_file("Mencoba fallback ke multicamera_publisher native", level='info')
             nodes.append(
@@ -224,14 +218,13 @@ class CameraLaunchConfig:
                         'retry_delay': 2.0,
                         'camera_count': len(self.camera_remap),
                     }],
-                    on_exit=[LogInfo(msg=["Node fallback camera berhenti dengan exit code: ${}.returncode"])]  # <-- Ganti jadi list
+                    on_exit=[LogInfo(msg=["Node fallback camera berhenti dengan exit code: ${}.returncode"])]
                 )
             )
             return nodes
-        # Buat node untuk setiap kamera
-        for i in range(1, len(self.camera_remap) + 1):
-            camera_enable_condition = IfCondition(LaunchConfiguration(f'camera{i}_enable', default='true'))
-            device = LaunchConfiguration(f'camera{i}_device')
+        for i in range(1, len(self.camera_remap) + 1):  # Buat node untuk setiap kamera
+            camera_enable_condition = IfCondition(LaunchConfiguration(f'camera{i}_enable', default='true'))  # Kondisi enable kamera
+            device = LaunchConfiguration(f'camera{i}_device')  # Device kamera
             nodes.append(
                 Node(
                     condition=camera_enable_condition,
@@ -249,11 +242,9 @@ class CameraLaunchConfig:
                         'framerate': LaunchConfiguration(f'camera{i}_framerate'),
                         'codec': self.default_codec,
                         'loop': 0,
-                        # Ubah baris berikut:
-                        # 'latency': self.default_latency,
-                        'latency': str(self.default_latency),  # <-- pastikan string
+                        'latency': self.default_latency,  # HARUS integer, bukan string!
                         'use_sim_time': LaunchConfiguration('use_sim_time'),
-                        'flip': LaunchConfiguration(f'camera{i}_flip', default=''),  # HARUS string kosong atau string opsi flip
+                        'flip': LaunchConfiguration(f'camera{i}_flip', default=''),
                         'frame_id': LaunchConfiguration(f'camera{i}_frame_id'),
                         'quality': LaunchConfiguration(f'camera{i}_quality', default='85'),
                         'exposure': LaunchConfiguration(f'camera{i}_exposure', default='-1'),
@@ -262,9 +253,8 @@ class CameraLaunchConfig:
                         'calib_file': LaunchConfiguration(f'camera{i}_calib_file', default=''),
                     }],
                     remappings=[('/video_source/raw', LaunchConfiguration(f'camera{i}_topic'))],
-                    # Ganti f-string + LaunchConfiguration jadi list substitusi
                     on_exit=[LogInfo(msg=[
-                        f"Kamera {i} (device: ", LaunchConfiguration(f'camera{i}_device'), ") berhenti dengan exit code: ${}.returncode"
+                        "Kamera ", str(i), " (device: ", LaunchConfiguration(f'camera{i}_device'), ") berhenti dengan exit code: ${}.returncode"
                     ])]
                 )
             )
@@ -310,39 +300,26 @@ class CameraLaunchConfig:
 
 def generate_launch_description():
     """Generate launch description untuk kamera."""
-    config = CameraLaunchConfig()
+    config = CameraLaunchConfig()  # Inisialisasi konfigurasi launch
     config.log_to_file("Launch file camera.launch.py dimulai", level='info')
-    args = config.generate_camera_args()
-    nodes = config.generate_camera_nodes()
-    config.validate_camera_frames()
-    config.check_tf_tree()
+    args = config.generate_camera_args()  # Generate argumen kamera
+    nodes = config.generate_camera_nodes()  # Generate node kamera
+    config.validate_camera_frames()  # Validasi frame kamera
+    config.check_tf_tree()  # Validasi TF tree
     for i, (dev, topic, frame_id) in enumerate(config.camera_remap, start=1):
-        config.check_camera_device(dev)
+        config.check_camera_device(dev)  # Validasi device kamera
         config.log_to_file(f"Kamera {i}: {dev} -> {topic} [frame: {frame_id}]", level='info')
-    # HAPUS NODE DIAGNOSTICS YANG ERROR
-    # diagnostic_node = Node(
-    #     package='diagnostic_updater',
-    #     executable='example_update_diagnostics',
-    #     name='camera_diagnostics',
-    #     output='both',
-    #     condition=IfCondition(LaunchConfiguration('diagnostics_enabled', default='true')),
-    #     parameters=[{
-    #         'diagnostic_period': 1.0,
-    #         'use_sim_time': LaunchConfiguration('use_sim_time'),
-    #     }]
-    # )
     test_image_topics = ExecuteProcess(
         cmd=['bash', '-c', 'sleep 5; echo "Testing image topics..."; rostopic list | grep -E "/camera_.*_?/image_raw" || echo "WARNING: No camera image topics found!"'],
         name='test_image_topics',
         output='both',
-        condition=IfCondition('false'),
+        condition=IfCondition('false'),  # Nonaktifkan test ini, aktifkan jika perlu
     )
     return LaunchDescription(
-        [LogInfo(msg=['Starting camera launch file, initializing 6 Arducam IMX477 cameras...'])] +
-        args +
-        nodes +
-        # [diagnostic_node] +  # HAPUS BARIS INI
-        [LogInfo(msg=['Semua node camera telah diluncurkan. Memulai monitoring performance...'])] +
-        [test_image_topics] +
-        [LogInfo(msg=[f'Camera launch completed with {len(nodes)} nodes. Listening to topics...'])]
+        [LogInfo(msg=['Starting camera launch file, initializing 6 Arducam IMX477 cameras...'])] +  # Log info awal
+        args +  # Semua argumen kamera
+        nodes +  # Semua node kamera
+        [LogInfo(msg=['Semua node camera telah diluncurkan. Memulai monitoring performance...'])] +  # Log info monitoring
+        [test_image_topics] +  # Test topic image (opsional)
+        [LogInfo(msg=[f'Camera launch completed with {len(nodes)} nodes. Listening to topics...'])]  # Log info selesai
     )
