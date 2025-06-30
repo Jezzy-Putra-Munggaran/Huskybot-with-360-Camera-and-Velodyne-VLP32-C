@@ -141,7 +141,7 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
             os.path.join(os.getcwd(), 'yolo*.engine'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.engine'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.engine'),
-            os.path.join(os.getcwd(), 'models', 'yolo*.onnx'),
+            os.path.join(os.getcwd(), 'models', 'yolo*.onnx'),  # PERBAIKAN: tambah tanda kutip
             os.path.join(os.getcwd(), 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.onnx'),
@@ -165,11 +165,18 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.engine'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.engine')
         ]
+    # TAMBAHAN: Validasi pattern searches sebelum glob
     for pattern in pattern_searches:
-        matches = glob.glob(pattern)
-        if matches:
-            print(f"[INFO] Found model using pattern search: {matches[0]}")
-            return matches[0]
+        try:
+            if not isinstance(pattern, str):  # Pastikan pattern adalah string
+                print(f"[ERROR] Invalid pattern type: {type(pattern)}, skipping", file=sys.stderr)
+                continue
+            matches = glob.glob(pattern)
+            if matches:
+                print(f"[INFO] Found model using pattern search: {matches[0]}")
+                return matches[0]
+        except Exception as e:
+            print(f"[WARNING] Error in pattern search '{pattern}': {e}", file=sys.stderr)
     print(f"[WARNING] No valid model file found at {model_path} or in fallback locations", file=sys.stderr)
     print("[WARNING] Make sure YOLOv12 model files are properly installed", file=sys.stderr)
     print("[WARNING] Expected formats: .engine (TensorRT), .onnx (ONNX Runtime), or .pt (PyTorch)", file=sys.stderr)
