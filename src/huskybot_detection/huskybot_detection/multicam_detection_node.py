@@ -1,17 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3  # Interpreter Python3 (wajib untuk ROS2 node)
+# -*- coding: utf-8 -*-  # Encoding UTF-8 (wajib untuk support karakter non-ASCII)
 
-# File: multicam_detection_node.py - Node untuk deteksi objek multicam YOLOv12 pada robot Huskybot
-# Integrasi: Node ini menerima image dari 6 kamera Arducam IMX477 (hexagonal) dan publish hasil deteksi
-# ke topic /detection untuk digunakan oleh node fusion, tracking, dan visualizer
+# File: multicam_detection_node.py - Node deteksi multicam YOLOv12 untuk Huskybot
+# Node ini menerima image dari 6 kamera Arducam IMX477 (hexagonal) dan publish hasil deteksi ke topic /detection
+# Siap untuk ROS2 Humble, Gazebo, Jetson Orin, Clearpath Husky A200, multi-robot, audit trail
 
-import os  # Untuk operasi file dan path
-import sys  # Untuk akses ke sys.stderr dan exit code
-import time  # Untuk timing dan timestamp
-import traceback  # Untuk print stack trace saat exception
-import logging  # Untuk logging ke file dan terminal
-import platform  # Untuk deteksi sistem operasi/hardware
-from threading import Lock  # Untuk thread safety di callback paralel
+import os  # Operasi file dan path
+import sys  # Akses sys.stderr, sys.exit
+import time  # Timestamp, delay, log
+import traceback  # Print stack trace saat exception
+import logging  # Logging ke file dan terminal
+import platform  # Deteksi hardware/OS
+from threading import Lock  # Thread safety di callback paralel
 
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class node ROS2
@@ -30,14 +30,14 @@ import numpy as np  # Array/matrix untuk image processing
 import cv2  # OpenCV untuk image processing/visualisasi
 from yolov12_msgs.msg import InferenceResult, Yolov12Inference  # Custom message hasil deteksi YOLOv12
 
-# Detector libraries dengan fallback mechanism
+# ===================== DETECTOR LIBRARY (YOLOv12) DENGAN FALLBACK =====================
 try:
     from ultralytics import YOLO  # Library YOLOv12 (pastikan sudah install ultralytics>=v12)
     ULTRALYTICS_AVAILABLE = True  # Flag ketersediaan ultralytics
 except ImportError:
     ULTRALYTICS_AVAILABLE = False  # Set flag False jika import error
 
-LOG_DIR = os.path.expanduser('~/huskybot_detection_log')  # Directory log
+LOG_DIR = os.path.expanduser('~/huskybot_detection_log')  # Directory log (default di home)
 DEFAULT_CONFIDENCE_THRESHOLD = 0.25  # Threshold confidence default
 JETSON_PLATFORMS = ['aarch64', 'arm64']  # Platform Jetson
 DETECTION_TOPIC = '/detection'  # Topic hasil deteksi
@@ -70,13 +70,20 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         self._create_timers()  # Timer deteksi/diagnostics
 
         self.is_initialized = True  # Set flag init selesai
-        self.get_logger().info(f"MultiCam YOLOv12 Detection Node initialized with {self.cam_count} cameras")
+        self.get_logger().info(f"MultiCam YOLOv12 Detection Node initialized with {self.cam_count} cameras")  # Log selesai init
 
     def _setup_logging(self):
+        # Setup logging ke file dan terminal, fallback ke /tmp jika gagal
         try:
-            if not os.path.exists(LOG_DIR):
-                os.makedirs(LOG_DIR, exist_ok=True)
-            log_file = os.path.join(LOG_DIR, f"huskybot_detection_{time.strftime('%Y%m%d')}.log")
+            log_dir = LOG_DIR
+            try:
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir, exist_ok=True)
+            except Exception:
+                log_dir = '/tmp'
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir, exist_ok=True)
+            log_file = os.path.join(log_dir, f"huskybot_detection_{time.strftime('%Y%m%d')}.log")
             logging.basicConfig(
                 level=logging.INFO,
                 format='%(asctime)s [%(levelname)s] %(message)s',
@@ -90,9 +97,10 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             print(f"Error setting up logging: {e}", file=sys.stderr)
 
     def _declare_parameters(self):
+        # Deklarasi semua parameter node (wajib agar bisa diubah via launch file)
         self.declare_parameter('cam_count', 6, ParameterDescriptor(
             type=ParameterType.PARAMETER_INTEGER,
-            description='Number of cameras in the hexagonal array (1-6)',
+            description='Number of cameras in the hexagonal array (1-12)',
             integer_range=[{'from_value': 1, 'to_value': 12, 'step': 1}]
         ))
         self.declare_parameter('model_path', "yolo12x.engine", ParameterDescriptor(
@@ -133,6 +141,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         ))
 
     def _load_parameters(self):
+        # Load semua parameter dari server, validasi, dan fallback jika error
         try:
             self.cam_count = self.get_parameter('cam_count').value
             if not 1 <= self.cam_count <= 12:
@@ -172,6 +181,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             raise
 
     def _detect_platform(self):
+        # Deteksi platform Jetson/CUDA untuk optimasi model
         try:
             self.is_jetson = platform.machine() in JETSON_PLATFORMS
             if self.is_jetson:
@@ -195,6 +205,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.cuda_available = False
 
     def _create_publishers(self):
+        # Buat publisher untuk hasil deteksi dan diagnostics
         try:
             self.publisher = self.create_publisher(Yolov12Inference, DETECTION_TOPIC, 10)
             self.diagnostic_pub = self.create_publisher(DiagnosticArray, DIAGNOSTIC_TOPIC, 10)
@@ -204,6 +215,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             raise
 
     def _create_services(self):
+        # Buat service untuk restart model dan get status
         try:
             self.restart_srv = self.create_service(Trigger, 'restart_model', self.restart_model_callback)
             self.status_srv = self.create_service(Trigger, 'get_status', self.get_status_callback)
@@ -213,6 +225,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def _load_model(self):
+        # Load YOLOv12 model, fallback ke .pt jika .engine/.onnx gagal
         if not ULTRALYTICS_AVAILABLE:
             self.get_logger().error("Ultralytics not available. Cannot load YOLOv12 model.")
             raise ImportError("Required package 'ultralytics' not found")
@@ -267,6 +280,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 raise
 
     def _create_subscribers(self):
+        # Buat subscriber untuk semua kamera, error handling jika topic tidak ada
         try:
             if not self.camera_topics or len(self.camera_topics) == 0:
                 self.get_logger().error("No camera topics specified")
@@ -302,6 +316,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             raise
 
     def _create_timers(self):
+        # Buat timer untuk proses deteksi dan diagnostics
         try:
             self.timer = self.create_timer(0.2, self.process_images)
             self.diag_timer = self.create_timer(1.0, self.publish_diagnostics)
@@ -311,6 +326,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             raise
 
     def image_callback(self, msg, idx):
+        # Callback untuk setiap image kamera, simpan ke buffer
         try:
             with self.mutex:
                 self.last_frame_time[idx] = self.get_clock().now()
@@ -321,6 +337,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(f"Error in image callback for camera {idx}: {e}")
 
     def process_images(self):
+        # Proses deteksi untuk semua kamera, publish hasil ke /detection
         if not self.running or not self.is_initialized:
             return
         with self.mutex:
@@ -356,6 +373,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def publish_results(self, results, camera_name):
+        # Publish hasil deteksi ke topic /detection (Yolov12Inference)
         if not results:
             return
         try:
@@ -398,6 +416,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def visualize_results(self, images):
+        # Visualisasi hasil deteksi semua kamera (side-by-side)
         if not self.visualization_enabled:
             return
         try:
@@ -428,6 +447,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 self.get_logger().warning("OpenCV GUI not available (headless mode)")
 
     def publish_diagnostics(self):
+        # Publish diagnostics ke /diagnostics untuk monitoring health node
         try:
             diag_msg = DiagnosticArray()
             diag_msg.header.stamp = self.get_clock().now().to_msg()
@@ -453,6 +473,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(f"Error publishing diagnostics: {e}")
 
     def restart_model_callback(self, request, response):
+        # Service callback untuk restart model YOLOv12
         try:
             self.get_logger().info("Restarting YOLOv12 model")
             self._load_model()
@@ -466,6 +487,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             return response
 
     def get_status_callback(self, request, response):
+        # Service callback untuk get status node (health check)
         try:
             status_msg = f"MultiCamDetectionNode Status:\n"
             status_msg += f"- Camera count: {self.cam_count}\n"
@@ -488,6 +510,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             return response
 
     def on_shutdown(self):
+        # Shutdown node dengan aman, tutup window OpenCV dan logging
         self.running = False
         self.get_logger().info("Shutting down MultiCamDetectionNode...")
         if self.visualization_enabled:
@@ -501,6 +524,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             print(f"Error shutting down logging: {e}")
 
 def main(args=None):
+    # Entry point ROS2 node
     rclpy.init(args=args)
     node = None
     try:

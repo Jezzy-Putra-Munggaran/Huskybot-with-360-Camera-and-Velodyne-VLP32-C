@@ -31,12 +31,12 @@ DEFAULT_MODEL_PATHS = [
     "yolo12x.pt",         # PyTorch (fallback)
 ]
 DEFAULT_CAMERA_TOPICS = [
-    "/camera_front/image_raw",
-    "/camera_right/image_raw",
-    "/camera_rear_right/image_raw",
-    "/camera_rear/image_raw",
-    "/camera_left/image_raw",
-    "/camera_front_left/image_raw"
+    "/camera_front/image_raw",  # Kamera depan
+    "/camera_right/image_raw",  # Kamera kanan
+    "/camera_rear_right/image_raw",  # Kamera kanan belakang
+    "/camera_rear/image_raw",  # Kamera belakang
+    "/camera_left/image_raw",  # Kamera kiri
+    "/camera_front_left/image_raw"  # Kamera kiri depan
 ]
 DEFAULT_LOG_DIR = '~/huskybot_detection_log'  # Folder log default
 
@@ -44,12 +44,12 @@ DEFAULT_LOG_DIR = '~/huskybot_detection_log'  # Folder log default
 def detect_jetson_platform() -> Dict[str, Any]:
     """Deteksi Jetson dan capability hardware untuk optimasi model."""
     info = {
-        'is_jetson': False,
-        'cuda_available': False,
-        'tensor_cores': False,
-        'jetson_model': 'unknown',
-        'recommended_format': 'onnx',
-        'jetpack_version': 'unknown'
+        'is_jetson': False,  # Flag Jetson
+        'cuda_available': False,  # Flag CUDA
+        'tensor_cores': False,  # Flag tensor core
+        'jetson_model': 'unknown',  # Nama model Jetson
+        'recommended_format': 'onnx',  # Format model default
+        'jetpack_version': 'unknown'  # Versi JetPack
     }
     try:
         # Cek file device-tree (khusus Jetson)
@@ -93,7 +93,7 @@ def detect_jetson_platform() -> Dict[str, Any]:
                 pass
             if info['tensor_cores'] and info['jetpack_version'] != 'unknown':
                 info['recommended_format'] = 'engine'
-        print(f"[INFO] Platform detection: {info}")
+        print(f"[INFO] Platform detection: {info}")  # Log info platform
         return info
     except Exception as e:
         print(f"[WARNING] Error in platform detection: {e}", file=sys.stderr)
@@ -282,22 +282,22 @@ def backup_model_file(model_path: str) -> None:
 # ===================== LAUNCH DESCRIPTION =====================
 def generate_launch_description():
     """Generate LaunchDescription untuk node deteksi YOLOv12 multi-kamera."""
-    platform_info = detect_jetson_platform()
-    is_jetson = platform_info.get('is_jetson', False)
+    platform_info = detect_jetson_platform()  # Deteksi platform Jetson/CUDA
+    is_jetson = platform_info.get('is_jetson', False)  # Flag Jetson
 
-    # Cek dependency package ROS2
+    # Cek dependency package ROS2 (wajib, fail-fast)
     critical_packages = ['yolov12_msgs', 'huskybot_detection', 'cv_bridge']
     for pkg in critical_packages:
         if not check_package_available(pkg):
             print(f"[WARNING] Critical package missing: {pkg}", file=sys.stderr)
 
-    # Cek dependency Python
+    # Cek dependency Python (wajib, fail-fast)
     python_deps = ['ultralytics', 'torch', 'cv2', 'numpy']
     for dep in python_deps:
         if not check_python_dependency(dep):
             print(f"[WARNING] Missing Python dependency: {dep}", file=sys.stderr)
 
-    # Pilih model default sesuai platform
+    # Pilih model default sesuai platform (engine/onnx/pt)
     default_model = platform_info.get('recommended_format', 'onnx')
     if default_model == 'engine' and not check_python_dependency('tensorrt'):
         print("[WARNING] TensorRT not available, fallback to ONNX", file=sys.stderr)
@@ -308,9 +308,9 @@ def generate_launch_description():
     else:
         default_model_path = 'yolo12x.engine' if default_model == 'engine' else 'yolo12x.onnx'
 
-    model_path = validate_model_path(default_model_path, platform_info)
-    log_dir = ensure_log_dir()
-    camera_topics = check_camera_topics(DEFAULT_CAMERA_TOPICS)
+    model_path = validate_model_path(default_model_path, platform_info)  # Validasi path model
+    log_dir = ensure_log_dir()  # Pastikan folder log bisa diakses
+    camera_topics = check_camera_topics(DEFAULT_CAMERA_TOPICS)  # Cek topic kamera
     available_topics = [topic for topic, available in camera_topics.items() if available]
     if available_topics:
         print(f"[INFO] Found {len(available_topics)} camera topics: {', '.join(available_topics)}")
@@ -318,24 +318,24 @@ def generate_launch_description():
         print("[WARNING] No camera topics found. If not using simulation, check camera node is running", file=sys.stderr)
 
     # ===================== DECLARE LAUNCH ARGUMENTS =====================
-    cam_count_arg = DeclareLaunchArgument('cam_count', default_value='6', description='Number of cameras (default: 6 for hexagonal array)', choices=[str(i) for i in range(1, 13)])
-    model_path_arg = DeclareLaunchArgument('model_path', default_value=model_path, description='Path to YOLOv12 model file (.pt, .onnx, .engine)')
-    namespace_arg = DeclareLaunchArgument('namespace', default_value='', description='Namespace prefix for multi-robot scenarios')
-    visualization_arg = DeclareLaunchArgument('visualization_enabled', default_value='true', description='Enable visualization of detection results in OpenCV window', choices=['true', 'false'])
-    conf_thresh_arg = DeclareLaunchArgument('conf_thres', default_value='0.25', description='Confidence threshold for filtering detections (0.0-1.0)')
-    class_filter_arg = DeclareLaunchArgument('class_filter', default_value='[]', description='List of class IDs to detect (e.g., [0,1,2]) or empty for all classes')
-    log_level_arg = DeclareLaunchArgument('log_level', default_value='info', description='Log level (debug, info, warning, error, critical)', choices=['debug', 'info', 'warning', 'error', 'critical'])
-    log_dir_arg = DeclareLaunchArgument('log_dir', default_value=log_dir, description='Directory for log files (will be created if not exists)')
-    camera_topics_arg = DeclareLaunchArgument('camera_topics', default_value=str(DEFAULT_CAMERA_TOPICS), description='List of camera topic names to subscribe (as Python list string)')
-    enable_diagnostics_arg = DeclareLaunchArgument('enable_diagnostics', default_value='true', description='Enable publishing to /diagnostics topic for system monitoring', choices=['true', 'false'])
-    output_format_arg = DeclareLaunchArgument('output', default_value='screen', description='Output format for node logs (screen or log)', choices=['screen', 'log'])
-    use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='false', description='Use simulation time from /clock topic (required for Gazebo)', choices=['true', 'false'])
-    display_mode_arg = DeclareLaunchArgument('display_mode', default_value='gui' if os.environ.get('DISPLAY') else 'headless', description='Display mode (gui, headless, remote)', choices=['gui', 'headless', 'remote'])
-    respawn_arg = DeclareLaunchArgument('respawn', default_value='true', description='Auto-restart node if it crashes', choices=['true', 'false'])
-    device_arg = DeclareLaunchArgument('device', default_value='auto', description='Inference device (auto, cpu, cuda, tensorrt)', choices=['auto', 'cpu', 'cuda', 'cuda:0', 'tensorrt'])
-    cache_results_arg = DeclareLaunchArgument('cache_results', default_value='false', description='Cache detection results to improve performance on static scenes', choices=['true', 'false'])
-    img_size_arg = DeclareLaunchArgument('img_size', default_value='640', description='Image size for inference (smaller is faster, larger is more accurate)', choices=['320', '416', '512', '640', '960', '1280'])
-    iou_thres_arg = DeclareLaunchArgument('iou_thres', default_value='0.45', description='IoU threshold for NMS (0.0-1.0)')
+    cam_count_arg = DeclareLaunchArgument('cam_count', default_value='6', description='Number of cameras (default: 6 for hexagonal array)', choices=[str(i) for i in range(1, 13)])  # Jumlah kamera
+    model_path_arg = DeclareLaunchArgument('model_path', default_value=model_path, description='Path to YOLOv12 model file (.pt, .onnx, .engine)')  # Path model
+    namespace_arg = DeclareLaunchArgument('namespace', default_value='', description='Namespace prefix for multi-robot scenarios')  # Namespace multi-robot
+    visualization_arg = DeclareLaunchArgument('visualization_enabled', default_value='true', description='Enable visualization of detection results in OpenCV window', choices=['true', 'false'])  # Visualisasi
+    conf_thresh_arg = DeclareLaunchArgument('conf_thres', default_value='0.25', description='Confidence threshold for filtering detections (0.0-1.0)')  # Threshold confidence
+    class_filter_arg = DeclareLaunchArgument('class_filter', default_value='[]', description='List of class IDs to detect (e.g., [0,1,2]) or empty for all classes')  # Filter class
+    log_level_arg = DeclareLaunchArgument('log_level', default_value='info', description='Log level (debug, info, warning, error, critical)', choices=['debug', 'info', 'warning', 'error', 'critical'])  # Log level
+    log_dir_arg = DeclareLaunchArgument('log_dir', default_value=log_dir, description='Directory for log files (will be created if not exists)')  # Folder log
+    camera_topics_arg = DeclareLaunchArgument('camera_topics', default_value=str(DEFAULT_CAMERA_TOPICS), description='List of camera topic names to subscribe (as Python list string)')  # List topic kamera
+    enable_diagnostics_arg = DeclareLaunchArgument('enable_diagnostics', default_value='true', description='Enable publishing to /diagnostics topic for system monitoring', choices=['true', 'false'])  # Diagnostics
+    output_format_arg = DeclareLaunchArgument('output', default_value='screen', description='Output format for node logs (screen or log)', choices=['screen', 'log'])  # Output log
+    use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='false', description='Use simulation time from /clock topic (required for Gazebo)', choices=['true', 'false'])  # Sim time
+    display_mode_arg = DeclareLaunchArgument('display_mode', default_value='gui' if os.environ.get('DISPLAY') else 'headless', description='Display mode (gui, headless, remote)', choices=['gui', 'headless', 'remote'])  # Mode display
+    respawn_arg = DeclareLaunchArgument('respawn', default_value='true', description='Auto-restart node if it crashes', choices=['true', 'false'])  # Auto respawn
+    device_arg = DeclareLaunchArgument('device', default_value='auto', description='Inference device (auto, cpu, cuda, tensorrt)', choices=['auto', 'cpu', 'cuda', 'cuda:0', 'tensorrt'])  # Device inference
+    cache_results_arg = DeclareLaunchArgument('cache_results', default_value='false', description='Cache detection results to improve performance on static scenes', choices=['true', 'false'])  # Cache
+    img_size_arg = DeclareLaunchArgument('img_size', default_value='640', description='Image size for inference (smaller is faster, larger is more accurate)', choices=['320', '416', '512', '640', '960', '1280'])  # Ukuran image
+    iou_thres_arg = DeclareLaunchArgument('iou_thres', default_value='0.45', description='IoU threshold for NMS (0.0-1.0)')  # IoU threshold
 
     # ===================== NODE DETEKSI MULTICAM YOLOv12 =====================
     detection_node = Node(
@@ -346,48 +346,48 @@ def generate_launch_description():
         output=LaunchConfiguration('output'),  # Output log
         emulate_tty=True,  # Agar warna log tetap
         parameters=[{
-            'cam_count': LaunchConfiguration('cam_count'),
-            'camera_topics': LaunchConfiguration('camera_topics'),
-            'model_path': LaunchConfiguration('model_path'),
-            'conf_thres': LaunchConfiguration('conf_thres'),
-            'class_filter': LaunchConfiguration('class_filter'),
-            'iou_thres': LaunchConfiguration('iou_thres'),
-            'img_size': LaunchConfiguration('img_size'),
-            'device': LaunchConfiguration('device'),
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'cache_results': LaunchConfiguration('cache_results'),
-            'visualization_enabled': LaunchConfiguration('visualization_enabled'),
-            'display_mode': LaunchConfiguration('display_mode'),
-            'log_to_file': True,
-            'log_level': LaunchConfiguration('log_level'),
-            'log_dir': LaunchConfiguration('log_dir'),
-            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),
-            'is_jetson': is_jetson,
-            'tensor_cores_available': platform_info.get('tensor_cores', False),
-            'cuda_available': platform_info.get('cuda_available', False),
+            'cam_count': LaunchConfiguration('cam_count'),  # Jumlah kamera
+            'camera_topics': LaunchConfiguration('camera_topics'),  # List topic kamera
+            'model_path': LaunchConfiguration('model_path'),  # Path model
+            'conf_thres': LaunchConfiguration('conf_thres'),  # Threshold confidence
+            'class_filter': LaunchConfiguration('class_filter'),  # Filter class
+            'iou_thres': LaunchConfiguration('iou_thres'),  # IoU threshold
+            'img_size': LaunchConfiguration('img_size'),  # Ukuran image
+            'device': LaunchConfiguration('device'),  # Device inference
+            'use_sim_time': LaunchConfiguration('use_sim_time'),  # Sim time
+            'cache_results': LaunchConfiguration('cache_results'),  # Cache
+            'visualization_enabled': LaunchConfiguration('visualization_enabled'),  # Visualisasi
+            'display_mode': LaunchConfiguration('display_mode'),  # Mode display
+            'log_to_file': True,  # Logging ke file
+            'log_level': LaunchConfiguration('log_level'),  # Log level
+            'log_dir': LaunchConfiguration('log_dir'),  # Folder log
+            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),  # Diagnostics
+            'is_jetson': is_jetson,  # Flag Jetson
+            'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
+            'cuda_available': platform_info.get('cuda_available', False),  # CUDA
         }],
-        respawn=IfCondition(LaunchConfiguration('respawn')).if_true(),
-        respawn_delay=1.0,
+        respawn=IfCondition(LaunchConfiguration('respawn')).if_true(),  # Auto respawn
+        respawn_delay=1.0,  # Delay respawn
         remappings=[
-            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),
-            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),
+            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),  # Remap topic detection
+            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),  # Remap diagnostics
         ],
         additional_env={
-            'PYTHONUNBUFFERED': '1',
-            'DISPLAY': os.environ.get('DISPLAY', '') if LaunchConfiguration('display_mode').perform(None) == 'gui' else '',
+            'PYTHONUNBUFFERED': '1',  # Agar log tidak buffering
+            'DISPLAY': os.environ.get('DISPLAY', '') if LaunchConfiguration('display_mode').perform(None) == 'gui' else '',  # Display env
         },
     )
 
     # ===================== DIAGNOSTIC NODE (OPSIONAL) =====================
     diagnostic_node = Node(
-        package='diagnostic_aggregator',
-        executable='aggregator_node',
-        name='diagnostic_aggregator',
-        namespace=LaunchConfiguration('namespace'),
-        output='screen',
+        package='diagnostic_aggregator',  # Package diagnostics
+        executable='aggregator_node',  # Executable diagnostics
+        name='diagnostic_aggregator',  # Nama node diagnostics
+        namespace=LaunchConfiguration('namespace'),  # Namespace
+        output='screen',  # Output log
         parameters=[{
-            'pub_rate': 1.0,
-            'base_path': 'Detection System',
+            'pub_rate': 1.0,  # Rate publish diagnostics
+            'base_path': 'Detection System',  # Path diagnostics
             'analyzers': {
                 'detection': {
                     'type': 'diagnostic_aggregator/GenericAnalyzer',
@@ -397,17 +397,17 @@ def generate_launch_description():
                 },
             }
         }],
-        condition=IfCondition(LaunchConfiguration('enable_diagnostics'))
+        condition=IfCondition(LaunchConfiguration('enable_diagnostics'))  # Enable jika diagnostics aktif
     )
 
     # ===================== EVENT HANDLER: NODE EXIT =====================
     detection_exit_handler = RegisterEventHandler(
         OnProcessExit(
-            target_action=detection_node,
+            target_action=detection_node,  # Target node
             on_exit=[
-                LogInfo(msg=["Detection node exited with code: ", LaunchConfiguration('event_returncode')]),
+                LogInfo(msg=["Detection node exited with code: ", LaunchConfiguration('event_returncode')]),  # Log exit
                 ExecuteProcess(
-                    cmd=["bash", "-c", "echo '[INFO] Performing cleanup after detection node exit'"],
+                    cmd=["bash", "-c", "echo '[INFO] Performing cleanup after detection node exit'"],  # Cleanup
                     output='screen',
                     condition=UnlessCondition(LaunchConfiguration('event_returncode'))
                 )
@@ -457,36 +457,36 @@ def generate_launch_description():
     )
 
     # ===================== LOGGING INFO =====================
-    log_launch_info = LogInfo(msg=["[INFO] Starting multicam_detection node with ", LaunchConfiguration('cam_count'), " cameras"])
-    log_platform_info = LogInfo(msg=[f"[INFO] Running on {'Jetson' if is_jetson else 'standard'} platform with {'tensor cores' if platform_info.get('tensor_cores', False) else 'no tensor cores'}"])
+    log_launch_info = LogInfo(msg=["[INFO] Starting multicam_detection node with ", LaunchConfiguration('cam_count'), " cameras"])  # Log jumlah kamera
+    log_platform_info = LogInfo(msg=[f"[INFO] Running on {'Jetson' if is_jetson else 'standard'} platform with {'tensor cores' if platform_info.get('tensor_cores', False) else 'no tensor cores'}"])  # Log platform
 
     # ===================== RETURN LAUNCH DESCRIPTION =====================
     return LaunchDescription([
-        log_launch_info,
-        log_platform_info,
-        validate_model_cmd,
-        backup_model_cmd,
-        check_log_dir_cmd,
-        prepare_env_cmd,
-        cam_count_arg,
-        model_path_arg,
-        namespace_arg,
-        visualization_arg,
-        conf_thresh_arg,
-        class_filter_arg,
-        log_level_arg,
-        log_dir_arg,
-        camera_topics_arg,
-        enable_diagnostics_arg,
-        output_format_arg,
-        use_sim_time_arg,
-        display_mode_arg,
-        respawn_arg,
-        device_arg,
-        cache_results_arg,
-        img_size_arg,
-        iou_thres_arg,
-        detection_node,
-        diagnostic_node,
-        detection_exit_handler,
+        log_launch_info,  # Logging info jumlah kamera
+        log_platform_info,  # Logging info platform
+        validate_model_cmd,  # Validasi model sebelum run
+        backup_model_cmd,  # Backup model sebelum run
+        check_log_dir_cmd,  # Validasi folder log
+        prepare_env_cmd,  # Persiapan environment
+        cam_count_arg,  # Argumen jumlah kamera
+        model_path_arg,  # Argumen path model
+        namespace_arg,  # Argumen namespace
+        visualization_arg,  # Argumen visualisasi
+        conf_thresh_arg,  # Argumen threshold
+        class_filter_arg,  # Argumen class filter
+        log_level_arg,  # Argumen log level
+        log_dir_arg,  # Argumen folder log
+        camera_topics_arg,  # Argumen list topic kamera
+        enable_diagnostics_arg,  # Argumen diagnostics
+        output_format_arg,  # Argumen output log
+        use_sim_time_arg,  # Argumen sim time
+        display_mode_arg,  # Argumen display mode
+        respawn_arg,  # Argumen auto respawn
+        device_arg,  # Argumen device inference
+        cache_results_arg,  # Argumen cache
+        img_size_arg,  # Argumen ukuran image
+        iou_thres_arg,  # Argumen IoU threshold
+        detection_node,  # Node deteksi multicam YOLOv12
+        diagnostic_node,  # Node diagnostics
+        detection_exit_handler,  # Handler node exit
     ])
