@@ -323,7 +323,7 @@ def create_detection_node(context, *args, **kwargs):
     except Exception:
         camera_topics = [camera_topics_str]
 
-    # --- Tambahkan validasi class_filter agar tidak tuple ---
+    # --- Validasi class_filter agar tidak tuple dan selalu list ---
     class_filter_raw = LaunchConfiguration('class_filter').perform(context)
     try:
         class_filter = yaml.safe_load(class_filter_raw)
@@ -335,6 +335,10 @@ def create_detection_node(context, *args, **kwargs):
             class_filter = [class_filter]
     except Exception:
         class_filter = []
+
+    # Debug print untuk validasi tipe parameter
+    print(f"[DEBUG] camera_topics type: {type(camera_topics)}, value: {camera_topics}")
+    print(f"[DEBUG] class_filter type: {type(class_filter)}, value: {class_filter}")
 
     # Ambil info platform dari context (harus di-passing dari generate_launch_description)
     # Fallback: import detect_jetson_platform lagi jika tidak ada di context
@@ -354,10 +358,10 @@ def create_detection_node(context, *args, **kwargs):
             emulate_tty=True,  # Emulasi TTY agar output warna/log tidak rusak
             parameters=[{
                 'cam_count': int(LaunchConfiguration('cam_count').perform(context)),  # Jumlah kamera
-                'camera_topics': camera_topics,  # List topic kamera
+                'camera_topics': camera_topics,  # List topic kamera (sudah pasti list)
                 'model_path': LaunchConfiguration('model_path').perform(context),  # Path model
                 'conf_thres': float(LaunchConfiguration('conf_thres').perform(context)),  # Threshold confidence
-                'class_filter': class_filter,  # <-- Sudah pasti list, tidak tuple
+                'class_filter': class_filter,  # Sudah pasti list, tidak tuple
                 'iou_thres': float(LaunchConfiguration('iou_thres').perform(context)),  # IoU threshold
                 'img_size': int(LaunchConfiguration('img_size').perform(context)),  # Ukuran image
                 'device': LaunchConfiguration('device').perform(context),  # Device inference
