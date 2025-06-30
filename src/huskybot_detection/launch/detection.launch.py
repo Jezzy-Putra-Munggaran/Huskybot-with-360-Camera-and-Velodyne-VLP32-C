@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3  # Interpreter Python3 (wajib untuk ROS2 launch file)
+# -*- coding: utf-8 -*-  # Encoding UTF-8 (wajib untuk support karakter non-ASCII)
 
 # detection.launch.py - Launch file utama untuk node deteksi multicamera YOLOv12 pada Huskybot
 # Kompatibel: ROS2 Humble, Gazebo, Jetson AGX Orin, 6x Arducam IMX477, Velodyne VLP32-C, Clearpath Husky A200
@@ -16,13 +16,15 @@ import yaml  # Untuk parsing file YAML
 import platform  # Untuk deteksi sistem/hardware
 import subprocess  # Untuk menjalankan shell command (cek hardware, topic, dsb)
 import time  # Untuk timestamp dan delay
+import traceback  # Untuk print stack trace error detail
 
 from launch import LaunchDescription  # Komponen utama launch file ROS2
-from launch.actions import DeclareLaunchArgument, LogInfo, ExecuteProcess, RegisterEventHandler  # Untuk argumen, logging, proses, event handler
+from launch.actions import DeclareLaunchArgument, LogInfo, ExecuteProcess, RegisterEventHandler, OpaqueFunction, EmitEvent  # Untuk argumen, logging, proses, event handler, custom function, shutdown
 from launch.substitutions import LaunchConfiguration  # Untuk akses nilai argumen
 from launch.conditions import IfCondition, UnlessCondition  # Untuk conditional execution
 from launch_ros.actions import Node  # Untuk menjalankan node ROS2 Python
-from launch.event_handlers import OnProcessExit  # Untuk event handler node exit
+from launch.event_handlers import OnProcessExit, OnShutdown  # Untuk event handler node exit/shutdown
+from launch.events import Shutdown  # Untuk shutdown event
 
 # ===================== KONFIGURASI DEFAULT =====================
 DEFAULT_MODEL_PATHS = [
@@ -96,7 +98,7 @@ def detect_jetson_platform() -> Dict[str, Any]:
         print(f"[INFO] Platform detection: {info}")  # Log info platform
         return info
     except Exception as e:
-        print(f"[WARNING] Error in platform detection: {e}", file=sys.stderr)
+        print(f"[WARNING] Error in platform detection: {e}\n{traceback.format_exc()}", file=sys.stderr)
         return info
 
 # ===================== ERROR HANDLING: VALIDASI FILE MODEL =====================
@@ -187,7 +189,7 @@ def ensure_log_dir(log_dir: str = DEFAULT_LOG_DIR) -> str:
         print(f"[INFO] Log directory ready: {expanded_dir}")
         return expanded_dir
     except Exception as e:
-        print(f"[WARNING] Cannot access log directory {expanded_dir}: {e}", file=sys.stderr)
+        print(f"[WARNING] Cannot access log directory {expanded_dir}: {e}\n{traceback.format_exc()}", file=sys.stderr)
         fallbacks = [
             os.path.join('/tmp', 'huskybot_detection_log'),
             os.path.join(os.path.expanduser('~'), '.cache', 'huskybot', 'logs'),
@@ -203,7 +205,7 @@ def ensure_log_dir(log_dir: str = DEFAULT_LOG_DIR) -> str:
                 print(f"[INFO] Using fallback log directory: {fallback}")
                 return fallback
             except Exception as fallback_error:
-                print(f"[WARNING] Fallback location {fallback} also failed: {fallback_error}", file=sys.stderr)
+                print(f"[WARNING] Fallback location {fallback} also failed: {fallback_error}\n{traceback.format_exc()}", file=sys.stderr)
         print(f"[ERROR] Could not create or write to any log directory, using /tmp directly", file=sys.stderr)
         return '/tmp'
 
@@ -214,7 +216,8 @@ def check_package_available(package_name: str) -> bool:
         from ament_index_python.packages import get_package_share_directory
         get_package_share_directory(package_name)
         return True
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR] ROS2 package not found: {package_name} ({e})", file=sys.stderr)
         return False
 
 # ===================== ERROR HANDLING: CEK DEPENDENCY PYTHON =====================
@@ -223,7 +226,8 @@ def check_python_dependency(dependency_name: str) -> bool:
     try:
         __import__(dependency_name)
         return True
-    except ImportError:
+    except ImportError as e:
+        print(f"[ERROR] Python dependency not found: {dependency_name} ({e})", file=sys.stderr)
         return False
 
 # ===================== ERROR HANDLING: CEK TOPIC KAMERA =====================
@@ -246,7 +250,7 @@ def check_camera_topics(camera_topics: List[str], timeout: int = 2) -> Dict[str,
             for camera_topic in camera_topics:
                 results[camera_topic] = False
     except Exception as e:
-        print(f"[WARNING] Error checking camera topics: {e}", file=sys.stderr)
+        print(f"[WARNING] Error checking camera topics: {e}\n{traceback.format_exc()}", file=sys.stderr)
         for camera_topic in camera_topics:
             results[camera_topic] = False
     return results
@@ -277,25 +281,40 @@ def backup_model_file(model_path: str) -> None:
         shutil.copy2(model_path, backup_path)
         print(f"[INFO] Created backup of model at: {backup_path}")
     except Exception as e:
-        print(f"[WARNING] Failed to backup model file: {e}")
+        print(f"[WARNING] Failed to backup model file: {e}\n{traceback.format_exc()}")
+
+# ===================== PRE-LAUNCH ERROR HANDLING (FAIL-FAST) =====================
+def prelaunch_error_checks(context, *args, **kwargs):
+    """Fail-fast error handling sebelum launch: cek dependency, file, folder, permission."""
+    # Cek ROS2 package
+    for pkg in ['yolov12_msgs', 'huskybot_detection', 'cv_bridge']:
+        if not check_package_available(pkg):
+            print(f"[FATAL] ROS2 package missing: {pkg}", file=sys.stderr)
+            return [EmitEvent(event=Shutdown(reason=f"Missing ROS2 package: {pkg}"))]
+    # Cek Python dependency
+    for dep in ['ultralytics', 'torch', 'cv2', 'numpy']:
+        if not check_python_dependency(dep):
+            print(f"[FATAL] Python dependency missing: {dep}", file=sys.stderr)
+            return [EmitEvent(event=Shutdown(reason=f"Missing Python dependency: {dep}"))]
+    # Cek model file
+    model_path = context.launch_configurations.get('model_path', 'yolo12x.engine')
+    if not os.path.exists(os.path.expanduser(model_path)):
+        print(f"[FATAL] Model file not found: {model_path}", file=sys.stderr)
+        return [EmitEvent(event=Shutdown(reason=f"Model file not found: {model_path}"))]
+    # Cek folder log
+    log_dir = context.launch_configurations.get('log_dir', DEFAULT_LOG_DIR)
+    try:
+        os.makedirs(os.path.expanduser(log_dir), exist_ok=True)
+    except Exception as e:
+        print(f"[FATAL] Cannot create log directory: {log_dir} ({e})", file=sys.stderr)
+        return [EmitEvent(event=Shutdown(reason=f"Cannot create log directory: {log_dir}"))]
+    return []
 
 # ===================== LAUNCH DESCRIPTION =====================
 def generate_launch_description():
     """Generate LaunchDescription untuk node deteksi YOLOv12 multi-kamera."""
     platform_info = detect_jetson_platform()  # Deteksi platform Jetson/CUDA
     is_jetson = platform_info.get('is_jetson', False)  # Flag Jetson
-
-    # Cek dependency package ROS2 (wajib, fail-fast)
-    critical_packages = ['yolov12_msgs', 'huskybot_detection', 'cv_bridge']
-    for pkg in critical_packages:
-        if not check_package_available(pkg):
-            print(f"[WARNING] Critical package missing: {pkg}", file=sys.stderr)
-
-    # Cek dependency Python (wajib, fail-fast)
-    python_deps = ['ultralytics', 'torch', 'cv2', 'numpy']
-    for dep in python_deps:
-        if not check_python_dependency(dep):
-            print(f"[WARNING] Missing Python dependency: {dep}", file=sys.stderr)
 
     # Pilih model default sesuai platform (engine/onnx/pt)
     default_model = platform_info.get('recommended_format', 'onnx')
@@ -328,8 +347,8 @@ def generate_launch_description():
     log_dir_arg = DeclareLaunchArgument('log_dir', default_value=log_dir, description='Directory for log files (will be created if not exists)')  # Folder log
     camera_topics_arg = DeclareLaunchArgument(
         'camera_topics',
-        default_value=DEFAULT_CAMERA_TOPICS,
-        description='List of camera topic names to subscribe (as list of strings)'
+        default_value='[ "/camera_front/image_raw", "/camera_right/image_raw", "/camera_rear_right/image_raw", "/camera_rear/image_raw", "/camera_left/image_raw", "/camera_front_left/image_raw" ]',
+        description='List of camera topic names to subscribe (YAML/JSON list as string)'
     )  # List topic kamera
     enable_diagnostics_arg = DeclareLaunchArgument('enable_diagnostics', default_value='true', description='Enable publishing to /diagnostics topic for system monitoring', choices=['true', 'false'])  # Diagnostics
     output_format_arg = DeclareLaunchArgument('output', default_value='screen', description='Output format for node logs (screen or log)', choices=['screen', 'log'])  # Output log
@@ -343,42 +362,42 @@ def generate_launch_description():
 
     # ===================== NODE DETEKSI MULTICAM YOLOv12 =====================
     detection_node = Node(
-        package='huskybot_detection',
-        executable='multicam_detection_node',
-        name='multicam_detection',
-        namespace=LaunchConfiguration('namespace'),
-        output=LaunchConfiguration('output'),
-        emulate_tty=True,
+        package='huskybot_detection',  # Nama package deteksi
+        executable='multicam_detection_node',  # Nama executable deteksi
+        name='multicam_detection',  # Nama node
+        namespace=LaunchConfiguration('namespace'),  # Namespace
+        output=LaunchConfiguration('output'),  # Output log
+        emulate_tty=True,  # Emulasi TTY agar output warna/log tidak rusak
         parameters=[{
-            'cam_count': LaunchConfiguration('cam_count'),
-            'camera_topics': LaunchConfiguration('camera_topics'),
-            'model_path': LaunchConfiguration('model_path'),
-            'conf_thres': LaunchConfiguration('conf_thres'),
-            'class_filter': LaunchConfiguration('class_filter'),
-            'iou_thres': LaunchConfiguration('iou_thres'),
-            'img_size': LaunchConfiguration('img_size'),
-            'device': LaunchConfiguration('device'),
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'cache_results': LaunchConfiguration('cache_results'),
-            'visualization_enabled': LaunchConfiguration('visualization_enabled'),
-            'display_mode': LaunchConfiguration('display_mode'),
-            'log_to_file': True,
-            'log_level': LaunchConfiguration('log_level'),
-            'log_dir': LaunchConfiguration('log_dir'),
-            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),
-            'is_jetson': is_jetson,  # <-- ini sudah benar (bool)
-            'tensor_cores_available': platform_info.get('tensor_cores', False),  # <-- sudah benar (bool)
-            'cuda_available': platform_info.get('cuda_available', False),  # <-- sudah benar (bool)
+            'cam_count': LaunchConfiguration('cam_count'),  # Jumlah kamera
+            'camera_topics': LaunchConfiguration('camera_topics'),  # List topic kamera
+            'model_path': LaunchConfiguration('model_path'),  # Path model
+            'conf_thres': LaunchConfiguration('conf_thres'),  # Threshold confidence
+            'class_filter': LaunchConfiguration('class_filter'),  # Filter class
+            'iou_thres': LaunchConfiguration('iou_thres'),  # IoU threshold
+            'img_size': LaunchConfiguration('img_size'),  # Ukuran image
+            'device': LaunchConfiguration('device'),  # Device inference
+            'use_sim_time': LaunchConfiguration('use_sim_time'),  # Sim time
+            'cache_results': LaunchConfiguration('cache_results'),  # Cache
+            'visualization_enabled': LaunchConfiguration('visualization_enabled'),  # Visualisasi
+            'display_mode': LaunchConfiguration('display_mode'),  # Mode display
+            'log_to_file': True,  # Logging ke file
+            'log_level': LaunchConfiguration('log_level'),  # Log level
+            'log_dir': LaunchConfiguration('log_dir'),  # Folder log
+            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),  # Diagnostics
+            'is_jetson': is_jetson,  # Flag Jetson
+            'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
+            'cuda_available': platform_info.get('cuda_available', False),  # CUDA
         }],
-        respawn=LaunchConfiguration('respawn'),  # PATCH: gunakan LaunchConfiguration, bukan IfCondition
-        respawn_delay=1.0,
+        respawn=LaunchConfiguration('respawn'),  # Auto-restart node jika crash
+        respawn_delay=1.0,  # Delay restart 1 detik
         remappings=[
-            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),
-            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),
+            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),  # Remap topic detection
+            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),  # Remap diagnostics
         ],
         additional_env={
-            'PYTHONUNBUFFERED': '1',
-            'DISPLAY': os.environ.get('DISPLAY', ''),  # <-- PATCH di sini
+            'PYTHONUNBUFFERED': '1',  # Unbuffered output
+            'DISPLAY': os.environ.get('DISPLAY', ''),  # Display X11 untuk OpenCV GUI
         },
     )
 
@@ -485,6 +504,8 @@ def generate_launch_description():
         img_size_arg,  # Argumen ukuran image
         iou_thres_arg,  # Argumen IoU threshold
 
+        OpaqueFunction(function=prelaunch_error_checks),  # Fail-fast error handling sebelum launch
+
         log_launch_info,  # Logging info jumlah kamera
         log_platform_info,  # Logging info platform
         validate_model_cmd,  # Validasi model sebelum run
@@ -495,4 +516,13 @@ def generate_launch_description():
         detection_node,  # Node deteksi multicam YOLOv12
         diagnostic_node,  # Node diagnostics
         detection_exit_handler,  # Handler node exit
+
+        RegisterEventHandler(  # Handler shutdown ROS2 launch
+            OnShutdown(
+                on_shutdown=[
+                    LogInfo(msg="[INFO] Shutdown event received, cleaning up detection pipeline..."),
+                    ExecuteProcess(cmd=["bash", "-c", "echo '[INFO] Detection pipeline shutdown complete.'"], output='screen')
+                ]
+            )
+        ),
     ])
