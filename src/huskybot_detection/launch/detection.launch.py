@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  # Interpreter Python3 (wajib untuk ROS2 launch file)
-# -*- coding: utf-8 -*-  # Encoding UTF-8 (wajib untuk support karakter non-ASCII)
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # detection.launch.py - Launch file utama untuk node deteksi multicamera YOLOv12 pada Huskybot
 # Kompatibel: ROS2 Humble, Gazebo, Jetson AGX Orin, 6x Arducam IMX477, Velodyne VLP32-C, Clearpath Husky A200
@@ -33,12 +33,12 @@ DEFAULT_MODEL_PATHS = [
     "yolo12x.pt",         # PyTorch (fallback)
 ]
 DEFAULT_CAMERA_TOPICS = [
-    "/camera_front/image_raw",  # Kamera depan
-    "/camera_right/image_raw",  # Kamera kanan
-    "/camera_rear_right/image_raw",  # Kamera kanan belakang
-    "/camera_rear/image_raw",  # Kamera belakang
-    "/camera_left/image_raw",  # Kamera kiri
-    "/camera_front_left/image_raw"  # Kamera kiri depan
+    "/camera_front/image_raw",        # Kamera depan
+    "/camera_right/image_raw",        # Kamera kanan
+    "/camera_rear_right/image_raw",   # Kamera kanan belakang
+    "/camera_rear/image_raw",         # Kamera belakang
+    "/camera_left/image_raw",         # Kamera kiri
+    "/camera_front_left/image_raw"    # Kamera kiri depan
 ]
 DEFAULT_LOG_DIR = '~/huskybot_detection_log'  # Folder log default
 

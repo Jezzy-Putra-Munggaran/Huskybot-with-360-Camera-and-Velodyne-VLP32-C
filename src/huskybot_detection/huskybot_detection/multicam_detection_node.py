@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  # Interpreter Python3 (wajib untuk ROS2 node)
-# -*- coding: utf-8 -*-  # Encoding UTF-8 (wajib untuk support karakter non-ASCII)
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # File: multicam_detection_node.py - Node deteksi multicam YOLOv12 untuk Huskybot
 # Node ini menerima image dari 6 kamera Arducam IMX477 (hexagonal) dan publish hasil deteksi ke topic /detection
@@ -12,6 +12,20 @@ import traceback  # Print stack trace saat exception
 import logging  # Logging ke file dan terminal
 import platform  # Deteksi hardware/OS
 from threading import Lock  # Thread safety di callback paralel
+import hashlib  # Untuk hash file model (audit trail)
+import psutil  # Untuk cek resource usage (health check, opsional)
+
+# ===================== ERROR HANDLING: CEK DEPENDENCY PYTHON =====================
+# Cek semua dependency utama sebelum import ROS2
+REQUIRED_MODULES = [
+    'rclpy', 'cv2', 'numpy', 'ultralytics', 'yolov12_msgs', 'cv_bridge'
+]
+for mod in REQUIRED_MODULES:
+    try:
+        __import__(mod)
+    except ImportError as e:
+        print(f"[FATAL] Python dependency not found: {mod} ({e})", file=sys.stderr)
+        sys.exit(1)  # Exit jika ada dependency yang kurang
 
 import rclpy  # Library utama ROS2 Python
 from rclpy.node import Node  # Base class node ROS2
@@ -79,11 +93,16 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             try:
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir, exist_ok=True)
+                if not os.access(log_dir, os.W_OK):
+                    raise PermissionError(f"Log dir {log_dir} not writeable")
             except Exception:
                 log_dir = '/tmp'
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir, exist_ok=True)
             log_file = os.path.join(log_dir, f"huskybot_detection_{time.strftime('%Y%m%d')}.log")
+            # Rotasi log jika > 50MB (audit trail, opsional)
+            if os.path.exists(log_file) and os.path.getsize(log_file) > 50 * 1024 * 1024:
+                os.rename(log_file, log_file + f".{int(time.time())}.bak")
             logging.basicConfig(
                 level=logging.INFO,
                 format='%(asctime)s [%(levelname)s] %(message)s',
@@ -149,6 +168,14 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 self.cam_count = 6
             self.model_path = self.get_parameter('model_path').value
             self.camera_topics = self.get_parameter('camera_topics').value
+            if isinstance(self.camera_topics, str):
+                # Handle jika parameter diterima sebagai string YAML/JSON
+                import ast
+                try:
+                    self.camera_topics = ast.literal_eval(self.camera_topics)
+                except Exception:
+                    import yaml
+                    self.camera_topics = yaml.safe_load(self.camera_topics)
             if len(self.camera_topics) < self.cam_count:
                 self.get_logger().warning(
                     f"Not enough camera topics ({len(self.camera_topics)}) for cam_count ({self.cam_count})"
@@ -232,6 +259,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         model_loaded = False
         original_path = self.model_path
         try:
+            # ===================== ERROR HANDLING: VALIDASI FILE MODEL =====================
             self.get_logger().info(f"Loading YOLOv12 model from: {self.model_path}")
             if not os.path.exists(self.model_path):
                 self.get_logger().warning(f"Model file not found: {self.model_path}")
@@ -253,6 +281,17 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                         self.get_logger().info(f"Found model at: {path}")
                         self.model_path = path
                         break
+            # Cek permission file model
+            if not os.path.isfile(self.model_path) or not os.access(self.model_path, os.R_OK):
+                self.get_logger().error(f"Model file not readable: {self.model_path}")
+                raise PermissionError(f"Model file not readable: {self.model_path}")
+            # Hash model file untuk audit trail
+            try:
+                with open(self.model_path, "rb") as f:
+                    model_hash = hashlib.sha256(f.read()).hexdigest()
+                self.get_logger().info(f"Model file hash (sha256): {model_hash}")
+            except Exception as e:
+                self.get_logger().warning(f"Could not hash model file: {e}")
             self.model = YOLO(self.model_path, task="detect")
             model_loaded = True
             self.get_logger().info(f"Successfully loaded YOLOv12 model: {self.model_path}")
@@ -290,6 +329,8 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.subs = []
             for i, topic in enumerate(active_topics):
                 try:
+                    # ===================== ERROR HANDLING: CEK TOPIC KAMERA (OPSIONAL) =====================
+                    # (Bisa tambahkan pengecekan ros2 topic list di sini jika ingin lebih advance)
                     sub = self.create_subscription(
                         Image,
                         topic,
@@ -320,7 +361,9 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         try:
             self.timer = self.create_timer(0.2, self.process_images)
             self.diag_timer = self.create_timer(1.0, self.publish_diagnostics)
-            self.get_logger().info("Timers created for processing and diagnostics")
+            # Timer health check resource usage (opsional)
+            self.health_timer = self.create_timer(5.0, self.publish_health_check)
+            self.get_logger().info("Timers created for processing, diagnostics, and health check")
         except Exception as e:
             self.get_logger().error(f"Error creating timers: {e}")
             raise
@@ -330,11 +373,20 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         try:
             with self.mutex:
                 self.last_frame_time[idx] = self.get_clock().now()
-                self.images[idx] = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+                # ===================== ERROR HANDLING: VALIDASI IMAGE =====================
+                img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+                if img is None or not isinstance(img, np.ndarray):
+                    self.get_logger().warning(f"Received invalid image from camera {idx}")
+                    return
+                if img.ndim != 3 or img.shape[2] != 3:
+                    self.get_logger().warning(f"Image shape not valid (expected 3 channels): {img.shape}")
+                    return
+                self.images[idx] = img
         except CvBridgeError as e:
             self.get_logger().warning(f"Error converting image from topic {self.camera_topics[idx]}: {e}")
         except Exception as e:
             self.get_logger().error(f"Error in image callback for camera {idx}: {e}")
+            self.get_logger().error(traceback.format_exc())
 
     def process_images(self):
         # Proses deteksi untuk semua kamera, publish hasil ke /detection
@@ -350,15 +402,23 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 if img is not None:
                     start_time = time.time()
                     try:
+                        # ===================== ERROR HANDLING: VALIDASI IMAGE SEBELUM INFERENCE =====================
+                        if img.ndim != 3 or img.shape[2] != 3:
+                            self.get_logger().warning(f"Image shape not valid for inference: {img.shape}")
+                            continue
                         results = self.model(img, verbose=False, conf=self.conf_thres)
                         infer_time = time.time() - start_time
                         self.inference_times[idx] = infer_time
+                        # ===================== ERROR HANDLING: FILTER CLASS =====================
                         if results and self.class_filter:
                             results = [result for result in results if any(cls in self.class_filter for cls in result.boxes.cls)]
                         self.detection_counts[idx] = len(results[0].boxes) if results else 0
                         if self.visualization_enabled:
                             # TODO: Annotate image with bounding boxes (implement as needed)
                             pass
+                        # ===================== ERROR HANDLING: WARNING INFERENCE TIME =====================
+                        if infer_time > 1.0:
+                            self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
                         self.get_logger().debug(
                             f"Camera {idx}: {self.detection_counts[idx]} detections in {infer_time:.3f}s"
                         )
@@ -410,6 +470,11 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                     msg.yolov12_inference.append(det)
             except Exception as e:
                 self.get_logger().error(f"Error parsing detection results: {e}")
+                self.get_logger().error(traceback.format_exc())
+            # ===================== ERROR HANDLING: VALIDASI OUTPUT MESSAGE =====================
+            if not hasattr(self, 'publisher') or self.publisher is None:
+                self.get_logger().error("Publisher not initialized")
+                return
             self.publisher.publish(msg)
         except Exception as e:
             self.get_logger().error(f"Error publishing detection results: {e}")
@@ -471,6 +536,19 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.diagnostic_pub.publish(diag_msg)
         except Exception as e:
             self.get_logger().error(f"Error publishing diagnostics: {e}")
+
+    def publish_health_check(self):
+        # Publish health check (CPU/RAM usage) ke log (opsional)
+        try:
+            cpu = psutil.cpu_percent()
+            ram = psutil.virtual_memory().percent
+            if cpu > 90:
+                self.get_logger().warning(f"CPU usage high: {cpu}%")
+            if ram > 90:
+                self.get_logger().warning(f"RAM usage high: {ram}%")
+            logging.info(f"HealthCheck: CPU={cpu}%, RAM={ram}%")
+        except Exception as e:
+            self.get_logger().warning(f"Error in health check: {e}")
 
     def restart_model_callback(self, request, response):
         # Service callback untuk restart model YOLOv12
