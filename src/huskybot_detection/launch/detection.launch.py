@@ -346,25 +346,25 @@ def generate_launch_description():
         output=LaunchConfiguration('output'),
         emulate_tty=True,
         parameters=[{
-            'cam_count': LaunchConfiguration('cam_count'),  # Jumlah kamera
-            'camera_topics': LaunchConfiguration('camera_topics'),  # List topic kamera
-            'model_path': LaunchConfiguration('model_path'),  # Path model
-            'conf_thres': LaunchConfiguration('conf_thres'),  # Threshold confidence
-            'class_filter': LaunchConfiguration('class_filter'),  # Filter class
-            'iou_thres': LaunchConfiguration('iou_thres'),  # IoU threshold
-            'img_size': LaunchConfiguration('img_size'),  # Ukuran image
-            'device': LaunchConfiguration('device'),  # Device inference
-            'use_sim_time': LaunchConfiguration('use_sim_time'),  # Sim time
-            'cache_results': LaunchConfiguration('cache_results'),  # Cache
-            'visualization_enabled': LaunchConfiguration('visualization_enabled'),  # Visualisasi
-            'display_mode': LaunchConfiguration('display_mode'),  # Mode display
-            'log_to_file': True,  # Logging ke file
-            'log_level': LaunchConfiguration('log_level'),  # Log level
-            'log_dir': LaunchConfiguration('log_dir'),  # Folder log
-            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),  # Diagnostics
-            'is_jetson': is_jetson,  # Flag Jetson
-            'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
-            'cuda_available': platform_info.get('cuda_available', False),  # CUDA
+            'cam_count': LaunchConfiguration('cam_count'),
+            'camera_topics': LaunchConfiguration('camera_topics'),
+            'model_path': LaunchConfiguration('model_path'),
+            'conf_thres': LaunchConfiguration('conf_thres'),
+            'class_filter': LaunchConfiguration('class_filter'),
+            'iou_thres': LaunchConfiguration('iou_thres'),
+            'img_size': LaunchConfiguration('img_size'),
+            'device': LaunchConfiguration('device'),
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'cache_results': LaunchConfiguration('cache_results'),
+            'visualization_enabled': LaunchConfiguration('visualization_enabled'),
+            'display_mode': LaunchConfiguration('display_mode'),
+            'log_to_file': True,
+            'log_level': LaunchConfiguration('log_level'),
+            'log_dir': LaunchConfiguration('log_dir'),
+            'diagnostics_enabled': LaunchConfiguration('enable_diagnostics'),
+            'is_jetson': is_jetson,  # <-- ini sudah benar (bool)
+            'tensor_cores_available': platform_info.get('tensor_cores', False),  # <-- sudah benar (bool)
+            'cuda_available': platform_info.get('cuda_available', False),  # <-- sudah benar (bool)
         }],
         respawn=IfCondition(LaunchConfiguration('respawn')),  # Sudah benar
         respawn_delay=1.0,
