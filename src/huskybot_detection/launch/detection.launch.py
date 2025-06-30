@@ -326,7 +326,11 @@ def generate_launch_description():
     class_filter_arg = DeclareLaunchArgument('class_filter', default_value='[]', description='List of class IDs to detect (e.g., [0,1,2]) or empty for all classes')  # Filter class
     log_level_arg = DeclareLaunchArgument('log_level', default_value='info', description='Log level (debug, info, warning, error, critical)', choices=['debug', 'info', 'warning', 'error', 'critical'])  # Log level
     log_dir_arg = DeclareLaunchArgument('log_dir', default_value=log_dir, description='Directory for log files (will be created if not exists)')  # Folder log
-    camera_topics_arg = DeclareLaunchArgument('camera_topics', default_value=str(DEFAULT_CAMERA_TOPICS), description='List of camera topic names to subscribe (as Python list string)')  # List topic kamera
+    camera_topics_arg = DeclareLaunchArgument(
+        'camera_topics',
+        default_value=DEFAULT_CAMERA_TOPICS,
+        description='List of camera topic names to subscribe (as list of strings)'
+    )  # List topic kamera
     enable_diagnostics_arg = DeclareLaunchArgument('enable_diagnostics', default_value='true', description='Enable publishing to /diagnostics topic for system monitoring', choices=['true', 'false'])  # Diagnostics
     output_format_arg = DeclareLaunchArgument('output', default_value='screen', description='Output format for node logs (screen or log)', choices=['screen', 'log'])  # Output log
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='false', description='Use simulation time from /clock topic (required for Gazebo)', choices=['true', 'false'])  # Sim time
