@@ -193,7 +193,8 @@ class CameraLaunchConfig:
             args.append(DeclareLaunchArgument(f'camera{i}_width', default_value=self.default_width, description=f'Resolution width kamera {i}'))
             args.append(DeclareLaunchArgument(f'camera{i}_height', default_value=self.default_height, description=f'Resolution height kamera {i}'))
             args.append(DeclareLaunchArgument(f'camera{i}_framerate', default_value=self.default_framerate, description=f'Framerate kamera {i}'))
-            args.append(DeclareLaunchArgument(f'camera{i}_flip', default_value='false', description=f'Flip image kamera {i} (true/false)'))
+            # GANTI default_value='false' MENJADI default_value='' (string kosong)
+            args.append(DeclareLaunchArgument(f'camera{i}_flip', default_value='', description=f'Flip image kamera {i} (opsi: \"\", \"horizontal\", \"vertical\", \"both\")'))
             args.append(DeclareLaunchArgument(f'camera{i}_quality', default_value='85', description=f'JPEG compression quality kamera {i} (0-100)'))
             args.append(DeclareLaunchArgument(f'camera{i}_exposure', default_value='-1', description=f'Exposure setting untuk kamera {i} (-1=auto)'))
             args.append(DeclareLaunchArgument(f'camera{i}_white_balance', default_value='-1', description=f'White balance untuk kamera {i} (-1=auto)'))
@@ -250,7 +251,7 @@ class CameraLaunchConfig:
                         'loop': 0,
                         'latency': self.default_latency,
                         'use_sim_time': LaunchConfiguration('use_sim_time'),
-                        'flip': LaunchConfiguration(f'camera{i}_flip', default='false'),
+                        'flip': LaunchConfiguration(f'camera{i}_flip', default=''),  # HARUS string kosong atau string opsi flip
                         'frame_id': LaunchConfiguration(f'camera{i}_frame_id'),
                         'quality': LaunchConfiguration(f'camera{i}_quality', default='85'),
                         'exposure': LaunchConfiguration(f'camera{i}_exposure', default='-1'),
