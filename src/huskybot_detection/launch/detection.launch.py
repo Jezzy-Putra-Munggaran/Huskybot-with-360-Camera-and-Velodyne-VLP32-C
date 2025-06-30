@@ -462,12 +462,6 @@ def generate_launch_description():
 
     # ===================== RETURN LAUNCH DESCRIPTION =====================
     return LaunchDescription([
-        log_launch_info,  # Logging info jumlah kamera
-        log_platform_info,  # Logging info platform
-        validate_model_cmd,  # Validasi model sebelum run
-        backup_model_cmd,  # Backup model sebelum run
-        check_log_dir_cmd,  # Validasi folder log
-        prepare_env_cmd,  # Persiapan environment
         cam_count_arg,  # Argumen jumlah kamera
         model_path_arg,  # Argumen path model
         namespace_arg,  # Argumen namespace
@@ -486,6 +480,14 @@ def generate_launch_description():
         cache_results_arg,  # Argumen cache
         img_size_arg,  # Argumen ukuran image
         iou_thres_arg,  # Argumen IoU threshold
+
+        log_launch_info,  # Logging info jumlah kamera
+        log_platform_info,  # Logging info platform
+        validate_model_cmd,  # Validasi model sebelum run
+        backup_model_cmd,  # Backup model sebelum run
+        check_log_dir_cmd,  # Validasi folder log
+        prepare_env_cmd,  # Persiapan environment
+
         detection_node,  # Node deteksi multicam YOLOv12
         diagnostic_node,  # Node diagnostics
         detection_exit_handler,  # Handler node exit
