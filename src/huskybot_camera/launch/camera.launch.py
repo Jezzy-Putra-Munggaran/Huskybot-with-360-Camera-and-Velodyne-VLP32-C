@@ -223,7 +223,7 @@ class CameraLaunchConfig:
                         'retry_delay': 2.0,
                         'camera_count': len(self.camera_remap),
                     }],
-                    on_exit=[LogInfo(msg="Node fallback camera berhenti dengan exit code: ${}.returncode")]
+                    on_exit=[LogInfo(msg=["Node fallback camera berhenti dengan exit code: ${}.returncode"])]  # <-- Ganti jadi list
                 )
             )
             return nodes
@@ -259,7 +259,10 @@ class CameraLaunchConfig:
                         'calib_file': LaunchConfiguration(f'camera{i}_calib_file', default=''),
                     }],
                     remappings=[('/video_source/raw', LaunchConfiguration(f'camera{i}_topic'))],
-                    on_exit=[LogInfo(msg=f"Kamera {i} (device: " + LaunchConfiguration(f'camera{i}_device') + ") berhenti dengan exit code: ${}.returncode")]
+                    # Ganti f-string + LaunchConfiguration jadi list substitusi
+                    on_exit=[LogInfo(msg=[
+                        f"Kamera {i} (device: ", LaunchConfiguration(f'camera{i}_device'), ") berhenti dengan exit code: ${}.returncode"
+                    ])]
                 )
             )
         return nodes
