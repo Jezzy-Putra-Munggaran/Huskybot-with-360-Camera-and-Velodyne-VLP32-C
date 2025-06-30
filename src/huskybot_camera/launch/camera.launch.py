@@ -44,7 +44,7 @@ class CameraLaunchConfig:
         self.default_height = '1080'  # Default resolusi height
         self.default_framerate = '30.0'  # Default framerate
         self.default_codec = 'unknown'  # Codec default
-        self.default_latency = '2000'  # Latency buffer ms
+        self.default_latency = '2000'  # Latency buffer ms, HARUS string
         self.log_dir = os.path.expanduser('~/huskybot_camera_log')  # Folder log
         # Fallback log dir
         self.fallback_log_dir = '/tmp' if platform.system() == 'Linux' else os.path.expanduser('~')
@@ -249,7 +249,9 @@ class CameraLaunchConfig:
                         'framerate': LaunchConfiguration(f'camera{i}_framerate'),
                         'codec': self.default_codec,
                         'loop': 0,
-                        'latency': self.default_latency,
+                        # Ubah baris berikut:
+                        # 'latency': self.default_latency,
+                        'latency': str(self.default_latency),  # <-- pastikan string
                         'use_sim_time': LaunchConfiguration('use_sim_time'),
                         'flip': LaunchConfiguration(f'camera{i}_flip', default=''),  # HARUS string kosong atau string opsi flip
                         'frame_id': LaunchConfiguration(f'camera{i}_frame_id'),
