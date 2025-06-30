@@ -1,5 +1,5 @@
-#!/usr/bin/env python3  # Interpreter Python wajib untuk ROS2 launch file
-# -*- coding: utf-8 -*-  # Encoding UTF-8 agar support karakter non-ASCII
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # detection.launch.py - Launch file utama untuk node deteksi multicamera YOLOv12 pada Huskybot
 # Kompatibel: ROS2 Humble, Gazebo, Jetson AGX Orin, 6x Arducam IMX477, Velodyne VLP32-C, Clearpath Husky A200
@@ -17,6 +17,7 @@ import platform  # Untuk deteksi sistem/hardware
 import subprocess  # Untuk menjalankan shell command (cek hardware, topic, dsb)
 import time  # Untuk timestamp dan delay
 import traceback  # Untuk print stack trace error detail
+import signal  # Untuk handle SIGTERM/SIGINT (shutdown clean)
 
 from launch import LaunchDescription  # Komponen utama launch file ROS2
 from launch.actions import DeclareLaunchArgument, LogInfo, ExecuteProcess, RegisterEventHandler, OpaqueFunction, EmitEvent  # Untuk argumen, logging, proses, event handler, custom function, shutdown
@@ -313,7 +314,6 @@ def prelaunch_error_checks(context, *args, **kwargs):
 from launch.actions import OpaqueFunction
 
 def create_detection_node(context, *args, **kwargs):
-    """Membuat node multicam_detection dengan parsing camera_topics dari string ke list."""
     import yaml
     camera_topics_str = LaunchConfiguration('camera_topics').perform(context)
     try:
@@ -322,6 +322,20 @@ def create_detection_node(context, *args, **kwargs):
             camera_topics = [str(camera_topics)]
     except Exception:
         camera_topics = [camera_topics_str]
+
+    # --- Tambahkan validasi class_filter agar tidak tuple ---
+    class_filter_raw = LaunchConfiguration('class_filter').perform(context)
+    try:
+        class_filter = yaml.safe_load(class_filter_raw)
+        if class_filter is None:
+            class_filter = []
+        elif isinstance(class_filter, tuple):
+            class_filter = list(class_filter)
+        elif not isinstance(class_filter, list):
+            class_filter = [class_filter]
+    except Exception:
+        class_filter = []
+
     # Ambil info platform dari context (harus di-passing dari generate_launch_description)
     # Fallback: import detect_jetson_platform lagi jika tidak ada di context
     global platform_info, is_jetson
@@ -343,7 +357,7 @@ def create_detection_node(context, *args, **kwargs):
                 'camera_topics': camera_topics,  # List topic kamera
                 'model_path': LaunchConfiguration('model_path').perform(context),  # Path model
                 'conf_thres': float(LaunchConfiguration('conf_thres').perform(context)),  # Threshold confidence
-                'class_filter': yaml.safe_load(LaunchConfiguration('class_filter').perform(context)),  # Filter class
+                'class_filter': class_filter,  # <-- Sudah pasti list, tidak tuple
                 'iou_thres': float(LaunchConfiguration('iou_thres').perform(context)),  # IoU threshold
                 'img_size': int(LaunchConfiguration('img_size').perform(context)),  # Ukuran image
                 'device': LaunchConfiguration('device').perform(context),  # Device inference
