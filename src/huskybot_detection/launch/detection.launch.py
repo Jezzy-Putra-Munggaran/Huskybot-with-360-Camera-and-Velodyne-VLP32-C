@@ -366,15 +366,15 @@ def generate_launch_description():
             'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
             'cuda_available': platform_info.get('cuda_available', False),  # CUDA
         }],
-        respawn=IfCondition(LaunchConfiguration('respawn')),  # Auto respawn
-        respawn_delay=1.0,  # Delay respawn
+        respawn=IfCondition(LaunchConfiguration('respawn')),  # Sudah benar
+        respawn_delay=1.0,
         remappings=[
-            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),  # Remap topic detection
-            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),  # Remap diagnostics
+            ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),
+            ('/diagnostics', f"{LaunchConfiguration('namespace')}/diagnostics" if LaunchConfiguration('namespace') else '/diagnostics'),
         ],
         additional_env={
-            'PYTHONUNBUFFERED': '1',  # Agar log tidak buffering
-            'DISPLAY': os.environ.get('DISPLAY', '') if LaunchConfiguration('display_mode').perform(None) == 'gui' else '',  # Display env
+            'PYTHONUNBUFFERED': '1',
+            'DISPLAY': os.environ.get('DISPLAY', ''),  # <-- PATCH di sini
         },
     )
 
