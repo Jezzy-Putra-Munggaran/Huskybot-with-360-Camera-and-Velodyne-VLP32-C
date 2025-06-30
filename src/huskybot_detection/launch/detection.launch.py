@@ -339,12 +339,12 @@ def generate_launch_description():
 
     # ===================== NODE DETEKSI MULTICAM YOLOv12 =====================
     detection_node = Node(
-        package='huskybot_detection',  # Nama package
-        executable='multicam_detection_node',  # Nama executable
-        name='multicam_detection',  # Nama node
-        namespace=LaunchConfiguration('namespace'),  # Namespace
-        output=LaunchConfiguration('output'),  # Output log
-        emulate_tty=True,  # Agar warna log tetap
+        package='huskybot_detection',
+        executable='multicam_detection_node',
+        name='multicam_detection',
+        namespace=LaunchConfiguration('namespace'),
+        output=LaunchConfiguration('output'),
+        emulate_tty=True,
         parameters=[{
             'cam_count': LaunchConfiguration('cam_count'),  # Jumlah kamera
             'camera_topics': LaunchConfiguration('camera_topics'),  # List topic kamera
@@ -366,7 +366,7 @@ def generate_launch_description():
             'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
             'cuda_available': platform_info.get('cuda_available', False),  # CUDA
         }],
-        respawn=IfCondition(LaunchConfiguration('respawn')).if_true(),  # Auto respawn
+        respawn=IfCondition(LaunchConfiguration('respawn')),  # Auto respawn
         respawn_delay=1.0,  # Delay respawn
         remappings=[
             ('/detection', f"{LaunchConfiguration('namespace')}/detection" if LaunchConfiguration('namespace') else '/detection'),  # Remap topic detection
