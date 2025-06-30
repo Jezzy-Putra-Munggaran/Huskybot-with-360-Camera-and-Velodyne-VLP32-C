@@ -307,28 +307,27 @@ class CameraLaunchConfig:
 
 def generate_launch_description():
     """Generate launch description untuk kamera."""
-    config = CameraLaunchConfig()  # Inisialisasi konfigurasi launch kamera
+    config = CameraLaunchConfig()
     config.log_to_file("Launch file camera.launch.py dimulai", level='info')
-    args = config.generate_camera_args()  # Generate semua argumen launch
-    nodes = config.generate_camera_nodes()  # Generate semua node kamera
-    config.validate_camera_frames()  # Validasi frame_id untuk TF
-    config.check_tf_tree()  # Validasi TF tree
+    args = config.generate_camera_args()
+    nodes = config.generate_camera_nodes()
+    config.validate_camera_frames()
+    config.check_tf_tree()
     for i, (dev, topic, frame_id) in enumerate(config.camera_remap, start=1):
-        config.check_camera_device(dev)  # Validasi device kamera
+        config.check_camera_device(dev)
         config.log_to_file(f"Kamera {i}: {dev} -> {topic} [frame: {frame_id}]", level='info')
-    # Tambahkan node diagnostics
-    diagnostic_node = Node(
-        package='diagnostic_updater',
-        executable='example_update_diagnostics',
-        name='camera_diagnostics',
-        output='both',
-        condition=IfCondition(LaunchConfiguration('diagnostics_enabled', default='true')),
-        parameters=[{
-            'diagnostic_period': 1.0,
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-        }]
-    )
-    # Tambahkan test image topics (disabled by default)
+    # HAPUS NODE DIAGNOSTICS YANG ERROR
+    # diagnostic_node = Node(
+    #     package='diagnostic_updater',
+    #     executable='example_update_diagnostics',
+    #     name='camera_diagnostics',
+    #     output='both',
+    #     condition=IfCondition(LaunchConfiguration('diagnostics_enabled', default='true')),
+    #     parameters=[{
+    #         'diagnostic_period': 1.0,
+    #         'use_sim_time': LaunchConfiguration('use_sim_time'),
+    #     }]
+    # )
     test_image_topics = ExecuteProcess(
         cmd=['bash', '-c', 'sleep 5; echo "Testing image topics..."; rostopic list | grep -E "/camera_.*_?/image_raw" || echo "WARNING: No camera image topics found!"'],
         name='test_image_topics',
@@ -339,7 +338,7 @@ def generate_launch_description():
         [LogInfo(msg=['Starting camera launch file, initializing 6 Arducam IMX477 cameras...'])] +
         args +
         nodes +
-        [diagnostic_node] +
+        # [diagnostic_node] +  # HAPUS BARIS INI
         [LogInfo(msg=['Semua node camera telah diluncurkan. Memulai monitoring performance...'])] +
         [test_image_topics] +
         [LogInfo(msg=[f'Camera launch completed with {len(nodes)} nodes. Listening to topics...'])]
