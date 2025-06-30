@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Launch file untuk menjalankan 6 kamera Arducam IMX477 (hexagonal) pada Huskybot
-# Kompatibel: ROS2 Humble, Gazebo, Jetson AGX Orin, Clearpath Husky A200
+# Launch file untuk menjalankan 6 kamera Arducam IMX477 (hexagonal) pada Huskybot  # Penjelasan fungsi file
+# Kompatibel: ROS2 Humble, Gazebo, Jetson AGX Orin, Clearpath Husky A200  # Kompatibilitas hardware/software
 
 import os  # Untuk operasi file dan path
 import sys  # Untuk akses exit code dan sys.argv
@@ -304,14 +304,14 @@ class CameraLaunchConfig:
 
 def generate_launch_description():
     """Generate launch description untuk kamera."""
-    config = CameraLaunchConfig()
+    config = CameraLaunchConfig()  # Inisialisasi konfigurasi launch kamera
     config.log_to_file("Launch file camera.launch.py dimulai", level='info')
-    args = config.generate_camera_args()
-    nodes = config.generate_camera_nodes()
-    config.validate_camera_frames()
-    config.check_tf_tree()
+    args = config.generate_camera_args()  # Generate semua argumen launch
+    nodes = config.generate_camera_nodes()  # Generate semua node kamera
+    config.validate_camera_frames()  # Validasi frame_id untuk TF
+    config.check_tf_tree()  # Validasi TF tree
     for i, (dev, topic, frame_id) in enumerate(config.camera_remap, start=1):
-        config.check_camera_device(dev)
+        config.check_camera_device(dev)  # Validasi device kamera
         config.log_to_file(f"Kamera {i}: {dev} -> {topic} [frame: {frame_id}]", level='info')
     # Tambahkan node diagnostics
     diagnostic_node = Node(
