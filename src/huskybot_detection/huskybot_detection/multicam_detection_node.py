@@ -532,28 +532,30 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                         # Store results untuk visualization
                         self.latest_results[idx] = results
                         
-                        # Count detections
+                        # PERBAIKAN: Better detection counting
                         detection_count = 0
                         if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
                             if self.class_filter:
-                                valid_boxes = []
+                                # Filter by class if specified
                                 for box in results[0].boxes:
                                     try:
                                         cls = int(box.cls[0].cpu())
                                         if cls in self.class_filter:
-                                            valid_boxes.append(box)
-                                    except:
-                                        pass
+                                            detection_count += 1
+                                    except Exception as e:
+                                        self.get_logger().debug(f"Error filtering detection: {e}")
                             else:
+                                # Count all detections
                                 detection_count = len(results[0].boxes)
                         
+                        # Update detection count
                         self.detection_counts[idx] = detection_count
                         
                         # Warning untuk inference time
                         if infer_time > 1.0:
                             self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
                         
-                        # Debug log
+                        # Debug log hanya jika ada deteksi
                         if detection_count > 0:
                             self.get_logger().info(
                                 f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
@@ -561,6 +563,10 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                         
                         # Publish results
                         self.publish_results(results, f"camera_{idx}")
+                        
+                        # PERBAIKAN: Clear processed image to save memory
+                        with self.mutex:
+                            self.images[idx] = None
                         
                     except Exception as e:
                         self.get_logger().error(f"Error processing image from camera {idx}: {e}")
@@ -683,11 +689,10 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             
             for idx, img in enumerate(images):
                 if img is not None:
-                    # Clone image untuk annotation
+                    # PERBAIKAN: Pastikan annotated_img selalu terdefinisi
                     annotated_img = img.copy()
                     
-                    # PERBAIKAN: Better bounding box visualization with class names
-                    # Get latest detection results for this camera
+                    # Better bounding box visualization with class names
                     if hasattr(self, 'latest_results') and idx < len(self.latest_results):
                         results = self.latest_results[idx]
                         if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
@@ -708,13 +713,12 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                         coco_names = {
                                             0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
                                             5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
-                                            # ... (tambahkan sesuai kebutuhan)
                                             39: 'bottle', 56: 'chair', 57: 'couch', 62: 'tv', 63: 'laptop',
                                             67: 'cell phone', 73: 'book', 74: 'clock'
                                         }
                                         class_name = coco_names.get(cls, f"class_{cls}")
                                     
-                                    # PERBAIKAN: Better visualization colors based on class
+                                    # Better visualization colors based on class
                                     color_map = {
                                         'person': (0, 255, 0),      # Green
                                         'car': (255, 0, 0),        # Blue  
@@ -729,7 +733,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                     thickness = max(1, int(conf * 4))
                                     cv2.rectangle(annotated_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
                                     
-                                    # PERBAIKAN: Better label with confidence percentage
+                                    # Better label with confidence percentage
                                     label = f"{class_name}: {conf:.1%}"  # Format sebagai percentage
                                     label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
                                     
@@ -745,53 +749,73 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                               
                                 except Exception as e:
                                     self.get_logger().debug(f"Error drawing box: {e}")
-                
-                # Add camera label dengan styling yang lebih baik
-                cv2.rectangle(annotated_img, (5, 5), (200, 35), (0, 0, 0), -1)  # Background
-                cv2.putText(annotated_img, f"Camera {idx}", (10, 25), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-                
-                # Add detection count dengan styling
-                detection_count = self.detection_counts[idx] if idx < len(self.detection_counts) else 0
-                cv2.rectangle(annotated_img, (5, 40), (150, 70), (50, 50, 50), -1)  # Background
-                cv2.putText(annotated_img, f"Detections: {detection_count}", (10, 60), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
-                
-                valid_images.append(annotated_img)
+                    
+                    # PERBAIKAN: Add camera label SETELAH annotated_img didefinisikan
+                    try:
+                        cv2.rectangle(annotated_img, (5, 5), (200, 35), (0, 0, 0), -1)  # Background
+                        cv2.putText(annotated_img, f"Camera {idx}", (10, 25), 
+                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                        
+                        # Add detection count dengan styling
+                        detection_count = self.detection_counts[idx] if idx < len(self.detection_counts) else 0
+                        cv2.rectangle(annotated_img, (5, 40), (150, 70), (50, 50, 50), -1)  # Background
+                        cv2.putText(annotated_img, f"Detections: {detection_count}", (10, 60), 
+                                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+                        
+                        valid_images.append(annotated_img)
+                    except Exception as e:
+                        self.get_logger().debug(f"Error adding camera overlay for camera {idx}: {e}")
+                        # Fallback: tambahkan gambar asli tanpa overlay
+                        valid_images.append(img)
         
             if not valid_images:
                 return
             
-            # Resize untuk display dengan aspect ratio yang tetap
-            target_height = 300  # Increase untuk readability yang lebih baik
-            resized_images = []
-            for image in valid_images:
-                h, w = image.shape[:2]
-                scale = target_height / h
-                new_width = int(w * scale)
-                resized = cv2.resize(image, (new_width, target_height))
-                resized_images.append(resized)
-            
-            # Display dengan layout yang lebih baik
+            # PERBAIKAN: Better error handling untuk display
             try:
+                # Resize untuk display dengan aspect ratio yang tetap
+                target_height = 300
+                resized_images = []
+                for image in valid_images:
+                    if image is not None and image.size > 0:
+                        h, w = image.shape[:2]
+                        if h > 0 and w > 0:
+                            scale = target_height / h
+                            new_width = int(w * scale)
+                            resized = cv2.resize(image, (new_width, target_height))
+                            resized_images.append(resized)
+                
+                if not resized_images:
+                    return
+                
+                # Display dengan layout yang lebih baik
                 if len(resized_images) > 3:
                     # Split into two rows untuk 6 cameras
                     top_row = np.hstack(resized_images[:3])
-                    bottom_row = np.hstack(resized_images[3:])
+                    bottom_row_imgs = resized_images[3:]
                     
-                    # Pad bottom row jika perlu
-                    if bottom_row.shape[1] < top_row.shape[1]:
-                        pad_width = top_row.shape[1] - bottom_row.shape[1]
-                        bottom_row = np.pad(bottom_row, ((0, 0), (0, pad_width), (0, 0)), 'constant')
-                    
-                    vis = np.vstack([top_row, bottom_row])
+                    if bottom_row_imgs:
+                        bottom_row = np.hstack(bottom_row_imgs)
+                        
+                        # Pad bottom row jika perlu
+                        if bottom_row.shape[1] < top_row.shape[1]:
+                            pad_width = top_row.shape[1] - bottom_row.shape[1]
+                            bottom_row = np.pad(bottom_row, ((0, 0), (0, pad_width), (0, 0)), 'constant')
+                        
+                        vis = np.vstack([top_row, bottom_row])
+                    else:
+                        vis = top_row
                 else:
                     vis = np.hstack(resized_images)
                 
                 cv2.imshow("MultiCam YOLOv12 Detection Results", vis)
                 cv2.waitKey(1)
+                
             except cv2.error as e:
                 self.get_logger().warning(f"OpenCV visualization error: {e}")
+            except Exception as e:
+                self.get_logger().warning(f"Error creating visualization layout: {e}")
+                
         except Exception as e:
             self.get_logger().error(f"Error in visualization: {e}")
             self.get_logger().error(traceback.format_exc())
