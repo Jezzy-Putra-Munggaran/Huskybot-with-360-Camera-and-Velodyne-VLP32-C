@@ -5,6 +5,7 @@ import rclpy                                    # ROS2 Python client library for
 from rclpy.node import Node                     # Base class for ROS2 nodes
 from sensor_msgs.msg import PointCloud2, LaserScan  # Message types for LiDAR data
 from yolov12_msgs.msg import Yolov12Inference, InferenceResult  # Custom messages for YOLOv12 detection results
+from visualization_msgs.msg import Marker, MarkerArray  # PERBAIKAN: Import yang hilang
 import numpy as np                              # For numerical operations and array handling
 import math                                     # For mathematical operations like trigonometry
 import time                                     # For timing operations and delays
@@ -15,6 +16,16 @@ import traceback                                # For detailed exception informa
 from datetime import datetime                   # For timestamping logs and data
 import json                                     # For storing structured data
 from pathlib import Path                        # For path manipulation with better error handling
+
+# PERBAIKAN: Import untuk point cloud parsing
+try:
+    from sensor_msgs_py import point_cloud2 as pc2
+except ImportError:
+    try:
+        import sensor_msgs.point_cloud2 as pc2
+    except ImportError:
+        print("Warning: Could not import point_cloud2, 3D coordinate extraction will be limited")
+        pc2 = None
 
 class SimpleFusionNode(Node):
     """
