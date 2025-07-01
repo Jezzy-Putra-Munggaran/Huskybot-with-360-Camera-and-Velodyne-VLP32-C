@@ -500,7 +500,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         if available_count == 0:
             return
         
-        # PERBAIKAN: Initialize latest_results storage
+        # Initialize latest_results storage
         if not hasattr(self, 'latest_results'):
             self.latest_results = [None] * self.cam_count
         
@@ -514,18 +514,17 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                             self.get_logger().warning(f"Image shape not valid for inference: {img.shape}")
                             continue
                         
-                        # PERBAIKAN: Run inference dengan error handling yang lebih baik
+                        # Run inference
                         results = self.model(img, verbose=False, conf=self.conf_thres)
                         infer_time = time.time() - start_time
                         self.inference_times[idx] = infer_time
                         
-                        # PERBAIKAN: Store results untuk visualization
+                        # Store results untuk visualization
                         self.latest_results[idx] = results
                         
                         # Count detections
                         detection_count = 0
                         if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
-                            # PERBAIKAN: Filter by class if specified
                             if self.class_filter:
                                 valid_boxes = []
                                 for box in results[0].boxes:
@@ -535,30 +534,29 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                             valid_boxes.append(box)
                                     except:
                                         pass
-                            detection_count = len(valid_boxes)
-                        else:
-                            detection_count = len(results[0].boxes)
+                            else:
+                                detection_count = len(results[0].boxes)
+                
+                    self.detection_counts[idx] = detection_count
                     
-                        self.detection_counts[idx] = detection_count
-                        
-                        # Warning untuk inference time
-                        if infer_time > 1.0:
-                            self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
-                        
-                        # Debug log
-                        if detection_count > 0:
-                            self.get_logger().info(
-                                f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
-                            )
-                        
-                        # Publish results
-                        self.publish_results(results, f"camera_{idx}")
-                        
-                    except Exception as e:
-                        self.get_logger().error(f"Error processing image from camera {idx}: {e}")
-                        self.get_logger().error(traceback.format_exc())
+                    # Warning untuk inference time
+                    if infer_time > 1.0:
+                        self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
+                    
+                    # Debug log
+                    if detection_count > 0:
+                        self.get_logger().info(
+                            f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
+                        )
+                    
+                    # Publish results
+                    self.publish_results(results, f"camera_{idx}")
+                    
+                except Exception as e:
+                    self.get_logger().error(f"Error processing image from camera {idx}: {e}")
+                    self.get_logger().error(traceback.format_exc())
         
-        # PERBAIKAN: Call visualization after processing all cameras
+        # Call visualization after processing all cameras
         if self.visualization_enabled:
             self.visualize_results(images_copy)
             
@@ -802,6 +800,23 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             response.success = False
             response.message = f"Failed to get status: {str(e)}"
             return response
+
+    def publish_health_check(self):
+        """Publish health check information."""
+        try:
+            # Get system resource usage
+            try:
+                cpu_percent = psutil.cpu_percent()
+                memory_percent = psutil.virtual_memory().percent
+            except:
+                cpu_percent = 0.0
+                memory_percent = 0.0
+            
+            # Log health check
+            logging.info(f"HealthCheck: CPU={cpu_percent:.1f}%, RAM={memory_percent:.1f}%")
+            
+        except Exception as e:
+            self.get_logger().warning(f"Error in health check: {e}")
 
     def on_shutdown(self):
         # Shutdown node dengan aman, tutup window OpenCV dan logging
