@@ -169,7 +169,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         ))
 
     def _load_parameters(self):
-        # PERBAIKAN: Load dan parse parameters dengan robust error handling
+        # PERBAIKAN: More robust parameter loading
         try:
             self.cam_count = self.get_parameter('cam_count').value
             if not 1 <= self.cam_count <= 12:
@@ -178,31 +178,53 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 
             self.model_path = self.get_parameter('model_path').value
             
-            # PERBAIKAN: Parse camera topics dari string
+            # PERBAIKAN: Better camera topics parsing
             try:
                 camera_topics_str = self.get_parameter('camera_topics_str').value
-                import ast
-                self.camera_topics = ast.literal_eval(camera_topics_str)
-                if not isinstance(self.camera_topics, list):
-                    raise ValueError("Not a list")
+                if camera_topics_str and camera_topics_str != 'None':
+                    # Try multiple parsing methods
+                    try:
+                        import ast
+                        self.camera_topics = ast.literal_eval(camera_topics_str)
+                    except:
+                        try:
+                            import json
+                            self.camera_topics = json.loads(camera_topics_str)
+                        except:
+                            # Fallback: split by comma
+                            if ',' in camera_topics_str:
+                                self.camera_topics = [t.strip().strip("'\"") for t in camera_topics_str.split(',')]
+                            else:
+                                self.camera_topics = DEFAULT_CAMERA_TOPICS
+                else:
+                    self.camera_topics = DEFAULT_CAMERA_TOPICS
+                    
+                if not isinstance(self.camera_topics, list) or len(self.camera_topics) == 0:
+                    self.camera_topics = DEFAULT_CAMERA_TOPICS
+                    
             except Exception as e:
                 self.get_logger().warning(f"Error parsing camera_topics_str: {e}, using default")
-                self.camera_topics = [
-                    '/camera_front/image_raw',
-                    '/camera_right/image_raw',
-                    '/camera_rear_right/image_raw',
-                    '/camera_rear/image_raw',
-                    '/camera_left/image_raw',
-                    '/camera_front_left/image_raw'
-                ]
+                self.camera_topics = DEFAULT_CAMERA_TOPICS
             
-            # PERBAIKAN: Parse class filter dari string
+            # PERBAIKAN: Better class filter parsing
             try:
                 class_filter_str = self.get_parameter('class_filter_str').value
-                import ast
-                self.class_filter = ast.literal_eval(class_filter_str)
+                if class_filter_str and class_filter_str not in ['[]', 'None', '']:
+                    try:
+                        import ast
+                        self.class_filter = ast.literal_eval(class_filter_str)
+                    except:
+                        try:
+                            import json
+                            self.class_filter = json.loads(class_filter_str)
+                        except:
+                            self.class_filter = []
+                else:
+                    self.class_filter = []
+                    
                 if not isinstance(self.class_filter, list):
                     self.class_filter = []
+                
             except Exception as e:
                 self.get_logger().warning(f"Error parsing class_filter_str: {e}, using empty list")
                 self.class_filter = []
@@ -233,13 +255,16 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 self.get_logger().warning(f"Invalid log_level '{log_level}', using INFO")
                 logging.getLogger().setLevel(logging.INFO)
                 
-        except ParameterNotDeclaredException as e:
-            self.get_logger().error(f"Parameter error: {e}")
-            raise
         except Exception as e:
             self.get_logger().error(f"Error loading parameters: {e}")
             self.get_logger().error(traceback.format_exc())
-            raise
+            # Use defaults instead of raising
+            self.cam_count = 6
+            self.camera_topics = DEFAULT_CAMERA_TOPICS
+            self.class_filter = []
+            self.conf_thres = DEFAULT_CONFIDENCE_THRESHOLD
+            self.visualization_enabled = True
+            self.log_to_file = True
 
     def _detect_platform(self):
         # Deteksi platform Jetson/CUDA untuk optimasi model

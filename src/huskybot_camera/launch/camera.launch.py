@@ -201,14 +201,14 @@ class CameraLaunchConfig:
         """Generate node ROS untuk semua kamera."""
         nodes = []
         
-        # Camera topic mapping yang benar
+        # PERBAIKAN: Topic mapping yang benar sesuai dengan ros_deep_learning
         camera_mappings = [
-            ('csi://0', '/camera_front/image_raw'),
-            ('csi://1', '/camera_right/image_raw'), 
-            ('csi://2', '/camera_rear_right/image_raw'),
-            ('csi://3', '/camera_rear/image_raw'),
-            ('csi://4', '/camera_left/image_raw'),
-            ('csi://5', '/camera_front_left/image_raw')
+            ('csi://0', '/camera_front/image_raw', 'camera_front_optical_frame'),
+            ('csi://1', '/camera_right/image_raw', 'camera_right_optical_frame'), 
+            ('csi://2', '/camera_rear_right/image_raw', 'camera_rear_right_optical_frame'),
+            ('csi://3', '/camera_rear/image_raw', 'camera_rear_optical_frame'),
+            ('csi://4', '/camera_left/image_raw', 'camera_left_optical_frame'),
+            ('csi://5', '/camera_front_left/image_raw', 'camera_front_left_optical_frame')
         ]
         
         if not self.validate_dependency('ros_deep_learning'):
@@ -234,7 +234,7 @@ class CameraLaunchConfig:
             )
             return nodes
         
-        for i, (device, topic) in enumerate(camera_mappings, start=1):
+        for i, (device, topic, frame_id) in enumerate(camera_mappings, start=1):
             camera_enable_condition = IfCondition(LaunchConfiguration(f'camera{i}_enable', default='true'))
             
             nodes.append(
@@ -242,29 +242,30 @@ class CameraLaunchConfig:
                     condition=camera_enable_condition,
                     package='ros_deep_learning',
                     executable='video_source',
-                    name=f'video_source_{i}',
+                    name=f'camera_{i}',  # Unique name
                     output='both',
                     namespace=LaunchConfiguration('namespace', default=''),
                     respawn=LaunchConfiguration('respawn_cameras', default='true'),
-                    respawn_delay=2.0,  # Increase delay
+                    respawn_delay=3.0,  # Longer delay for stability
                     parameters=[{
-                        'resource': device,  # Direct device string
+                        'resource': device,
                         'width': LaunchConfiguration(f'camera{i}_width', default='1920'),
                         'height': LaunchConfiguration(f'camera{i}_height', default='1080'),
                         'framerate': LaunchConfiguration(f'camera{i}_framerate', default='30.0'),
-                        'codec': 'raw',  # Force raw codec
+                        'codec': 'raw',
                         'loop': 0,
-                        'latency': 100,  # Reduce latency
+                        'latency': 200,  # Increase latency buffer
                         'use_sim_time': LaunchConfiguration('use_sim_time'),
                         'flip': LaunchConfiguration(f'camera{i}_flip', default='rotate-180'),
-                        'frame_id': LaunchConfiguration(f'camera{i}_frame_id'),
+                        'frame_id': frame_id,
                     }],
                     remappings=[
-                        ('video_source/raw', topic),  # Correct remapping
-                        ('/video_source/raw', topic)  # Alternative remapping
+                        # PERBAIKAN: Correct remapping for ros_deep_learning
+                        ('video_source/raw', topic),
+                        ('raw', topic),  # Additional fallback
                     ],
                     on_exit=[LogInfo(msg=[
-                        f"Camera {i} ({device} -> {topic}) exited with code: ", "${}.returncode"
+                        f"Camera {i} ({device} -> {topic}) exited with code: ", "${}"
                     ])]
                 )
             )

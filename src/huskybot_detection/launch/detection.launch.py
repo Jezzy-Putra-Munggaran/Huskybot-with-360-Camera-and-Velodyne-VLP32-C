@@ -555,16 +555,15 @@ def generate_launch_description():
             condition=IfCondition(LaunchConfiguration('enable_diagnostics'))
         )
     
-    # ===================== EVENT HANDLER: NODE EXIT =====================
+    # ===================== EVENT HANDLER: NODE EXIT (PERBAIKAN) =====================
     detection_exit_handler = RegisterEventHandler(
         OnProcessExit(
-            target_action=None,  # Target node diisi oleh OpaqueFunction (tidak perlu di sini)
+            target_action=None,
             on_exit=[
-                LogInfo(msg=["Detection node exited with code: ", LaunchConfiguration('event_returncode')]),  # Log exit
+                LogInfo(msg="Detection node exited"),
                 ExecuteProcess(
-                    cmd=["bash", "-c", "echo '[INFO] Performing cleanup after detection node exit'"],  # Cleanup
-                    output='screen',
-                    condition=UnlessCondition(LaunchConfiguration('event_returncode'))
+                    cmd=["bash", "-c", "echo '[INFO] Performing cleanup after detection node exit'"],
+                    output='screen'
                 )
             ]
         )
@@ -615,7 +614,7 @@ def generate_launch_description():
     log_launch_info = LogInfo(msg=["[INFO] Starting multicam_detection node with ", LaunchConfiguration('cam_count'), " cameras"])  # Log jumlah kamera
     log_platform_info = LogInfo(msg=[f"[INFO] Running on {'Jetson' if is_jetson else 'standard'} platform with {'tensor cores' if platform_info.get('tensor_cores', False) else 'no tensor cores'}"])  # Log platform
 
-    # ===================== RETURN LAUNCH DESCRIPTION (URUTAN WAJIB) =====================
+    # ===================== RETURN LAUNCH DESCRIPTION (PERBAIKAN) =====================
     launch_items = [
         cam_count_arg,  # Argumen jumlah kamera
         model_path_arg,  # Argumen path model
@@ -651,13 +650,16 @@ def generate_launch_description():
     if diagnostic_node is not None:
         launch_items.append(diagnostic_node)
     
+    # PERBAIKAN: Simplified shutdown handler
     launch_items.extend([
-        detection_exit_handler,
         RegisterEventHandler(
             OnShutdown(
                 on_shutdown=[
                     LogInfo(msg="[INFO] Shutdown event received, cleaning up detection pipeline..."),
-                    ExecuteProcess(cmd=["bash", "-c", "echo '[INFO] Detection pipeline shutdown complete.'"], output='screen')
+                    ExecuteProcess(
+                        cmd=["bash", "-c", "echo '[INFO] Detection pipeline shutdown complete.'"], 
+                        output='screen'
+                    )
                 ]
             )
         ),
