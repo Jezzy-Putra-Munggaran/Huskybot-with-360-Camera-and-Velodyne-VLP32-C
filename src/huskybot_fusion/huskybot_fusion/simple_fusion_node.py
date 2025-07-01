@@ -13,40 +13,54 @@ import threading
 import os
 import sys
 import traceback
-from datetime import datetime
-import json
-from pathlib import Path
 
-# PERBAIKAN: Import untuk point cloud parsing dengan robust fallback
+# PERBAIKAN: Robust point cloud import with multiple fallbacks
 def import_point_cloud2():
-    """Import point cloud utilities with multiple fallback options for Jetson"""
+    """Import point cloud utilities with comprehensive fallback for Jetson"""
+    
+    # Method 1: Try sensor_msgs_py (ROS2 Humble standard)
     try:
-        # Try sensor_msgs_py first (ROS2 Humble standard)
         from sensor_msgs_py import point_cloud2 as pc2
+        print("INFO: Using sensor_msgs_py for point cloud parsing")
         return pc2
     except ImportError:
-        try:
-            # Try alternative import
-            import sensor_msgs.point_cloud2 as pc2
-            return pc2
-        except ImportError:
-            try:
-                # Try direct ros2 import
-                from sensor_msgs import point_cloud2 as pc2
-                return pc2
-            except ImportError:
-                print("Warning: Could not import point_cloud2, using dummy implementation")
-                # Create a dummy implementation for basic functionality
-                class DummyPC2:
-                    @staticmethod
-                    def read_points(cloud, field_names=None, skip_nans=True):
-                        """Dummy implementation - returns empty list"""
-                        print("Warning: Using dummy point cloud implementation")
-                        return []
-                
-                return DummyPC2()
+        pass
+    
+    # Method 2: Try direct sensor_msgs import
+    try:
+        import sensor_msgs.point_cloud2 as pc2
+        print("INFO: Using sensor_msgs.point_cloud2 for point cloud parsing")
+        return pc2
+    except ImportError:
+        pass
+    
+    # Method 3: Try alternative sensor_msgs import
+    try:
+        from sensor_msgs import point_cloud2 as pc2
+        print("INFO: Using alternative sensor_msgs import for point cloud parsing")
+        return pc2
+    except ImportError:
+        pass
+    
+    # Method 4: Create dummy implementation
+    print("WARNING: Could not import point_cloud2, using dummy implementation")
+    
+    class DummyPC2:
+        @staticmethod
+        def read_points(cloud, field_names=None, skip_nans=True):
+            """Dummy implementation for compatibility"""
+            print("WARNING: Using dummy point cloud reader - no actual point parsing")
+            return []
+        
+        @staticmethod 
+        def create_cloud_xyz32(header, points):
+            """Dummy implementation for cloud creation"""
+            print("WARNING: Using dummy point cloud creator")
+            return PointCloud2()
+    
+    return DummyPC2()
 
-# Initialize point cloud utilities
+# Initialize point cloud utilities with fallback
 pc2 = import_point_cloud2()
 
 class SimpleFusionNode(Node):

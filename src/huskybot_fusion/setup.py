@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 import glob
 
 package_name = 'huskybot_fusion'
 
-# Base data files
+# Data files for ROS2 installation
 data_files = [
     ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ('share/' + package_name, ['package.xml']),
 ]
 
-# PERBAIKAN: Only add launch files if they actually exist
+# Add launch files if they exist
 launch_files = glob.glob('launch/*.py')
 if launch_files:
     data_files.append(('share/' + package_name + '/launch', launch_files))
-    print(f"[INFO] Found {len(launch_files)} launch files")
-else:
-    print(f"[INFO] No launch files found in launch/ directory")
 
 # Add config files if they exist
 config_files = glob.glob('config/*.yaml')
@@ -29,14 +26,14 @@ if config_files:
 setup(
     name=package_name,
     version='0.1.0',
-    packages=[package_name],
+    packages=find_packages(exclude=['test']),
     data_files=data_files,
     install_requires=[
         'setuptools',
-        'rclpy>=0.9.0',
-        'numpy>=1.20.0',
+        'rclpy',
+        'numpy',
         'sensor_msgs',
-        'std_msgs',
+        'std_msgs', 
         'geometry_msgs',
         'visualization_msgs',
         'yolov12_msgs',
