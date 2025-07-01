@@ -200,7 +200,18 @@ class CameraLaunchConfig:
     def generate_camera_nodes(self):
         """Generate node ROS untuk semua kamera."""
         nodes = []
-        if not self.validate_dependency('ros_deep_learning'):  # Fallback jika ros_deep_learning tidak ada
+        
+        # Camera topic mapping yang benar
+        camera_mappings = [
+            ('csi://0', '/camera_front/image_raw'),
+            ('csi://1', '/camera_right/image_raw'), 
+            ('csi://2', '/camera_rear_right/image_raw'),
+            ('csi://3', '/camera_rear/image_raw'),
+            ('csi://4', '/camera_left/image_raw'),
+            ('csi://5', '/camera_front_left/image_raw')
+        ]
+        
+        if not self.validate_dependency('ros_deep_learning'):
             self.log_to_file("ERROR: Package ros_deep_learning tidak ditemukan!", level='error')
             self.log_to_file("Mencoba fallback ke multicamera_publisher native", level='info')
             nodes.append(
@@ -222,9 +233,10 @@ class CameraLaunchConfig:
                 )
             )
             return nodes
-        for i in range(1, len(self.camera_remap) + 1):  # Buat node untuk setiap kamera
-            camera_enable_condition = IfCondition(LaunchConfiguration(f'camera{i}_enable', default='true'))  # Kondisi enable kamera
-            device = LaunchConfiguration(f'camera{i}_device')  # Device kamera
+        
+        for i, (device, topic) in enumerate(camera_mappings, start=1):
+            camera_enable_condition = IfCondition(LaunchConfiguration(f'camera{i}_enable', default='true'))
+            
             nodes.append(
                 Node(
                     condition=camera_enable_condition,
@@ -234,27 +246,25 @@ class CameraLaunchConfig:
                     output='both',
                     namespace=LaunchConfiguration('namespace', default=''),
                     respawn=LaunchConfiguration('respawn_cameras', default='true'),
-                    respawn_delay=1.0,
+                    respawn_delay=2.0,  # Increase delay
                     parameters=[{
-                        'resource': LaunchConfiguration(f'camera{i}_device'),
-                        'width': LaunchConfiguration(f'camera{i}_width'),
-                        'height': LaunchConfiguration(f'camera{i}_height'),
-                        'framerate': LaunchConfiguration(f'camera{i}_framerate'),
-                        'codec': self.default_codec,
+                        'resource': device,  # Direct device string
+                        'width': LaunchConfiguration(f'camera{i}_width', default='1920'),
+                        'height': LaunchConfiguration(f'camera{i}_height', default='1080'),
+                        'framerate': LaunchConfiguration(f'camera{i}_framerate', default='30.0'),
+                        'codec': 'raw',  # Force raw codec
                         'loop': 0,
-                        'latency': self.default_latency,  # HARUS integer, bukan string!
+                        'latency': 100,  # Reduce latency
                         'use_sim_time': LaunchConfiguration('use_sim_time'),
-                        'flip': LaunchConfiguration(f'camera{i}_flip', default=''),
+                        'flip': LaunchConfiguration(f'camera{i}_flip', default='rotate-180'),
                         'frame_id': LaunchConfiguration(f'camera{i}_frame_id'),
-                        'quality': LaunchConfiguration(f'camera{i}_quality', default='85'),
-                        'exposure': LaunchConfiguration(f'camera{i}_exposure', default='-1'),
-                        'white_balance': LaunchConfiguration(f'camera{i}_white_balance', default='-1'),
-                        'gain': LaunchConfiguration(f'camera{i}_gain', default='-1'),
-                        'calib_file': LaunchConfiguration(f'camera{i}_calib_file', default=''),
                     }],
-                    remappings=[('/video_source/raw', LaunchConfiguration(f'camera{i}_topic'))],
+                    remappings=[
+                        ('video_source/raw', topic),  # Correct remapping
+                        ('/video_source/raw', topic)  # Alternative remapping
+                    ],
                     on_exit=[LogInfo(msg=[
-                        "Kamera ", str(i), " (device: ", LaunchConfiguration(f'camera{i}_device'), ") berhenti dengan exit code: ${}.returncode"
+                        f"Camera {i} ({device} -> {topic}) exited with code: ", "${}.returncode"
                     ])]
                 )
             )

@@ -238,28 +238,40 @@ def check_python_dependency(dependency_name: str) -> bool:
         return False
 
 # ===================== ERROR HANDLING: CEK TOPIC KAMERA =====================
-def check_camera_topics(camera_topics: List[str], timeout: int = 2) -> Dict[str, bool]:
+def check_camera_topics(camera_topics: List[str], timeout: int = 5) -> Dict[str, bool]:  # Increase timeout
     """Cek apakah topics kamera sudah ada di ROS2 (non-blocking, warning only)."""
     results = {}
     print(f"[INFO] Checking {len(camera_topics)} camera topics (non-blocking, timeout {timeout}s)")
     try:
+        # Use ros2 topic list dengan timeout lebih lama
         process = subprocess.Popen(
             ['timeout', str(timeout), 'ros2', 'topic', 'list'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         stdout, stderr = process.communicate()
+        
         if process.returncode == 0:
             topics = stdout.strip().split('\n')
+            available_topics = [topic.strip() for topic in topics if topic.strip()]
+            print(f"[INFO] Available topics: {available_topics[:10]}...")  # Show first 10
+            
             for camera_topic in camera_topics:
-                results[camera_topic] = camera_topic in topics
+                found = camera_topic in available_topics
+                results[camera_topic] = found
+                if found:
+                    print(f"[INFO] Found camera topic: {camera_topic}")
+                else:
+                    print(f"[WARNING] Camera topic not found: {camera_topic}")
         else:
             print(f"[WARNING] Could not check camera topics: {stderr}", file=sys.stderr)
             for camera_topic in camera_topics:
                 results[camera_topic] = False
+                
     except Exception as e:
         print(f"[WARNING] Error checking camera topics: {e}\n{traceback.format_exc()}", file=sys.stderr)
         for camera_topic in camera_topics:
             results[camera_topic] = False
+            
     return results
 
 # ===================== BACKUP MODEL FILE (AUDIT TRAIL) =====================
@@ -510,27 +522,39 @@ def generate_launch_description():
     iou_thres_arg = DeclareLaunchArgument('iou_thres', default_value='0.45', description='IoU threshold for NMS (0.0-1.0)')  # IoU threshold
 
     # ===================== DIAGNOSTIC NODE (OPSIONAL) =====================
-    diagnostic_node = Node(
-        package='diagnostic_aggregator',  # Package diagnostics
-        executable='aggregator_node',  # Executable diagnostics
-        name='diagnostic_aggregator',  # Nama node diagnostics
-        namespace=LaunchConfiguration('namespace'),  # Namespace
-        output='screen',  # Output log
-        parameters=[{
-            'pub_rate': 1.0,  # Rate publish diagnostics
-            'base_path': 'Detection System',  # Path diagnostics
-            'analyzers': {
-                'detection': {
-                    'type': 'diagnostic_aggregator/GenericAnalyzer',
-                    'path': 'YOLOv12 Detection',
-                    'find_and_remove_prefix': 'multicam_detection',
-                    'timeout': 5.0,
-                },
-            }
-        }],
-        condition=IfCondition(LaunchConfiguration('enable_diagnostics'))  # Enable jika diagnostics aktif
-    )
-
+    # PERBAIKAN: Make diagnostic node conditional
+    try:
+        from ament_index_python.packages import get_package_share_directory
+        get_package_share_directory('diagnostic_aggregator')
+        diagnostic_available = True
+    except:
+        diagnostic_available = False
+        print("[WARNING] diagnostic_aggregator not available, skipping diagnostic node")
+    
+    # Only create diagnostic node if package is available
+    diagnostic_node = None
+    if diagnostic_available:
+        diagnostic_node = Node(
+            package='diagnostic_aggregator',
+            executable='aggregator_node',
+            name='diagnostic_aggregator',
+            namespace=LaunchConfiguration('namespace'),
+            output='screen',
+            parameters=[{
+                'pub_rate': 1.0,
+                'base_path': 'Detection System',
+                'analyzers': {
+                    'detection': {
+                        'type': 'diagnostic_aggregator/GenericAnalyzer',
+                        'path': 'YOLOv12 Detection',
+                        'find_and_remove_prefix': 'multicam_detection',
+                        'timeout': 5.0,
+                    },
+                }
+            }],
+            condition=IfCondition(LaunchConfiguration('enable_diagnostics'))
+        )
+    
     # ===================== EVENT HANDLER: NODE EXIT =====================
     detection_exit_handler = RegisterEventHandler(
         OnProcessExit(
@@ -592,7 +616,7 @@ def generate_launch_description():
     log_platform_info = LogInfo(msg=[f"[INFO] Running on {'Jetson' if is_jetson else 'standard'} platform with {'tensor cores' if platform_info.get('tensor_cores', False) else 'no tensor cores'}"])  # Log platform
 
     # ===================== RETURN LAUNCH DESCRIPTION (URUTAN WAJIB) =====================
-    return LaunchDescription([
+    launch_items = [
         cam_count_arg,  # Argumen jumlah kamera
         model_path_arg,  # Argumen path model
         namespace_arg,  # Argumen namespace
@@ -621,11 +645,15 @@ def generate_launch_description():
         check_log_dir_cmd,  # Validasi folder log
         prepare_env_cmd,  # Persiapan environment
         OpaqueFunction(function=create_detection_node),  # Jalankan node multicam_detection (dengan parsing camera_topics)
-
-        diagnostic_node,  # Node diagnostics
-        detection_exit_handler,  # Handler node exit
-
-        RegisterEventHandler(  # Handler shutdown ROS2 launch
+    ]
+    
+    # Add diagnostic node only if available
+    if diagnostic_node is not None:
+        launch_items.append(diagnostic_node)
+    
+    launch_items.extend([
+        detection_exit_handler,
+        RegisterEventHandler(
             OnShutdown(
                 on_shutdown=[
                     LogInfo(msg="[INFO] Shutdown event received, cleaning up detection pipeline..."),
@@ -634,6 +662,8 @@ def generate_launch_description():
             )
         ),
     ])
+    
+    return LaunchDescription(launch_items)
 
 # ===================== SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN LANGSUNG) =====================
 # - Semua baris sudah diberi komentar penjelasan agar mudah dipahami siapapun.
