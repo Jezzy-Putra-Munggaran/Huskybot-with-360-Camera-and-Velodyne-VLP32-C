@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# filepath: /home/jezzy/huskybot/src/huskybot_fusion/setup.py
 
 from setuptools import setup
 import os
+import glob
 
 package_name = 'huskybot_fusion'
 
+# Base data files
 data_files = [
     ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ('share/' + package_name, ['package.xml']),
 ]
 
-# Add launch files if they exist
-if os.path.isdir('launch'):
-    data_files.append(('share/' + package_name + '/launch', ['launch/*.py']))
+# PERBAIKAN: Only add launch files if they actually exist
+launch_files = glob.glob('launch/*.py')
+if launch_files:
+    data_files.append(('share/' + package_name + '/launch', launch_files))
+    print(f"[INFO] Found {len(launch_files)} launch files")
+else:
+    print(f"[INFO] No launch files found in launch/ directory")
+
+# Add config files if they exist
+config_files = glob.glob('config/*.yaml')
+if config_files:
+    data_files.append(('share/' + package_name + '/config', config_files))
 
 setup(
     name=package_name,
@@ -25,6 +35,11 @@ setup(
         'setuptools',
         'rclpy>=0.9.0',
         'numpy>=1.20.0',
+        'sensor_msgs',
+        'std_msgs',
+        'geometry_msgs',
+        'visualization_msgs',
+        'yolov12_msgs',
     ],
     zip_safe=True,
     maintainer='Jezzy Putra Munggaran',

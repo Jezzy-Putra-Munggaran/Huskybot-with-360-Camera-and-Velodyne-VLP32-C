@@ -17,11 +17,11 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-# PERBAIKAN: Import untuk point cloud parsing dengan fallback yang lebih robust
+# PERBAIKAN: Import untuk point cloud parsing dengan robust fallback
 def import_point_cloud2():
     """Import point cloud utilities with multiple fallback options for Jetson"""
     try:
-        # Try ROS2 Humble standard import
+        # Try sensor_msgs_py first (ROS2 Humble standard)
         from sensor_msgs_py import point_cloud2 as pc2
         return pc2
     except ImportError:
@@ -35,14 +35,15 @@ def import_point_cloud2():
                 from sensor_msgs import point_cloud2 as pc2
                 return pc2
             except ImportError:
+                print("Warning: Could not import point_cloud2, using dummy implementation")
                 # Create a dummy implementation for basic functionality
                 class DummyPC2:
                     @staticmethod
                     def read_points(cloud, field_names=None, skip_nans=True):
                         """Dummy implementation - returns empty list"""
+                        print("Warning: Using dummy point cloud implementation")
                         return []
                 
-                print("Warning: Could not import point_cloud2, using dummy implementation")
                 return DummyPC2()
 
 # Initialize point cloud utilities
@@ -108,11 +109,11 @@ class SimpleFusionNode(Node):
     def _setup_parameters(self):
         """Setup parameters with Jetson-specific optimizations"""
         # Declare parameters
-        self.declare_parameter('max_laser_distance', 50.0)  # Reduced for Jetson performance
+        self.declare_parameter('max_laser_distance', 50.0)
         self.declare_parameter('min_laser_distance', 0.5)
         self.declare_parameter('confidence_threshold', 0.25)
-        self.declare_parameter('search_radius', 0.3)  # Reduced for performance
-        self.declare_parameter('publish_rate', 5.0)  # Reduced for Jetson
+        self.declare_parameter('search_radius', 0.3)
+        self.declare_parameter('publish_rate', 5.0)
         self.declare_parameter('image_width', 640)
         self.declare_parameter('image_height', 480)
         
@@ -130,10 +131,10 @@ class SimpleFusionNode(Node):
     def _create_subscriptions(self):
         """Create subscriptions with Jetson-optimized queue sizes"""
         self.scan_sub = self.create_subscription(
-            LaserScan, '/scan', self.laserscan_callback, 5)  # Reduced queue
+            LaserScan, '/scan', self.laserscan_callback, 5)
         
         self.cloud_sub = self.create_subscription(
-            PointCloud2, '/velodyne_points', self.pointcloud_callback, 3)  # Reduced queue
+            PointCloud2, '/velodyne_points', self.pointcloud_callback, 3)
         
         self.detection_sub = self.create_subscription(
             Yolov12Inference, '/detection', self.detection_callback, 5)
