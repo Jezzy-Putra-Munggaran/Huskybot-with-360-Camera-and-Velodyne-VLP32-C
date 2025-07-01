@@ -91,6 +91,10 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         self._create_subscribers()  # Subscriber kamera
         self._create_timers()  # Timer deteksi/diagnostics
 
+        # Tambahkan subscriber untuk hasil fusion
+        self.fusion_sub = self.create_subscription(
+            Yolov12Inference, '/detection_with_distance', self.fusion_callback, 10)
+
         # PERBAIKAN: Performance optimization for Jetson
         if self.is_jetson:
             try:
@@ -918,6 +922,15 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             logging.shutdown()
         except Exception as e:
             print(f"Error shutting down logging: {e}")
+
+    # Tambahkan callback untuk subscriber hasil fusion
+    def fusion_callback(self, msg):
+        # Update visualization dengan distance dan coordinate
+        for detection in msg.yolov12_inference:
+            # Parse note field untuk distance dan coordinate
+            if "Distance:" in detection.note:
+                # Update visualization dengan info lengkap
+                pass
 
 def main(args=None):
     # Entry point ROS2 node
