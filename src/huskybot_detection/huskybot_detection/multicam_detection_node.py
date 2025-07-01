@@ -536,33 +536,33 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                         pass
                             else:
                                 detection_count = len(results[0].boxes)
-                
-                    self.detection_counts[idx] = detection_count
-                    
-                    # Warning untuk inference time
-                    if infer_time > 1.0:
-                        self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
-                    
-                    # Debug log
-                    if detection_count > 0:
-                        self.get_logger().info(
-                            f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
-                        )
-                    
-                    # Publish results
-                    self.publish_results(results, f"camera_{idx}")
-                    
-                except Exception as e:
-                    self.get_logger().error(f"Error processing image from camera {idx}: {e}")
-                    self.get_logger().error(traceback.format_exc())
-        
-        # Call visualization after processing all cameras
-        if self.visualization_enabled:
-            self.visualize_results(images_copy)
+                        
+                        self.detection_counts[idx] = detection_count
+                        
+                        # Warning untuk inference time
+                        if infer_time > 1.0:
+                            self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
+                        
+                        # Debug log
+                        if detection_count > 0:
+                            self.get_logger().info(
+                                f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
+                            )
+                        
+                        # Publish results
+                        self.publish_results(results, f"camera_{idx}")
+                        
+                    except Exception as e:
+                        self.get_logger().error(f"Error processing image from camera {idx}: {e}")
+                        self.get_logger().error(traceback.format_exc())
             
-    except Exception as e:
-        self.get_logger().error(f"Error in process_images: {e}")
-        self.get_logger().error(traceback.format_exc())
+            # Call visualization after processing all cameras
+            if self.visualization_enabled:
+                self.visualize_results(images_copy)
+                
+        except Exception as e:
+            self.get_logger().error(f"Error in process_images: {e}")
+            self.get_logger().error(traceback.format_exc())
 
     def publish_results(self, results, camera_name):
         """Publish hasil deteksi ke topic /detection (Yolov12Inference)."""
