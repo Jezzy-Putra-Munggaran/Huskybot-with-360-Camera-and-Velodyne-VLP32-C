@@ -377,8 +377,18 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.model = YOLO(self.model_path, task="detect")
             model_loaded = True
             self.get_logger().info(f"Successfully loaded YOLOv12 model: {self.model_path}")
+            
+            # PERBAIKAN: Debug model information
             if hasattr(self.model, 'info'):
                 self.get_logger().info(f"Model info: {self.model.info}")
+            
+            # PERBAIKAN: Log class names untuk debugging
+            if hasattr(self.model, 'names'):
+                self.get_logger().info(f"Model has {len(self.model.names)} classes")
+                self.get_logger().info(f"Sample classes: {dict(list(self.model.names.items())[:10])}")
+            else:
+                self.get_logger().warning("Model does not have class names, using COCO fallback")
+            
             self.get_logger().info(f"Model task: detect")
         except Exception as e:
             self.get_logger().error(f"Error loading YOLOv12 model: {e}")
@@ -589,21 +599,43 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                         try:
                             det = InferenceResult()
                             
-                            # Extract class name
+                            # Extract class name dengan validasi model names
                             try:
                                 cls_id = int(box.cls[0].cpu())
-                                # PERBAIKAN: Use model names if available
-                                if hasattr(self.model, 'names') and cls_id in self.model.names:
-                                    det.class_name = self.model.names[cls_id]
+                                # PERBAIKAN: Better class name handling
+                                if hasattr(self.model, 'names') and isinstance(self.model.names, dict) and cls_id in self.model.names:
+                                    det.class_name = str(self.model.names[cls_id])
                                 else:
-                                    det.class_name = f"class_{cls_id}"
-                            except Exception:
+                                    # Fallback untuk COCO dataset names
+                                    coco_names = {
+                                        0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
+                                        5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
+                                        10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench',
+                                        14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow',
+                                        20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack',
+                                        25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee',
+                                        30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat',
+                                        35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket',
+                                        39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife',
+                                        44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich',
+                                        49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza',
+                                        54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant',
+                                        59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop',
+                                        64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave',
+                                        69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book',
+                                        74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier',
+                                        79: 'toothbrush'
+                                    }
+                                    det.class_name = coco_names.get(cls_id, f"class_{cls_id}")
+                            except Exception as e:
+                                self.get_logger().debug(f"Error extracting class: {e}")
                                 det.class_name = "unknown"
                         
                             # Extract confidence
                             try:
                                 det.confidence = float(box.conf[0].cpu())
-                            except Exception:
+                            except Exception as e:
+                                self.get_logger().debug(f"Error extracting confidence: {e}")
                                 det.confidence = 0.0
                         
                             # Extract bounding box coordinates
@@ -613,12 +645,13 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                 det.top = int(xyxy[1])
                                 det.right = int(xyxy[2])
                                 det.bottom = int(xyxy[3])
-                            except Exception:
+                            except Exception as e:
+                                self.get_logger().debug(f"Error extracting bbox: {e}")
                                 det.left = det.top = det.right = det.bottom = 0
                         
-                            # Additional fields
+                            # PERBAIKAN: Fix type error - obb_angle must be int, not float
                             det.track_id = -1
-                            det.obb_angle = -1.0
+                            det.obb_angle = -1  # FIXED: int instead of float
                             det.mask_indices = []
                         
                             msg.yolov12_inference.append(det)
@@ -647,14 +680,13 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             return
         try:
             valid_images = []
-            annotated_images = []
             
             for idx, img in enumerate(images):
                 if img is not None:
                     # Clone image untuk annotation
                     annotated_img = img.copy()
                     
-                    # PERBAIKAN: Add bounding box visualization
+                    # PERBAIKAN: Better bounding box visualization with class names
                     # Get latest detection results for this camera
                     if hasattr(self, 'latest_results') and idx < len(self.latest_results):
                         results = self.latest_results[idx]
@@ -667,65 +699,96 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                     conf = float(box.conf[0].cpu())
                                     cls = int(box.cls[0].cpu())
                                     
-                                    # Draw bounding box
-                                    cv2.rectangle(annotated_img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                                    # Get class name dengan fallback ke COCO
+                                    class_name = "unknown"
+                                    if hasattr(self.model, 'names') and isinstance(self.model.names, dict) and cls in self.model.names:
+                                        class_name = str(self.model.names[cls])
+                                    else:
+                                        # COCO fallback
+                                        coco_names = {
+                                            0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
+                                            5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
+                                            # ... (tambahkan sesuai kebutuhan)
+                                            39: 'bottle', 56: 'chair', 57: 'couch', 62: 'tv', 63: 'laptop',
+                                            67: 'cell phone', 73: 'book', 74: 'clock'
+                                        }
+                                        class_name = coco_names.get(cls, f"class_{cls}")
                                     
-                                    # Draw confidence and class
-                                    label = f"Class:{cls} {conf:.2f}"
-                                    cv2.putText(annotated_img, label, (int(x1), int(y1-10)), 
-                                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                                    # PERBAIKAN: Better visualization colors based on class
+                                    color_map = {
+                                        'person': (0, 255, 0),      # Green
+                                        'car': (255, 0, 0),        # Blue  
+                                        'bicycle': (0, 255, 255),  # Yellow
+                                        'motorcycle': (255, 0, 255),  # Magenta
+                                        'truck': (0, 0, 255),      # Red
+                                        'bus': (255, 255, 0),      # Cyan
+                                    }
+                                    box_color = color_map.get(class_name, (0, 255, 0))  # Default green
+                                    
+                                    # Draw bounding box dengan thickness berdasarkan confidence
+                                    thickness = max(1, int(conf * 4))
+                                    cv2.rectangle(annotated_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
+                                    
+                                    # PERBAIKAN: Better label with confidence percentage
+                                    label = f"{class_name}: {conf:.1%}"  # Format sebagai percentage
+                                    label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
+                                    
+                                    # Background rectangle untuk text
+                                    cv2.rectangle(annotated_img, 
+                                                (int(x1), int(y1-25)), 
+                                                (int(x1 + label_size[0] + 10), int(y1)), 
+                                                box_color, -1)
+                                    
+                                    # Text label
+                                    cv2.putText(annotated_img, label, (int(x1+5), int(y1-8)), 
+                                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                                               
                                 except Exception as e:
                                     self.get_logger().debug(f"Error drawing box: {e}")
                 
-                # Add camera label
-                cv2.putText(annotated_img, f"Camera {idx}", (10, 30), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                # Add camera label dengan styling yang lebih baik
+                cv2.rectangle(annotated_img, (5, 5), (200, 35), (0, 0, 0), -1)  # Background
+                cv2.putText(annotated_img, f"Camera {idx}", (10, 25), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
                 
-                # Add detection count
+                # Add detection count dengan styling
                 detection_count = self.detection_counts[idx] if idx < len(self.detection_counts) else 0
+                cv2.rectangle(annotated_img, (5, 40), (150, 70), (50, 50, 50), -1)  # Background
                 cv2.putText(annotated_img, f"Detections: {detection_count}", (10, 60), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
                 
                 valid_images.append(annotated_img)
         
             if not valid_images:
                 return
             
-            # Resize untuk display
-            target_height = 240
+            # Resize untuk display dengan aspect ratio yang tetap
+            target_height = 300  # Increase untuk readability yang lebih baik
             resized_images = []
             for image in valid_images:
                 h, w = image.shape[:2]
                 scale = target_height / h
-                resized = cv2.resize(image, (int(w * scale), target_height))
+                new_width = int(w * scale)
+                resized = cv2.resize(image, (new_width, target_height))
                 resized_images.append(resized)
             
-            # Tambahkan border
-            border_thickness = 5
-            bordered_images = []
-            for idx, img in enumerate(resized_images):
-                bordered = cv2.copyMakeBorder(img, 0, 0, 0, border_thickness, 
-                                            cv2.BORDER_CONSTANT, value=(0, 0, 0))
-                bordered_images.append(bordered)
-            
-            # Display
+            # Display dengan layout yang lebih baik
             try:
-                if len(bordered_images) > 3:
-                    # Split into two rows for better display
-                    top_row = np.hstack(bordered_images[:3])
-                    bottom_row = np.hstack(bordered_images[3:])
+                if len(resized_images) > 3:
+                    # Split into two rows untuk 6 cameras
+                    top_row = np.hstack(resized_images[:3])
+                    bottom_row = np.hstack(resized_images[3:])
                     
-                    # Pad bottom row if needed
+                    # Pad bottom row jika perlu
                     if bottom_row.shape[1] < top_row.shape[1]:
                         pad_width = top_row.shape[1] - bottom_row.shape[1]
                         bottom_row = np.pad(bottom_row, ((0, 0), (0, pad_width), (0, 0)), 'constant')
                     
                     vis = np.vstack([top_row, bottom_row])
                 else:
-                    vis = np.hstack(bordered_images)
+                    vis = np.hstack(resized_images)
                 
-                cv2.imshow("MultiCam Detection Results", vis)
+                cv2.imshow("MultiCam YOLOv12 Detection Results", vis)
                 cv2.waitKey(1)
             except cv2.error as e:
                 self.get_logger().warning(f"OpenCV visualization error: {e}")
