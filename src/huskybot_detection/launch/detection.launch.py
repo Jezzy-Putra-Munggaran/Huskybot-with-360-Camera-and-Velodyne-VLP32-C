@@ -474,8 +474,8 @@ def create_detection_node(context, *args, **kwargs):
 def generate_launch_description():
     """Generate LaunchDescription untuk node deteksi YOLOv12 multi-kamera."""
     global platform_info, is_jetson
-    platform_info = detect_jetson_platform()  # Deteksi platform Jetson/CUDA
-    is_jetson = platform_info.get('is_jetson', False)  # Flag Jetson
+    platform_info = detect_jetson_platform()
+    is_jetson = platform_info.get('is_jetson', False)
 
     # Pilih model default sesuai platform (engine/onnx/pt)
     default_model = platform_info.get('recommended_format', 'onnx')
@@ -547,7 +547,7 @@ def generate_launch_description():
                     'detection': {
                         'type': 'diagnostic_aggregator/GenericAnalyzer',
                         'path': 'YOLOv12 Detection',
-                        'find_and_remove_prefix': 'multicam_detection',
+                        'find_and_remove_prefix': ['multicam_detection'],  # PERBAIKAN: Must be array
                         'timeout': 5.0,
                     },
                 }

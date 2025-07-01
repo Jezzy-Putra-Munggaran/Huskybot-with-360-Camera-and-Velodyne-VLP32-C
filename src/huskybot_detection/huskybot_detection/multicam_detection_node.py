@@ -125,10 +125,11 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
 
     def _declare_parameters(self):
         # Deklarasi semua parameter node (wajib agar bisa diubah via launch file)
+        # PERBAIKAN: Use simple parameter declarations without complex validation
         self.declare_parameter('cam_count', 6, ParameterDescriptor(
             type=ParameterType.PARAMETER_INTEGER,
-            description='Number of cameras in the hexagonal array (1-12)',
-            integer_range=[{'from_value': 1, 'to_value': 12, 'step': 1}]
+            description='Number of cameras in the hexagonal array (1-12)'
+            # Remove integer_range untuk menghindari validation error
         ))
         
         self.declare_parameter('model_path', "yolo12x.engine", ParameterDescriptor(
@@ -136,7 +137,6 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             description='Path to YOLOv12 model file (.pt, .onnx, or .engine)'
         ))
         
-        # PERBAIKAN: Declare complex parameters sebagai string
         self.declare_parameter('camera_topics_str', str(DEFAULT_CAMERA_TOPICS), ParameterDescriptor(
             type=ParameterType.PARAMETER_STRING,
             description='Camera topic names as string representation of list'
@@ -149,8 +149,8 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         
         self.declare_parameter('conf_thres', DEFAULT_CONFIDENCE_THRESHOLD, ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE,
-            description='Confidence threshold for filtering detections (0.0-1.0)',
-            floating_point_range=[{'from_value': 0.0, 'to_value': 1.0, 'step': 0.01}]
+            description='Confidence threshold for filtering detections (0.0-1.0)'
+            # Remove floating_point_range untuk menghindari validation error
         ))
         
         self.declare_parameter('visualization_enabled', True, ParameterDescriptor(
@@ -169,10 +169,11 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         ))
 
     def _load_parameters(self):
-        # PERBAIKAN: More robust parameter loading
+        # PERBAIKAN: More robust parameter loading with manual validation
         try:
+            # Manual validation untuk cam_count
             self.cam_count = self.get_parameter('cam_count').value
-            if not 1 <= self.cam_count <= 12:
+            if not isinstance(self.cam_count, int) or not 1 <= self.cam_count <= 12:
                 self.get_logger().warning(f"Invalid cam_count {self.cam_count}, using default (6)")
                 self.cam_count = 6
                 
@@ -229,6 +230,12 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 self.get_logger().warning(f"Error parsing class_filter_str: {e}, using empty list")
                 self.class_filter = []
             
+            # Manual validation untuk conf_thres
+            self.conf_thres = self.get_parameter('conf_thres').value
+            if not isinstance(self.conf_thres, (int, float)) or not 0.0 <= self.conf_thres <= 1.0:
+                self.get_logger().warning(f"Invalid conf_thres {self.conf_thres}, using default ({DEFAULT_CONFIDENCE_THRESHOLD})")
+                self.conf_thres = DEFAULT_CONFIDENCE_THRESHOLD
+            
             # Adjust camera count based on available topics
             if len(self.camera_topics) < self.cam_count:
                 self.get_logger().warning(
@@ -236,7 +243,6 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 )
                 self.cam_count = len(self.camera_topics)
                 
-            self.conf_thres = self.get_parameter('conf_thres').value
             self.visualization_enabled = self.get_parameter('visualization_enabled').value
             self.log_to_file = self.get_parameter('log_to_file').value
             
