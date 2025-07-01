@@ -91,6 +91,23 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         self._create_subscribers()  # Subscriber kamera
         self._create_timers()  # Timer deteksi/diagnostics
 
+        # PERBAIKAN: Performance optimization for Jetson
+        if self.is_jetson:
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    # Set CUDA optimization
+                    torch.backends.cudnn.benchmark = True
+                    torch.backends.cudnn.deterministic = False
+                    
+                    # Set memory management
+                    if hasattr(torch.cuda, 'empty_cache'):
+                        torch.cuda.empty_cache()
+                        
+                    self.get_logger().info("CUDA optimizations enabled for Jetson")
+            except Exception as e:
+                self.get_logger().warning(f"Could not apply CUDA optimizations: {e}")
+        
         self.is_initialized = True  # Set flag init selesai
         self.get_logger().info(f"MultiCam YOLOv12 Detection Node initialized with {self.cam_count} cameras")  # Log selesai init
 
@@ -424,14 +441,32 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def _create_timers(self):
         # Buat timer untuk proses deteksi dan diagnostics
         try:
-            self.timer = self.create_timer(0.2, self.process_images)
-            self.diag_timer = self.create_timer(1.0, self.publish_diagnostics)
-            # Timer health check resource usage (opsional)
+            # PERBAIKAN: Slower processing untuk debugging
+            self.timer = self.create_timer(0.5, self.process_images)  # Slower untuk debugging
+            self.diag_timer = self.create_timer(2.0, self.publish_diagnostics)  # Slower diagnostics
             self.health_timer = self.create_timer(5.0, self.publish_health_check)
+            
+            # PERBAIKAN: Add visualization debug timer
+            if self.visualization_enabled:
+                self.viz_timer = self.create_timer(1.0, self.debug_visualization_status)
+                
             self.get_logger().info("Timers created for processing, diagnostics, and health check")
         except Exception as e:
             self.get_logger().error(f"Error creating timers: {e}")
             raise
+
+    def debug_visualization_status(self):
+        """Debug status visualization."""
+        try:
+            total_detections = sum(self.detection_counts)
+            avg_inference = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0
+            
+            self.get_logger().info(
+                f"Detection Status: Total={total_detections}, Avg_Inference={avg_inference:.3f}s, "
+                f"Cameras_Active={sum(1 for img in self.images if img is not None)}"
+            )
+        except Exception as e:
+            self.get_logger().error(f"Error in debug visualization: {e}")
 
     def image_callback(self, msg, idx):
         # Callback untuk setiap image kamera, simpan ke buffer
@@ -454,53 +489,88 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def process_images(self):
-        # Proses deteksi untuk semua kamera, publish hasil ke /detection
+        """Proses deteksi untuk semua kamera, publish hasil ke /detection."""
         if not self.running or not self.is_initialized:
             return
+        
         with self.mutex:
             images_copy = self.images.copy()
+        
         available_count = sum(1 for img in images_copy if img is not None)
         if available_count == 0:
             return
+        
+        # PERBAIKAN: Initialize latest_results storage
+        if not hasattr(self, 'latest_results'):
+            self.latest_results = [None] * self.cam_count
+        
         try:
             for idx, img in enumerate(images_copy):
                 if img is not None:
                     start_time = time.time()
                     try:
-                        # ===================== ERROR HANDLING: VALIDASI IMAGE SEBELUM INFERENCE =====================
+                        # Validasi image
                         if img.ndim != 3 or img.shape[2] != 3:
                             self.get_logger().warning(f"Image shape not valid for inference: {img.shape}")
                             continue
+                        
+                        # PERBAIKAN: Run inference dengan error handling yang lebih baik
                         results = self.model(img, verbose=False, conf=self.conf_thres)
                         infer_time = time.time() - start_time
                         self.inference_times[idx] = infer_time
-                        # ===================== ERROR HANDLING: FILTER CLASS =====================
-                        if results and self.class_filter:
-                            results = [result for result in results if any(cls in self.class_filter for cls in result.boxes.cls)]
-                        self.detection_counts[idx] = len(results[0].boxes) if results else 0
-                        if self.visualization_enabled:
-                            # TODO: Annotate image with bounding boxes (implement as needed)
-                            pass
-                        # ===================== ERROR HANDLING: WARNING INFERENCE TIME =====================
+                        
+                        # PERBAIKAN: Store results untuk visualization
+                        self.latest_results[idx] = results
+                        
+                        # Count detections
+                        detection_count = 0
+                        if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
+                            # PERBAIKAN: Filter by class if specified
+                            if self.class_filter:
+                                valid_boxes = []
+                                for box in results[0].boxes:
+                                    try:
+                                        cls = int(box.cls[0].cpu())
+                                        if cls in self.class_filter:
+                                            valid_boxes.append(box)
+                                    except:
+                                        pass
+                            detection_count = len(valid_boxes)
+                        else:
+                            detection_count = len(results[0].boxes)
+                    
+                        self.detection_counts[idx] = detection_count
+                        
+                        # Warning untuk inference time
                         if infer_time > 1.0:
                             self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
-                        self.get_logger().debug(
-                            f"Camera {idx}: {self.detection_counts[idx]} detections in {infer_time:.3f}s"
-                        )
-                        self.publish_results(results, f"Camera_{idx}")
+                        
+                        # Debug log
+                        if detection_count > 0:
+                            self.get_logger().info(
+                                f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
+                            )
+                        
+                        # Publish results
+                        self.publish_results(results, f"camera_{idx}")
+                        
                     except Exception as e:
                         self.get_logger().error(f"Error processing image from camera {idx}: {e}")
                         self.get_logger().error(traceback.format_exc())
-            if self.visualization_enabled:
-                self.visualize_results(images_copy)
-        except Exception as e:
-            self.get_logger().error(f"Error in process_images: {e}")
-            self.get_logger().error(traceback.format_exc())
+        
+        # PERBAIKAN: Call visualization after processing all cameras
+        if self.visualization_enabled:
+            self.visualize_results(images_copy)
+            
+    except Exception as e:
+        self.get_logger().error(f"Error in process_images: {e}")
+        self.get_logger().error(traceback.format_exc())
 
     def publish_results(self, results, camera_name):
-        # Publish hasil deteksi ke topic /detection (Yolov12Inference)
-        if not results:
+        """Publish hasil deteksi ke topic /detection (Yolov12Inference)."""
+        if not results or len(results) == 0:
             return
+        
         try:
             msg = Yolov12Inference()
             msg.header = Header()
@@ -509,50 +579,122 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             msg.camera_name = camera_name
             msg.frame_type = "raw"
             msg.task = "detect"
-            msg.note = ""
+            msg.note = f"Inference completed at {time.time()}"
             msg.yolov12_inference = []
+            
+            # PERBAIKAN: Better handling of YOLOv12 results
             try:
-                for box in results[0].boxes:
-                    det = InferenceResult()
-                    try:
-                        det.class_name = str(box.cls)  # Ganti sesuai format YOLOv12
-                    except (AttributeError, TypeError):
-                        det.class_name = ""
-                    try:
-                        det.confidence = float(box.conf)
-                    except (AttributeError, TypeError):
-                        det.confidence = 0.0
-                    try:
-                        det.top = int(box.xyxy[1])
-                        det.left = int(box.xyxy[0])
-                        det.bottom = int(box.xyxy[3])
-                        det.right = int(box.xyxy[2])
-                    except Exception:
-                        det.top = det.left = det.bottom = det.right = 0
-                    det.track_id = -1
-                    det.obb_angle = -1
-                    det.mask_indices = []
-                    msg.yolov12_inference.append(det)
+                result = results[0]  # First result
+                if hasattr(result, 'boxes') and result.boxes is not None:
+                    boxes = result.boxes
+                    for i, box in enumerate(boxes):
+                        try:
+                            det = InferenceResult()
+                            
+                            # Extract class name
+                            try:
+                                cls_id = int(box.cls[0].cpu())
+                                # PERBAIKAN: Use model names if available
+                                if hasattr(self.model, 'names') and cls_id in self.model.names:
+                                    det.class_name = self.model.names[cls_id]
+                                else:
+                                    det.class_name = f"class_{cls_id}"
+                            except Exception:
+                                det.class_name = "unknown"
+                        
+                            # Extract confidence
+                            try:
+                                det.confidence = float(box.conf[0].cpu())
+                            except Exception:
+                                det.confidence = 0.0
+                        
+                            # Extract bounding box coordinates
+                            try:
+                                xyxy = box.xyxy[0].cpu().numpy()
+                                det.left = int(xyxy[0])
+                                det.top = int(xyxy[1])
+                                det.right = int(xyxy[2])
+                                det.bottom = int(xyxy[3])
+                            except Exception:
+                                det.left = det.top = det.right = det.bottom = 0
+                        
+                            # Additional fields
+                            det.track_id = -1
+                            det.obb_angle = -1.0
+                            det.mask_indices = []
+                        
+                            msg.yolov12_inference.append(det)
+                        
+                        except Exception as e:
+                            self.get_logger().warning(f"Error processing detection {i}: {e}")
+                        
             except Exception as e:
                 self.get_logger().error(f"Error parsing detection results: {e}")
                 self.get_logger().error(traceback.format_exc())
-            # ===================== ERROR HANDLING: VALIDASI OUTPUT MESSAGE =====================
-            if not hasattr(self, 'publisher') or self.publisher is None:
+        
+            # Publish message
+            if hasattr(self, 'publisher') and self.publisher is not None:
+                self.publisher.publish(msg)
+                self.get_logger().debug(f"Published {len(msg.yolov12_inference)} detections from {camera_name}")
+            else:
                 self.get_logger().error("Publisher not initialized")
-                return
-            self.publisher.publish(msg)
+                
         except Exception as e:
             self.get_logger().error(f"Error publishing detection results: {e}")
             self.get_logger().error(traceback.format_exc())
 
     def visualize_results(self, images):
-        # Visualisasi hasil deteksi semua kamera (side-by-side)
+        """Visualisasi hasil deteksi semua kamera (side-by-side) dengan bounding box."""
         if not self.visualization_enabled:
             return
         try:
-            valid_images = [img for img in images if img is not None]
+            valid_images = []
+            annotated_images = []
+            
+            for idx, img in enumerate(images):
+                if img is not None:
+                    # Clone image untuk annotation
+                    annotated_img = img.copy()
+                    
+                    # PERBAIKAN: Add bounding box visualization
+                    # Get latest detection results for this camera
+                    if hasattr(self, 'latest_results') and idx < len(self.latest_results):
+                        results = self.latest_results[idx]
+                        if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
+                            boxes = results[0].boxes
+                            for box in boxes:
+                                try:
+                                    # Extract coordinates
+                                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                                    conf = float(box.conf[0].cpu())
+                                    cls = int(box.cls[0].cpu())
+                                    
+                                    # Draw bounding box
+                                    cv2.rectangle(annotated_img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                                    
+                                    # Draw confidence and class
+                                    label = f"Class:{cls} {conf:.2f}"
+                                    cv2.putText(annotated_img, label, (int(x1), int(y1-10)), 
+                                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                                              
+                                except Exception as e:
+                                    self.get_logger().debug(f"Error drawing box: {e}")
+                
+                # Add camera label
+                cv2.putText(annotated_img, f"Camera {idx}", (10, 30), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                
+                # Add detection count
+                detection_count = self.detection_counts[idx] if idx < len(self.detection_counts) else 0
+                cv2.putText(annotated_img, f"Detections: {detection_count}", (10, 60), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                
+                valid_images.append(annotated_img)
+        
             if not valid_images:
                 return
+            
+            # Resize untuk display
             target_height = 240
             resized_images = []
             for image in valid_images:
@@ -560,21 +702,38 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 scale = target_height / h
                 resized = cv2.resize(image, (int(w * scale), target_height))
                 resized_images.append(resized)
+            
+            # Tambahkan border
             border_thickness = 5
             bordered_images = []
             for idx, img in enumerate(resized_images):
-                bordered = cv2.copyMakeBorder(img, 0, 0, 0, border_thickness, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+                bordered = cv2.copyMakeBorder(img, 0, 0, 0, border_thickness, 
+                                            cv2.BORDER_CONSTANT, value=(0, 0, 0))
                 bordered_images.append(bordered)
+            
+            # Display
             try:
-                vis = np.hstack(bordered_images)
+                if len(bordered_images) > 3:
+                    # Split into two rows for better display
+                    top_row = np.hstack(bordered_images[:3])
+                    bottom_row = np.hstack(bordered_images[3:])
+                    
+                    # Pad bottom row if needed
+                    if bottom_row.shape[1] < top_row.shape[1]:
+                        pad_width = top_row.shape[1] - bottom_row.shape[1]
+                        bottom_row = np.pad(bottom_row, ((0, 0), (0, pad_width), (0, 0)), 'constant')
+                    
+                    vis = np.vstack([top_row, bottom_row])
+                else:
+                    vis = np.hstack(bordered_images)
+                
                 cv2.imshow("MultiCam Detection Results", vis)
                 cv2.waitKey(1)
             except cv2.error as e:
                 self.get_logger().warning(f"OpenCV visualization error: {e}")
         except Exception as e:
             self.get_logger().error(f"Error in visualization: {e}")
-            if 'Cannot connect to X server' in str(e):
-                self.get_logger().warning("OpenCV GUI not available (headless mode)")
+            self.get_logger().error(traceback.format_exc())
 
     def publish_diagnostics(self):
         # Publish diagnostics ke /diagnostics untuk monitoring health node
@@ -594,24 +753,16 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             status.values.append(KeyValue(key="camera_count", value=str(self.cam_count)))
             status.values.append(KeyValue(key="platform", value="Jetson" if self.is_jetson else "Generic"))
             for i, count in enumerate(self.detection_counts):
-                status.values.append(KeyValue(key=f"camera_{i}_detections", value=str(count)))
-            for i, infer_time in enumerate(self.inference_times):
-                status.values.append(KeyValue(key=f"camera_{i}_inference_time", value=f"{infer_time:.3f}s"))
+                status.values.append(KeyValue(key=f"detection_count_camera_{i}", value=str(count)))
             diag_msg.status.append(status)
-            self.diagnostic_pub.publish(diag_msg)
-        except Exception as e:
-            self.get_logger().error(f"Error publishing diagnostics: {e}")
-
-    def publish_health_check(self):
-        # Publish health check (CPU/RAM usage) ke log (opsional)
-        try:
-            cpu = psutil.cpu_percent()
-            ram = psutil.virtual_memory().percent
-            if cpu > 90:
-                self.get_logger().warning(f"CPU usage high: {cpu}%")
-            if ram > 90:
-                self.get_logger().warning(f"RAM usage high: {ram}%")
-            logging.info(f"HealthCheck: CPU={cpu}%, RAM={ram}%")
+            
+            # Publish diagnostics message
+            if hasattr(self, 'diagnostic_pub') and self.diagnostic_pub is not None:
+                self.diagnostic_pub.publish(diag_msg)
+                self.get_logger().debug(f"Published diagnostics: {status.message}")
+            else:
+                self.get_logger().error("Diagnostic publisher not initialized")
+                
         except Exception as e:
             self.get_logger().warning(f"Error in health check: {e}")
 
