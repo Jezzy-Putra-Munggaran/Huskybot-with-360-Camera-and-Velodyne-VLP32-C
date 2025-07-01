@@ -3,19 +3,14 @@
 
 import rclpy                                    # ROS2 Python client library for node creation and management
 from rclpy.node import Node                     # Base class for ROS2 nodes
+from sensor_msgs.msg import PointCloud2, LaserScan  # Message types for LiDAR data
+from yolov12_msgs.msg import Yolov12Inference, InferenceResult  # Custom messages for YOLOv12 detection results
 import numpy as np                              # For numerical operations and array handling
-import cv2                                      # For image processing capabilities (if needed)
 import math                                     # For mathematical operations like trigonometry
 import time                                     # For timing operations and delays
 import threading                                # For thread management and synchronization
 import os                                       # For file/path operations
 import sys                                      # For system-level operations and error handling
-from sensor_msgs.msg import LaserScan, PointCloud2  # Message types for LiDAR data
-from yolov12_msgs.msg import Yolov12Inference, InferenceResult  # Custom messages for YOLOv12 detection results
-from std_msgs.msg import Header                 # Standard message header
-import sensor_msgs_py.point_cloud2 as pc2       # Utilities for working with PointCloud2 data
-from geometry_msgs.msg import Point             # For 3D point representation
-from visualization_msgs.msg import Marker, MarkerArray  # For visualization in RViz2
 import traceback                                # For detailed exception information
 from datetime import datetime                   # For timestamping logs and data
 import json                                     # For storing structured data

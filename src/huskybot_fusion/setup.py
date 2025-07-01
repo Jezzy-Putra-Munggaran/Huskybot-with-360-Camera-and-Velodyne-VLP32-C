@@ -65,7 +65,6 @@ setup(
     tests_require=['pytest', 'pytest-cov'],
     entry_points={
         'console_scripts': [
-            'fusion_node = huskybot_fusion.fusion_node:main',
             'simple_fusion_node = huskybot_fusion.simple_fusion_node:main',
         ],
     },
