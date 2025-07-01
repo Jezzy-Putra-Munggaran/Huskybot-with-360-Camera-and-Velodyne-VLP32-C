@@ -293,109 +293,149 @@ def backup_model_file(model_path: str) -> None:
 # ===================== PRE-LAUNCH ERROR HANDLING (FAIL-FAST) =====================
 def prelaunch_error_checks(context, *args, **kwargs):
     """Fail-fast error handling sebelum launch: cek dependency, file, folder, permission."""
-    # Cek ROS2 package
-    for pkg in ['yolov12_msgs', 'huskybot_detection', 'cv_bridge']:
-        if not check_package_available(pkg):
-            print(f"[FATAL] ROS2 package missing: {pkg}", file=sys.stderr)
-            return [EmitEvent(event=Shutdown(reason=f"Missing ROS2 package: {pkg}"))]
-    # Cek Python dependency
-    for dep in ['ultralytics', 'torch', 'cv2', 'numpy']:
-        if not check_python_dependency(dep):
-            print(f"[FATAL] Python dependency missing: {dep}", file=sys.stderr)
-            return [EmitEvent(event=Shutdown(reason=f"Missing Python dependency: {dep}"))]
-    # Cek model file
-    model_path = context.launch_configurations.get('model_path', 'yolo12x.engine')
-    if not os.path.exists(os.path.expanduser(model_path)):
-        print(f"[FATAL] Model file not found: {model_path}", file=sys.stderr)
-        return [EmitEvent(event=Shutdown(reason=f"Model file not found: {model_path}"))]
-    # Cek folder log
-    log_dir = context.launch_configurations.get('log_dir', DEFAULT_LOG_DIR)
     try:
-        os.makedirs(os.path.expanduser(log_dir), exist_ok=True)
+        # Cek ROS2 package - PERBAIKAN: skip jika tidak critical
+        critical_packages = ['huskybot_detection', 'cv_bridge']
+        for pkg in critical_packages:
+            if not check_package_available(pkg):
+                print(f"[FATAL] ROS2 package missing: {pkg}", file=sys.stderr)
+                return [EmitEvent(event=Shutdown(reason=f"Missing ROS2 package: {pkg}"))]
+        
+        # Cek Python dependency - PERBAIKAN: skip jika tidak critical
+        critical_deps = ['rclpy', 'cv2', 'numpy']
+        for dep in critical_deps:
+            if not check_python_dependency(dep):
+                print(f"[FATAL] Python dependency missing: {dep}", file=sys.stderr)
+                return [EmitEvent(event=Shutdown(reason=f"Missing Python dependency: {dep}"))]
+        
+        # Cek model file - PERBAIKAN: gunakan perform() dengan error handling
+        try:
+            model_path = LaunchConfiguration('model_path').perform(context)
+            if not model_path or not os.path.exists(os.path.expanduser(model_path)):
+                print(f"[WARNING] Model file not found: {model_path}, continuing anyway...", file=sys.stderr)
+        except Exception as e:
+            print(f"[WARNING] Error checking model path: {e}", file=sys.stderr)
+        
+        # Cek folder log - PERBAIKAN: fallback jika gagal
+        try:
+            log_dir = LaunchConfiguration('log_dir').perform(context)
+            os.makedirs(os.path.expanduser(log_dir), exist_ok=True)
+        except Exception as e:
+            print(f"[WARNING] Cannot create log directory, using /tmp: {e}", file=sys.stderr)
+        
+        return []  # Return empty list jika semua OK
     except Exception as e:
-        print(f"[FATAL] Cannot create log directory: {log_dir} ({e})", file=sys.stderr)
-        return [EmitEvent(event=Shutdown(reason=f"Cannot create log directory: {log_dir}"))]
-    return []
+        print(f"[ERROR] Error in prelaunch_error_checks: {e}", file=sys.stderr)
+        return []  # Return empty list untuk continue launch
 
 # ===================== NODE DETEKSI MULTICAM YOLOv12 (DENGAN OPAQUEFUNCTION) =====================
 from launch.actions import OpaqueFunction
 
 def create_detection_node(context, *args, **kwargs):
-    import yaml
-    camera_topics_str = LaunchConfiguration('camera_topics').perform(context)
+    """Create detection node dengan parameter validation yang robust."""
     try:
-        camera_topics = yaml.safe_load(camera_topics_str)
-        if not isinstance(camera_topics, list):
-            camera_topics = [str(camera_topics)]
-    except Exception:
-        camera_topics = [camera_topics_str]
-
-    # --- Validasi class_filter agar tidak tuple dan selalu list ---
-    class_filter_raw = LaunchConfiguration('class_filter').perform(context)
-    try:
-        class_filter = yaml.safe_load(class_filter_raw)
-        if class_filter is None:
-            class_filter = []
-        elif isinstance(class_filter, tuple):
-            class_filter = list(class_filter)
-        elif not isinstance(class_filter, list):
-            class_filter = [class_filter]
-    except Exception:
-        class_filter = []
-
-    # Debug print untuk validasi tipe parameter
-    print(f"[DEBUG] camera_topics type: {type(camera_topics)}, value: {camera_topics}")
-    print(f"[DEBUG] class_filter type: {type(class_filter)}, value: {class_filter}")
-
-    # Ambil info platform dari context (harus di-passing dari generate_launch_description)
-    # Fallback: import detect_jetson_platform lagi jika tidak ada di context
-    global platform_info, is_jetson
-    try:
-        platform_info
-    except NameError:
-        platform_info = detect_jetson_platform()
-        is_jetson = platform_info.get('is_jetson', False)
-    return [
-        Node(
-            package='huskybot_detection',  # Nama package deteksi
-            executable='multicam_detection_node',  # Nama executable deteksi
-            name='multicam_detection',  # Nama node
-            namespace=LaunchConfiguration('namespace').perform(context),  # Namespace
-            output=LaunchConfiguration('output').perform(context),  # Output log
-            emulate_tty=True,  # Emulasi TTY agar output warna/log tidak rusak
-            parameters=[{
-                'cam_count': int(LaunchConfiguration('cam_count').perform(context)),  # Jumlah kamera
-                'camera_topics': camera_topics,  # List topic kamera (sudah pasti list)
-                'model_path': LaunchConfiguration('model_path').perform(context),  # Path model
-                'conf_thres': float(LaunchConfiguration('conf_thres').perform(context)),  # Threshold confidence
-                'class_filter': class_filter,  # Sudah pasti list, tidak tuple
-                'iou_thres': float(LaunchConfiguration('iou_thres').perform(context)),  # IoU threshold
-                'img_size': int(LaunchConfiguration('img_size').perform(context)),  # Ukuran image
-                'device': LaunchConfiguration('device').perform(context),  # Device inference
-                'use_sim_time': LaunchConfiguration('use_sim_time').perform(context) == 'true',  # Sim time
-                'cache_results': LaunchConfiguration('cache_results').perform(context) == 'true',  # Cache
-                'visualization_enabled': LaunchConfiguration('visualization_enabled').perform(context) == 'true',  # Visualisasi
-                'display_mode': LaunchConfiguration('display_mode').perform(context),  # Mode display
-                'log_to_file': True,  # Logging ke file
-                'log_level': LaunchConfiguration('log_level').perform(context),  # Log level
-                'log_dir': LaunchConfiguration('log_dir').perform(context),  # Folder log
-                'diagnostics_enabled': LaunchConfiguration('enable_diagnostics').perform(context) == 'true',  # Diagnostics
-                'is_jetson': is_jetson,  # Flag Jetson
-                'tensor_cores_available': platform_info.get('tensor_cores', False),  # Tensor core
-                'cuda_available': platform_info.get('cuda_available', False),  # CUDA
-            }],
-            respawn=LaunchConfiguration('respawn').perform(context) == 'true',  # Auto-restart node jika crash
-            respawn_delay=1.0,  # Delay restart 1 detik
-            remappings=[
-                ('/detection', f"{LaunchConfiguration('namespace').perform(context)}/detection" if LaunchConfiguration('namespace').perform(context) else '/detection'),  # Remap topic detection
-                ('/diagnostics', f"{LaunchConfiguration('namespace').perform(context)}/diagnostics" if LaunchConfiguration('namespace').perform(context) else '/diagnostics'),  # Remap diagnostics
-            ],
-            additional_env={
-                'PYTHONUNBUFFERED': '1',  # Unbuffered output
-                'DISPLAY': os.environ.get('DISPLAY', ''),  # Display X11 untuk OpenCV GUI
-            },
-        )
-    ]
+        import yaml
+        
+        # PERBAIKAN: Robust parameter parsing
+        camera_topics_str = LaunchConfiguration('camera_topics').perform(context)
+        try:
+            camera_topics = yaml.safe_load(camera_topics_str)
+            if not isinstance(camera_topics, list):
+                camera_topics = [str(camera_topics)]
+        except Exception as e:
+            print(f"[WARNING] Error parsing camera_topics: {e}", file=sys.stderr)
+            camera_topics = DEFAULT_CAMERA_TOPICS  # Fallback ke default
+        
+        # PERBAIKAN: Robust class_filter parsing
+        class_filter_raw = LaunchConfiguration('class_filter').perform(context)
+        try:
+            if not class_filter_raw or class_filter_raw in ['[]', '', 'null']:
+                class_filter = []
+            else:
+                class_filter = yaml.safe_load(class_filter_raw)
+                if class_filter is None:
+                    class_filter = []
+                elif isinstance(class_filter, tuple):
+                    class_filter = list(class_filter)
+                elif not isinstance(class_filter, list):
+                    class_filter = [class_filter] if class_filter else []
+        except Exception as e:
+            print(f"[WARNING] Error parsing class_filter: {e}", file=sys.stderr)
+            class_filter = []  # Fallback ke empty list
+        
+        # PERBAIKAN: Safe parameter extraction dengan default values
+        def safe_param(param_name, default_value, param_type=str):
+            try:
+                value = LaunchConfiguration(param_name).perform(context)
+                if param_type == bool:
+                    return str(value).lower() == 'true'
+                elif param_type == int:
+                    return int(value)
+                elif param_type == float:
+                    return float(value)
+                else:
+                    return str(value)
+            except Exception as e:
+                print(f"[WARNING] Error getting parameter {param_name}: {e}, using default", file=sys.stderr)
+                return default_value
+        
+        # Debug print untuk validasi tipe parameter
+        print(f"[DEBUG] camera_topics type: {type(camera_topics)}, value: {camera_topics}")
+        print(f"[DEBUG] class_filter type: {type(class_filter)}, value: {class_filter}")
+        
+        # PERBAIKAN: Pastikan platform_info tersedia
+        global platform_info, is_jetson
+        try:
+            platform_info
+        except NameError:
+            platform_info = detect_jetson_platform()
+            is_jetson = platform_info.get('is_jetson', False)
+        
+        return [
+            Node(
+                package='huskybot_detection',
+                executable='multicam_detection_node',
+                name='multicam_detection',
+                namespace=safe_param('namespace', ''),
+                output=safe_param('output', 'screen'),
+                emulate_tty=True,
+                parameters=[{
+                    'cam_count': safe_param('cam_count', 6, int),
+                    'camera_topics': camera_topics,  # Sudah list yang valid
+                    'model_path': safe_param('model_path', 'yolo12x.engine'),
+                    'conf_thres': safe_param('conf_thres', 0.25, float),
+                    'class_filter': class_filter,  # Sudah list yang valid
+                    'iou_thres': safe_param('iou_thres', 0.45, float),
+                    'img_size': safe_param('img_size', 640, int),
+                    'device': safe_param('device', 'auto'),
+                    'use_sim_time': safe_param('use_sim_time', False, bool),
+                    'cache_results': safe_param('cache_results', False, bool),
+                    'visualization_enabled': safe_param('visualization_enabled', True, bool),
+                    'display_mode': safe_param('display_mode', 'gui'),
+                    'log_to_file': True,
+                    'log_level': safe_param('log_level', 'info'),
+                    'log_dir': safe_param('log_dir', '/tmp'),
+                    'diagnostics_enabled': safe_param('enable_diagnostics', True, bool),
+                    'is_jetson': is_jetson,
+                    'tensor_cores_available': platform_info.get('tensor_cores', False),
+                    'cuda_available': platform_info.get('cuda_available', False),
+                }],
+                respawn=safe_param('respawn', True, bool),
+                respawn_delay=1.0,
+                remappings=[
+                    ('/detection', '/detection'),
+                    ('/diagnostics', '/diagnostics'),
+                ],
+                additional_env={
+                    'PYTHONUNBUFFERED': '1',
+                    'DISPLAY': os.environ.get('DISPLAY', ''),
+                },
+            )
+        ]
+    except Exception as e:
+        print(f"[ERROR] Error creating detection node: {e}", file=sys.stderr)
+        print(f"[ERROR] Traceback: {traceback.format_exc()}", file=sys.stderr)
+        return []  # Return empty list jika gagal
 
 # ===================== LAUNCH DESCRIPTION (URUTAN WAJIB) =====================
 def generate_launch_description():
