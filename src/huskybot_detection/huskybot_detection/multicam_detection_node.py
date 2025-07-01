@@ -56,6 +56,14 @@ DEFAULT_CONFIDENCE_THRESHOLD = 0.25  # Threshold confidence default
 JETSON_PLATFORMS = ['aarch64', 'arm64']  # Platform Jetson
 DETECTION_TOPIC = '/detection'  # Topic hasil deteksi
 DIAGNOSTIC_TOPIC = '/diagnostics'  # Topic diagnostics
+DEFAULT_CAMERA_TOPICS = [
+    '/camera_front/image_raw',
+    '/camera_right/image_raw',
+    '/camera_rear_right/image_raw',
+    '/camera_rear/image_raw',
+    '/camera_left/image_raw',
+    '/camera_front_left/image_raw'
+]
 
 class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def __init__(self):
@@ -122,69 +130,94 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             description='Number of cameras in the hexagonal array (1-12)',
             integer_range=[{'from_value': 1, 'to_value': 12, 'step': 1}]
         ))
+        
         self.declare_parameter('model_path', "yolo12x.engine", ParameterDescriptor(
             type=ParameterType.PARAMETER_STRING,
             description='Path to YOLOv12 model file (.pt, .onnx, or .engine)'
         ))
-        self.declare_parameter('camera_topics', [
-            '/camera_front/image_raw',
-            '/camera_right/image_raw',
-            '/camera_rear_right/image_raw',
-            '/camera_rear/image_raw',
-            '/camera_left/image_raw',
-            '/camera_front_left/image_raw'
-        ], ParameterDescriptor(
-            type=ParameterType.PARAMETER_STRING_ARRAY,
-            description='List of camera topic names to subscribe to'
+        
+        # PERBAIKAN: Declare complex parameters sebagai string
+        self.declare_parameter('camera_topics_str', str(DEFAULT_CAMERA_TOPICS), ParameterDescriptor(
+            type=ParameterType.PARAMETER_STRING,
+            description='Camera topic names as string representation of list'
         ))
+        
+        self.declare_parameter('class_filter_str', "[]", ParameterDescriptor(
+            type=ParameterType.PARAMETER_STRING,
+            description='Class filter as string representation of list'
+        ))
+        
         self.declare_parameter('conf_thres', DEFAULT_CONFIDENCE_THRESHOLD, ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE,
             description='Confidence threshold for filtering detections (0.0-1.0)',
             floating_point_range=[{'from_value': 0.0, 'to_value': 1.0, 'step': 0.01}]
         ))
-        self.declare_parameter('class_filter', [], ParameterDescriptor(
-            type=ParameterType.PARAMETER_INTEGER_ARRAY,
-            description='List of class IDs to keep (empty for all classes)'
-        ))
+        
         self.declare_parameter('visualization_enabled', True, ParameterDescriptor(
             type=ParameterType.PARAMETER_BOOL,
             description='Enable/disable OpenCV visualization of detection results'
         ))
+        
         self.declare_parameter('log_to_file', True, ParameterDescriptor(
             type=ParameterType.PARAMETER_BOOL,
             description='Enable/disable logging to file'
         ))
+        
         self.declare_parameter('log_level', 'info', ParameterDescriptor(
             type=ParameterType.PARAMETER_STRING,
             description='Log level (debug, info, warning, error, critical)'
         ))
 
     def _load_parameters(self):
-        # Load semua parameter dari server, validasi, dan fallback jika error
+        # PERBAIKAN: Load dan parse parameters dengan robust error handling
         try:
             self.cam_count = self.get_parameter('cam_count').value
             if not 1 <= self.cam_count <= 12:
                 self.get_logger().warning(f"Invalid cam_count {self.cam_count}, using default (6)")
                 self.cam_count = 6
+                
             self.model_path = self.get_parameter('model_path').value
-            self.camera_topics = self.get_parameter('camera_topics').value
-            if isinstance(self.camera_topics, str):
-                # Handle jika parameter diterima sebagai string YAML/JSON
+            
+            # PERBAIKAN: Parse camera topics dari string
+            try:
+                camera_topics_str = self.get_parameter('camera_topics_str').value
                 import ast
-                try:
-                    self.camera_topics = ast.literal_eval(self.camera_topics)
-                except Exception:
-                    import yaml
-                    self.camera_topics = yaml.safe_load(self.camera_topics)
+                self.camera_topics = ast.literal_eval(camera_topics_str)
+                if not isinstance(self.camera_topics, list):
+                    raise ValueError("Not a list")
+            except Exception as e:
+                self.get_logger().warning(f"Error parsing camera_topics_str: {e}, using default")
+                self.camera_topics = [
+                    '/camera_front/image_raw',
+                    '/camera_right/image_raw',
+                    '/camera_rear_right/image_raw',
+                    '/camera_rear/image_raw',
+                    '/camera_left/image_raw',
+                    '/camera_front_left/image_raw'
+                ]
+            
+            # PERBAIKAN: Parse class filter dari string
+            try:
+                class_filter_str = self.get_parameter('class_filter_str').value
+                import ast
+                self.class_filter = ast.literal_eval(class_filter_str)
+                if not isinstance(self.class_filter, list):
+                    self.class_filter = []
+            except Exception as e:
+                self.get_logger().warning(f"Error parsing class_filter_str: {e}, using empty list")
+                self.class_filter = []
+            
+            # Adjust camera count based on available topics
             if len(self.camera_topics) < self.cam_count:
                 self.get_logger().warning(
                     f"Not enough camera topics ({len(self.camera_topics)}) for cam_count ({self.cam_count})"
                 )
                 self.cam_count = len(self.camera_topics)
+                
             self.conf_thres = self.get_parameter('conf_thres').value
-            self.class_filter = self.get_parameter('class_filter').value
             self.visualization_enabled = self.get_parameter('visualization_enabled').value
             self.log_to_file = self.get_parameter('log_to_file').value
+            
             log_level = self.get_parameter('log_level').value.lower()
             if log_level == 'debug':
                 logging.getLogger().setLevel(logging.DEBUG)
@@ -199,6 +232,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             else:
                 self.get_logger().warning(f"Invalid log_level '{log_level}', using INFO")
                 logging.getLogger().setLevel(logging.INFO)
+                
         except ParameterNotDeclaredException as e:
             self.get_logger().error(f"Parameter error: {e}")
             raise

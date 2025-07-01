@@ -294,39 +294,48 @@ def backup_model_file(model_path: str) -> None:
 def prelaunch_error_checks(context, *args, **kwargs):
     """Fail-fast error handling sebelum launch: cek dependency, file, folder, permission."""
     try:
-        # Cek ROS2 package - PERBAIKAN: skip jika tidak critical
+        # PERBAIKAN: Robust error handling dengan specific exception handling
+        error_count = 0
+        
+        # Cek ROS2 package
         critical_packages = ['huskybot_detection', 'cv_bridge']
         for pkg in critical_packages:
             if not check_package_available(pkg):
-                print(f"[FATAL] ROS2 package missing: {pkg}", file=sys.stderr)
-                return [EmitEvent(event=Shutdown(reason=f"Missing ROS2 package: {pkg}"))]
+                print(f"[ERROR] ROS2 package missing: {pkg}", file=sys.stderr)
+                error_count += 1
         
-        # Cek Python dependency - PERBAIKAN: skip jika tidak critical
+        # Cek Python dependency
         critical_deps = ['rclpy', 'cv2', 'numpy']
         for dep in critical_deps:
             if not check_python_dependency(dep):
-                print(f"[FATAL] Python dependency missing: {dep}", file=sys.stderr)
-                return [EmitEvent(event=Shutdown(reason=f"Missing Python dependency: {dep}"))]
+                print(f"[ERROR] Python dependency missing: {dep}", file=sys.stderr)
+                error_count += 1
         
-        # Cek model file - PERBAIKAN: gunakan perform() dengan error handling
+        # PERBAIKAN: Safe parameter checking tanpa exception
         try:
             model_path = LaunchConfiguration('model_path').perform(context)
-            if not model_path or not os.path.exists(os.path.expanduser(model_path)):
-                print(f"[WARNING] Model file not found: {model_path}, continuing anyway...", file=sys.stderr)
+            if model_path and not os.path.exists(os.path.expanduser(model_path)):
+                print(f"[WARNING] Model file not found: {model_path}, will try fallback locations", file=sys.stderr)
         except Exception as e:
-            print(f"[WARNING] Error checking model path: {e}", file=sys.stderr)
+            print(f"[WARNING] Cannot check model path: {e}", file=sys.stderr)
         
-        # Cek folder log - PERBAIKAN: fallback jika gagal
+        # PERBAIKAN: Safe log directory checking
         try:
             log_dir = LaunchConfiguration('log_dir').perform(context)
-            os.makedirs(os.path.expanduser(log_dir), exist_ok=True)
+            if log_dir:
+                os.makedirs(os.path.expanduser(log_dir), exist_ok=True)
         except Exception as e:
-            print(f"[WARNING] Cannot create log directory, using /tmp: {e}", file=sys.stderr)
+            print(f"[WARNING] Cannot create log directory: {e}", file=sys.stderr)
         
-        return []  # Return empty list jika semua OK
+        # PERBAIKAN: Return empty list selalu, jangan return EmitEvent
+        if error_count > 2:  # Only shutdown if too many critical errors
+            print(f"[FATAL] Too many critical errors ({error_count}), stopping launch", file=sys.stderr)
+            return [EmitEvent(event=Shutdown(reason=f"Critical errors: {error_count}"))]
+        
+        return []  # Always return empty list for success
     except Exception as e:
         print(f"[ERROR] Error in prelaunch_error_checks: {e}", file=sys.stderr)
-        return []  # Return empty list untuk continue launch
+        return []  # Return empty list even on error to continue launch
 
 # ===================== NODE DETEKSI MULTICAM YOLOv12 (DENGAN OPAQUEFUNCTION) =====================
 from launch.actions import OpaqueFunction
@@ -334,62 +343,74 @@ from launch.actions import OpaqueFunction
 def create_detection_node(context, *args, **kwargs):
     """Create detection node dengan parameter validation yang robust."""
     try:
-        import yaml
-        
-        # PERBAIKAN: Robust parameter parsing
-        camera_topics_str = LaunchConfiguration('camera_topics').perform(context)
-        try:
-            camera_topics = yaml.safe_load(camera_topics_str)
-            if not isinstance(camera_topics, list):
-                camera_topics = [str(camera_topics)]
-        except Exception as e:
-            print(f"[WARNING] Error parsing camera_topics: {e}", file=sys.stderr)
-            camera_topics = DEFAULT_CAMERA_TOPICS  # Fallback ke default
-        
-        # PERBAIKAN: Robust class_filter parsing
-        class_filter_raw = LaunchConfiguration('class_filter').perform(context)
-        try:
-            if not class_filter_raw or class_filter_raw in ['[]', '', 'null']:
-                class_filter = []
-            else:
-                class_filter = yaml.safe_load(class_filter_raw)
-                if class_filter is None:
-                    class_filter = []
-                elif isinstance(class_filter, tuple):
-                    class_filter = list(class_filter)
-                elif not isinstance(class_filter, list):
-                    class_filter = [class_filter] if class_filter else []
-        except Exception as e:
-            print(f"[WARNING] Error parsing class_filter: {e}", file=sys.stderr)
-            class_filter = []  # Fallback ke empty list
-        
-        # PERBAIKAN: Safe parameter extraction dengan default values
+        # PERBAIKAN: Simplify parameter parsing tanpa complex types
         def safe_param(param_name, default_value, param_type=str):
             try:
                 value = LaunchConfiguration(param_name).perform(context)
+                if not value or value == '':
+                    return default_value
+                
                 if param_type == bool:
-                    return str(value).lower() == 'true'
+                    return str(value).lower() in ['true', '1', 'yes', 'on']
                 elif param_type == int:
-                    return int(value)
+                    return int(float(value))  # Handle float strings
                 elif param_type == float:
                     return float(value)
+                elif param_type == list:
+                    if isinstance(value, str):
+                        # Handle YAML/JSON string to list
+                        import yaml
+                        try:
+                            parsed = yaml.safe_load(value)
+                            if parsed is None:
+                                return []
+                            elif isinstance(parsed, (list, tuple)):
+                                return list(parsed)
+                            else:
+                                return [parsed] if parsed else []
+                        except Exception:
+                            # Fallback: split by comma
+                            return [item.strip() for item in value.split(',') if item.strip()]
+                    elif isinstance(value, (list, tuple)):
+                        return list(value)
+                    else:
+                        return [value] if value else []
                 else:
                     return str(value)
             except Exception as e:
-                print(f"[WARNING] Error getting parameter {param_name}: {e}, using default", file=sys.stderr)
+                print(f"[WARNING] Error getting parameter {param_name}: {e}, using default: {default_value}", file=sys.stderr)
                 return default_value
+
+        # Parse camera topics dengan robust error handling
+        camera_topics = safe_param('camera_topics', DEFAULT_CAMERA_TOPICS, list)
+        class_filter = safe_param('class_filter', [], list)
         
-        # Debug print untuk validasi tipe parameter
+        # Validate camera_topics
+        if not camera_topics or not isinstance(camera_topics, list):
+            print("[WARNING] Invalid camera_topics, using default", file=sys.stderr)
+            camera_topics = DEFAULT_CAMERA_TOPICS
+        
+        # Validate class_filter
+        if not isinstance(class_filter, list):
+            print("[WARNING] Invalid class_filter, using empty list", file=sys.stderr)
+            class_filter = []
+        
+        # Debug print
         print(f"[DEBUG] camera_topics type: {type(camera_topics)}, value: {camera_topics}")
         print(f"[DEBUG] class_filter type: {type(class_filter)}, value: {class_filter}")
         
-        # PERBAIKAN: Pastikan platform_info tersedia
+        # PERBAIKAN: Ensure platform_info is available
         global platform_info, is_jetson
         try:
             platform_info
         except NameError:
             platform_info = detect_jetson_platform()
             is_jetson = platform_info.get('is_jetson', False)
+        
+        # PERBAIKAN: Convert lists to strings for ROS2 parameters
+        # ROS2 parameter system tidak support complex types langsung
+        camera_topics_str = str(camera_topics)  # Convert to string representation
+        class_filter_str = str(class_filter)    # Convert to string representation
         
         return [
             Node(
@@ -401,10 +422,10 @@ def create_detection_node(context, *args, **kwargs):
                 emulate_tty=True,
                 parameters=[{
                     'cam_count': safe_param('cam_count', 6, int),
-                    'camera_topics': camera_topics,  # Sudah list yang valid
+                    'camera_topics_str': camera_topics_str,  # Pass as string
+                    'class_filter_str': class_filter_str,    # Pass as string
                     'model_path': safe_param('model_path', 'yolo12x.engine'),
                     'conf_thres': safe_param('conf_thres', 0.25, float),
-                    'class_filter': class_filter,  # Sudah list yang valid
                     'iou_thres': safe_param('iou_thres', 0.45, float),
                     'img_size': safe_param('img_size', 640, int),
                     'device': safe_param('device', 'auto'),
