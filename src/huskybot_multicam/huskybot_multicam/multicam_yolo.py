@@ -14,11 +14,11 @@ class MultiCamYoloNode(Node):
         self.declare_parameter('segmentation_model', "yolo11x-seg.engine")
         self.declare_parameter('camera_topics', [
             '/camera_front/image_raw',
-            '/camera_right/image_raw',
-            '/camera_rear_right/image_raw',
-            '/camera_rear/image_raw',
+            '/camera_front_left/image_raw',
             '/camera_left/image_raw',
-            '/camera_front_left/image_raw'
+            '/camera_rear/image_raw',
+            '/camera_rear_right/image_raw',
+            '/camera_right/image_raw'
         ])
 
         self.cam_count = self.get_parameter('cam_count').value

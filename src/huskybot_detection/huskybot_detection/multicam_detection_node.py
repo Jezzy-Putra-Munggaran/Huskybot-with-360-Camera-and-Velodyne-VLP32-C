@@ -58,11 +58,11 @@ DETECTION_TOPIC = '/detection'  # Topic hasil deteksi
 DIAGNOSTIC_TOPIC = '/diagnostics'  # Topic diagnostics
 DEFAULT_CAMERA_TOPICS = [
     '/camera_front/image_raw',
-    '/camera_right/image_raw',
-    '/camera_rear_right/image_raw',
-    '/camera_rear/image_raw',
+    '/camera_front_left/image_raw',
     '/camera_left/image_raw',
-    '/camera_front_left/image_raw'
+    '/camera_rear/image_raw',
+    '/camera_rear_right/image_raw',
+    '/camera_right/image_raw'
 ]
 
 class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
