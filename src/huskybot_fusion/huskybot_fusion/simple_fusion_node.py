@@ -247,7 +247,7 @@ class SimpleFusionNode(Node):
             return None
     
     def process_fusion(self):
-        """Main fusion processing with Jetson optimizations"""
+        """Main fusion processing dengan output jarak dan koordinat yang jelas"""
         try:
             with self.lock:
                 if not self.latest_scan or not self.latest_detections:
@@ -263,13 +263,13 @@ class SimpleFusionNode(Node):
                     enhanced_msg.camera_name = camera_name
                     enhanced_msg.frame_type = "fused"
                     enhanced_msg.task = "fusion"
-                    enhanced_msg.note = "jetson_optimized_fusion"
+                    enhanced_msg.note = "fusion_with_lidar"
                     
                     for det in detections.yolov12_inference:
                         if det.confidence < self.confidence_threshold:
                             continue
                         
-                        # PERBAIKAN: Properly calculate object center based on actual coordinates
+                        # Calculate object center for LiDAR mapping
                         bbox_center_x = (det.left + det.right) / 2.0
                         obj_center_ratio = bbox_center_x / self.image_width
                         
@@ -292,45 +292,62 @@ class SimpleFusionNode(Node):
                         result.right = det.right
                         result.bottom = det.bottom
                         result.track_id = -1
-                        result.obb_angle = -1
+                        result.obb_angle = -1.0  # PERBAIKAN: Float value
                         result.mask_indices = []
                         
-                        # PERBAIKAN: Check if 'note' field exists before setting
+                        # PERBAIKAN: Set note field dengan format yang jelas
                         if hasattr(result, 'note'):
                             if distance and coords:
-                                result.note = f"Distance: {distance:.2f}m, Coord: ({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
+                                result.note = f"Distance={distance:.2f}m, Coordinate=({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
                             else:
-                                result.note = "No distance/coordinate data available"
-                        else:
-                            # If note field doesn't exist, log distance info separately
-                            if distance and coords:
-                                self.get_logger().debug(
-                                    f"{det.class_name}: Distance={distance:.2f}m, "
-                                    f"Coord=({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
-                                )
+                                result.note = "No LiDAR data available"
                         
+                        # PERBAIKAN: Log ke console dengan format yang jelas
                         if distance and coords:
-                            # Create marker for visualization
+                            self.get_logger().info(
+                                f"🎯 {camera_name}: {det.class_name} conf={det.confidence:.2f} "
+                                f"Distance={distance:.2f}m Coordinate=({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
+                            )
+                            
+                            # Create marker for RViz2 visualization
                             marker = Marker()
                             marker.header = detections.header
+                            marker.header.frame_id = "velodyne"  # PERBAIKAN: Set frame_id yang benar
                             marker.ns = "fusion_objects"
                             marker.id = marker_id
                             marker_id += 1
                             marker.type = Marker.CUBE
                             marker.action = Marker.ADD
                             marker.pose.position.x = coords[0]
-                            marker.pose.position.y = coords[1]
-                            marker.pose.position.z = coords[2]
+                            marker.pose.position.y = coords[1] 
+                            marker.pose.position.z = coords[2] + 0.5  # Raise untuk visibility
                             marker.pose.orientation.w = 1.0
                             marker.scale.x = 0.5
                             marker.scale.y = 0.5
-                            marker.scale.z = 0.5
-                            marker.color.r = 1.0 if "person" in det.class_name.lower() else 0.0
-                            marker.color.g = 0.0 if "person" in det.class_name.lower() else 1.0
-                            marker.color.b = 0.0
-                            marker.color.a = 0.7
-                            marker.lifetime.sec = 2
+                            marker.scale.z = 1.0
+                            
+                            # Color coding berdasarkan class
+                            if "person" in det.class_name.lower():
+                                marker.color.r = 1.0  # Red untuk person
+                                marker.color.g = 0.0
+                                marker.color.b = 0.0
+                            elif "car" in det.class_name.lower():
+                                marker.color.r = 0.0  # Blue untuk car
+                                marker.color.g = 0.0
+                                marker.color.b = 1.0
+                            else:
+                                marker.color.r = 0.0  # Green untuk lainnya
+                                marker.color.g = 1.0
+                                marker.color.b = 0.0
+                            
+                            marker.color.a = 0.8
+                            marker.lifetime.sec = 3
                             markers.append(marker)
+                        else:
+                            self.get_logger().warning(
+                                f"❌ {camera_name}: {det.class_name} conf={det.confidence:.2f} "
+                                f"NO_LIDAR_DATA"
+                            )
                         
                         enhanced_msg.yolov12_inference.append(result)
                     
@@ -345,6 +362,7 @@ class SimpleFusionNode(Node):
                     marker_array = MarkerArray()
                     marker_array.markers = markers
                     self.marker_pub.publish(marker_array)
+                    self.get_logger().info(f"📍 Published {len(markers)} 3D markers to RViz2")
                 
         except Exception as e:
             self.get_logger().error(f"Error in process_fusion: {str(e)}")

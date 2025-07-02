@@ -597,30 +597,29 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             msg.camera_name = camera_name
             msg.frame_type = "raw"
             msg.task = "detect"
-            msg.note = f"Inference completed at {time.time()}"
+            msg.note = f"Detection from {camera_name} at {time.time()}"
             msg.yolov12_inference = []
             
-            # PERBAIKAN: Better handling of YOLOv12 results with correct coordinates
+            # PERBAIKAN: Focus hanya pada detection, skip OBB
             try:
                 for result in results:
                     if hasattr(result, 'boxes') and result.boxes is not None:
                         boxes = result.boxes
                         for box in boxes:
                             try:
-                                # PERBAIKAN: Extract coordinates in correct format (x1, y1, x2, y2)
+                                # Extract coordinates dalam format (x1, y1, x2, y2)
                                 if hasattr(box, 'xyxy'):
                                     coords = box.xyxy[0].cpu().numpy()
                                     x1, y1, x2, y2 = coords
                                 else:
-                                    # Fallback untuk format lain
                                     continue
                                 
                                 # Extract confidence and class
                                 confidence = float(box.conf.cpu().numpy()[0]) if hasattr(box, 'conf') else 0.0
                                 class_id = int(box.cls.cpu().numpy()[0]) if hasattr(box, 'cls') else 0
                                 
-                                # Pastikan koordinat dalam range yang benar
-                                x1 = max(0, min(x1, 1920))  # Sesuai resolusi kamera
+                                # Validasi koordinat
+                                x1 = max(0, min(x1, 1920))
                                 y1 = max(0, min(y1, 1080))
                                 x2 = max(0, min(x2, 1920))
                                 y2 = max(0, min(y2, 1080))
@@ -634,25 +633,25 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                                 inference_result.class_name = self.model.names[class_id] if hasattr(self.model, 'names') else f"class_{class_id}"
                                 inference_result.confidence = confidence
                                 
-                                # PERBAIKAN: Set koordinat dengan benar (left=x1, top=y1, right=x2, bottom=y2)
+                                # Set koordinat bounding box
                                 inference_result.left = int(x1)
                                 inference_result.top = int(y1) 
                                 inference_result.right = int(x2)
                                 inference_result.bottom = int(y2)
                                 
-                                # Set default values for other fields
+                                # PERBAIKAN: Set default values untuk field yang tidak digunakan
                                 inference_result.track_id = -1
-                                inference_result.obb_angle = -1
+                                inference_result.obb_angle = -1.0  # PERBAIKAN: Pastikan float, bukan int
                                 inference_result.mask_indices = []
                                 
-                                # Add note if field exists
+                                # Set note field untuk debugging
                                 if hasattr(inference_result, 'note'):
-                                    inference_result.note = f"Detected by {camera_name}"
+                                    inference_result.note = f"Detection by {camera_name}"
                                 
                                 msg.yolov12_inference.append(inference_result)
                                 
-                                # Debug log untuk koordinat
-                                self.get_logger().debug(
+                                # Log detection untuk debugging
+                                self.get_logger().info(
                                     f"{camera_name}: {inference_result.class_name} "
                                     f"conf={confidence:.2f} "
                                     f"bbox=({x1:.0f},{y1:.0f},{x2:.0f},{y2:.0f})"
@@ -669,7 +668,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             # Publish message
             if hasattr(self, 'publisher') and self.publisher is not None:
                 self.publisher.publish(msg)
-                self.get_logger().debug(f"Published {len(msg.yolov12_inference)} detections from {camera_name}")
+                self.get_logger().info(f"Published {len(msg.yolov12_inference)} detections from {camera_name}")
             else:
                 self.get_logger().error("Publisher not available")
                 
