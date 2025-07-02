@@ -171,6 +171,9 @@ class SimpleFusionNode(Node):
         
         # PERBAIKAN: Add debug timer
         self.debug_timer = self.create_timer(5.0, self.debug_lidar_status)
+        
+        # Tambahkan debug detail timer
+        self.debug_detail_timer = self.create_timer(10.0, self.debug_lidar_detailed)
     
     def laserscan_callback(self, msg):
         """Process LaserScan with validation and debugging"""
@@ -210,136 +213,131 @@ class SimpleFusionNode(Node):
             self.get_logger().debug(f"Error in detection_callback: {e}")
     
     def get_distance_from_laserscan(self, camera_name, obj_center_ratio):
-        """Get distance dari LaserScan dengan mapping yang benar untuk Jetson AGX Orin"""
+        """PERBAIKAN: Mapping yang disesuaikan dengan setup fisik Jetson AGX Orin + Velodyne VLP32-C"""
         try:
-            if not self.latest_scan or camera_name not in self.camera_fov:
-                return None
-            
-            scan = self.latest_scan
-            if not scan.ranges or len(scan.ranges) == 0:
-                return None
-            
-            # PERBAIKAN: Mapping yang benar untuk setup Huskybot dengan Velodyne VLP32-C
-            # Camera FOV mapping yang disesuaikan dengan mounting position
-            camera_mappings = {
-                'camera_front': {'min_angle': -15, 'max_angle': 15},       # Depan
-                'camera_front_left': {'min_angle': 45, 'max_angle': 75},   # Depan kiri  
-                'camera_left': {'min_angle': 75, 'max_angle': 105},        # Kiri
-                'camera_rear': {'min_angle': 165, 'max_angle': 195},       # Belakang
-                'camera_rear_right': {'min_angle': 285, 'max_angle': 315}, # Belakang kanan
-                'camera_right': {'min_angle': 255, 'max_angle': 285}       # Kanan
-            }
-            
-            # Extract camera name dari topic (misal: camera_0 -> camera_front)
-            camera_mapping = {
-                'camera_0': 'camera_front',
-                'camera_1': 'camera_right', 
-                'camera_2': 'camera_rear_right',
-                'camera_3': 'camera_rear',
-                'camera_4': 'camera_left',
-                'camera_5': 'camera_front_left'
-            }
-            
-            actual_camera = camera_mapping.get(camera_name, camera_name)
-            if actual_camera not in camera_mappings:
-                self.get_logger().warning(f"Unknown camera: {camera_name} -> {actual_camera}")
+            if not self.latest_scan or not self.latest_scan.ranges:
                 return None
                 
-            mapping = camera_mappings[actual_camera]
-            min_angle = math.radians(mapping['min_angle'])
-            max_angle = math.radians(mapping['max_angle'])
+            scan = self.latest_scan
             
-            # Map object position ke global angle
-            angle_range = max_angle - min_angle
-            global_angle = min_angle + obj_center_ratio * angle_range
+            # PERBAIKAN: Debug mapping terlebih dahulu
+            self.get_logger().info(
+                f"🔍 Processing {camera_name}: obj_center_ratio={obj_center_ratio:.3f}, "
+                f"LiDAR range: {math.degrees(scan.angle_min):.1f}° to {math.degrees(scan.angle_max):.1f}°"
+            )
             
-            # Convert ke LiDAR coordinate system
-            # Velodyne VLP32-C: angle_min biasanya -π, angle_max = π
-            lidar_angle = global_angle
+            # PERBAIKAN: Simplified mapping - langsung gunakan camera index to angle
+            camera_angles = {
+                'camera_0': 0,      # Front - 0°
+                'camera_1': 60,     # Front-right - 60°  
+                'camera_2': 120,    # Rear-right - 120°
+                'camera_3': 180,    # Rear - 180°
+                'camera_4': 240,    # Rear-left - 240° (atau -120°)
+                'camera_5': 300,    # Front-left - 300° (atau -60°)
+            }
             
-            # Normalize angle ke range LiDAR
-            while lidar_angle < scan.angle_min:
-                lidar_angle += 2 * math.pi
-            while lidar_angle > scan.angle_max:
-                lidar_angle -= 2 * math.pi
+            if camera_name not in camera_angles:
+                self.get_logger().warning(f"Unknown camera: {camera_name}")
+                return None
+                
+            # Calculate target angle based on object position in image
+            base_angle = camera_angles[camera_name]
+            camera_fov = 60  # Assume 60° FOV per camera
             
-            # Hitung index ray yang sesuai
+            # Map object position to angle offset within camera FOV
+            angle_offset = (obj_center_ratio - 0.5) * camera_fov  # -30° to +30°
+            target_angle_deg = base_angle + angle_offset
+            
+            # Normalize to -180° to +180°
+            if target_angle_deg > 180:
+                target_angle_deg -= 360
+            elif target_angle_deg < -180:
+                target_angle_deg += 360
+                
+            target_angle_rad = math.radians(target_angle_deg)
+            
+            # PERBAIKAN: Ensure angle is within LiDAR range
+            if target_angle_rad < scan.angle_min:
+                target_angle_rad += 2 * math.pi
+            elif target_angle_rad > scan.angle_max:
+                target_angle_rad -= 2 * math.pi
+                
+            # Calculate ray index
             if abs(scan.angle_increment) < 1e-6:
                 self.get_logger().warning("Invalid angle_increment")
                 return None
                 
-            ray_idx = int((lidar_angle - scan.angle_min) / scan.angle_increment)
+            ray_idx = int((target_angle_rad - scan.angle_min) / scan.angle_increment)
             
-            # Validasi index dan ambil distance
-            if 0 <= ray_idx < len(scan.ranges):
-                distance = scan.ranges[ray_idx]
-                
-                # Validasi distance
-                if (distance > 0 and 
-                    self.min_laser_distance <= distance <= self.max_laser_distance and 
-                    math.isfinite(distance)):
-                    
-                    self.get_logger().info(
-                        f"✅ {camera_name}({actual_camera}): Found distance {distance:.2f}m "
-                        f"at ray {ray_idx} (angle {math.degrees(lidar_angle):.1f}°)"
-                    )
-                    return distance
-                else:
-                    self.get_logger().debug(
-                        f"❌ {camera_name}: Invalid distance {distance} at ray {ray_idx}"
-                    )
+            # PERBAIKAN: Check multiple rays around target for better reliability
+            search_range = 5  # Check ±5 rays around target
+            best_distance = None
+            best_ray = -1
+            
+            for offset in range(-search_range, search_range + 1):
+                check_idx = ray_idx + offset
+                if 0 <= check_idx < len(scan.ranges):
+                    distance = scan.ranges[check_idx]
+                    if (distance > 0 and 
+                        self.min_laser_distance <= distance <= self.max_laser_distance and 
+                        math.isfinite(distance)):
+                        best_distance = distance
+                        best_ray = check_idx
+                        break
+            
+            if best_distance:
+                self.get_logger().info(
+                    f"✅ {camera_name}: Found distance {best_distance:.2f}m "
+                    f"at ray {best_ray} (target_angle={target_angle_deg:.1f}°)"
+                )
+                return best_distance
             else:
                 self.get_logger().debug(
-                    f"❌ {camera_name}: Ray index {ray_idx} out of range [0, {len(scan.ranges)}]"
+                    f"❌ {camera_name}: No valid distance found around ray {ray_idx} "
+                    f"(target_angle={target_angle_deg:.1f}°)"
                 )
-            
-            return None
-            
+                return None
+                
         except Exception as e:
             self.get_logger().error(f"Error getting distance for {camera_name}: {e}")
             return None
 
     def get_coordinates_from_pointcloud(self, camera_name, obj_center_ratio, distance):
-        """Calculate 3D coordinates menggunakan trigonometry sederhana"""
+        """PERBAIKAN: Calculate 3D coordinates dengan mapping yang sama"""
         try:
             if not distance:
                 return None
                 
-            # Gunakan mapping yang sama seperti get_distance_from_laserscan
-            camera_mappings = {
-                'camera_front': {'min_angle': -15, 'max_angle': 15},
-                'camera_front_left': {'min_angle': 45, 'max_angle': 75},
-                'camera_left': {'min_angle': 75, 'max_angle': 105},
-                'camera_rear': {'min_angle': 165, 'max_angle': 195},
-                'camera_rear_right': {'min_angle': 285, 'max_angle': 315},
-                'camera_right': {'min_angle': 255, 'max_angle': 285}
+            # Use same mapping as get_distance_from_laserscan
+            camera_angles = {
+                'camera_0': 0,      # Front
+                'camera_1': 60,     # Front-right  
+                'camera_2': 120,    # Rear-right
+                'camera_3': 180,    # Rear
+                'camera_4': 240,    # Rear-left
+                'camera_5': 300,    # Front-left
             }
             
-            camera_mapping = {
-                'camera_0': 'camera_front',
-                'camera_1': 'camera_right',
-                'camera_2': 'camera_rear_right', 
-                'camera_3': 'camera_rear',
-                'camera_4': 'camera_left',
-                'camera_5': 'camera_front_left'
-            }
-            
-            actual_camera = camera_mapping.get(camera_name, camera_name)
-            if actual_camera not in camera_mappings:
+            if camera_name not in camera_angles:
                 return None
                 
-            mapping = camera_mappings[actual_camera]
-            min_angle = math.radians(mapping['min_angle'])
-            max_angle = math.radians(mapping['max_angle'])
+            base_angle = camera_angles[camera_name]
+            camera_fov = 60
+            angle_offset = (obj_center_ratio - 0.5) * camera_fov
+            target_angle_deg = base_angle + angle_offset
             
-            # Calculate angle
-            angle_range = max_angle - min_angle
-            global_angle = min_angle + obj_center_ratio * angle_range
+            # Normalize angle
+            if target_angle_deg > 180:
+                target_angle_deg -= 360
+            elif target_angle_deg < -180:
+                target_angle_deg += 360
+                
+            target_angle_rad = math.radians(target_angle_deg)
             
-            # Calculate coordinates (Velodyne frame)
-            x = distance * math.cos(global_angle)
-            y = distance * math.sin(global_angle)
-            z = 0.0  # Ground level assumption untuk mobile robot
+            # Calculate 3D coordinates (Velodyne frame)
+            x = distance * math.cos(target_angle_rad)
+            y = distance * math.sin(target_angle_rad)
+            z = 0.0  # Ground level assumption
             
             return (x, y, z)
             
@@ -537,6 +535,45 @@ class SimpleFusionNode(Node):
                     
         except Exception as e:
             self.get_logger().error(f"Error in debug_lidar_mapping: {e}")
+
+    def debug_lidar_detailed(self):
+        """Debug LiDAR data secara detail untuk troubleshooting"""
+        try:
+            if not self.latest_scan:
+                self.get_logger().warning("No LiDAR scan data available")
+                return
+                
+            scan = self.latest_scan
+            
+            # Log basic info
+            valid_ranges = [r for r in scan.ranges if math.isfinite(r) and r > 0]
+            self.get_logger().info(
+                f"🛰️ LiDAR: {len(valid_ranges)}/{len(scan.ranges)} valid, "
+                f"range: {math.degrees(scan.angle_min):.1f}° to {math.degrees(scan.angle_max):.1f}°"
+            )
+            
+            # Sample data at camera angles
+            camera_angles = [0, 60, 120, 180, 240, 300]  # Expected camera positions
+            for i, angle_deg in enumerate(camera_angles):
+                angle_rad = math.radians(angle_deg)
+                
+                # Normalize to scan range
+                if angle_rad > scan.angle_max:
+                    angle_rad -= 2 * math.pi
+                elif angle_rad < scan.angle_min:
+                    angle_rad += 2 * math.pi
+                    
+                if scan.angle_min <= angle_rad <= scan.angle_max:
+                    ray_idx = int((angle_rad - scan.angle_min) / scan.angle_increment)
+                    if 0 <= ray_idx < len(scan.ranges):
+                        distance = scan.ranges[ray_idx]
+                        self.get_logger().info(
+                            f"  Camera_{i} direction ({angle_deg}°): "
+                            f"ray[{ray_idx}] = {distance:.2f}m"
+                        )
+        
+        except Exception as e:
+            self.get_logger().error(f"Error in debug_lidar_detailed: {e}")
 
 def main(args=None):
     """Main entry point"""
