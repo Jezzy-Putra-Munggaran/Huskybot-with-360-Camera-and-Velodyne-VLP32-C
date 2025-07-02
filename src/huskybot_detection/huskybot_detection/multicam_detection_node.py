@@ -924,6 +924,28 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                 # Update visualization dengan info lengkap
                 pass
 
+    def get_adaptive_font_params(self, img_width, img_height):
+        """Get adaptive font parameters based on image resolution."""
+        # Base parameters untuk 640x480
+        base_width = 640
+        base_height = 480
+        base_font_scale = 0.6
+        base_thickness = 2
+        
+        # Scale berdasarkan resolusi aktual
+        width_scale = img_width / base_width
+        height_scale = img_height / base_height
+        avg_scale = (width_scale + height_scale) / 2
+        
+        # Clamp scaling untuk menghindari font terlalu besar/kecil
+        scale_factor = max(0.5, min(2.0, avg_scale))
+        
+        return {
+            'font_scale': base_font_scale * scale_factor,
+            'thickness': max(1, int(base_thickness * scale_factor)),
+            'line_spacing': int(25 * scale_factor)
+        }
+
 def main(args=None):
     # Entry point ROS2 node
     rclpy.init(args=args)
