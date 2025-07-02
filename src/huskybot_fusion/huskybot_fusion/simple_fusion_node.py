@@ -168,13 +168,25 @@ class SimpleFusionNode(Node):
         
         # Statistics timer (less frequent)
         self.stats_timer = self.create_timer(30.0, self.log_statistics)
+        
+        # PERBAIKAN: Add debug timer
+        self.debug_timer = self.create_timer(5.0, self.debug_lidar_status)
     
     def laserscan_callback(self, msg):
-        """Process LaserScan with validation"""
+        """Process LaserScan with validation and debugging"""
         try:
             if msg and len(msg.ranges) > 0:
                 with self.lock:
                     self.latest_scan = msg
+                    
+                # PERBAIKAN: Log scan info for debugging
+                valid_ranges = sum(1 for r in msg.ranges if math.isfinite(r) and r > 0)
+                self.get_logger().debug(
+                    f"LaserScan: {valid_ranges}/{len(msg.ranges)} valid ranges, "
+                    f"angle_min={math.degrees(msg.angle_min):.1f}°, "
+                    f"angle_max={math.degrees(msg.angle_max):.1f}°"
+                )
+                
         except Exception as e:
             self.get_logger().debug(f"Error in laserscan_callback: {e}")
     
@@ -201,28 +213,63 @@ class SimpleFusionNode(Node):
         """Get distance from LaserScan based on camera and object position"""
         try:
             if not self.latest_scan or camera_name not in self.camera_fov:
+                self.get_logger().debug(f"No scan data or unknown camera: {camera_name}")
                 return None
             
             scan = self.latest_scan
+            
+            # PERBAIKAN: Validate scan data first
+            if not scan.ranges or len(scan.ranges) == 0:
+                self.get_logger().debug("LaserScan ranges is empty")
+                return None
+            
             cam_min_angle, cam_max_angle = self.camera_fov[camera_name]
             
             # Map object position to global angle
             global_angle = cam_min_angle + obj_center_ratio * (cam_max_angle - cam_min_angle)
             lidar_angle = math.radians(global_angle)
             
-            # Find corresponding laser ray
-            ray_idx = int((lidar_angle - scan.angle_min) / scan.angle_increment)
+            # PERBAIKAN: Better ray index calculation
+            if scan.angle_increment <= 0:
+                self.get_logger().warning(f"Invalid angle_increment: {scan.angle_increment}")
+                return None
+                
+            # Normalize angle to scan range
+            normalized_angle = lidar_angle
+            while normalized_angle < scan.angle_min:
+                normalized_angle += 2 * math.pi
+            while normalized_angle > scan.angle_max:
+                normalized_angle -= 2 * math.pi
             
+            # Find corresponding laser ray
+            ray_idx = int((normalized_angle - scan.angle_min) / scan.angle_increment)
+            
+            # PERBAIKAN: Validate ray index
             if 0 <= ray_idx < len(scan.ranges):
                 distance = scan.ranges[ray_idx]
-                if (self.min_laser_distance <= distance <= self.max_laser_distance and 
-                    math.isfinite(distance)):
+                
+                # PERBAIKAN: More robust distance validation
+                if (distance > 0 and 
+                    self.min_laser_distance <= distance <= self.max_laser_distance and 
+                    math.isfinite(distance) and not math.isnan(distance)):
+                    
+                    self.get_logger().debug(
+                        f"{camera_name}: Found distance {distance:.2f}m at ray {ray_idx} (angle {math.degrees(normalized_angle):.1f}°)"
+                    )
                     return distance
+                else:
+                    self.get_logger().debug(
+                        f"{camera_name}: Invalid distance {distance} at ray {ray_idx}"
+                    )
+            else:
+                self.get_logger().debug(
+                    f"{camera_name}: Ray index {ray_idx} out of range [0, {len(scan.ranges)}]"
+                )
             
             return None
             
         except Exception as e:
-            self.get_logger().debug(f"Error getting distance: {e}")
+            self.get_logger().debug(f"Error getting distance for {camera_name}: {e}")
             return None
     
     def get_coordinates_from_pointcloud(self, camera_name, obj_center_ratio, distance):
@@ -384,6 +431,27 @@ class SimpleFusionNode(Node):
             
         except Exception as e:
             self.get_logger().debug(f"Error logging statistics: {e}")
+    
+    def debug_lidar_status(self):
+        """Debug method to check LiDAR data availability"""
+        try:
+            if self.latest_scan:
+                valid_ranges = sum(1 for r in self.latest_scan.ranges if math.isfinite(r) and r > 0)
+                self.get_logger().info(
+                    f"🛰️ LiDAR Status: {valid_ranges}/{len(self.latest_scan.ranges)} valid ranges"
+                )
+            else:
+                self.get_logger().warning("🛰️ LiDAR Status: NO SCAN DATA")
+                
+            if self.latest_cloud:
+                self.get_logger().info(
+                    f"☁️ PointCloud Status: {self.latest_cloud.width}x{self.latest_cloud.height} points"
+                )
+            else:
+                self.get_logger().warning("☁️ PointCloud Status: NO CLOUD DATA")
+                
+        except Exception as e:
+            self.get_logger().error(f"Error in debug_lidar_status: {e}")
 
 def main(args=None):
     """Main entry point"""
