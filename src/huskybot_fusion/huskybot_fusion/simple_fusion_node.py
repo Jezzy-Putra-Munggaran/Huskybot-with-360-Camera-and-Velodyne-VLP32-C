@@ -128,8 +128,8 @@ class SimpleFusionNode(Node):
         self.declare_parameter('confidence_threshold', 0.25)
         self.declare_parameter('search_radius', 0.3)
         self.declare_parameter('publish_rate', 5.0)
-        self.declare_parameter('image_width', 640)
-        self.declare_parameter('image_height', 480)
+        self.declare_parameter('image_width', 1920)  # PERBAIKAN: Sesuai dengan resolusi Arducam
+        self.declare_parameter('image_height', 1080)  # PERBAIKAN: Sesuai dengan resolusi Arducam
         
         # Get parameters
         self.max_laser_distance = self.get_parameter('max_laser_distance').value
@@ -269,8 +269,9 @@ class SimpleFusionNode(Node):
                         if det.confidence < self.confidence_threshold:
                             continue
                         
-                        # Calculate object center
-                        obj_center_ratio = (det.left + det.right) / (2.0 * self.image_width)
+                        # PERBAIKAN: Properly calculate object center based on actual coordinates
+                        bbox_center_x = (det.left + det.right) / 2.0
+                        obj_center_ratio = bbox_center_x / self.image_width
                         
                         # Get distance and coordinates
                         distance = self.get_distance_from_laserscan(camera_name, obj_center_ratio)
@@ -294,9 +295,21 @@ class SimpleFusionNode(Node):
                         result.obb_angle = -1
                         result.mask_indices = []
                         
+                        # PERBAIKAN: Check if 'note' field exists before setting
+                        if hasattr(result, 'note'):
+                            if distance and coords:
+                                result.note = f"Distance: {distance:.2f}m, Coord: ({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
+                            else:
+                                result.note = "No distance/coordinate data available"
+                        else:
+                            # If note field doesn't exist, log distance info separately
+                            if distance and coords:
+                                self.get_logger().debug(
+                                    f"{det.class_name}: Distance={distance:.2f}m, "
+                                    f"Coord=({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
+                                )
+                        
                         if distance and coords:
-                            result.note = f"Distance: {distance:.2f}m, Coord: ({coords[0]:.2f}, {coords[1]:.2f}, {coords[2]:.2f})"
-                            
                             # Create marker for visualization
                             marker = Marker()
                             marker.header = detections.header
@@ -318,8 +331,6 @@ class SimpleFusionNode(Node):
                             marker.color.a = 0.7
                             marker.lifetime.sec = 2
                             markers.append(marker)
-                        else:
-                            result.note = "No distance/coordinate data available"
                         
                         enhanced_msg.yolov12_inference.append(result)
                     

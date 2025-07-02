@@ -585,7 +585,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def publish_results(self, results, camera_name):
-        """Publish hasil deteksi ke topic /detection (Yolov12Inference)."""
+        """Publish hasil deteksi ke topic /detection (Yolov12Inference) dengan koordinat yang benar."""
         if not results or len(results) == 0:
             return
         
@@ -600,85 +600,78 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             msg.note = f"Inference completed at {time.time()}"
             msg.yolov12_inference = []
             
-            # PERBAIKAN: Better handling of YOLOv12 results
+            # PERBAIKAN: Better handling of YOLOv12 results with correct coordinates
             try:
-                result = results[0]  # First result
-                if hasattr(result, 'boxes') and result.boxes is not None:
-                    boxes = result.boxes
-                    for i, box in enumerate(boxes):
-                        try:
-                            det = InferenceResult()
-                            
-                            # Extract class name dengan validasi model names
+                for result in results:
+                    if hasattr(result, 'boxes') and result.boxes is not None:
+                        boxes = result.boxes
+                        for box in boxes:
                             try:
-                                cls_id = int(box.cls[0].cpu())
-                                # PERBAIKAN: Better class name handling
-                                if hasattr(self.model, 'names') and isinstance(self.model.names, dict) and cls_id in self.model.names:
-                                    det.class_name = str(self.model.names[cls_id])
+                                # PERBAIKAN: Extract coordinates in correct format (x1, y1, x2, y2)
+                                if hasattr(box, 'xyxy'):
+                                    coords = box.xyxy[0].cpu().numpy()
+                                    x1, y1, x2, y2 = coords
                                 else:
-                                    # Fallback untuk COCO dataset names
-                                    coco_names = {
-                                        0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
-                                        5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
-                                        10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench',
-                                        14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow',
-                                        20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack',
-                                        25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee',
-                                        30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat',
-                                        35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket',
-                                        39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife',
-                                        44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich',
-                                        49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza',
-                                        54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant',
-                                        59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop',
-                                        64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave',
-                                        69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book',
-                                        74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier',
-                                        79: 'toothbrush'
-                                    }
-                                    det.class_name = coco_names.get(cls_id, f"class_{cls_id}")
+                                    # Fallback untuk format lain
+                                    continue
+                                
+                                # Extract confidence and class
+                                confidence = float(box.conf.cpu().numpy()[0]) if hasattr(box, 'conf') else 0.0
+                                class_id = int(box.cls.cpu().numpy()[0]) if hasattr(box, 'cls') else 0
+                                
+                                # Pastikan koordinat dalam range yang benar
+                                x1 = max(0, min(x1, 1920))  # Sesuai resolusi kamera
+                                y1 = max(0, min(y1, 1080))
+                                x2 = max(0, min(x2, 1920))
+                                y2 = max(0, min(y2, 1080))
+                                
+                                # Skip deteksi dengan confidence rendah
+                                if confidence < self.conf_thres:
+                                    continue
+                                
+                                # Buat InferenceResult
+                                inference_result = InferenceResult()
+                                inference_result.class_name = self.model.names[class_id] if hasattr(self.model, 'names') else f"class_{class_id}"
+                                inference_result.confidence = confidence
+                                
+                                # PERBAIKAN: Set koordinat dengan benar (left=x1, top=y1, right=x2, bottom=y2)
+                                inference_result.left = int(x1)
+                                inference_result.top = int(y1) 
+                                inference_result.right = int(x2)
+                                inference_result.bottom = int(y2)
+                                
+                                # Set default values for other fields
+                                inference_result.track_id = -1
+                                inference_result.obb_angle = -1
+                                inference_result.mask_indices = []
+                                
+                                # Add note if field exists
+                                if hasattr(inference_result, 'note'):
+                                    inference_result.note = f"Detected by {camera_name}"
+                                
+                                msg.yolov12_inference.append(inference_result)
+                                
+                                # Debug log untuk koordinat
+                                self.get_logger().debug(
+                                    f"{camera_name}: {inference_result.class_name} "
+                                    f"conf={confidence:.2f} "
+                                    f"bbox=({x1:.0f},{y1:.0f},{x2:.0f},{y2:.0f})"
+                                )
+                                
                             except Exception as e:
-                                self.get_logger().debug(f"Error extracting class: {e}")
-                                det.class_name = "unknown"
-                        
-                            # Extract confidence
-                            try:
-                                det.confidence = float(box.conf[0].cpu())
-                            except Exception as e:
-                                self.get_logger().debug(f"Error extracting confidence: {e}")
-                                det.confidence = 0.0
-                        
-                            # Extract bounding box coordinates
-                            try:
-                                xyxy = box.xyxy[0].cpu().numpy()
-                                det.left = int(xyxy[0])
-                                det.top = int(xyxy[1])
-                                det.right = int(xyxy[2])
-                                det.bottom = int(xyxy[3])
-                            except Exception as e:
-                                self.get_logger().debug(f"Error extracting bbox: {e}")
-                                det.left = det.top = det.right = det.bottom = 0
-                        
-                            # PERBAIKAN: Fix type error - obb_angle must be int, not float
-                            det.track_id = -1
-                            det.obb_angle = -1  # FIXED: int instead of float
-                            det.mask_indices = []
-                        
-                            msg.yolov12_inference.append(det)
-                        
-                        except Exception as e:
-                            self.get_logger().warning(f"Error processing detection {i}: {e}")
-                        
+                                self.get_logger().warning(f"Error processing detection box: {e}")
+                                continue
+                                
             except Exception as e:
-                self.get_logger().error(f"Error parsing detection results: {e}")
-                self.get_logger().error(traceback.format_exc())
+                self.get_logger().error(f"Error processing YOLOv12 results: {e}")
+                return
         
             # Publish message
             if hasattr(self, 'publisher') and self.publisher is not None:
                 self.publisher.publish(msg)
                 self.get_logger().debug(f"Published {len(msg.yolov12_inference)} detections from {camera_name}")
             else:
-                self.get_logger().error("Publisher not initialized")
+                self.get_logger().error("Publisher not available")
                 
         except Exception as e:
             self.get_logger().error(f"Error publishing detection results: {e}")
