@@ -210,87 +210,141 @@ class SimpleFusionNode(Node):
             self.get_logger().debug(f"Error in detection_callback: {e}")
     
     def get_distance_from_laserscan(self, camera_name, obj_center_ratio):
-        """Get distance from LaserScan based on camera and object position"""
+        """Get distance dari LaserScan dengan mapping yang benar untuk Jetson AGX Orin"""
         try:
             if not self.latest_scan or camera_name not in self.camera_fov:
-                self.get_logger().debug(f"No scan data or unknown camera: {camera_name}")
                 return None
             
             scan = self.latest_scan
-            
-            # PERBAIKAN: Validate scan data first
             if not scan.ranges or len(scan.ranges) == 0:
-                self.get_logger().debug("LaserScan ranges is empty")
                 return None
             
-            cam_min_angle, cam_max_angle = self.camera_fov[camera_name]
+            # PERBAIKAN: Mapping yang benar untuk setup Huskybot dengan Velodyne VLP32-C
+            # Camera FOV mapping yang disesuaikan dengan mounting position
+            camera_mappings = {
+                'camera_front': {'min_angle': -15, 'max_angle': 15},       # Depan
+                'camera_front_left': {'min_angle': 45, 'max_angle': 75},   # Depan kiri  
+                'camera_left': {'min_angle': 75, 'max_angle': 105},        # Kiri
+                'camera_rear': {'min_angle': 165, 'max_angle': 195},       # Belakang
+                'camera_rear_right': {'min_angle': 285, 'max_angle': 315}, # Belakang kanan
+                'camera_right': {'min_angle': 255, 'max_angle': 285}       # Kanan
+            }
             
-            # Map object position to global angle
-            global_angle = cam_min_angle + obj_center_ratio * (cam_max_angle - cam_min_angle)
-            lidar_angle = math.radians(global_angle)
+            # Extract camera name dari topic (misal: camera_0 -> camera_front)
+            camera_mapping = {
+                'camera_0': 'camera_front',
+                'camera_1': 'camera_right', 
+                'camera_2': 'camera_rear_right',
+                'camera_3': 'camera_rear',
+                'camera_4': 'camera_left',
+                'camera_5': 'camera_front_left'
+            }
             
-            # PERBAIKAN: Better ray index calculation
-            if scan.angle_increment <= 0:
-                self.get_logger().warning(f"Invalid angle_increment: {scan.angle_increment}")
+            actual_camera = camera_mapping.get(camera_name, camera_name)
+            if actual_camera not in camera_mappings:
+                self.get_logger().warning(f"Unknown camera: {camera_name} -> {actual_camera}")
                 return None
                 
-            # Normalize angle to scan range
-            normalized_angle = lidar_angle
-            while normalized_angle < scan.angle_min:
-                normalized_angle += 2 * math.pi
-            while normalized_angle > scan.angle_max:
-                normalized_angle -= 2 * math.pi
+            mapping = camera_mappings[actual_camera]
+            min_angle = math.radians(mapping['min_angle'])
+            max_angle = math.radians(mapping['max_angle'])
             
-            # Find corresponding laser ray
-            ray_idx = int((normalized_angle - scan.angle_min) / scan.angle_increment)
+            # Map object position ke global angle
+            angle_range = max_angle - min_angle
+            global_angle = min_angle + obj_center_ratio * angle_range
             
-            # PERBAIKAN: Validate ray index
+            # Convert ke LiDAR coordinate system
+            # Velodyne VLP32-C: angle_min biasanya -π, angle_max = π
+            lidar_angle = global_angle
+            
+            # Normalize angle ke range LiDAR
+            while lidar_angle < scan.angle_min:
+                lidar_angle += 2 * math.pi
+            while lidar_angle > scan.angle_max:
+                lidar_angle -= 2 * math.pi
+            
+            # Hitung index ray yang sesuai
+            if abs(scan.angle_increment) < 1e-6:
+                self.get_logger().warning("Invalid angle_increment")
+                return None
+                
+            ray_idx = int((lidar_angle - scan.angle_min) / scan.angle_increment)
+            
+            # Validasi index dan ambil distance
             if 0 <= ray_idx < len(scan.ranges):
                 distance = scan.ranges[ray_idx]
                 
-                # PERBAIKAN: More robust distance validation
+                # Validasi distance
                 if (distance > 0 and 
                     self.min_laser_distance <= distance <= self.max_laser_distance and 
-                    math.isfinite(distance) and not math.isnan(distance)):
+                    math.isfinite(distance)):
                     
-                    self.get_logger().debug(
-                        f"{camera_name}: Found distance {distance:.2f}m at ray {ray_idx} (angle {math.degrees(normalized_angle):.1f}°)"
+                    self.get_logger().info(
+                        f"✅ {camera_name}({actual_camera}): Found distance {distance:.2f}m "
+                        f"at ray {ray_idx} (angle {math.degrees(lidar_angle):.1f}°)"
                     )
                     return distance
                 else:
                     self.get_logger().debug(
-                        f"{camera_name}: Invalid distance {distance} at ray {ray_idx}"
+                        f"❌ {camera_name}: Invalid distance {distance} at ray {ray_idx}"
                     )
             else:
                 self.get_logger().debug(
-                    f"{camera_name}: Ray index {ray_idx} out of range [0, {len(scan.ranges)}]"
+                    f"❌ {camera_name}: Ray index {ray_idx} out of range [0, {len(scan.ranges)}]"
                 )
             
             return None
             
         except Exception as e:
-            self.get_logger().debug(f"Error getting distance for {camera_name}: {e}")
+            self.get_logger().error(f"Error getting distance for {camera_name}: {e}")
             return None
-    
+
     def get_coordinates_from_pointcloud(self, camera_name, obj_center_ratio, distance):
-        """Get 3D coordinates using simple trigonometry"""
+        """Calculate 3D coordinates menggunakan trigonometry sederhana"""
         try:
-            if not distance or camera_name not in self.camera_fov:
+            if not distance:
                 return None
+                
+            # Gunakan mapping yang sama seperti get_distance_from_laserscan
+            camera_mappings = {
+                'camera_front': {'min_angle': -15, 'max_angle': 15},
+                'camera_front_left': {'min_angle': 45, 'max_angle': 75},
+                'camera_left': {'min_angle': 75, 'max_angle': 105},
+                'camera_rear': {'min_angle': 165, 'max_angle': 195},
+                'camera_rear_right': {'min_angle': 285, 'max_angle': 315},
+                'camera_right': {'min_angle': 255, 'max_angle': 285}
+            }
             
-            cam_min_angle, cam_max_angle = self.camera_fov[camera_name]
-            global_angle = cam_min_angle + obj_center_ratio * (cam_max_angle - cam_min_angle)
-            lidar_angle = math.radians(global_angle)
+            camera_mapping = {
+                'camera_0': 'camera_front',
+                'camera_1': 'camera_right',
+                'camera_2': 'camera_rear_right', 
+                'camera_3': 'camera_rear',
+                'camera_4': 'camera_left',
+                'camera_5': 'camera_front_left'
+            }
             
-            # Calculate coordinates
-            x = distance * math.cos(lidar_angle)
-            y = distance * math.sin(lidar_angle)
-            z = 0.0  # Ground level assumption
+            actual_camera = camera_mapping.get(camera_name, camera_name)
+            if actual_camera not in camera_mappings:
+                return None
+                
+            mapping = camera_mappings[actual_camera]
+            min_angle = math.radians(mapping['min_angle'])
+            max_angle = math.radians(mapping['max_angle'])
+            
+            # Calculate angle
+            angle_range = max_angle - min_angle
+            global_angle = min_angle + obj_center_ratio * angle_range
+            
+            # Calculate coordinates (Velodyne frame)
+            x = distance * math.cos(global_angle)
+            y = distance * math.sin(global_angle)
+            z = 0.0  # Ground level assumption untuk mobile robot
             
             return (x, y, z)
             
         except Exception as e:
-            self.get_logger().debug(f"Error calculating coordinates: {e}")
+            self.get_logger().error(f"Error calculating coordinates: {e}")
             return None
     
     def process_fusion(self):
@@ -452,6 +506,37 @@ class SimpleFusionNode(Node):
                 
         except Exception as e:
             self.get_logger().error(f"Error in debug_lidar_status: {e}")
+
+    def debug_lidar_mapping(self):
+        """Debug method untuk cek mapping LiDAR secara detail"""
+        try:
+            if not self.latest_scan:
+                self.get_logger().warning("No LiDAR scan data")
+                return
+                
+            scan = self.latest_scan
+            
+            # Log scan properties
+            self.get_logger().info(
+                f"🛰️ LiDAR Debug: "
+                f"angle_min={math.degrees(scan.angle_min):.1f}°, "
+                f"angle_max={math.degrees(scan.angle_max):.1f}°, "
+                f"angle_increment={math.degrees(scan.angle_increment):.3f}°, "
+                f"ranges={len(scan.ranges)}"
+            )
+            
+            # Sample beberapa ray untuk debugging
+            sample_indices = [0, len(scan.ranges)//4, len(scan.ranges)//2, 3*len(scan.ranges)//4, len(scan.ranges)-1]
+            for idx in sample_indices:
+                if idx < len(scan.ranges):
+                    angle = scan.angle_min + idx * scan.angle_increment
+                    distance = scan.ranges[idx]
+                    self.get_logger().info(
+                        f"  Ray[{idx}]: angle={math.degrees(angle):.1f}°, distance={distance:.2f}m"
+                    )
+                    
+        except Exception as e:
+            self.get_logger().error(f"Error in debug_lidar_mapping: {e}")
 
 def main(args=None):
     """Main entry point"""
