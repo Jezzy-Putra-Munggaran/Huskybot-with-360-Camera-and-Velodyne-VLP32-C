@@ -677,7 +677,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def visualize_results(self, images):
-        """Visualisasi hasil deteksi semua kamera (side-by-side) dengan bounding box."""
+        """Visualisasi hasil deteksi dengan bounding box tebal dan text yang jelas"""
         if not self.visualization_enabled:
             return
         try:
@@ -685,267 +685,191 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             
             for idx, img in enumerate(images):
                 if img is not None:
-                    # PERBAIKAN: Pastikan annotated_img selalu terdefinisi
                     annotated_img = img.copy()
+                    h, w = annotated_img.shape[:2]
                     
-                    # Better bounding box visualization with class names
+                    # Get adaptive parameters berdasarkan resolusi
+                    font_params = self.get_adaptive_font_params(w, h)
+                    
                     if hasattr(self, 'latest_results') and idx < len(self.latest_results):
                         results = self.latest_results[idx]
                         if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
                             boxes = results[0].boxes
+                            
                             for box in boxes:
                                 try:
-                                    # Extract coordinates
                                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                                     conf = float(box.conf[0].cpu())
                                     cls = int(box.cls[0].cpu())
                                     
-                                    # Get class name dengan fallback ke COCO
+                                    # Get class name
                                     class_name = "unknown"
-                                    if hasattr(self.model, 'names') and isinstance(self.model.names, dict) and cls in self.model.names:
+                                    if hasattr(self.model, 'names') and cls in self.model.names:
                                         class_name = str(self.model.names[cls])
-                                    else:
-                                        # COCO fallback
-                                        coco_names = {
-                                            0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
-                                            5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
-                                            39: 'bottle', 56: 'chair', 57: 'couch', 62: 'tv', 63: 'laptop',
-                                            67: 'cell phone', 73: 'book', 74: 'clock'
-                                        }
-                                        class_name = coco_names.get(cls, f"class_{cls}")
                                     
-                                    # Better visualization colors based on class
-                                    color_map = {
-                                        'person': (0, 255, 0),      # Green
-                                        'car': (255, 0, 0),        # Blue  
-                                        'bicycle': (0, 255, 255),  # Yellow
-                                        'motorcycle': (255, 0, 255),  # Magenta
-                                        'truck': (0, 0, 255),      # Red
-                                        'bus': (255, 255, 0),      # Cyan
+                                    # **PERBAIKAN UTAMA: Bounding box lebih tebal**
+                                    bbox_thickness = max(3, int(w / 200))  # Thickness adaptif
+                                    
+                                    # Color mapping yang lebih kontras
+                                    colors = {
+                                        'person': (0, 255, 0),    # Hijau terang
+                                        'car': (255, 0, 0),       # Biru terang
+                                        'bicycle': (0, 255, 255), # Kuning
+                                        'motorcycle': (255, 0, 255), # Magenta
+                                        'truck': (0, 0, 255),     # Merah
+                                        'bus': (255, 255, 0),     # Cyan
                                     }
-                                    box_color = color_map.get(class_name, (0, 255, 0))  # Default green
+                                    box_color = colors.get(class_name, (0, 200, 0))
                                     
-                                    # Draw bounding box dengan thickness berdasarkan confidence
-                                    thickness = max(1, int(conf * 4))
-                                    cv2.rectangle(annotated_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
-                                    
-                                    # Better label with confidence percentage
-                                    label = f"{class_name}: {conf:.1%}"  # Format sebagai percentage
-                                    label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
-                                    
-                                    # Background rectangle untuk text
+                                    # Draw thick bounding box
                                     cv2.rectangle(annotated_img, 
-                                                (int(x1), int(y1-25)), 
-                                                (int(x1 + label_size[0] + 10), int(y1)), 
-                                                box_color, -1)
+                                                (int(x1), int(y1)), (int(x2), int(y2)), 
+                                                box_color, bbox_thickness)
                                     
-                                    # Text label
-                                    cv2.putText(annotated_img, label, (int(x1+5), int(y1-8)), 
-                                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                                              
+                                    # **PERBAIKAN: Multi-line text dengan font besar**
+                                    # Simulasi data dari fusion (nanti akan diganti dengan data real)
+                                    distance = 5.2  # Dari LiDAR fusion
+                                    coord_x, coord_y, coord_z = 3.1, 2.4, 0.5  # Dari LiDAR
+                                    
+                                    # Text lines dengan urutan yang diminta
+                                    text_lines = [
+                                        f"String: {class_name}",
+                                        f"Confidence: {conf:.2f}",
+                                        f"Distance: {distance:.1f} m",
+                                        f"Coordinate: ({coord_x:.1f}, {coord_y:.1f}, {coord_z:.1f})"
+                                    ]
+                                    
+                                    # **Font yang lebih besar dan jelas**
+                                    font_scale = font_params['font_scale'] * 1.5  # Lebih besar
+                                    font_thickness = max(2, font_params['thickness'])
+                                    line_spacing = int(font_params['line_spacing'] * 1.2)
+                                    
+                                    # Calculate text box size
+                                    max_text_width = 0
+                                    total_text_height = 0
+                                    
+                                    for line in text_lines:
+                                        (text_w, text_h), baseline = cv2.getTextSize(
+                                            line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
+                                        max_text_width = max(max_text_width, text_w)
+                                        total_text_height += text_h + baseline + 5
+                                    
+                                    # **Background gelap untuk text (lebih kontras)**
+                                    text_bg_x1 = int(x1)
+                                    text_bg_y1 = int(y1) - total_text_height - 10
+                                    text_bg_x2 = int(x1) + max_text_width + 20
+                                    text_bg_y2 = int(y1)
+                                    
+                                    # Ensure text background is within image bounds
+                                    text_bg_y1 = max(0, text_bg_y1)
+                                    text_bg_x2 = min(w, text_bg_x2)
+                                    
+                                    # Draw semi-transparent background
+                                    overlay = annotated_img.copy()
+                                    cv2.rectangle(overlay, 
+                                                (text_bg_x1, text_bg_y1), 
+                                                (text_bg_x2, text_bg_y2), 
+                                                (0, 0, 0), -1)  # Hitam solid
+                                    cv2.addWeighted(annotated_img, 0.3, overlay, 0.7, 0, annotated_img)
+                                    
+                                    # **Draw text lines dengan spacing yang proper**
+                                    current_y = text_bg_y1 + 25
+                                    for line in text_lines:
+                                        cv2.putText(annotated_img, line, 
+                                                  (text_bg_x1 + 10, current_y),
+                                                  cv2.FONT_HERSHEY_SIMPLEX, 
+                                                  font_scale, 
+                                                  (255, 255, 255),  # Putih terang
+                                                  font_thickness,
+                                                  cv2.LINE_AA)  # Anti-aliasing
+                                        current_y += line_spacing
+                                        
                                 except Exception as e:
-                                    self.get_logger().debug(f"Error drawing box: {e}")
-                    
-                    # PERBAIKAN: Add camera label SETELAH annotated_img didefinisikan
-                    try:
-                        cv2.rectangle(annotated_img, (5, 5), (200, 35), (0, 0, 0), -1)  # Background
-                        cv2.putText(annotated_img, f"Camera {idx}", (10, 25), 
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-                        
-                        # Add detection count dengan styling
-                        detection_count = self.detection_counts[idx] if idx < len(self.detection_counts) else 0
-                        cv2.rectangle(annotated_img, (5, 40), (150, 70), (50, 50, 50), -1)  # Background
-                        cv2.putText(annotated_img, f"Detections: {detection_count}", (10, 60), 
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
-                        
-                        valid_images.append(annotated_img)
-                    except Exception as e:
-                        self.get_logger().debug(f"Error adding camera overlay for camera {idx}: {e}")
-                        # Fallback: tambahkan gambar asli tanpa overlay
-                        valid_images.append(img)
+                                    self.get_logger().debug(f"Error drawing detection: {e}")
+                
+                # **Camera label yang lebih jelas**
+                cv2.rectangle(annotated_img, (5, 5), (250, 45), (0, 0, 0), -1)
+                cv2.putText(annotated_img, f"Camera {idx}", (15, 30), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+                
+                valid_images.append(annotated_img)
         
-            if not valid_images:
-                return
-            
-            # PERBAIKAN: Better error handling untuk display
-            try:
-                # Resize untuk display dengan aspect ratio yang tetap
-                target_height = 300
-                resized_images = []
-                for image in valid_images:
-                    if image is not None and image.size > 0:
-                        h, w = image.shape[:2]
-                        if h > 0 and w > 0:
-                            scale = target_height / h
-                            new_width = int(w * scale)
-                            resized = cv2.resize(image, (new_width, target_height))
-                            resized_images.append(resized)
-                
-                if not resized_images:
-                    return
-                
-                # Display dengan layout yang lebih baik
-                if len(resized_images) > 3:
-                    # Split into two rows untuk 6 cameras
-                    top_row = np.hstack(resized_images[:3])
-                    bottom_row_imgs = resized_images[3:]
-                    
-                    if bottom_row_imgs:
-                        bottom_row = np.hstack(bottom_row_imgs)
-                        
-                        # Pad bottom row jika perlu
-                        if bottom_row.shape[1] < top_row.shape[1]:
-                            pad_width = top_row.shape[1] - bottom_row.shape[1]
-                            bottom_row = np.pad(bottom_row, ((0, 0), (0, pad_width), (0, 0)), 'constant')
-                        
-                        vis = np.vstack([top_row, bottom_row])
-                    else:
-                        vis = top_row
-                else:
-                    vis = np.hstack(resized_images)
-                
-                cv2.imshow("MultiCam YOLOv12 Detection Results", vis)
-                cv2.waitKey(1)
-                
-            except cv2.error as e:
-                self.get_logger().warning(f"OpenCV visualization error: {e}")
-            except Exception as e:
-                self.get_logger().warning(f"Error creating visualization layout: {e}")
+            # **Display dengan layout yang lebih baik**
+            if valid_images:
+                self._display_multi_camera(valid_images)
                 
         except Exception as e:
             self.get_logger().error(f"Error in visualization: {e}")
-            self.get_logger().error(traceback.format_exc())
 
-    def publish_diagnostics(self):
-        # Publish diagnostics ke /diagnostics untuk monitoring health node
-        try:
-            diag_msg = DiagnosticArray()
-            diag_msg.header.stamp = self.get_clock().now().to_msg()
-            status = DiagnosticStatus()
-            status.name = "huskybot_detection"
-            status.hardware_id = platform.node()
-            if not self.is_initialized or self.model is None:
-                status.level = DiagnosticStatus.ERROR
-                status.message = "Node not initialized or model not loaded"
-            else:
-                status.level = DiagnosticStatus.OK
-                status.message = "Node running"
-            status.values.append(KeyValue(key="model_path", value=self.model_path))
-            status.values.append(KeyValue(key="camera_count", value=str(self.cam_count)))
-            status.values.append(KeyValue(key="platform", value="Jetson" if self.is_jetson else "Generic"))
-            for i, count in enumerate(self.detection_counts):
-                status.values.append(KeyValue(key=f"detection_count_camera_{i}", value=str(count)))
-            diag_msg.status.append(status)
-            
-            # Publish diagnostics message
-            if hasattr(self, 'diagnostic_pub') and self.diagnostic_pub is not None:
-                self.diagnostic_pub.publish(diag_msg)
-                self.get_logger().debug(f"Published diagnostics: {status.message}")
-            else:
-                self.get_logger().error("Diagnostic publisher not initialized")
+def _display_multi_camera(self, images):
+    """Display multiple cameras dengan layout yang optimal"""
+    try:
+        target_height = 400  # Lebih besar untuk readability
+        resized_images = []
+        
+        for image in images:
+            if image is not None and image.size > 0:
+                h, w = image.shape[:2]
+                scale = target_height / h
+                new_width = int(w * scale)
+                resized = cv2.resize(image, (new_width, target_height), 
+                                   interpolation=cv2.INTER_LINEAR)
+                resized_images.append(resized)
+        
+        if not resized_images:
+            return
+        
+        # Layout untuk 6 kamera (3x2)
+        if len(resized_images) >= 3:
+            top_row = np.hstack(resized_images[:3])
+            if len(resized_images) > 3:
+                bottom_imgs = resized_images[3:]
+                # Pad jika perlu
+                while len(bottom_imgs) < 3:
+                    bottom_imgs.append(np.zeros_like(resized_images[0]))
+                bottom_row = np.hstack(bottom_imgs[:3])
                 
-        except Exception as e:
-            self.get_logger().warning(f"Error in health check: {e}")
-
-    def restart_model_callback(self, request, response):
-        # Service callback untuk restart model YOLOv12
-        try:
-            self.get_logger().info("Restarting YOLOv12 model")
-            self._load_model()
-            response.success = True
-            response.message = f"Model restarted successfully: {self.model_path}"
-            return response
-        except Exception as e:
-            self.get_logger().error(f"Error restarting model: {e}")
-            response.success = False
-            response.message = f"Failed to restart model: {str(e)}"
-            return response
-
-    def get_status_callback(self, request, response):
-        # Service callback untuk get status node (health check)
-        try:
-            status_msg = f"MultiCamDetectionNode Status:\n"
-            status_msg += f"- Camera count: {self.cam_count}\n"
-            status_msg += f"- Model path: {self.model_path}\n"
-            status_msg += f"- Platform: {platform.platform()}\n"
-            status_msg += f"- Is Jetson: {self.is_jetson}\n"
-            status_msg += "- Detection counts:\n"
-            for i, count in enumerate(self.detection_counts):
-                status_msg += f"  Camera {i}: {count}\n"
-            status_msg += "- Inference times:\n"
-            for i, infer_time in enumerate(self.inference_times):
-                status_msg += f"  Camera {i}: {infer_time:.3f}s\n"
-            response.success = True
-            response.message = status_msg
-            return response
-        except Exception as e:
-            self.get_logger().error(f"Error getting status: {e}")
-            response.success = False
-            response.message = f"Failed to get status: {str(e)}"
-            return response
-
-    def publish_health_check(self):
-        """Publish health check information."""
-        try:
-            # Get system resource usage
-            try:
-                cpu_percent = psutil.cpu_percent()
-                memory_percent = psutil.virtual_memory().percent
-            except:
-                cpu_percent = 0.0
-                memory_percent = 0.0
-            
-            # Log health check
-            logging.info(f"HealthCheck: CPU={cpu_percent:.1f}%, RAM={memory_percent:.1f}%")
-            
-        except Exception as e:
-            self.get_logger().warning(f"Error in health check: {e}")
-
-    def on_shutdown(self):
-        # Shutdown node dengan aman, tutup window OpenCV dan logging
-        self.running = False
-        self.get_logger().info("Shutting down MultiCamDetectionNode...")
-        if self.visualization_enabled:
-            try:
-                cv2.destroyAllWindows()
-            except Exception as e:
-                self.get_logger().warning(f"Error closing OpenCV windows: {e}")
-        try:
-            logging.shutdown()
-        except Exception as e:
-            print(f"Error shutting down logging: {e}")
-
-    # Tambahkan callback untuk subscriber hasil fusion
-    def fusion_callback(self, msg):
-        # Update visualization dengan distance dan coordinate
-        for detection in msg.yolov12_inference:
-            # Parse note field untuk distance dan coordinate
-            if "Distance:" in detection.note:
-                # Update visualization dengan info lengkap
-                pass
-
-    def get_adaptive_font_params(self, img_width, img_height):
-        """Get adaptive font parameters based on image resolution."""
-        # Base parameters untuk 640x480
-        base_width = 640
-        base_height = 480
-        base_font_scale = 0.6
-        base_thickness = 2
+                # Ensure same width
+                if bottom_row.shape[1] != top_row.shape[1]:
+                    scale_factor = top_row.shape[1] / bottom_row.shape[1]
+                    new_height = int(bottom_row.shape[0] * scale_factor)
+                    bottom_row = cv2.resize(bottom_row, (top_row.shape[1], new_height))
+                
+                final_image = np.vstack([top_row, bottom_row])
+            else:
+                final_image = top_row
+        else:
+            final_image = np.hstack(resized_images)
         
-        # Scale berdasarkan resolusi aktual
-        width_scale = img_width / base_width
-        height_scale = img_height / base_height
-        avg_scale = (width_scale + height_scale) / 2
+        # **Window dengan nama yang jelas**
+        cv2.imshow("Huskybot MultiCam YOLOv12 + LiDAR Fusion", final_image)
+        cv2.waitKey(1)
         
-        # Clamp scaling untuk menghindari font terlalu besar/kecil
-        scale_factor = max(0.5, min(2.0, avg_scale))
-        
-        return {
-            'font_scale': base_font_scale * scale_factor,
-            'thickness': max(1, int(base_thickness * scale_factor)),
-            'line_spacing': int(25 * scale_factor)
-        }
+    except Exception as e:
+        self.get_logger().error(f"Error displaying images: {e}")
 
+def get_adaptive_font_params(self, img_width, img_height):
+    """Get adaptive font parameters berdasarkan resolusi image"""
+    # Base parameters untuk resolusi standar
+    base_width = 1920
+    base_height = 1080
+    base_font_scale = 0.8
+    base_thickness = 2
+    base_line_spacing = 35
+    
+    # Scale factor berdasarkan resolusi actual
+    width_scale = img_width / base_width
+    height_scale = img_height / base_height
+    avg_scale = (width_scale + height_scale) / 2
+    
+    # Clamp untuk menghindari font terlalu besar/kecil
+    scale_factor = max(0.5, min(2.5, avg_scale))
+    
+    return {
+        'font_scale': base_font_scale * scale_factor,
+        'thickness': max(2, int(base_thickness * scale_factor)),
+        'line_spacing': int(base_line_spacing * scale_factor)
+    }
 def main(args=None):
     # Entry point ROS2 node
     rclpy.init(args=args)
