@@ -7,7 +7,7 @@ from sensor_msgs.msg import PointCloud2, LaserScan
 from yolov12_msgs.msg import Yolov12Inference, InferenceResult
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
-import math
+import math  # PERBAIKAN: Import math yang hilang
 import time
 import threading
 import os
@@ -15,50 +15,17 @@ import sys
 import traceback
 
 # PERBAIKAN: Robust point cloud import with multiple fallbacks
-def import_point_cloud2():
-    """Import point cloud utilities with comprehensive fallback for Jetson"""
-    
-    # Method 1: Try sensor_msgs_py (ROS2 Humble standard)
+try:
+    import sensor_msgs_py.point_cloud2 as pc2
+except ImportError:
     try:
-        from sensor_msgs_py import point_cloud2 as pc2
-        print("INFO: Using sensor_msgs_py for point cloud parsing")
-        return pc2
+        import sensor_msgs.point_cloud2 as pc2  # PERBAIKAN: Alternative import
     except ImportError:
-        pass
-    
-    # Method 2: Try direct sensor_msgs import
-    try:
-        import sensor_msgs.point_cloud2 as pc2
-        print("INFO: Using sensor_msgs.point_cloud2 for point cloud parsing")
-        return pc2
-    except ImportError:
-        pass
-    
-    # Method 3: Try alternative sensor_msgs import
-    try:
-        from sensor_msgs import point_cloud2 as pc2
-        print("INFO: Using alternative sensor_msgs import for point cloud parsing")
-        return pc2
-    except ImportError:
-        pass
-    
-    # Method 4: Create dummy implementation
-    print("WARNING: Could not import point_cloud2, using dummy implementation")
-    
-    class DummyPC2:
-        @staticmethod
-        def read_points(cloud, field_names=None, skip_nans=True):
-            """Dummy implementation for compatibility"""
-            print("WARNING: Using dummy point cloud reader - no actual point parsing")
-            return []
-        
-        @staticmethod 
-        def create_cloud_xyz32(header, points):
-            """Dummy implementation for cloud creation"""
-            print("WARNING: Using dummy point cloud creator")
-            return PointCloud2()
-    
-    return DummyPC2()
+        try:
+            import ros2_numpy.point_cloud2 as pc2
+        except ImportError:
+            print("[WARNING] Could not import point_cloud2 utilities", file=sys.stderr)
+            pc2 = None
 
 # Initialize point cloud utilities with fallback
 pc2 = import_point_cloud2()
