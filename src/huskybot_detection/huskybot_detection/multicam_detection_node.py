@@ -337,6 +337,104 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(f"Error creating services: {e}")
             self.get_logger().error(traceback.format_exc())
 
+    def restart_model_callback(self, request, response):
+        """Service callback untuk restart model YOLOv12."""
+        try:
+            self.get_logger().info("Restarting YOLOv12 model...")
+            with self.mutex:
+                # Reload model
+                self._load_model()
+            response.success = True
+            response.message = f"Model successfully restarted at {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            self.get_logger().info("Model restart completed successfully")
+        except Exception as e:
+            self.get_logger().error(f"Failed to restart model: {e}")
+            response.success = False
+            response.message = f"Failed to restart model: {str(e)}"
+        return response
+
+    def get_status_callback(self, request, response):
+        """Service callback untuk get status node."""
+        try:
+            active_cameras = sum(1 for img in self.images if img is not None)
+            total_detections = sum(self.detection_counts)
+            avg_inference_time = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0
+            
+            status_msg = (
+                f"MultiCam Detection Status:\n"
+                f"- Active cameras: {active_cameras}/{self.cam_count}\n"
+                f"- Total detections: {total_detections}\n"
+                f"- Avg inference time: {avg_inference_time:.3f}s\n"
+                f"- Model: {os.path.basename(self.model_path)}\n"
+                f"- Platform: {'Jetson' if self.is_jetson else 'Standard'}"
+            )
+            
+            response.success = True
+            response.message = status_msg
+            self.get_logger().info(f"Status requested: {status_msg}")
+        except Exception as e:
+            self.get_logger().error(f"Error getting status: {e}")
+            response.success = False
+            response.message = f"Error getting status: {str(e)}"
+        return response
+
+    def publish_diagnostics(self):
+        """Publish diagnostic information ke topic /diagnostics."""
+        try:
+            if not hasattr(self, 'diagnostic_pub'):
+                return
+            
+            diag_array = DiagnosticArray()
+            diag_array.header.stamp = self.get_clock().now().to_msg()
+            diag_array.header.frame_id = "base_link"
+            
+            # Main detection status
+            main_status = DiagnosticStatus()
+            main_status.name = "multicam_detection"
+            main_status.hardware_id = "jetson_orin" if self.is_jetson else "unknown"
+            
+            active_cameras = sum(1 for img in self.images if img is not None)
+            if active_cameras == self.cam_count:
+                main_status.level = DiagnosticStatus.OK
+                main_status.message = f"All {self.cam_count} cameras active"
+            elif active_cameras > 0:
+                main_status.level = DiagnosticStatus.WARN
+                main_status.message = f"Only {active_cameras}/{self.cam_count} cameras active"
+            else:
+                main_status.level = DiagnosticStatus.ERROR
+                main_status.message = "No cameras active"
+            
+            # Add diagnostic values
+            main_status.values.append(KeyValue(key="active_cameras", value=str(active_cameras)))
+            main_status.values.append(KeyValue(key="total_cameras", value=str(self.cam_count)))
+            main_status.values.append(KeyValue(key="model_loaded", value=str(self.model is not None)))
+            main_status.values.append(KeyValue(key="platform", value="jetson" if self.is_jetson else "standard"))
+            
+            diag_array.status.append(main_status)
+            
+            # Per-camera status
+            for i in range(self.cam_count):
+                cam_status = DiagnosticStatus()
+                cam_status.name = f"camera_{i}"
+                cam_status.hardware_id = f"camera_{i}"
+                
+                if i < len(self.images) and self.images[i] is not None:
+                    cam_status.level = DiagnosticStatus.OK
+                    cam_status.message = "Camera active"
+                    cam_status.values.append(KeyValue(key="status", value="active"))
+                    cam_status.values.append(KeyValue(key="frames_received", value=str(self.detection_counts[i] if i < len(self.detection_counts) else 0)))
+                else:
+                    cam_status.level = DiagnosticStatus.ERROR
+                    cam_status.message = "Camera inactive"
+                    cam_status.values.append(KeyValue(key="status", value="inactive"))
+            
+                diag_array.status.append(cam_status)
+            
+            self.diagnostic_pub.publish(diag_array)
+            
+        except Exception as e:
+            self.get_logger().debug(f"Error publishing diagnostics: {e}")
+
     def _load_model(self):
         # Load YOLOv12 model, fallback ke .pt jika .engine/.onnx gagal
         if not ULTRALYTICS_AVAILABLE:
@@ -503,8 +601,8 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def process_images(self):
-        """Proses deteksi untuk semua kamera, publish hasil ke /detection."""
-        if not self.running or not self.is_initialized:
+        """Process detection untuk semua kamera."""
+        if not self.running or not self.is_initialized or self.model is None:
             return
         
         with self.mutex:
@@ -519,69 +617,31 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.latest_results = [None] * self.cam_count
         
         try:
-            for idx, img in enumerate(images_copy):
-                if img is not None:
+            # Process each available image
+            for i, image in enumerate(images_copy):
+                if image is not None:
                     start_time = time.time()
-                    try:
-                        # Validasi image
-                        if img.ndim != 3 or img.shape[2] != 3:
-                            self.get_logger().warning(f"Image shape not valid for inference: {img.shape}")
-                            continue
-                        
-                        # Run inference
-                        results = self.model(img, verbose=False, conf=self.conf_thres)
-                        infer_time = time.time() - start_time
-                        self.inference_times[idx] = infer_time
-                        
-                        # Store results untuk visualization
-                        self.latest_results[idx] = results
-                        
-                        # PERBAIKAN: Better detection counting
-                        detection_count = 0
-                        if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
-                            if self.class_filter:
-                                # Filter by class if specified
-                                for box in results[0].boxes:
-                                    try:
-                                        cls = int(box.cls[0].cpu())
-                                        if cls in self.class_filter:
-                                            detection_count += 1
-                                    except Exception as e:
-                                        self.get_logger().debug(f"Error filtering detection: {e}")
-                            else:
-                                # Count all detections
-                                detection_count = len(results[0].boxes)
-                        
-                        # Update detection count
-                        self.detection_counts[idx] = detection_count
-                        
-                        # Warning untuk inference time
-                        if infer_time > 1.0:
-                            self.get_logger().warning(f"Inference time too long for camera {idx}: {infer_time:.3f}s")
-                        
-                        # Debug log hanya jika ada deteksi
-                        if detection_count > 0:
-                            self.get_logger().info(
-                                f"Camera {idx}: {detection_count} detections in {infer_time:.3f}s"
-                            )
-                        
-                        # Publish results
-                        self.publish_results(results, f"camera_{idx}")
-                        
-                        # PERBAIKAN: Clear processed image to save memory
-                        with self.mutex:
-                            self.images[idx] = None
-                        
-                    except Exception as e:
-                        self.get_logger().error(f"Error processing image from camera {idx}: {e}")
-                        self.get_logger().error(traceback.format_exc())
-            
-            # Call visualization after processing all cameras
-            if self.visualization_enabled:
-                self.visualize_results(images_copy)
-                
+                    
+                    # Run YOLOv12 inference
+                    results = self.model(image, conf=self.conf_thres, verbose=False)
+                    
+                    # Track inference time
+                    inference_time = time.time() - start_time
+                    if i < len(self.inference_times):
+                        self.inference_times[i] = inference_time
+                    
+                    # Get camera name
+                    camera_name = self.camera_topics[i].split('/')[-2] if '/' in self.camera_topics[i] else f'camera_{i}'
+                    
+                    # Publish results
+                    self.publish_results(results, camera_name)
+                    
+                    # Update detection count
+                    if i < len(self.detection_counts):
+                        self.detection_counts[i] += len(results[0].boxes) if results and len(results) > 0 and hasattr(results[0], 'boxes') else 0
+        
         except Exception as e:
-            self.get_logger().error(f"Error in process_images: {e}")
+            self.get_logger().error(f"Error processing images: {e}")
             self.get_logger().error(traceback.format_exc())
 
     def publish_results(self, results, camera_name):

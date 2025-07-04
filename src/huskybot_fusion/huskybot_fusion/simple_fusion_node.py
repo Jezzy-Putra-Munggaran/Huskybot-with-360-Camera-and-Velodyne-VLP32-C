@@ -585,7 +585,8 @@ class SimpleFusionNode(Node):
             self.get_logger().error(f"Error in debug_lidar_detailed: {e}")
 
 def main(args=None):
-    """Main entry point"""
+    """Main entry point with proper shutdown handling"""
+    node = None
     try:
         rclpy.init(args=args)
         node = SimpleFusionNode()
@@ -595,9 +596,18 @@ def main(args=None):
     except Exception as e:
         print(f"Error: {str(e)}")
     finally:
-        if 'node' in locals():
-            node.destroy_node()
-        rclpy.shutdown()
+        if node is not None:
+            try:
+                node.destroy_node()
+            except Exception as e:
+                print(f"Warning: Error destroying node: {e}")
+        
+        # Only shutdown if rclpy is still OK
+        try:
+            if rclpy.ok():
+                rclpy.shutdown()
+        except Exception as e:
+            print(f"Warning: Error in rclpy shutdown: {e}")
 
 if __name__ == '__main__':
     main()
