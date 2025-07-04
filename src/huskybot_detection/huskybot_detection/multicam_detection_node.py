@@ -239,7 +239,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.visualization_enabled = True
 
     def _detect_platform(self):
-        # Deteksi platform Jetson/CUDA untuk optimasi model
+        """Deteksi platform dan konfigurasi device untuk inference."""
         try:
             import torch
             machine = platform.machine()
@@ -247,33 +247,23 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             
             if self.is_jetson:
                 self.get_logger().info("Detected Jetson platform, using hardware acceleration")
-                # PERBAIKAN: Use 'cuda:0' instead of '0' for Jetson
+                # FIXED: Use proper CUDA device string
                 if torch.cuda.is_available():
-                    self.device = 'cuda:0'  # FIXED: Proper CUDA device string
+                    self.device = 'cuda:0'  # FIXED: Was '0', now 'cuda:0'
                     self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
                 else:
                     self.device = 'cpu'
                     self.get_logger().warning("CUDA not available on Jetson, using CPU")
             else:
-                self.get_logger().info("Detected non-Jetson platform")
-                self.device = 'cpu'
-
-            # Check CUDA availability
-            try:
                 if torch.cuda.is_available():
+                    self.device = 'cuda:0'  # FIXED: Proper CUDA device string
                     self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
-                    if not self.is_jetson:
-                        self.device = 'cuda:0'  # FIXED: Proper CUDA device string
                 else:
-                    self.get_logger().warning("CUDA not available, using CPU")
                     self.device = 'cpu'
-            except ImportError:
-                self.get_logger().warning("PyTorch not available")
-                self.device = 'cpu'
+                    self.get_logger().warning("CUDA not available, using CPU")
                 
         except Exception as e:
             self.get_logger().error(f"Error detecting platform: {e}")
-            self.is_jetson = False
             self.device = 'cpu'
 
     def _optimize_jetson_performance(self):

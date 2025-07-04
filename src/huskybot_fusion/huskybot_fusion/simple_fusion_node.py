@@ -584,6 +584,57 @@ class SimpleFusionNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error in debug_lidar_detailed: {e}")
 
+    # Add method untuk format output target
+    def _format_detection_with_3d(self, detection_msg, camera_id):
+        """Format detection dengan Class, Confidence, Distance, Coordinate"""
+        try:
+            # Get camera direction (0°, 60°, 120°, 180°, 240°, 300°)
+            camera_angle = camera_id * 60.0
+            
+            # Calculate distance from LaserScan
+            distance = self._get_distance_from_lidar(camera_angle)
+            
+            # Calculate 3D coordinate
+            coordinate = self._calculate_3d_coordinate(detection_msg, camera_angle, distance)
+            
+            # Format output string untuk overlay di bounding box
+            formatted_output = (
+                f"Class={detection_msg.class_name}, "
+                f"Confidence={detection_msg.confidence:.2f}, "
+                f"Distance: {distance:.2f} m, "
+                f"Coordinate: ({coordinate[0]:.2f}, {coordinate[1]:.2f}, {coordinate[2]:.2f})"
+            )
+            
+            return formatted_output, coordinate, distance
+            
+        except Exception as e:
+            self.get_logger().error(f"Error formatting detection: {e}")
+            return None, None, None
+
+    def _calculate_3d_coordinate(self, detection_msg, camera_angle, distance):
+        """Calculate 3D world coordinate dari bounding box center"""
+        try:
+            # Simple projection tanpa kalibrasi (kasar tapi works)
+            # Assume bounding box center adalah pixel (u, v)
+            u = (detection_msg.xmin + detection_msg.xmax) / 2.0
+            v = (detection_msg.ymin + detection_msg.ymax) / 2.0
+            
+            # Convert pixel ke world coordinate (simplified)
+            # Asumsi: camera FOV 90°, image center = world center
+            angle_offset = (u - 960) * (90.0 / 1920.0)  # 960 = image_width/2
+            world_angle = math.radians(camera_angle + angle_offset)
+            
+            # Calculate 3D position
+            x = distance * math.cos(world_angle)
+            y = distance * math.sin(world_angle)
+            z = 0.5  # Assume object height 0.5m from ground
+            
+            return [x, y, z]
+            
+        except Exception as e:
+            self.get_logger().error(f"Error calculating 3D coordinate: {e}")
+            return [0.0, 0.0, 0.0]
+
 def main(args=None):
     """Main entry point with proper shutdown handling"""
     node = None
