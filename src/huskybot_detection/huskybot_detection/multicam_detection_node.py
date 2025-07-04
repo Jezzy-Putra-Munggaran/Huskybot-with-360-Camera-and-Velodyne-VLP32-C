@@ -241,24 +241,29 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def _detect_platform(self):
         # Deteksi platform Jetson/CUDA untuk optimasi model
         try:
-            import platform
+            import torch
             machine = platform.machine()
             self.is_jetson = machine in JETSON_PLATFORMS
             
             if self.is_jetson:
                 self.get_logger().info("Detected Jetson platform, using hardware acceleration")
-                self.device = '0'  # Use first GPU
+                # PERBAIKAN: Use 'cuda:0' instead of '0' for Jetson
+                if torch.cuda.is_available():
+                    self.device = 'cuda:0'  # FIXED: Proper CUDA device string
+                    self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
+                else:
+                    self.device = 'cpu'
+                    self.get_logger().warning("CUDA not available on Jetson, using CPU")
             else:
                 self.get_logger().info("Detected non-Jetson platform")
                 self.device = 'cpu'
 
             # Check CUDA availability
             try:
-                import torch
                 if torch.cuda.is_available():
                     self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
                     if not self.is_jetson:
-                        self.device = '0'
+                        self.device = 'cuda:0'  # FIXED: Proper CUDA device string
                 else:
                     self.get_logger().warning("CUDA not available, using CPU")
                     self.device = 'cpu'

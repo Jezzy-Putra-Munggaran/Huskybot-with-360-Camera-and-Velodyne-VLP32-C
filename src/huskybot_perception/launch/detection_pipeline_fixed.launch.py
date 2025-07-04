@@ -71,4 +71,40 @@ def generate_launch_description():
                 )
             ]
         ),
+        
+        # 5. Build huskybot_detection package
+        TimerAction(
+            period=30.0,  # Wait 30 seconds before building again
+            actions=[
+                Node(
+                    package='huskybot_detection',
+                    executable='multicam_detection_node',
+                    name='multicam_detection_node',
+                    output='screen',
+                    parameters=[{
+                        'device': 'cuda:0'
+                    }],
+                    respawn=True,
+                    respawn_delay=5.0,
+                )
+            ]
+        ),
+        
+        # 6. Verify CUDA availability
+        TimerAction(
+            period=35.0,  # Wait 35 seconds before verifying CUDA
+            actions=[
+                Node(
+                    package='python3',
+                    executable='-c',
+                    name='cuda_verification',
+                    output='screen',
+                    parameters=[{
+                        'script': "import torch; print(f'CUDA: {torch.cuda.is_available()}, Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"None\"}')"
+                    }],
+                    respawn=True,
+                    respawn_delay=5.0,
+                )
+            ]
+        ),
     ])
