@@ -310,9 +310,19 @@ class CameraLaunchConfig:
             return True
 
 def generate_launch_description():
-    """Generate launch description untuk kamera."""
-    config = CameraLaunchConfig()  # Inisialisasi konfigurasi launch
+    """Generate launch description untuk kamera dengan mapping yang BENAR."""
+    config = CameraLaunchConfig()
     config.log_to_file("Launch file camera.launch.py dimulai", level='info')
+    
+    # PERBAIKAN: Dokumentasi mapping yang benar
+    config.log_to_file("PENTING: Mapping kamera sesuai hardware real:", level='info')
+    config.log_to_file("- /camera_front/image_raw = KAMERA BELAKANG (180°)", level='info')
+    config.log_to_file("- /camera_front_left/image_raw = KAMERA KIRI BELAKANG (225°)", level='info')
+    config.log_to_file("- /camera_left/image_raw = KAMERA KIRI DEPAN (270°)", level='info')
+    config.log_to_file("- /camera_rear/image_raw = KAMERA DEPAN (0°)", level='info')
+    config.log_to_file("- /camera_rear_right/image_raw = KAMERA KANAN DEPAN (315°)", level='info')
+    config.log_to_file("- /camera_right/image_raw = KAMERA KANAN BELAKANG (45°)", level='info')
+    
     args = config.generate_camera_args()  # Generate argumen kamera
     nodes = config.generate_camera_nodes()  # Generate node kamera
     config.validate_camera_frames()  # Validasi frame kamera

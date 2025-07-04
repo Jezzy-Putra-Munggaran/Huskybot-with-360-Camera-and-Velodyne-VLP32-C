@@ -677,124 +677,38 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(traceback.format_exc())
 
     def visualize_results(self, images):
-        """Visualisasi hasil deteksi dengan bounding box tebal dan text yang jelas"""
+        """Visualisasi hasil deteksi dengan label posisi yang benar"""
         if not self.visualization_enabled:
             return
         try:
             valid_images = []
             
+            # PERBAIKAN: Real position mapping
+            real_positions = {
+                'camera_front': 'BELAKANG',
+                'camera_front_left': 'KIRI_BELAKANG',
+                'camera_left': 'KIRI_DEPAN',
+                'camera_rear': 'DEPAN', 
+                'camera_rear_right': 'KANAN_DEPAN',
+                'camera_right': 'KANAN_BELAKANG'
+            }
+            
             for idx, img in enumerate(images):
-                if img is not None:
-                    annotated_img = img.copy()
-                    h, w = annotated_img.shape[:2]
-                    
-                    # Get adaptive parameters berdasarkan resolusi
-                    font_params = self.get_adaptive_font_params(w, h)
-                    
-                    if hasattr(self, 'latest_results') and idx < len(self.latest_results):
-                        results = self.latest_results[idx]
-                        if results and len(results) > 0 and hasattr(results[0], 'boxes') and results[0].boxes is not None:
-                            boxes = results[0].boxes
-                            
-                            for box in boxes:
-                                try:
-                                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                                    conf = float(box.conf[0].cpu())
-                                    cls = int(box.cls[0].cpu())
-                                    
-                                    # Get class name
-                                    class_name = "unknown"
-                                    if hasattr(self.model, 'names') and cls in self.model.names:
-                                        class_name = str(self.model.names[cls])
-                                    
-                                    # **PERBAIKAN UTAMA: Bounding box lebih tebal**
-                                    bbox_thickness = max(3, int(w / 200))  # Thickness adaptif
-                                    
-                                    # Color mapping yang lebih kontras
-                                    colors = {
-                                        'person': (0, 255, 0),    # Hijau terang
-                                        'car': (255, 0, 0),       # Biru terang
-                                        'bicycle': (0, 255, 255), # Kuning
-                                        'motorcycle': (255, 0, 255), # Magenta
-                                        'truck': (0, 0, 255),     # Merah
-                                        'bus': (255, 255, 0),     # Cyan
-                                    }
-                                    box_color = colors.get(class_name, (0, 200, 0))
-                                    
-                                    # Draw thick bounding box
-                                    cv2.rectangle(annotated_img, 
-                                                (int(x1), int(y1)), (int(x2), int(y2)), 
-                                                box_color, bbox_thickness)
-                                    
-                                    # **PERBAIKAN: Multi-line text dengan font besar**
-                                    # Simulasi data dari fusion (nanti akan diganti dengan data real)
-                                    distance = 5.2  # Dari LiDAR fusion
-                                    coord_x, coord_y, coord_z = 3.1, 2.4, 0.5  # Dari LiDAR
-                                    
-                                    # Text lines dengan urutan yang diminta
-                                    text_lines = [
-                                        f"String: {class_name}",
-                                        f"Confidence: {conf:.2f}",
-                                        f"Distance: {distance:.1f} m",
-                                        f"Coordinate: ({coord_x:.1f}, {coord_y:.1f}, {coord_z:.1f})"
-                                    ]
-                                    
-                                    # **Font yang lebih besar dan jelas**
-                                    font_scale = font_params['font_scale'] * 1.5  # Lebih besar
-                                    font_thickness = max(2, font_params['thickness'])
-                                    line_spacing = int(font_params['line_spacing'] * 1.2)
-                                    
-                                    # Calculate text box size
-                                    max_text_width = 0
-                                    total_text_height = 0
-                                    
-                                    for line in text_lines:
-                                        (text_w, text_h), baseline = cv2.getTextSize(
-                                            line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
-                                        max_text_width = max(max_text_width, text_w)
-                                        total_text_height += text_h + baseline + 5
-                                    
-                                    # **Background gelap untuk text (lebih kontras)**
-                                    text_bg_x1 = int(x1)
-                                    text_bg_y1 = int(y1) - total_text_height - 10
-                                    text_bg_x2 = int(x1) + max_text_width + 20
-                                    text_bg_y2 = int(y1)
-                                    
-                                    # Ensure text background is within image bounds
-                                    text_bg_y1 = max(0, text_bg_y1)
-                                    text_bg_x2 = min(w, text_bg_x2)
-                                    
-                                    # Draw semi-transparent background
-                                    overlay = annotated_img.copy()
-                                    cv2.rectangle(overlay, 
-                                                (text_bg_x1, text_bg_y1), 
-                                                (text_bg_x2, text_bg_y2), 
-                                                (0, 0, 0), -1)  # Hitam solid
-                                    cv2.addWeighted(annotated_img, 0.3, overlay, 0.7, 0, annotated_img)
-                                    
-                                    # **Draw text lines dengan spacing yang proper**
-                                    current_y = text_bg_y1 + 25
-                                    for line in text_lines:
-                                        cv2.putText(annotated_img, line, 
-                                                  (text_bg_x1 + 10, current_y),
-                                                  cv2.FONT_HERSHEY_SIMPLEX, 
-                                                  font_scale, 
-                                                  (255, 255, 255),  # Putih terang
-                                                  font_thickness,
-                                                  cv2.LINE_AA)  # Anti-aliasing
-                                        current_y += line_spacing
-                                        
-                                except Exception as e:
-                                    self.get_logger().debug(f"Error drawing detection: {e}")
+                if img is not None and img.size > 0:
+                    # Add real position label
+                    if idx < len(self.camera_topics):
+                        topic = self.camera_topics[idx]
+                        camera_name = topic.split('/')[-2]  # Extract camera name from topic
+                        real_pos = real_positions.get(camera_name, 'UNKNOWN')
+                        
+                        # Add text overlay
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        text = f"{camera_name} (REAL: {real_pos})"
+                        cv2.putText(img, text, (10, 30), font, 0.6, (0, 255, 0), 2)
                 
-                # **Camera label yang lebih jelas**
-                cv2.rectangle(annotated_img, (5, 5), (250, 45), (0, 0, 0), -1)
-                cv2.putText(annotated_img, f"Camera {idx}", (15, 30), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
-                
-                valid_images.append(annotated_img)
-        
-            # **Display dengan layout yang lebih baik**
+                valid_images.append(img)
+            
+            # Display dengan layout yang lebih baik
             if valid_images:
                 self._display_multi_camera(valid_images)
                 

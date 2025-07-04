@@ -409,6 +409,14 @@ class FusionVisualizerNode(Node):
                 # Konversi image ROS menjadi format OpenCV
                 cv_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")  # Convert ROS -> OpenCV
                 
+                # PERBAIKAN: Add real position label
+                real_position = self.real_camera_positions.get(camera_name, 'UNKNOWN')
+                
+                # Add text overlay showing real position
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                text = f"{camera_name} (REAL: {real_position})"
+                cv2.putText(cv_image, text, (10, 30), font, 0.7, (0, 255, 0), 2)
+                
                 # Update FPS stats
                 self.fps_stats[camera_name]['frames'] += 1  # Increment frame counter
                 

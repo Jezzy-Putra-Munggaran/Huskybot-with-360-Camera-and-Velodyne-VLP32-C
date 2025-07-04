@@ -369,3 +369,18 @@ MIT License
 - Saran: tambahkan tips multi-robot dan namespace di README.md.
 - Saran: tambahkan troubleshooting error umum di ROS2 Humble/Gazebo.
 -->
+
+## 🎯 **Camera Physical Mapping (IMPORTANT)**
+
+**PERINGATAN**: Nama topic tidak sesuai dengan posisi fisik real hardware!
+
+| Topic Name | Real Physical Position | LiDAR Angle |
+|------------|----------------------|-------------|
+| `/camera_front/image_raw` | **KAMERA BELAKANG** | 180° |
+| `/camera_front_left/image_raw` | **KAMERA KIRI BELAKANG** | 225° |
+| `/camera_left/image_raw` | **KAMERA KIRI DEPAN** | 270° |
+| `/camera_rear/image_raw` | **KAMERA DEPAN** | 0° |
+| `/camera_rear_right/image_raw` | **KAMERA KANAN DEPAN** | 315° |
+| `/camera_right/image_raw` | **KAMERA KANAN BELAKANG** | 45° |
+
+### Hexagonal Layout (Real Hardware):

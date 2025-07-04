@@ -213,27 +213,22 @@ class SimpleFusionNode(Node):
             self.get_logger().debug(f"Error in detection_callback: {e}")
     
     def get_distance_from_laserscan(self, camera_name, obj_center_ratio):
-        """PERBAIKAN: Mapping yang disesuaikan dengan setup fisik Jetson AGX Orin + Velodyne VLP32-C"""
+        """PERBAIKAN: Mapping yang BENAR sesuai hardware real"""
         try:
             if not self.latest_scan or not self.latest_scan.ranges:
                 return None
                 
             scan = self.latest_scan
             
-            # PERBAIKAN: Debug mapping terlebih dahulu
-            self.get_logger().info(
-                f"🔍 Processing {camera_name}: obj_center_ratio={obj_center_ratio:.3f}, "
-                f"LiDAR range: {math.degrees(scan.angle_min):.1f}° to {math.degrees(scan.angle_max):.1f}°"
-            )
-            
-            # PERBAIKAN: Simplified mapping - langsung gunakan camera index to angle
+            # PERBAIKAN: Mapping yang BENAR sesuai posisi fisik real
             camera_angles = {
-                'camera_0': 0,      # Front - 0°
-                'camera_1': 60,     # Front-right - 60°  
-                'camera_2': 120,    # Rear-right - 120°
-                'camera_3': 180,    # Rear - 180°
-                'camera_4': 240,    # Rear-left - 240° (atau -120°)
-                'camera_5': 300,    # Front-left - 300° (atau -60°)
+                # Topic name → Real position → LiDAR angle
+                'camera_front': 180,        # KAMERA BELAKANG → 180°
+                'camera_front_left': 225,   # KAMERA KIRI BELAKANG → 225° (-135°)
+                'camera_left': 270,         # KAMERA KIRI DEPAN → 270° (-90°)
+                'camera_rear': 0,           # KAMERA DEPAN → 0°
+                'camera_rear_right': 315,   # KAMERA KANAN DEPAN → 315° (-45°)
+                'camera_right': 45,         # KAMERA KANAN BELAKANG → 45°
             }
             
             if camera_name not in camera_angles:
@@ -287,13 +282,15 @@ class SimpleFusionNode(Node):
             
             if best_distance:
                 self.get_logger().info(
-                    f"✅ {camera_name}: Found distance {best_distance:.2f}m "
-                    f"at ray {best_ray} (target_angle={target_angle_deg:.1f}°)"
+                    f"✅ {camera_name} (REAL: {self._get_real_position(camera_name)}): "
+                    f"Found distance {best_distance:.2f}m at ray {best_ray} "
+                    f"(target_angle={target_angle_deg:.1f}°)"
                 )
                 return best_distance
             else:
                 self.get_logger().debug(
-                    f"❌ {camera_name}: No valid distance found around ray {ray_idx} "
+                    f"❌ {camera_name} (REAL: {self._get_real_position(camera_name)}): "
+                    f"No valid distance found around ray {ray_idx} "
                     f"(target_angle={target_angle_deg:.1f}°)"
                 )
                 return None
@@ -302,20 +299,32 @@ class SimpleFusionNode(Node):
             self.get_logger().error(f"Error getting distance for {camera_name}: {e}")
             return None
 
+    def _get_real_position(self, camera_name):
+        """Helper untuk mendapatkan posisi real kamera"""
+        real_positions = {
+            'camera_front': 'BELAKANG',
+            'camera_front_left': 'KIRI_BELAKANG', 
+            'camera_left': 'KIRI_DEPAN',
+            'camera_rear': 'DEPAN',
+            'camera_rear_right': 'KANAN_DEPAN',
+            'camera_right': 'KANAN_BELAKANG'
+        }
+        return real_positions.get(camera_name, 'UNKNOWN')
+
     def get_coordinates_from_pointcloud(self, camera_name, obj_center_ratio, distance):
-        """PERBAIKAN: Calculate 3D coordinates dengan mapping yang sama"""
+        """PERBAIKAN: Calculate 3D coordinates dengan mapping yang BENAR"""
         try:
             if not distance:
                 return None
                 
-            # Use same mapping as get_distance_from_laserscan
+            # Use CORRECTED mapping sesuai posisi fisik real
             camera_angles = {
-                'camera_0': 0,      # Front
-                'camera_1': 60,     # Front-right  
-                'camera_2': 120,    # Rear-right
-                'camera_3': 180,    # Rear
-                'camera_4': 240,    # Rear-left
-                'camera_5': 300,    # Front-left
+                'camera_front': 180,        # KAMERA BELAKANG
+                'camera_front_left': 225,   # KAMERA KIRI BELAKANG
+                'camera_left': 270,         # KAMERA KIRI DEPAN
+                'camera_rear': 0,           # KAMERA DEPAN
+                'camera_rear_right': 315,   # KAMERA KANAN DEPAN
+                'camera_right': 45,         # KAMERA KANAN BELAKANG
             }
             
             if camera_name not in camera_angles:
