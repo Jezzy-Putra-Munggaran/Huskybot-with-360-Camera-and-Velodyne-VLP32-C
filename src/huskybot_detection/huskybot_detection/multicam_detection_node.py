@@ -5,16 +5,12 @@
 # Node ini menerima image dari 6 kamera Arducam IMX477 (hexagonal) dan publish hasil deteksi ke topic /detection
 # Siap untuk ROS2 Humble, Gazebo, Jetson Orin, Clearpath Husky A200, multi-robot, audit trail
 
-# ===================== PERBAIKAN: ROBUST IMPORT HANDLING =====================
 import os
 import sys
 import time
 import traceback
-import logging
-import platform
+import threading
 from threading import Lock
-import hashlib
-import psutil
 
 # Cek semua dependency utama sebelum import ROS2
 REQUIRED_MODULES = [
@@ -83,42 +79,6 @@ except ImportError as e:
     print("Install with: pip install ultralytics", file=sys.stderr)
     ULTRALYTICS_AVAILABLE = False
 
-# ===================== ERROR HANDLING: CEK DEPENDENCY PYTHON =====================
-# Cek semua dependency utama sebelum import ROS2
-REQUIRED_MODULES = [
-    'rclpy', 'cv2', 'numpy', 'ultralytics', 'yolov12_msgs', 'cv_bridge'
-]
-for mod in REQUIRED_MODULES:
-    try:
-        __import__(mod)
-    except ImportError as e:
-        print(f"[FATAL] Python dependency not found: {mod} ({e})", file=sys.stderr)
-        sys.exit(1)  # Exit jika ada dependency yang kurang
-
-import rclpy  # Library utama ROS2 Python
-from rclpy.node import Node  # Base class node ROS2
-from rclpy.exceptions import ParameterNotDeclaredException  # Exception parameter tidak ditemukan
-from rclpy.parameter import Parameter  # Kelas Parameter ROS2
-from rcl_interfaces.msg import ParameterDescriptor, ParameterType  # Deskriptor parameter
-from rcl_interfaces.msg import SetParametersResult  # Return value untuk parameter callback
-
-from sensor_msgs.msg import Image  # Message ROS2 untuk image kamera
-from std_msgs.msg import Header  # Header standar ROS2
-from std_srvs.srv import Trigger  # Service type untuk restart_model dan health check
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue  # Diagnostics ROS2
-
-from cv_bridge import CvBridge, CvBridgeError  # Konversi ROS Image <-> OpenCV
-import numpy as np  # Array/matrix untuk image processing
-import cv2  # OpenCV untuk image processing/visualisasi
-from yolov12_msgs.msg import InferenceResult, Yolov12Inference  # Custom message hasil deteksi YOLOv12
-
-# ===================== DETECTOR LIBRARY (YOLOv12) DENGAN FALLBACK =====================
-try:
-    from ultralytics import YOLO  # Library YOLOv12 (pastikan sudah install ultralytics>=v12)
-    ULTRALYTICS_AVAILABLE = True  # Flag ketersediaan ultralytics
-except ImportError:
-    ULTRALYTICS_AVAILABLE = False  # Set flag False jika import error
-
 LOG_DIR = os.path.expanduser('~/huskybot_detection_log')  # Directory log (default di home)
 DEFAULT_CONFIDENCE_THRESHOLD = 0.25  # Threshold confidence default
 JETSON_PLATFORMS = ['aarch64', 'arm64']  # Platform Jetson
@@ -183,18 +143,12 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         try:
             log_dir = LOG_DIR
             try:
-                if not os.path.exists(log_dir):
-                    os.makedirs(log_dir, exist_ok=True)
-                if not os.access(log_dir, os.W_OK):
-                    raise PermissionError(f"Log dir {log_dir} not writeable")
+                os.makedirs(log_dir, exist_ok=True)
             except Exception:
-                log_dir = '/tmp'
-                if not os.path.exists(log_dir):
-                    os.makedirs(log_dir, exist_ok=True)
+                log_dir = "/tmp"
             log_file = os.path.join(log_dir, f"huskybot_detection_{time.strftime('%Y%m%d')}.log")
-            # Rotasi log jika > 50MB (audit trail, opsional)
-            if os.path.exists(log_file) and os.path.getsize(log_file) > 50 * 1024 * 1024:
-                os.rename(log_file, log_file + f".{int(time.time())}.bak")
+            
+            import logging
             logging.basicConfig(
                 level=logging.INFO,
                 format='%(asctime)s [%(levelname)s] %(message)s',
@@ -203,9 +157,11 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
                     logging.StreamHandler(sys.stdout)
                 ]
             )
-            logging.info("Logging system initialized")
+            self.logger = logging.getLogger(__name__)
+            self.logger.info("Logging system initialized")
+
         except Exception as e:
-            print(f"Error setting up logging: {e}", file=sys.stderr)
+            print(f"Warning: Could not setup file logging: {e}")
 
     def _declare_parameters(self):
         # Deklarasi semua parameter node (wajib agar bisa diubah via launch file)
@@ -213,7 +169,6 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         self.declare_parameter('cam_count', 6, ParameterDescriptor(
             type=ParameterType.PARAMETER_INTEGER,
             description='Number of cameras in the hexagonal array (1-12)'
-            # Remove integer_range untuk menghindari validation error
         ))
         
         self.declare_parameter('model_path', "yolo12x.engine", ParameterDescriptor(
@@ -234,7 +189,6 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         self.declare_parameter('conf_thres', DEFAULT_CONFIDENCE_THRESHOLD, ParameterDescriptor(
             type=ParameterType.PARAMETER_DOUBLE,
             description='Confidence threshold for filtering detections (0.0-1.0)'
-            # Remove floating_point_range untuk menghindari validation error
         ))
         
         self.declare_parameter('visualization_enabled', True, ParameterDescriptor(
@@ -255,135 +209,110 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def _load_parameters(self):
         # PERBAIKAN: More robust parameter loading with manual validation
         try:
-            # Manual validation untuk cam_count
             self.cam_count = self.get_parameter('cam_count').value
-            if not isinstance(self.cam_count, int) or not 1 <= self.cam_count <= 12:
-                self.get_logger().warning(f"Invalid cam_count {self.cam_count}, using default (6)")
-                self.cam_count = 6
-                
             self.model_path = self.get_parameter('model_path').value
-            
-            # PERBAIKAN: Better camera topics parsing
-            try:
-                camera_topics_str = self.get_parameter('camera_topics_str').value
-                if camera_topics_str and camera_topics_str != 'None':
-                    # Try multiple parsing methods
-                    try:
-                        import ast
-                        self.camera_topics = ast.literal_eval(camera_topics_str)
-                    except:
-                        try:
-                            import json
-                            self.camera_topics = json.loads(camera_topics_str)
-                        except:
-                            # Fallback: split by comma
-                            if ',' in camera_topics_str:
-                                self.camera_topics = [t.strip().strip("'\"") for t in camera_topics_str.split(',')]
-                            else:
-                                self.camera_topics = DEFAULT_CAMERA_TOPICS
-                else:
-                    self.camera_topics = DEFAULT_CAMERA_TOPICS
-                    
-                if not isinstance(self.camera_topics, list) or len(self.camera_topics) == 0:
-                    self.camera_topics = DEFAULT_CAMERA_TOPICS
-                    
-            except Exception as e:
-                self.get_logger().warning(f"Error parsing camera_topics_str: {e}, using default")
-                self.camera_topics = DEFAULT_CAMERA_TOPICS
-            
-            # PERBAIKAN: Better class filter parsing
-            try:
-                class_filter_str = self.get_parameter('class_filter_str').value
-                if class_filter_str and class_filter_str not in ['[]', 'None', '']:
-                    try:
-                        import ast
-                        self.class_filter = ast.literal_eval(class_filter_str)
-                    except:
-                        try:
-                            import json
-                            self.class_filter = json.loads(class_filter_str)
-                        except:
-                            self.class_filter = []
-                else:
-                    self.class_filter = []
-                    
-                if not isinstance(self.class_filter, list):
-                    self.class_filter = []
-                
-            except Exception as e:
-                self.get_logger().warning(f"Error parsing class_filter_str: {e}, using empty list")
-                self.class_filter = []
-            
-            # Manual validation untuk conf_thres
+            self.camera_topics_str = self.get_parameter('camera_topics_str').value
+            self.class_filter_str = self.get_parameter('class_filter_str').value
             self.conf_thres = self.get_parameter('conf_thres').value
-            if not isinstance(self.conf_thres, (int, float)) or not 0.0 <= self.conf_thres <= 1.0:
-                self.get_logger().warning(f"Invalid conf_thres {self.conf_thres}, using default ({DEFAULT_CONFIDENCE_THRESHOLD})")
-                self.conf_thres = DEFAULT_CONFIDENCE_THRESHOLD
-            
-            # Adjust camera count based on available topics
-            if len(self.camera_topics) < self.cam_count:
-                self.get_logger().warning(
-                    f"Not enough camera topics ({len(self.camera_topics)}) for cam_count ({self.cam_count})"
-                )
-                self.cam_count = len(self.camera_topics)
-                
             self.visualization_enabled = self.get_parameter('visualization_enabled').value
             self.log_to_file = self.get_parameter('log_to_file').value
-            
-            log_level = self.get_parameter('log_level').value.lower()
-            if log_level == 'debug':
-                logging.getLogger().setLevel(logging.DEBUG)
-            elif log_level == 'info':
-                logging.getLogger().setLevel(logging.INFO)
-            elif log_level == 'warning':
-                logging.getLogger().setLevel(logging.WARNING)
-            elif log_level == 'error':
-                logging.getLogger().setLevel(logging.ERROR)
-            elif log_level == 'critical':
-                logging.getLogger().setLevel(logging.CRITICAL)
-            else:
-                self.get_logger().warning(f"Invalid log_level '{log_level}', using INFO")
-                logging.getLogger().setLevel(logging.INFO)
+            self.log_level = self.get_parameter('log_level').value
+
+            # Parse camera topics and class filter safely
+            try:
+                import ast
+                self.camera_topics = ast.literal_eval(self.camera_topics_str)
+                self.class_filter = ast.literal_eval(self.class_filter_str)
+            except Exception as e:
+                self.get_logger().warning(f"Failed to parse parameters: {e}, using defaults")
+                self.camera_topics = DEFAULT_CAMERA_TOPICS[:self.cam_count]
+                self.class_filter = []
                 
         except Exception as e:
             self.get_logger().error(f"Error loading parameters: {e}")
-            self.get_logger().error(traceback.format_exc())
-            # Use defaults instead of raising
+            # Use safe defaults
             self.cam_count = 6
+            self.model_path = "yolo12x.engine"
             self.camera_topics = DEFAULT_CAMERA_TOPICS
             self.class_filter = []
             self.conf_thres = DEFAULT_CONFIDENCE_THRESHOLD
             self.visualization_enabled = True
-            self.log_to_file = True
 
     def _detect_platform(self):
         # Deteksi platform Jetson/CUDA untuk optimasi model
         try:
-            self.is_jetson = platform.machine() in JETSON_PLATFORMS
+            import platform
+            machine = platform.machine()
+            self.is_jetson = machine in JETSON_PLATFORMS
+            
             if self.is_jetson:
                 self.get_logger().info("Detected Jetson platform, using hardware acceleration")
-                try:
-                    import torch
-                    self.cuda_available = torch.cuda.is_available()
-                    if self.cuda_available:
-                        self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
-                    else:
-                        self.get_logger().warning("CUDA not available on Jetson device")
-                except ImportError:
-                    self.get_logger().warning("PyTorch not installed, can't check CUDA availability")
-                    self.cuda_available = False
+                self.device = '0'  # Use first GPU
             else:
-                self.get_logger().info("Running on non-Jetson platform")
-                self.cuda_available = False
+                self.get_logger().info("Detected non-Jetson platform")
+                self.device = 'cpu'
+
+            # Check CUDA availability
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    self.get_logger().info(f"CUDA available: {torch.cuda.get_device_name(0)}")
+                    if not self.is_jetson:
+                        self.device = '0'
+                else:
+                    self.get_logger().warning("CUDA not available, using CPU")
+                    self.device = 'cpu'
+            except ImportError:
+                self.get_logger().warning("PyTorch not available")
+                self.device = 'cpu'
+                
         except Exception as e:
             self.get_logger().error(f"Error detecting platform: {e}")
             self.is_jetson = False
-            self.cuda_available = False
+            self.device = 'cpu'
+
+    def _optimize_jetson_performance(self):
+        """PERBAIKAN: Tambahkan method yang hilang untuk optimasi Jetson"""
+        try:
+            if self.is_jetson:
+                self.get_logger().info("Applying Jetson AGX Orin optimizations...")
+                
+                # Set optimal batch size for Jetson
+                self.batch_size = 1
+                
+                # Enable half precision if supported
+                self.use_half_precision = True
+                
+                # Set optimal inference resolution
+                self.inference_size = 640
+                
+                # Enable TensorRT optimizations
+                self.use_tensorrt = True
+                
+                # Set memory optimization flags
+                os.environ['CUDA_LAUNCH_BLOCKING'] = '0'
+                os.environ['CUDA_CACHE_DISABLE'] = '0'
+                
+                self.get_logger().info("Jetson optimizations applied successfully")
+            else:
+                self.get_logger().info("Non-Jetson platform, using standard configuration")
+                self.batch_size = 1
+                self.use_half_precision = False
+                self.inference_size = 640
+                self.use_tensorrt = False
+                
+        except Exception as e:
+            self.get_logger().error(f"Error applying Jetson optimizations: {e}")
+            # Use safe defaults
+            self.batch_size = 1
+            self.use_half_precision = False
+            self.inference_size = 640
+            self.use_tensorrt = False
 
     def _create_publishers(self):
         # Buat publisher untuk hasil deteksi dan diagnostics
         try:
-            self.publisher = self.create_publisher(Yolov12Inference, DETECTION_TOPIC, 10)
+            self.detection_pub = self.create_publisher(Yolov12Inference, DETECTION_TOPIC, 10)
             self.diagnostic_pub = self.create_publisher(DiagnosticArray, DIAGNOSTIC_TOPIC, 10)
             self.get_logger().info(f"Publishers created: {DETECTION_TOPIC}, {DIAGNOSTIC_TOPIC}")
         except Exception as e:
@@ -393,27 +322,35 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def _create_services(self):
         # Buat service untuk restart model dan get status
         try:
-            self.restart_srv = self.create_service(Trigger, 'restart_model', self.restart_model_callback)
-            self.status_srv = self.create_service(Trigger, 'get_status', self.get_status_callback)
-            self.get_logger().info("Services created: restart_model, get_status")
+            self.restart_service = self.create_service(Trigger, 'restart_model', self.restart_model_callback)
+            self.status_service = self.create_service(Trigger, 'get_status', self.get_status_callback)
+            self.get_logger().info(f"Services created: restart_model, get_status")
         except Exception as e:
             self.get_logger().error(f"Error creating services: {e}")
-            self.get_logger().error(traceback.format_exc())
 
     def restart_model_callback(self, request, response):
         """Service callback untuk restart model YOLOv12."""
         try:
             self.get_logger().info("Restarting YOLOv12 model...")
-            with self.mutex:
-                # Reload model
-                self._load_model()
-            response.success = True
-            response.message = f"Model successfully restarted at {time.strftime('%Y-%m-%d %H:%M:%S')}"
-            self.get_logger().info("Model restart completed successfully")
+            old_model = self.model
+            self.model = None
+            
+            # Reload model
+            self._load_model()
+            
+            if self.model is not None:
+                response.success = True
+                response.message = "Model restarted successfully"
+                self.get_logger().info("Model restarted successfully")
+            else:
+                response.success = False
+                response.message = "Failed to restart model"
+                self.get_logger().error("Failed to restart model")
+                
         except Exception as e:
-            self.get_logger().error(f"Failed to restart model: {e}")
+            self.get_logger().error(f"Error restarting model: {e}")
             response.success = False
-            response.message = f"Failed to restart model: {str(e)}"
+            response.message = f"Error: {str(e)}"
         return response
 
     def get_status_callback(self, request, response):
@@ -421,251 +358,151 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         try:
             active_cameras = sum(1 for img in self.images if img is not None)
             total_detections = sum(self.detection_counts)
-            avg_inference_time = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0
+            avg_inference_time = np.mean(self.inference_times) if self.inference_times else 0.0
             
             status_msg = (
                 f"MultiCam Detection Status:\n"
                 f"- Active cameras: {active_cameras}/{self.cam_count}\n"
                 f"- Total detections: {total_detections}\n"
-                f"- Avg inference time: {avg_inference_time:.3f}s\n"
-                f"- Model: {os.path.basename(self.model_path)}\n"
-                f"- Platform: {'Jetson' if self.is_jetson else 'Standard'}"
+                f"- Average inference time: {avg_inference_time:.3f}s\n"
+                f"- Model loaded: {'Yes' if self.model else 'No'}\n"
+                f"- Device: {self.device}\n"
+                f"- Visualization: {'Enabled' if self.visualization_enabled else 'Disabled'}"
             )
             
             response.success = True
             response.message = status_msg
-            self.get_logger().info(f"Status requested: {status_msg}")
+            self.get_logger().info(status_msg)
+            
         except Exception as e:
             self.get_logger().error(f"Error getting status: {e}")
             response.success = False
-            response.message = f"Error getting status: {str(e)}"
+            response.message = f"Error: {str(e)}"
         return response
 
     def publish_diagnostics(self):
         """Publish diagnostic information ke topic /diagnostics."""
         try:
-            if not hasattr(self, 'diagnostic_pub'):
-                return
-            
-            diag_array = DiagnosticArray()
-            diag_array.header.stamp = self.get_clock().now().to_msg()
-            diag_array.header.frame_id = "base_link"
-            
-            # Main detection status
-            main_status = DiagnosticStatus()
-            main_status.name = "multicam_detection"
-            main_status.hardware_id = "jetson_orin" if self.is_jetson else "unknown"
-            
+            diagnostic_array = DiagnosticArray()
+            diagnostic_array.header.stamp = self.get_clock().now().to_msg()
+
+            # Create diagnostic status
+            status = DiagnosticStatus()
+            status.name = 'multicam_detection'
+            status.hardware_id = 'jetson_agx_orin' if self.is_jetson else 'unknown'
+
             active_cameras = sum(1 for img in self.images if img is not None)
-            if active_cameras == self.cam_count:
-                main_status.level = DiagnosticStatus.OK
-                main_status.message = f"All {self.cam_count} cameras active"
-            elif active_cameras > 0:
-                main_status.level = DiagnosticStatus.WARN
-                main_status.message = f"Only {active_cameras}/{self.cam_count} cameras active"
+            if active_cameras >= self.cam_count * 0.8:  # 80% cameras active
+                status.level = DiagnosticStatus.OK
+                status.message = 'All systems operational'
+            elif active_cameras >= self.cam_count * 0.5:  # 50% cameras active
+                status.level = DiagnosticStatus.WARN
+                status.message = 'Some cameras inactive'
             else:
-                main_status.level = DiagnosticStatus.ERROR
-                main_status.message = "No cameras active"
-            
-            # Add diagnostic values
-            main_status.values.append(KeyValue(key="active_cameras", value=str(active_cameras)))
-            main_status.values.append(KeyValue(key="total_cameras", value=str(self.cam_count)))
-            main_status.values.append(KeyValue(key="model_loaded", value=str(self.model is not None)))
-            main_status.values.append(KeyValue(key="platform", value="jetson" if self.is_jetson else "standard"))
-            
-            diag_array.status.append(main_status)
-            
-            # Per-camera status
-            for i in range(self.cam_count):
-                cam_status = DiagnosticStatus()
-                cam_status.name = f"camera_{i}"
-                cam_status.hardware_id = f"camera_{i}"
-                
-                if i < len(self.images) and self.images[i] is not None:
-                    cam_status.level = DiagnosticStatus.OK
-                    cam_status.message = "Camera active"
-                    cam_status.values.append(KeyValue(key="status", value="active"))
-                    cam_status.values.append(KeyValue(key="frames_received", value=str(self.detection_counts[i] if i < len(self.detection_counts) else 0)))
-                else:
-                    cam_status.level = DiagnosticStatus.ERROR
-                    cam_status.message = "Camera inactive"
-                    cam_status.values.append(KeyValue(key="status", value="inactive"))
-            
-                diag_array.status.append(cam_status)
-            
-            self.diagnostic_pub.publish(diag_array)
+                status.level = DiagnosticStatus.ERROR
+                status.message = 'Most cameras inactive'
+
+            # Add key-value pairs
+            status.values = [
+                KeyValue(key='active_cameras', value=str(active_cameras)),
+                KeyValue(key='total_cameras', value=str(self.cam_count)),
+                KeyValue(key='model_loaded', value=str(self.model is not None)),
+                KeyValue(key='device', value=self.device),
+                KeyValue(key='total_detections', value=str(sum(self.detection_counts)))
+            ]
+
+            diagnostic_array.status = [status]
+            self.diagnostic_pub.publish(diagnostic_array)
             
         except Exception as e:
-            self.get_logger().debug(f"Error publishing diagnostics: {e}")
+            self.get_logger().error(f"Error publishing diagnostics: {e}")
 
     def _load_model(self):
         # Load YOLOv12 model, fallback ke .pt jika .engine/.onnx gagal
         if not ULTRALYTICS_AVAILABLE:
-            self.get_logger().error("Ultralytics not available. Cannot load YOLOv12 model.")
-            raise ImportError("Required package 'ultralytics' not found")
+            self.get_logger().error("Ultralytics not available, cannot load model")
+            return
+            
         model_loaded = False
         original_path = self.model_path
         try:
-            # ===================== ERROR HANDLING: VALIDASI FILE MODEL =====================
             self.get_logger().info(f"Loading YOLOv12 model from: {self.model_path}")
-            if not os.path.exists(self.model_path):
-                self.get_logger().warning(f"Model file not found: {self.model_path}")
-                possible_paths = [
-                    self.model_path,
-                    os.path.join(os.path.expanduser('~'), self.model_path),
-                    os.path.join('/opt/models', self.model_path),
-                    os.path.join(os.getcwd(), self.model_path),
-                    os.path.join(os.getcwd(), 'models', self.model_path),
-                ]
-                base_name = os.path.splitext(self.model_path)[0]
-                possible_paths.extend([
-                    f"{base_name}.pt",
-                    f"{base_name}.onnx",
-                    f"{base_name}.engine"
-                ])
-                for path in possible_paths:
-                    if os.path.exists(path):
-                        self.get_logger().info(f"Found model at: {path}")
-                        self.model_path = path
-                        break
-            # Cek permission file model
-            if not os.path.isfile(self.model_path) or not os.access(self.model_path, os.R_OK):
-                self.get_logger().error(f"Model file not readable: {self.model_path}")
-                raise PermissionError(f"Model file not readable: {self.model_path}")
-            # Hash model file untuk audit trail
-            try:
-                with open(self.model_path, "rb") as f:
-                    model_hash = hashlib.sha256(f.read()).hexdigest()
-                self.get_logger().info(f"Model file hash (sha256): {model_hash}")
-            except Exception as e:
-                self.get_logger().warning(f"Could not hash model file: {e}")
-            self.model = YOLO(self.model_path, task="detect")
-            model_loaded = True
+            
+            # Calculate model hash for verification
+            import hashlib
+            with open(self.model_path, 'rb') as f:
+                model_hash = hashlib.sha256(f.read()).hexdigest()
+            self.get_logger().info(f"Model file hash (sha256): {model_hash}")
+            
+            # Load model with device specification
+            self.model = YOLO(self.model_path)
+            
+            # Move model to correct device
+            if hasattr(self.model, 'to'):
+                self.model.to(self.device)
+            
             self.get_logger().info(f"Successfully loaded YOLOv12 model: {self.model_path}")
+            self.get_logger().info(f"Model info: {self.model.info}")
             
-            # PERBAIKAN: Debug model information
-            if hasattr(self.model, 'info'):
-                self.get_logger().info(f"Model info: {self.model.info}")
-            
-            # PERBAIKAN: Log class names untuk debugging
+            # Get model details
             if hasattr(self.model, 'names'):
                 self.get_logger().info(f"Model has {len(self.model.names)} classes")
-                self.get_logger().info(f"Sample classes: {dict(list(self.model.names.items())[:10])}")
-            else:
-                self.get_logger().warning("Model does not have class names, using COCO fallback")
+                sample_classes = dict(list(self.model.names.items())[:10])
+                self.get_logger().info(f"Sample classes: {sample_classes}")
             
-            self.get_logger().info(f"Model task: detect")
+            if hasattr(self.model, 'task'):
+                self.get_logger().info(f"Model task: {self.model.task}")
+            
+            model_loaded = True
+            
         except Exception as e:
-            self.get_logger().error(f"Error loading YOLOv12 model: {e}")
-            self.get_logger().error(traceback.format_exc())
-            if not model_loaded and original_path.endswith(('.engine', '.onnx')):
-                try:
-                    fallback_path = original_path.rsplit('.', 1)[0] + '.pt'
-                    self.get_logger().info(f"Attempting fallback to PyTorch model: {fallback_path}")
-                    if os.path.exists(fallback_path):
-                        self.model = YOLO(fallback_path, task="detect")
-                        self.model_path = fallback_path
-                        model_loaded = True
-                        self.get_logger().info(f"Successfully loaded fallback model: {fallback_path}")
-                    else:
-                        self.get_logger().error(f"Fallback model not found: {fallback_path}")
-                except Exception as e2:
-                    self.get_logger().error(f"Error loading fallback model: {e2}")
-            if not model_loaded:
-                self.get_logger().error("Could not load any YOLOv12 model. Exiting.")
-                raise
+            self.get_logger().error(f"Failed to load model {self.model_path}: {e}")
+            traceback.print_exc()
+            
+        if not model_loaded:
+            self.get_logger().error("Failed to load any model")
+            self.model = None
 
     def _create_subscribers(self):
         # Buat subscriber untuk semua kamera, error handling jika topic tidak ada
         try:
-            if not self.camera_topics or len(self.camera_topics) == 0:
-                self.get_logger().error("No camera topics specified")
-                raise ValueError("No camera topics to subscribe to")
-            active_topics = self.camera_topics[:self.cam_count]
-            self.get_logger().info(f"Creating subscribers for {len(active_topics)} camera topics")
-            self.subs = []
-            for i, topic in enumerate(active_topics):
-                try:
-                    # ===================== ERROR HANDLING: CEK TOPIC KAMERA (OPSIONAL) =====================
-                    # (Bisa tambahkan pengecekan ros2 topic list di sini jika ingin lebih advance)
+            self.image_subs = []
+            for i, topic in enumerate(self.camera_topics):
+                if i < self.cam_count:
                     sub = self.create_subscription(
-                        Image,
-                        topic,
-                        lambda msg, idx=i: self.image_callback(msg, idx),
+                        Image, topic, 
+                        lambda msg, idx=i: self.image_callback(msg, idx), 
                         10
                     )
-                    self.subs.append(sub)
-                    self.get_logger().info(f"Subscribed to camera topic: {topic} (idx={i})")
-                except Exception as e:
-                    self.get_logger().error(f"Error subscribing to {topic}: {e}")
-            if len(self.subs) == 0:
-                self.get_logger().error("Failed to create any camera subscribers")
-                raise RuntimeError("No camera subscriptions created")
-            if len(self.subs) < self.cam_count:
-                self.get_logger().warning(f"Only {len(self.subs)} camera topics subscribed out of {self.cam_count} requested")
-                self.cam_count = len(self.subs)
-                self.images = [None] * self.cam_count
-                self.last_frame_time = [None] * self.cam_count
-                self.detection_counts = [0] * self.cam_count
-                self.inference_times = [0.0] * self.cam_count
+                    self.image_subs.append(sub)
+                    self.get_logger().info(f"Subscribed to camera {i+1}: {topic}")
+                    
         except Exception as e:
-            self.get_logger().error(f"Error setting up camera subscribers: {e}")
-            self.get_logger().error(traceback.format_exc())
-            raise
+            self.get_logger().error(f"Error creating subscribers: {e}")
 
     def _create_timers(self):
         """Buat timer untuk proses deteksi dan diagnostics"""
         try:
-            # Timer untuk proses deteksi utama
-            detection_period = 1.0 / 10.0  # 10 Hz untuk detection processing
-            self.detection_timer = self.create_timer(detection_period, self.process_images)
+            # Timer for processing images (5Hz default)
+            self.process_timer = self.create_timer(0.2, self.process_images)
             
-            # Timer untuk diagnostics (lebih lambat)
-            diagnostics_period = 5.0  # Setiap 5 detik
-            self.diagnostics_timer = self.create_timer(diagnostics_period, self.publish_diagnostics)
+            # Timer for diagnostics (1Hz)
+            self.diagnostic_timer = self.create_timer(1.0, self.publish_diagnostics)
             
-            # PERBAIKAN: Tambahkan method yang hilang
-            self.health_check_timer = self.create_timer(10.0, self.publish_health_check)
+            # Timer for health check (0.2Hz)
+            self.health_timer = self.create_timer(5.0, self.publish_health_check)
             
-            self.get_logger().info("Timers created successfully")
+            # Timer for debug visualization status
+            self.debug_timer = self.create_timer(10.0, self.debug_visualization_status)
             
         except Exception as e:
             self.get_logger().error(f"Error creating timers: {e}")
-            raise
 
     def publish_health_check(self):
         """Publish health check untuk monitoring node."""
         try:
-            if not self.running or not self.is_initialized:
-                return
-                
-            # Hitung statistik kesehatan
             active_cameras = sum(1 for img in self.images if img is not None)
-            total_detections = sum(self.detection_counts)
-            avg_inference_time = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0.0
-            
-            # Log health status
-            self.get_logger().info(
-                f"🏥 Health Check - Active cameras: {active_cameras}/{self.cam_count}, "
-                f"Total detections: {total_detections}, "
-                f"Avg inference: {avg_inference_time:.3f}s"
-            )
-            
-            # Update performance stats untuk diagnostics
-            if hasattr(self, 'performance_stats'):
-                self.performance_stats.update({
-                    'active_cameras': active_cameras,
-                    'total_detections': total_detections,
-                    'avg_inference_time': avg_inference_time,
-                    'last_health_check': time.time()
-                })
-            else:
-                self.performance_stats = {
-                    'active_cameras': active_cameras,
-                    'total_detections': total_detections,
-                    'avg_inference_time': avg_inference_time,
-                    'last_health_check': time.time()
-                }
+            self.get_logger().info(f"Health Check - Active cameras: {active_cameras}/{self.cam_count}")
                 
         except Exception as e:
             self.get_logger().error(f"Error in health check: {e}")
@@ -673,35 +510,32 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def debug_visualization_status(self):
         """Debug status visualization."""
         try:
-            total_detections = sum(self.detection_counts)
-            avg_inference = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0
-            
-            self.get_logger().info(
-                f"Detection Status: Total={total_detections}, Avg_Inference={avg_inference:.3f}s, "
-                f"Cameras_Active={sum(1 for img in self.images if img is not None)}"
-            )
+            if self.visualization_enabled:
+                self.get_logger().info("Visualization: ENABLED")
+            else:
+                self.get_logger().info("Visualization: DISABLED")
         except Exception as e:
             self.get_logger().error(f"Error in debug visualization: {e}")
 
     def image_callback(self, msg, idx):
         # Callback untuk setiap image kamera, simpan ke buffer
         try:
+            cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             with self.mutex:
-                self.last_frame_time[idx] = self.get_clock().now()
-                # ===================== ERROR HANDLING: VALIDASI IMAGE =====================
-                img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-                if img is None or not isinstance(img, np.ndarray):
-                    self.get_logger().warning(f"Received invalid image from camera {idx}")
-                    return
-                if img.ndim != 3 or img.shape[2] != 3:
-                    self.get_logger().warning(f"Image shape not valid (expected 3 channels): {img.shape}")
-                    return
-                self.images[idx] = img
+                self.images[idx] = cv_image
+                self.last_frame_time[idx] = time.time()
+                
         except CvBridgeError as e:
-            self.get_logger().warning(f"Error converting image from topic {self.camera_topics[idx]}: {e}")
+            self.get_logger().error(f"CV Bridge error for camera {idx}: {e}")
         except Exception as e:
             self.get_logger().error(f"Error in image callback for camera {idx}: {e}")
-            self.get_logger().error(traceback.format_exc())
+
+    def fusion_callback(self, msg):
+        """Callback untuk hasil fusion dari simple_fusion_node"""
+        try:
+            self.get_logger().debug(f"Received fusion result: {len(msg.yolov12_inference)} detections")
+        except Exception as e:
+            self.get_logger().error(f"Error in fusion callback: {e}")
 
     def process_images(self):
         """Process detection untuk semua kamera."""
@@ -717,35 +551,37 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         
         # Initialize latest_results storage
         if not hasattr(self, 'latest_results'):
-            self.latest_results = [None] * self.cam_count
+            self.latest_results = {}
         
         try:
-            # Process each available image
             for i, image in enumerate(images_copy):
                 if image is not None:
+                    camera_name = f"camera_{i+1}"
+                    
+                    # Run inference
                     start_time = time.time()
-                    
-                    # Run YOLOv12 inference
-                    results = self.model(image, conf=self.conf_thres, verbose=False)
-                    
-                    # Track inference time
+                    results = self.model(image, conf=self.conf_thres, device=self.device, verbose=False)
                     inference_time = time.time() - start_time
-                    if i < len(self.inference_times):
-                        self.inference_times[i] = inference_time
                     
-                    # Get camera name
-                    camera_name = self.camera_topics[i].split('/')[-2] if '/' in self.camera_topics[i] else f'camera_{i}'
+                    self.inference_times[i] = inference_time
                     
-                    # Publish results
-                    self.publish_results(results, camera_name)
-                    
-                    # Update detection count
-                    if i < len(self.detection_counts):
-                        self.detection_counts[i] += len(results[0].boxes) if results and len(results) > 0 and hasattr(results[0], 'boxes') else 0
+                    # Count detections
+                    if results and len(results) > 0:
+                        detections = len(results[0].boxes) if hasattr(results[0], 'boxes') and results[0].boxes is not None else 0
+                        self.detection_counts[i] += detections
+                        
+                        if detections > 0:
+                            self.get_logger().info(f"Camera {i+1}: {detections} detections, inference: {inference_time:.3f}s")
+                            
+                        # Publish results
+                        self.publish_results(results, camera_name)
+                        
+                        # Store for visualization
+                        self.latest_results[camera_name] = (image, results)
         
         except Exception as e:
             self.get_logger().error(f"Error processing images: {e}")
-            self.get_logger().error(traceback.format_exc())
+            traceback.print_exc()
 
     def publish_results(self, results, camera_name):
         """Publish hasil deteksi ke topic /detection (Yolov12Inference) dengan koordinat yang benar."""
@@ -753,200 +589,132 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             return
         
         try:
+            # Create message
             msg = Yolov12Inference()
             msg.header = Header()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = camera_name
+            msg.header.frame_id = f"{camera_name}_optical_frame"
             msg.camera_name = camera_name
             msg.frame_type = "raw"
             msg.task = "detect"
-            msg.note = f"Detection from {camera_name} at {time.time()}"
-            msg.yolov12_inference = []
             
-            # PERBAIKAN: Focus hanya pada detection, skip OBB
-            try:
-                for result in results:
-                    if hasattr(result, 'boxes') and result.boxes is not None:
-                        boxes = result.boxes
-                        for box in boxes:
-                            try:
-                                # Extract coordinates dalam format (x1, y1, x2, y2)
-                                if hasattr(box, 'xyxy'):
-                                    coords = box.xyxy[0].cpu().numpy()
-                                    x1, y1, x2, y2 = coords
-                                else:
-                                    continue
-                                
-                                # Extract confidence and class
-                                confidence = float(box.conf.cpu().numpy()[0]) if hasattr(box, 'conf') else 0.0
-                                class_id = int(box.cls.cpu().numpy()[0]) if hasattr(box, 'cls') else 0
-                                
-                                # Validasi koordinat
-                                x1 = max(0, min(x1, 1920))
-                                y1 = max(0, min(y1, 1080))
-                                x2 = max(0, min(x2, 1920))
-                                y2 = max(0, min(y2, 1080))
-                                
-                                # Skip deteksi dengan confidence rendah
-                                if confidence < self.conf_thres:
-                                    continue
-                                
-                                # Buat InferenceResult
-                                inference_result = InferenceResult()
-                                inference_result.class_name = self.model.names[class_id] if hasattr(self.model, 'names') else f"class_{class_id}"
-                                inference_result.confidence = confidence
-                                
-                                # Set koordinat bounding box
-                                inference_result.left = int(x1)
-                                inference_result.top = int(y1) 
-                                inference_result.right = int(x2)
-                                inference_result.bottom = int(y2)
-                                
-                                # PERBAIKAN: Set default values untuk field yang tidak digunakan
-                                inference_result.track_id = -1
-                                inference_result.obb_angle = -1.0  # PERBAIKAN: Pastikan float, bukan int
-                                inference_result.mask_indices = []
-                                
-                                # Set note field untuk debugging
-                                if hasattr(inference_result, 'note'):
-                                    inference_result.note = f"Detection by {camera_name}"
-                                
-                                msg.yolov12_inference.append(inference_result)
-                                
-                                # Log detection untuk debugging
-                                self.get_logger().info(
-                                    f"{camera_name}: {inference_result.class_name} "
-                                    f"conf={confidence:.2f} "
-                                    f"bbox=({x1:.0f},{y1:.0f},{x2:.0f},{y2:.0f})"
-                                )
-                                
-                            except Exception as e:
-                                self.get_logger().warning(f"Error processing detection box: {e}")
-                                continue
-                                
-            except Exception as e:
-                self.get_logger().error(f"Error processing YOLOv12 results: {e}")
-                return
-        
+            # Process detections
+            inference_results = []
+            
+            if hasattr(results[0], 'boxes') and results[0].boxes is not None:
+                boxes = results[0].boxes
+                for box in boxes:
+                    detection = InferenceResult()
+                    
+                    # Get class info
+                    class_id = int(box.cls.item())
+                    detection.class_name = self.model.names[class_id] if hasattr(self.model, 'names') else str(class_id)
+                    detection.confidence = float(box.conf.item())
+                    
+                    # Get bounding box coordinates (xyxy format)
+                    coords = box.xyxy[0].cpu().numpy()
+                    detection.left = int(coords[0])
+                    detection.top = int(coords[1])
+                    detection.right = int(coords[2])
+                    detection.bottom = int(coords[3])
+                    
+                    # Optional fields
+                    detection.track_id = -1  # No tracking
+                    detection.obb_angle = -1.0  # No OBB
+                    detection.mask_indices = []  # No segmentation
+                    
+                    inference_results.append(detection)
+            
+            msg.yolov12_inference = inference_results
+            
             # Publish message
-            if hasattr(self, 'publisher') and self.publisher is not None:
-                self.publisher.publish(msg)
-                self.get_logger().info(f"Published {len(msg.yolov12_inference)} detections from {camera_name}")
-            else:
-                self.get_logger().error("Publisher not available")
+            self.detection_pub.publish(msg)
                 
         except Exception as e:
-            self.get_logger().error(f"Error publishing detection results: {e}")
-            self.get_logger().error(traceback.format_exc())
+            self.get_logger().error(f"Error publishing results for {camera_name}: {e}")
+            traceback.print_exc()
 
     def visualize_results(self, images):
         """Visualisasi hasil deteksi dengan label posisi yang benar"""
         if not self.visualization_enabled:
             return
+            
         try:
-            valid_images = []
-            
-            # PERBAIKAN: Real position mapping
-            real_positions = {
-                'camera_front': 'BELAKANG',
-                'camera_front_left': 'KIRI_BELAKANG',
-                'camera_left': 'KIRI_DEPAN',
-                'camera_rear': 'DEPAN', 
-                'camera_rear_right': 'KANAN_DEPAN',
-                'camera_right': 'KANAN_BELAKANG'
-            }
-            
-            for idx, img in enumerate(images):
-                if img is not None and img.size > 0:
-                    # Add real position label
-                    if idx < len(self.camera_topics):
-                        topic = self.camera_topics[idx]
-                        camera_name = topic.split('/')[-2]  # Extract camera name from topic
-                        real_pos = real_positions.get(camera_name, 'UNKNOWN')
-                        
-                        # Add text overlay
-                        font = cv2.FONT_HERSHEY_SIMPLEX
-                        text = f"{camera_name} (REAL: {real_pos})"
-                        cv2.putText(img, text, (10, 30), font, 0.6, (0, 255, 0), 2)
+            # Only visualize if we have results
+            if not hasattr(self, 'latest_results') or not self.latest_results:
+                return
                 
-                valid_images.append(img)
+            display_images = []
+            for camera_name, (image, results) in self.latest_results.items():
+                annotated_image = image.copy()
+                
+                # Draw detections
+                if results and len(results) > 0 and hasattr(results[0], 'boxes'):
+                    if results[0].boxes is not None:
+                        for box in results[0].boxes:
+                            # Get coordinates
+                            coords = box.xyxy[0].cpu().numpy()
+                            x1, y1, x2, y2 = map(int, coords)
+                            
+                            # Get class and confidence
+                            class_id = int(box.cls.item())
+                            class_name = self.model.names[class_id] if hasattr(self.model, 'names') else str(class_id)
+                            confidence = float(box.conf.item())
+                            
+                            # Draw bounding box
+                            cv2.rectangle(annotated_image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                            
+                            # Draw label
+                            label = f"{class_name}: {confidence:.2f}"
+                            cv2.putText(annotated_image, label, (x1, y1-10), 
+                                      cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                
+                # Add camera name
+                cv2.putText(annotated_image, camera_name, (10, 30), 
+                          cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                
+                display_images.append(annotated_image)
             
-            # Display dengan layout yang lebih baik
-            if valid_images:
-                self._display_multi_camera(valid_images)
+            if display_images:
+                self._display_multi_camera(display_images)
                 
         except Exception as e:
-            self.get_logger().error(f"Error in visualization: {e}")
+            self.get_logger().error(f"Error visualizing results: {e}")
 
-def _display_multi_camera(self, images):
-    """Display multiple cameras dengan layout yang optimal"""
-    try:
-        target_height = 400  # Lebih besar untuk readability
-        resized_images = []
-        
-        for image in images:
-            if image is not None and image.size > 0:
+    def _display_multi_camera(self, images):
+        """Display multiple cameras dengan layout yang optimal"""
+        try:
+            target_height = 400  # Lebih besar untuk readability
+            resized_images = []
+            
+            for image in images:
                 h, w = image.shape[:2]
                 scale = target_height / h
-                new_width = int(w * scale)
-                resized = cv2.resize(image, (new_width, target_height), 
-                                   interpolation=cv2.INTER_LINEAR)
+                new_w = int(w * scale)
+                resized = cv2.resize(image, (new_w, target_height))
                 resized_images.append(resized)
-        
-        if not resized_images:
-            return
-        
-        # Layout untuk 6 kamera (3x2)
-        if len(resized_images) >= 3:
-            top_row = np.hstack(resized_images[:3])
-            if len(resized_images) > 3:
-                bottom_imgs = resized_images[3:]
-                # Pad jika perlu
-                while len(bottom_imgs) < 3:
-                    bottom_imgs.append(np.zeros_like(resized_images[0]))
-                bottom_row = np.hstack(bottom_imgs[:3])
-                
-                # Ensure same width
-                if bottom_row.shape[1] != top_row.shape[1]:
-                    scale_factor = top_row.shape[1] / bottom_row.shape[1]
-                    new_height = int(bottom_row.shape[0] * scale_factor)
-                    bottom_row = cv2.resize(bottom_row, (top_row.shape[1], new_height))
-                
-                final_image = np.vstack([top_row, bottom_row])
+            
+            if not resized_images:
+                return
+            
+            # Layout untuk 6 kamera (3x2)
+            if len(resized_images) >= 3:
+                row1 = cv2.hconcat(resized_images[:3])
+                if len(resized_images) >= 6:
+                    row2 = cv2.hconcat(resized_images[3:6])
+                    final_image = cv2.vconcat([row1, row2])
+                else:
+                    final_image = row1
             else:
-                final_image = top_row
-        else:
-            final_image = np.hstack(resized_images)
-        
-        # **Window dengan nama yang jelas**
-        cv2.imshow("Huskybot MultiCam YOLOv12 + LiDAR Fusion", final_image)
-        cv2.waitKey(1)
-        
-    except Exception as e:
-        self.get_logger().error(f"Error displaying images: {e}")
+                final_image = cv2.hconcat(resized_images)
+            
+            # **Window dengan nama yang jelas**
+            cv2.imshow("Huskybot MultiCam YOLOv12 + LiDAR Fusion", final_image)
+            cv2.waitKey(1)
+            
+        except Exception as e:
+            self.get_logger().error(f"Error displaying images: {e}")
 
-def get_adaptive_font_params(self, img_width, img_height):
-    """Get adaptive font parameters berdasarkan resolusi image"""
-    # Base parameters untuk resolusi standar
-    base_width = 1920
-    base_height = 1080
-    base_font_scale = 0.8
-    base_thickness = 2
-    base_line_spacing = 35
-    
-    # Scale factor berdasarkan resolusi actual
-    width_scale = img_width / base_width
-    height_scale = img_height / base_height
-    avg_scale = (width_scale + height_scale) / 2
-    
-    # Clamp untuk menghindari font terlalu besar/kecil
-    scale_factor = max(0.5, min(2.5, avg_scale))
-    
-    return {
-        'font_scale': base_font_scale * scale_factor,
-        'thickness': max(2, int(base_thickness * scale_factor)),
-        'line_spacing': int(base_line_spacing * scale_factor)
-    }
 def main(args=None):
     # Entry point ROS2 node
     rclpy.init(args=args)
@@ -957,23 +725,18 @@ def main(args=None):
     except KeyboardInterrupt:
         print("KeyboardInterrupt, shutting down...")
         if node:
-            node.get_logger().info('KeyboardInterrupt, shutting down node.')
+            node.running = False
     except Exception as e:
         print(f"Fatal error: {e}")
         if node:
             node.get_logger().error(f"Fatal error: {e}")
-            node.get_logger().error(traceback.format_exc())
     finally:
         if node:
-            node.on_shutdown()
-            try:
-                node.destroy_node()
-            except Exception as e:
-                print(f"Error destroying node: {e}")
+            node.destroy_node()
         try:
             rclpy.shutdown()
         except Exception as e:
-            print(f"Error during rclpy shutdown: {e}")
+            print(f"Error during shutdown: {e}")
         print("Multicam detection node shutdown complete.")
 
 if __name__ == "__main__":
