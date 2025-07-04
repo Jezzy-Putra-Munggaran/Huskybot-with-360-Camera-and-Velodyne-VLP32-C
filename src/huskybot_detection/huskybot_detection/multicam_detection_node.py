@@ -10,8 +10,8 @@ import sys
 import time
 import traceback
 import threading
-import platform  # PERBAIKAN: Import platform yang hilang
-import math  # PERBAIKAN: Import math yang hilang
+import platform  # FIXED: Import platform yang hilang
+import math  # FIXED: Import math yang hilang
 from threading import Lock
 
 # Cek semua dependency utama sebelum import ROS2
@@ -81,7 +81,7 @@ except ImportError as e:
     print("Install with: pip install ultralytics", file=sys.stderr)
     ULTRALYTICS_AVAILABLE = False
 
-# Constants - PERBAIKAN: Tambahkan yang hilang
+# Constants - FIXED: Tambahkan yang hilang
 JETSON_PLATFORMS = ['aarch64', 'arm64']  # Platform Jetson
 LOG_DIR = os.path.expanduser('~/huskybot_detection_log')
 DEFAULT_CONFIDENCE_THRESHOLD = 0.25
