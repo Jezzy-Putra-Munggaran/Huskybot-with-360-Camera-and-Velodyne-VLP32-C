@@ -5,15 +5,83 @@
 # Node ini menerima image dari 6 kamera Arducam IMX477 (hexagonal) dan publish hasil deteksi ke topic /detection
 # Siap untuk ROS2 Humble, Gazebo, Jetson Orin, Clearpath Husky A200, multi-robot, audit trail
 
-import os  # Operasi file dan path
-import sys  # Akses sys.stderr, sys.exit
-import time  # Timestamp, delay, log
-import traceback  # Print stack trace saat exception
-import logging  # Logging ke file dan terminal
-import platform  # Deteksi hardware/OS
-from threading import Lock  # Thread safety di callback paralel
-import hashlib  # Untuk hash file model (audit trail)
-import psutil  # Untuk cek resource usage (health check, opsional)
+# ===================== PERBAIKAN: ROBUST IMPORT HANDLING =====================
+import os
+import sys
+import time
+import traceback
+import logging
+import platform
+from threading import Lock
+import hashlib
+import psutil
+
+# Cek semua dependency utama sebelum import ROS2
+REQUIRED_MODULES = [
+    'rclpy', 'cv2', 'numpy', 'ultralytics', 'yolov12_msgs', 'cv_bridge'
+]
+
+missing_modules = []
+for mod in REQUIRED_MODULES:
+    try:
+        __import__(mod)
+    except ImportError as e:
+        missing_modules.append(f"{mod}: {e}")
+
+if missing_modules:
+    print(f"[FATAL] Missing Python dependencies:", file=sys.stderr)
+    for mod in missing_modules:
+        print(f"  - {mod}", file=sys.stderr)
+    print("Install missing dependencies and try again", file=sys.stderr)
+    sys.exit(1)
+
+# Safe ROS2 imports
+try:
+    import rclpy
+    from rclpy.node import Node
+    from rclpy.exceptions import ParameterNotDeclaredException
+    from rclpy.parameter import Parameter
+    from rcl_interfaces.msg import ParameterDescriptor, ParameterType
+    from rcl_interfaces.msg import SetParametersResult
+except ImportError as e:
+    print(f"[FATAL] ROS2 import error: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Safe sensor imports
+try:
+    from sensor_msgs.msg import Image
+    from std_msgs.msg import Header
+    from std_srvs.srv import Trigger
+    from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
+    from cv_bridge import CvBridge, CvBridgeError
+except ImportError as e:
+    print(f"[FATAL] ROS2 sensor_msgs import error: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Safe image processing imports
+try:
+    import numpy as np
+    import cv2
+except ImportError as e:
+    print(f"[FATAL] Image processing import error: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Safe custom message import
+try:
+    from yolov12_msgs.msg import InferenceResult, Yolov12Inference
+except ImportError as e:
+    print(f"[FATAL] Custom message import error: {e}", file=sys.stderr)
+    print("Make sure yolov12_msgs package is built and sourced", file=sys.stderr)
+    sys.exit(1)
+
+# Safe YOLO import with fallback
+try:
+    from ultralytics import YOLO
+    ULTRALYTICS_AVAILABLE = True
+except ImportError as e:
+    print(f"[WARNING] Ultralytics not available: {e}", file=sys.stderr)
+    print("Install with: pip install ultralytics", file=sys.stderr)
+    ULTRALYTICS_AVAILABLE = False
 
 # ===================== ERROR HANDLING: CEK DEPENDENCY PYTHON =====================
 # Cek semua dependency utama sebelum import ROS2
@@ -67,53 +135,48 @@ DEFAULT_CAMERA_TOPICS = [
 
 class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
     def __init__(self):
-        super().__init__('multicam_detection')  # Inisialisasi node ROS2
-        self._setup_logging()  # Setup logging ke file dan terminal
-        self.get_logger().info("Initializing MultiCam YOLOv12 Detection Node...")  # Log startup
+        super().__init__('multicam_detection')
+        self._setup_logging()
+        self.get_logger().info("Initializing MultiCam YOLOv12 Detection Node...")
 
-        self._declare_parameters()  # Declare semua parameter
-        self._load_parameters()  # Load parameter dari server
+        self._declare_parameters()
+        self._load_parameters()
 
-        self.bridge = CvBridge()  # Bridge konversi image
-        self.mutex = Lock()  # Mutex untuk thread safety
-        self.images = [None] * self.cam_count  # Buffer image
-        self.last_frame_time = [None] * self.cam_count  # Timestamp terakhir
-        self.detection_counts = [0] * self.cam_count  # Counter deteksi
-        self.inference_times = [0.0] * self.cam_count  # Waktu inference
-        self.is_initialized = False  # Flag init
-        self.model = None  # Model YOLOv12
-        self.running = True  # Flag running
+        self.bridge = CvBridge()
+        self.mutex = Lock()
+        self.images = [None] * self.cam_count
+        self.last_frame_time = [None] * self.cam_count
+        self.detection_counts = [0] * self.cam_count
+        self.inference_times = [0.0] * self.cam_count
+        self.is_initialized = False
+        self.model = None
+        self.running = True
 
-        self._detect_platform()  # Deteksi Jetson/CUDA
-        self._create_publishers()  # Publisher deteksi/diagnostics
-        self._create_services()  # Service restart_model/get_status
-        self._load_model()  # Load YOLOv12 model
-        self._create_subscribers()  # Subscriber kamera
-        self._create_timers()  # Timer deteksi/diagnostics
+        # Initialize performance stats
+        self.performance_stats = {
+            'active_cameras': 0,
+            'total_detections': 0,
+            'avg_inference_time': 0.0,
+            'last_health_check': time.time()
+        }
+
+        self._detect_platform()
+        self._create_publishers()
+        self._create_services()
+        self._load_model()
+        
+        # PERBAIKAN: Apply Jetson optimizations
+        self._optimize_jetson_performance()
+        
+        self._create_subscribers()
+        self._create_timers()  # Ini yang sebelumnya error
 
         # Tambahkan subscriber untuk hasil fusion
         self.fusion_sub = self.create_subscription(
             Yolov12Inference, '/detection_with_distance', self.fusion_callback, 10)
 
-        # PERBAIKAN: Performance optimization for Jetson
-        if self.is_jetson:
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    # Set CUDA optimization
-                    torch.backends.cudnn.benchmark = True
-                    torch.backends.cudnn.deterministic = False
-                    
-                    # Set memory management
-                    if hasattr(torch.cuda, 'empty_cache'):
-                        torch.cuda.empty_cache()
-                        
-                    self.get_logger().info("CUDA optimizations enabled for Jetson")
-            except Exception as e:
-                self.get_logger().warning(f"Could not apply CUDA optimizations: {e}")
-        
-        self.is_initialized = True  # Set flag init selesai
-        self.get_logger().info(f"MultiCam YOLOv12 Detection Node initialized with {self.cam_count} cameras")  # Log selesai init
+        self.is_initialized = True
+        self.get_logger().info(f"MultiCam YOLOv12 Detection Node initialized with {self.cam_count} cameras")
 
     def _setup_logging(self):
         # Setup logging ke file dan terminal, fallback ke /tmp jika gagal
@@ -551,21 +614,61 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             raise
 
     def _create_timers(self):
-        # Buat timer untuk proses deteksi dan diagnostics
+        """Buat timer untuk proses deteksi dan diagnostics"""
         try:
-            # PERBAIKAN: Slower processing untuk debugging
-            self.timer = self.create_timer(0.5, self.process_images)  # Slower untuk debugging
-            self.diag_timer = self.create_timer(2.0, self.publish_diagnostics)  # Slower diagnostics
-            self.health_timer = self.create_timer(5.0, self.publish_health_check)
+            # Timer untuk proses deteksi utama
+            detection_period = 1.0 / 10.0  # 10 Hz untuk detection processing
+            self.detection_timer = self.create_timer(detection_period, self.process_images)
             
-            # PERBAIKAN: Add visualization debug timer
-            if self.visualization_enabled:
-                self.viz_timer = self.create_timer(1.0, self.debug_visualization_status)
-                
-            self.get_logger().info("Timers created for processing, diagnostics, and health check")
+            # Timer untuk diagnostics (lebih lambat)
+            diagnostics_period = 5.0  # Setiap 5 detik
+            self.diagnostics_timer = self.create_timer(diagnostics_period, self.publish_diagnostics)
+            
+            # PERBAIKAN: Tambahkan method yang hilang
+            self.health_check_timer = self.create_timer(10.0, self.publish_health_check)
+            
+            self.get_logger().info("Timers created successfully")
+            
         except Exception as e:
             self.get_logger().error(f"Error creating timers: {e}")
             raise
+
+    def publish_health_check(self):
+        """Publish health check untuk monitoring node."""
+        try:
+            if not self.running or not self.is_initialized:
+                return
+                
+            # Hitung statistik kesehatan
+            active_cameras = sum(1 for img in self.images if img is not None)
+            total_detections = sum(self.detection_counts)
+            avg_inference_time = sum(self.inference_times) / len(self.inference_times) if self.inference_times else 0.0
+            
+            # Log health status
+            self.get_logger().info(
+                f"🏥 Health Check - Active cameras: {active_cameras}/{self.cam_count}, "
+                f"Total detections: {total_detections}, "
+                f"Avg inference: {avg_inference_time:.3f}s"
+            )
+            
+            # Update performance stats untuk diagnostics
+            if hasattr(self, 'performance_stats'):
+                self.performance_stats.update({
+                    'active_cameras': active_cameras,
+                    'total_detections': total_detections,
+                    'avg_inference_time': avg_inference_time,
+                    'last_health_check': time.time()
+                })
+            else:
+                self.performance_stats = {
+                    'active_cameras': active_cameras,
+                    'total_detections': total_detections,
+                    'avg_inference_time': avg_inference_time,
+                    'last_health_check': time.time()
+                }
+                
+        except Exception as e:
+            self.get_logger().error(f"Error in health check: {e}")
 
     def debug_visualization_status(self):
         """Debug status visualization."""
