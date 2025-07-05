@@ -92,6 +92,36 @@ def check_log_directory(context, *args, **kwargs):  # Fungsi validasi direktori 
 def generate_launch_description():  # Fungsi utama untuk generate LaunchDescription
     """Konfigurasi dan jalankan node segmentasi YOLOv12 multicam dengan error handling maksimal."""
 
+    # Deteksi model file
+    model_file = None
+    model_extensions = ['.engine', '.onnx', '.pt']
+    model_names = ['yolo11x-seg', 'yolov8n-seg', 'yolov8s-seg', 'yolov8m-seg', 'yolov8l-seg', 'yolov8x-seg']
+    
+    search_paths = [
+        os.getcwd(),
+        os.path.join(os.getcwd(), 'models'),
+        os.path.expanduser('~'),
+        os.path.join(os.path.expanduser('~'), 'huskybot'),
+        os.path.join(os.path.expanduser('~'), 'huskybot', 'models')
+    ]
+    
+    for search_path in search_paths:
+        for model_name in model_names:
+            for ext in model_extensions:
+                potential_path = os.path.join(search_path, f"{model_name}{ext}")
+                if os.path.exists(potential_path):
+                    model_file = potential_path
+                    print(f"[INFO] File model YOLOv11 ditemukan: {os.path.basename(model_file)}")
+                    break
+            if model_file:
+                break
+        if model_file:
+            break
+    
+    if not model_file:
+        model_file = 'yolo11x-seg.pt'  # Default fallback
+        print(f"[WARNING] Model tidak ditemukan, menggunakan default: {model_file}")
+
     # Argumen jumlah kamera (default 6, hexagonal)
     cam_count_arg = DeclareLaunchArgument(
         'cam_count', default_value='6',
@@ -99,7 +129,7 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
     )
     # Argumen path model YOLOv12 segmentasi
     model_path_arg = DeclareLaunchArgument(
-        'model_path', default_value='yolo11x-seg.engine',
+        'model_path', default_value=model_file,
         description='Path ke model YOLOv12 segmentasi (*.pt/*.engine/*.onnx)'
     )
     # Argumen threshold confidence deteksi
@@ -190,14 +220,19 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
             'log_dir': log_dir,
             'log_file': log_file,
             # Kamera topics: parsing string ke list jika override, default urutan hexagonal
-            'camera_topics': [
-                '/camera_front/image_raw',
-                '/camera_right/image_raw',
-                '/camera_rear_right/image_raw',
-                '/camera_rear/image_raw',
-                '/camera_left/image_raw',
-                '/camera_front_left/image_raw'
-            ]
+            'camera_topic_0': '/camera_front/image_raw',
+            'camera_topic_1': '/camera_front_left/image_raw',
+            'camera_topic_2': '/camera_left/image_raw', 
+            'camera_topic_3': '/camera_rear/image_raw',
+            'camera_topic_4': '/camera_rear_right/image_raw',
+            'camera_topic_5': '/camera_right/image_raw',
+            # Additional parameters
+            'image_width': 1920,
+            'image_height': 1080,
+            'max_detection_distance': 50.0,
+            'min_detection_size': 0.01,
+            'enable_diagnostics': True,
+            'log_level': 'INFO',
         }],
         remappings=[
             # Remap output topic /detection sesuai namespace (multi-robot ready)

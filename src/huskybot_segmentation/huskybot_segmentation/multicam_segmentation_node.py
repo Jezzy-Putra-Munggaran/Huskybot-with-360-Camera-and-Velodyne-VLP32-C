@@ -53,7 +53,7 @@ class MulticamSegmentationNode(Node):
             'average_inference_time': 0.0
         }
         
-        self.get_logger().info("YOLOv11 Segmentation Node initialized successfully")
+        self.get_logger().info("🚀 YOLOv11 Segmentation Node initialized successfully")
 
     def _setup_parameters(self):
         """Setup parameters dengan tipe data yang benar"""
@@ -91,8 +91,8 @@ class MulticamSegmentationNode(Node):
             topic = self.get_parameter(topic_param).get_parameter_value().string_value
             self.camera_topics.append(topic)
         
-        self.get_logger().info(f"Camera topics: {self.camera_topics}")
-        self.get_logger().info(f"Model: {self.model_path}, Device: {self.device}")
+        self.get_logger().info(f"📹 Camera topics: {self.camera_topics}")
+        self.get_logger().info(f"🤖 Model: {self.model_path}, Device: {self.device}")
 
     def _initialize_model(self):
         """Initialize YOLO model"""
@@ -101,20 +101,23 @@ class MulticamSegmentationNode(Node):
                 raise ImportError("Ultralytics tidak tersedia")
             
             # Load model
+            self.get_logger().info(f"🔄 Loading model: {self.model_path}")
             self.model = YOLO(self.model_path)
             
             # Move to device  
             if 'cuda' in self.device:
                 self.model.to('cuda')
+                self.get_logger().info("🚀 Model moved to CUDA")
             
-            # Test inference
+            # Test inference untuk memastikan model bekerja
             dummy_image = np.zeros((640, 640, 3), dtype=np.uint8)
             _ = self.model(dummy_image, conf=self.conf_thres, task='segment')
             
-            self.get_logger().info(f"✅ YOLOv11 Segmentation model loaded: {self.model_path}")
+            self.get_logger().info(f"✅ YOLOv11 Segmentation model loaded successfully: {self.model_path}")
             
         except Exception as e:
             self.get_logger().error(f"❌ Failed to initialize model: {e}")
+            self.get_logger().error(f"Traceback: {traceback.format_exc()}")
             raise e
 
     def _setup_topics(self):
@@ -129,7 +132,7 @@ class MulticamSegmentationNode(Node):
                 10
             )
             self.image_subs.append(sub)
-            self.get_logger().info(f"Subscribed to: {topic}")
+            self.get_logger().info(f"📡 Subscribed to: {topic}")
         
         # Create publishers
         self.segmentation_pubs = []
@@ -148,7 +151,7 @@ class MulticamSegmentationNode(Node):
                 vis_pub = self.create_publisher(Image, vis_topic, 10)
                 self.visualization_pubs.append(vis_pub)
         
-        self.get_logger().info(f"Created {len(self.segmentation_pubs)} segmentation publishers")
+        self.get_logger().info(f"📤 Created {len(self.segmentation_pubs)} segmentation publishers")
 
     def _setup_timers(self):
         """Setup processing timers"""
@@ -181,7 +184,7 @@ class MulticamSegmentationNode(Node):
         except Exception as e:
             with self.lock:
                 self.stats['failed_segmentations'] += 1
-            self.get_logger().error(f"Segmentation error camera {camera_index}: {e}")
+            self.get_logger().error(f"❌ Segmentation error camera {camera_index}: {e}")
 
     def _process_segmentation_results(self, result, original_msg, camera_index, original_image):
         """Process and publish segmentation results"""
@@ -233,7 +236,7 @@ class MulticamSegmentationNode(Node):
                 self.visualization_pubs[camera_index].publish(vis_msg)
                 
         except Exception as e:
-            self.get_logger().error(f"Error processing segmentation results: {e}")
+            self.get_logger().error(f"❌ Error processing segmentation results: {e}")
 
     def _create_visualization(self, image, result):
         """Create visualization with segmentation masks and bounding boxes"""
@@ -273,7 +276,7 @@ class MulticamSegmentationNode(Node):
             return vis_image
             
         except Exception as e:
-            self.get_logger().error(f"Error creating visualization: {e}")
+            self.get_logger().error(f"❌ Error creating visualization: {e}")
             return image
 
     def log_statistics(self):
@@ -293,7 +296,7 @@ class MulticamSegmentationNode(Node):
                     f"Avg Inference={stats['average_inference_time']*1000:.1f}ms"
                 )
         except Exception as e:
-            self.get_logger().error(f"Error logging statistics: {e}")
+            self.get_logger().error(f"❌ Error logging statistics: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
