@@ -3,6 +3,7 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from sensor_msgs.msg import Image
 from yolov12_msgs.msg import Yolov12Inference, InferenceResult
 from cv_bridge import CvBridge
@@ -33,7 +34,7 @@ class MulticamSegmentationNode(Node):
         self.bridge = CvBridge()
         self.lock = threading.Lock()
         
-        # Setup parameters dengan tipe data yang tepat
+        # Setup parameters dengan handling yang lebih robust
         self._setup_parameters()
         
         # Initialize model
@@ -56,12 +57,12 @@ class MulticamSegmentationNode(Node):
         self.get_logger().info("🚀 YOLOv11 Segmentation Node initialized successfully")
 
     def _setup_parameters(self):
-        """Setup parameters dengan tipe data yang benar"""
+        """Setup parameters dengan handling tipe data yang robust"""
         try:
-            # Declare all parameters with proper types
+            # FIXED: Declare parameters dengan default values yang tepat
             self.declare_parameter('cam_count', 6)
             self.declare_parameter('model_path', 'yolo11x-seg.engine') 
-            self.declare_parameter('device', 'cuda:0')
+            self.declare_parameter('device', 'cuda:0')  # Pastikan default string
             self.declare_parameter('conf_thres', 0.25)
             self.declare_parameter('visualization_enabled', True)
             self.declare_parameter('publish_rate', 10.0)
@@ -79,10 +80,23 @@ class MulticamSegmentationNode(Node):
                 default_topic = f'/camera_{camera_names[i]}/image_raw'
                 self.declare_parameter(topic_param, default_topic)
             
-            # Get all parameters
+            # FIXED: Get parameters dengan type checking
             self.cam_count = self.get_parameter('cam_count').get_parameter_value().integer_value
             self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
-            self.device = self.get_parameter('device').get_parameter_value().string_value
+            
+            # Handle device parameter dengan type checking
+            device_param = self.get_parameter('device')
+            if device_param.type_ == Parameter.Type.STRING:
+                self.device = device_param.get_parameter_value().string_value
+            elif device_param.type_ == Parameter.Type.INTEGER:
+                # Convert integer to proper device string
+                device_int = device_param.get_parameter_value().integer_value
+                self.device = f'cuda:{device_int}' if device_int >= 0 else 'cpu'
+                self.get_logger().warn(f"Device parameter was integer ({device_int}), converted to: {self.device}")
+            else:
+                self.device = 'cuda:0'  # Safe fallback
+                self.get_logger().warn(f"Device parameter type unexpected, using fallback: {self.device}")
+            
             self.conf_thres = self.get_parameter('conf_thres').get_parameter_value().double_value
             self.visualization_enabled = self.get_parameter('visualization_enabled').get_parameter_value().bool_value
             self.publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
@@ -96,12 +110,16 @@ class MulticamSegmentationNode(Node):
                 topic = self.get_parameter(topic_param).get_parameter_value().string_value
                 self.camera_topics.append(topic)
             
+            # Log parameter values
             self.get_logger().info(f"📹 Camera topics: {self.camera_topics}")
-            self.get_logger().info(f"🤖 Model: {self.model_path}, Device: {self.device}")
+            self.get_logger().info(f"🤖 Model: {self.model_path}")
+            self.get_logger().info(f"🔧 Device: {self.device} (type: {type(self.device)})")
             self.get_logger().info(f"⚙️ Confidence threshold: {self.conf_thres}")
+            self.get_logger().info(f"🎨 Visualization enabled: {self.visualization_enabled}")
             
         except Exception as e:
             self.get_logger().error(f"❌ Error setting up parameters: {e}")
+            self.get_logger().error(f"Traceback: {traceback.format_exc()}")
             raise e
 
     def _initialize_model(self):
@@ -119,10 +137,15 @@ class MulticamSegmentationNode(Node):
             self.get_logger().info(f"🔄 Loading model: {self.model_path}")
             self.model = YOLO(self.model_path)
             
-            # Move to device  
+            # Move to device dengan handling yang lebih robust
             if 'cuda' in self.device and self.device != 'cpu':
-                self.model.to('cuda')
-                self.get_logger().info("🚀 Model moved to CUDA")
+                try:
+                    self.model.to('cuda')
+                    self.get_logger().info(f"🚀 Model moved to CUDA device: {self.device}")
+                except Exception as cuda_err:
+                    self.get_logger().warn(f"⚠️ Failed to move model to CUDA: {cuda_err}")
+                    self.device = 'cpu'
+                    self.get_logger().info("💻 Falling back to CPU")
             else:
                 self.get_logger().info("💻 Model using CPU")
             
