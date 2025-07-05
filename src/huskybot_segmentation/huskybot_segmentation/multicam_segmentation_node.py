@@ -16,8 +16,6 @@ import sys
 import traceback
 import queue
 from concurrent.futures import ThreadPoolExecutor
-import multiprocessing
-import ctypes
 
 # Import YOLO
 try:
@@ -198,8 +196,9 @@ class MulticamSegmentationNode(Node):
 
     def _setup_threading(self):
         """Setup thread pools for ultra high performance"""
-        # Dedicated thread per camera for maximum parallelization
-        self.executor = ThreadPoolExecutor(max_workers=self.inference_threads + 2)  # +2 for publishing
+        # FIX: Gunakan nama variabel yang berbeda untuk menghindari konflik dengan ROS executor
+        # Dedicated thread pool untuk inference - NAMA DIUBAH dari 'executor' ke 'thread_pool'
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.inference_threads + 2)  # +2 for publishing
         
         # Minimal queues for lowest latency
         self.image_queues = [queue.Queue(maxsize=self.queue_size) for _ in range(self.cam_count)]
@@ -595,6 +594,22 @@ class MulticamSegmentationNode(Node):
                 )
         except Exception as e:
             self.get_logger().error(f"❌ Error logging statistics: {e}")
+
+    def destroy_node(self):
+        """Clean shutdown"""
+        try:
+            # Shutdown thread pool
+            if hasattr(self, 'thread_pool'):
+                self.thread_pool.shutdown(wait=False)
+            
+            # Close OpenCV windows
+            cv2.destroyAllWindows()
+            
+            # Call parent destroy
+            super().destroy_node()
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Error during cleanup: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
