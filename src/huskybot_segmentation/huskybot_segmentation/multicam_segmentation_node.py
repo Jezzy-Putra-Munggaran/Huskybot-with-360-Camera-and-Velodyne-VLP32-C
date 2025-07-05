@@ -33,7 +33,7 @@ class MulticamSegmentationNode(Node):
         self.bridge = CvBridge()
         self.lock = threading.Lock()
         
-        # FIXED: Setup parameters dengan tipe data yang tepat
+        # Setup parameters dengan tipe data yang tepat
         self._setup_parameters()
         
         # Initialize model
@@ -57,42 +57,52 @@ class MulticamSegmentationNode(Node):
 
     def _setup_parameters(self):
         """Setup parameters dengan tipe data yang benar"""
-        # Declare all parameters
-        self.declare_parameter('cam_count', 6)
-        self.declare_parameter('model_path', 'yolo11x-seg.engine') 
-        self.declare_parameter('device', 'cuda:0')
-        self.declare_parameter('conf_thres', 0.25)
-        self.declare_parameter('visualization_enabled', True)
-        self.declare_parameter('publish_rate', 10.0)
-        self.declare_parameter('image_width', 1920)
-        self.declare_parameter('image_height', 1080)
-        
-        # FIXED: Declare camera topics sebagai individual parameters
-        camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
-        for i in range(6):
-            topic_param = f'camera_topic_{i}'
-            default_topic = f'/camera_{camera_names[i]}/image_raw'
-            self.declare_parameter(topic_param, default_topic)
-        
-        # Get all parameters
-        self.cam_count = self.get_parameter('cam_count').get_parameter_value().integer_value
-        self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
-        self.device = self.get_parameter('device').get_parameter_value().string_value
-        self.conf_thres = self.get_parameter('conf_thres').get_parameter_value().double_value
-        self.visualization_enabled = self.get_parameter('visualization_enabled').get_parameter_value().bool_value
-        self.publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
-        self.image_width = self.get_parameter('image_width').get_parameter_value().integer_value
-        self.image_height = self.get_parameter('image_height').get_parameter_value().integer_value
-        
-        # FIXED: Build camera topics list dari individual parameters
-        self.camera_topics = []
-        for i in range(self.cam_count):
-            topic_param = f'camera_topic_{i}'
-            topic = self.get_parameter(topic_param).get_parameter_value().string_value
-            self.camera_topics.append(topic)
-        
-        self.get_logger().info(f"📹 Camera topics: {self.camera_topics}")
-        self.get_logger().info(f"🤖 Model: {self.model_path}, Device: {self.device}")
+        try:
+            # Declare all parameters with proper types
+            self.declare_parameter('cam_count', 6)
+            self.declare_parameter('model_path', 'yolo11x-seg.engine') 
+            self.declare_parameter('device', 'cuda:0')
+            self.declare_parameter('conf_thres', 0.25)
+            self.declare_parameter('visualization_enabled', True)
+            self.declare_parameter('publish_rate', 10.0)
+            self.declare_parameter('image_width', 1920)
+            self.declare_parameter('image_height', 1080)
+            self.declare_parameter('max_detection_distance', 50.0)
+            self.declare_parameter('min_detection_size', 0.01)
+            self.declare_parameter('enable_diagnostics', True)
+            self.declare_parameter('log_level', 'INFO')
+            
+            # Declare camera topics sebagai individual parameters
+            camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
+            for i in range(6):
+                topic_param = f'camera_topic_{i}'
+                default_topic = f'/camera_{camera_names[i]}/image_raw'
+                self.declare_parameter(topic_param, default_topic)
+            
+            # Get all parameters
+            self.cam_count = self.get_parameter('cam_count').get_parameter_value().integer_value
+            self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
+            self.device = self.get_parameter('device').get_parameter_value().string_value
+            self.conf_thres = self.get_parameter('conf_thres').get_parameter_value().double_value
+            self.visualization_enabled = self.get_parameter('visualization_enabled').get_parameter_value().bool_value
+            self.publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
+            self.image_width = self.get_parameter('image_width').get_parameter_value().integer_value
+            self.image_height = self.get_parameter('image_height').get_parameter_value().integer_value
+            
+            # Build camera topics list dari individual parameters
+            self.camera_topics = []
+            for i in range(self.cam_count):
+                topic_param = f'camera_topic_{i}'
+                topic = self.get_parameter(topic_param).get_parameter_value().string_value
+                self.camera_topics.append(topic)
+            
+            self.get_logger().info(f"📹 Camera topics: {self.camera_topics}")
+            self.get_logger().info(f"🤖 Model: {self.model_path}, Device: {self.device}")
+            self.get_logger().info(f"⚙️ Confidence threshold: {self.conf_thres}")
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Error setting up parameters: {e}")
+            raise e
 
     def _initialize_model(self):
         """Initialize YOLO model"""
@@ -100,20 +110,28 @@ class MulticamSegmentationNode(Node):
             if not ULTRALYTICS_AVAILABLE:
                 raise ImportError("Ultralytics tidak tersedia")
             
+            # Validate model file exists
+            if not os.path.exists(self.model_path):
+                self.get_logger().error(f"❌ Model file not found: {self.model_path}")
+                raise FileNotFoundError(f"Model file not found: {self.model_path}")
+            
             # Load model
             self.get_logger().info(f"🔄 Loading model: {self.model_path}")
             self.model = YOLO(self.model_path)
             
             # Move to device  
-            if 'cuda' in self.device:
+            if 'cuda' in self.device and self.device != 'cpu':
                 self.model.to('cuda')
                 self.get_logger().info("🚀 Model moved to CUDA")
+            else:
+                self.get_logger().info("💻 Model using CPU")
             
             # Test inference untuk memastikan model bekerja
             dummy_image = np.zeros((640, 640, 3), dtype=np.uint8)
-            _ = self.model(dummy_image, conf=self.conf_thres, task='segment')
+            results = self.model(dummy_image, conf=self.conf_thres, task='segment', verbose=False)
             
-            self.get_logger().info(f"✅ YOLOv11 Segmentation model loaded successfully: {self.model_path}")
+            self.get_logger().info(f"✅ YOLOv11 Segmentation model loaded successfully")
+            self.get_logger().info(f"📊 Model classes: {len(self.model.names)}")
             
         except Exception as e:
             self.get_logger().error(f"❌ Failed to initialize model: {e}")
@@ -122,36 +140,43 @@ class MulticamSegmentationNode(Node):
 
     def _setup_topics(self):
         """Setup subscriptions and publishers"""
-        # Create subscriptions for all cameras
-        self.image_subs = []
-        for i, topic in enumerate(self.camera_topics):
-            sub = self.create_subscription(
-                Image,
-                topic,
-                lambda msg, cam_idx=i: self.image_callback(msg, cam_idx),
-                10
-            )
-            self.image_subs.append(sub)
-            self.get_logger().info(f"📡 Subscribed to: {topic}")
-        
-        # Create publishers
-        self.segmentation_pubs = []
-        self.visualization_pubs = []
-        
-        camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
-        for i in range(self.cam_count):
-            # Segmentation result publisher
-            seg_topic = f'/camera_{camera_names[i]}/segmentation'
-            seg_pub = self.create_publisher(Yolov12Inference, seg_topic, 10)
-            self.segmentation_pubs.append(seg_pub)
+        try:
+            # Create subscriptions for all cameras
+            self.image_subs = []
+            for i, topic in enumerate(self.camera_topics):
+                sub = self.create_subscription(
+                    Image,
+                    topic,
+                    lambda msg, cam_idx=i: self.image_callback(msg, cam_idx),
+                    10
+                )
+                self.image_subs.append(sub)
+                self.get_logger().info(f"📡 Subscribed to: {topic}")
             
-            # Visualization publisher
+            # Create publishers
+            self.segmentation_pubs = []
+            self.visualization_pubs = []
+            
+            camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
+            for i in range(self.cam_count):
+                # Segmentation result publisher
+                seg_topic = f'/camera_{camera_names[i]}/segmentation'
+                seg_pub = self.create_publisher(Yolov12Inference, seg_topic, 10)
+                self.segmentation_pubs.append(seg_pub)
+                
+                # Visualization publisher
+                if self.visualization_enabled:
+                    vis_topic = f'/camera_{camera_names[i]}/segmentation_vis'
+                    vis_pub = self.create_publisher(Image, vis_topic, 10)
+                    self.visualization_pubs.append(vis_pub)
+            
+            self.get_logger().info(f"📤 Created {len(self.segmentation_pubs)} segmentation publishers")
             if self.visualization_enabled:
-                vis_topic = f'/camera_{camera_names[i]}/segmentation_vis'
-                vis_pub = self.create_publisher(Image, vis_topic, 10)
-                self.visualization_pubs.append(vis_pub)
-        
-        self.get_logger().info(f"📤 Created {len(self.segmentation_pubs)} segmentation publishers")
+                self.get_logger().info(f"🎨 Created {len(self.visualization_pubs)} visualization publishers")
+                
+        except Exception as e:
+            self.get_logger().error(f"❌ Error setting up topics: {e}")
+            raise e
 
     def _setup_timers(self):
         """Setup processing timers"""
@@ -166,7 +191,7 @@ class MulticamSegmentationNode(Node):
             
             # Run segmentation
             start_time = time.time()
-            results = self.model(cv_image, conf=self.conf_thres, task='segment')
+            results = self.model(cv_image, conf=self.conf_thres, task='segment', verbose=False)
             inference_time = time.time() - start_time
             
             # Update statistics
@@ -220,7 +245,8 @@ class MulticamSegmentationNode(Node):
                             mask_flat = []
                             for row, col in zip(mask_indices[0], mask_indices[1]):
                                 mask_flat.append(int(row * mask.shape[1] + col))
-                            inference_result.mask_indices = mask_flat[:1000]  # Limit size
+                            # Limit size to avoid message overflow
+                            inference_result.mask_indices = mask_flat[:2000]
                     
                     seg_msg.yolov12_inference.append(inference_result)
             
@@ -251,7 +277,13 @@ class MulticamSegmentationNode(Node):
                         mask_resized = cv2.resize(mask_np, (image.shape[1], image.shape[0]))
                         
                         # Create colored mask
-                        color = np.random.randint(0, 255, 3).tolist()
+                        colors = [
+                            (255, 0, 0), (0, 255, 0), (0, 0, 255),
+                            (255, 255, 0), (255, 0, 255), (0, 255, 255),
+                            (128, 0, 128), (255, 165, 0), (255, 192, 203)
+                        ]
+                        color = colors[i % len(colors)]
+                        
                         colored_mask = np.zeros_like(vis_image)
                         colored_mask[mask_resized > 0.5] = color
                         
@@ -287,13 +319,16 @@ class MulticamSegmentationNode(Node):
             
             if stats['total_frames'] > 0:
                 success_rate = (stats['successful_segmentations'] / stats['total_frames']) * 100
+                fps = 1.0 / stats['average_inference_time'] if stats['average_inference_time'] > 0 else 0
+                
                 self.get_logger().info(
                     f"📊 Segmentation Stats: "
                     f"Frames={stats['total_frames']}, "
                     f"Success={stats['successful_segmentations']}, "
                     f"Failed={stats['failed_segmentations']}, "
                     f"Success Rate={success_rate:.1f}%, "
-                    f"Avg Inference={stats['average_inference_time']*1000:.1f}ms"
+                    f"Avg Inference={stats['average_inference_time']*1000:.1f}ms, "
+                    f"FPS={fps:.1f}"
                 )
         except Exception as e:
             self.get_logger().error(f"❌ Error logging statistics: {e}")

@@ -102,7 +102,9 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
         os.path.join(os.getcwd(), 'models'),
         os.path.expanduser('~'),
         os.path.join(os.path.expanduser('~'), 'huskybot'),
-        os.path.join(os.path.expanduser('~'), 'huskybot', 'models')
+        os.path.join(os.path.expanduser('~'), 'huskybot', 'models'),
+        os.path.join(os.path.expanduser('~'), 'jezzy', 'huskybot'),
+        os.path.join(os.path.expanduser('~'), 'jezzy', 'huskybot', 'models')
     ]
     
     for search_path in search_paths:
@@ -112,6 +114,7 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
                 if os.path.exists(potential_path):
                     model_file = potential_path
                     print(f"[INFO] File model YOLOv11 ditemukan: {os.path.basename(model_file)}")
+                    print(f"[INFO] File model YOLOv11 valid: {model_file}")
                     break
             if model_file:
                 break
@@ -209,23 +212,22 @@ def generate_launch_description():  # Fungsi utama untuk generate LaunchDescript
         namespace=namespace,  # Namespace untuk multi-robot deployment
         output='screen',  # Output log ke terminal
         parameters=[{
-            'cam_count': cam_count,
+            # Basic parameters dengan tipe data yang benar
+            'cam_count': 6,
             'model_path': model_path,
-            'conf_threshold': conf_threshold,
-            'publish_rate': publish_rate,
-            'enable_mask': enable_mask,
-            'enable_visualization': enable_visualization,
-            'class_filter': class_filter,
             'device': device,
-            'log_dir': log_dir,
-            'log_file': log_file,
-            # Kamera topics: parsing string ke list jika override, default urutan hexagonal
+            'conf_thres': 0.25,
+            'visualization_enabled': True,
+            'publish_rate': 10.0,
+            
+            # FIXED: Camera topics sebagai individual parameters (bukan list)
             'camera_topic_0': '/camera_front/image_raw',
             'camera_topic_1': '/camera_front_left/image_raw',
             'camera_topic_2': '/camera_left/image_raw', 
             'camera_topic_3': '/camera_rear/image_raw',
             'camera_topic_4': '/camera_rear_right/image_raw',
             'camera_topic_5': '/camera_right/image_raw',
+            
             # Additional parameters
             'image_width': 1920,
             'image_height': 1080,
