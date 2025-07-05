@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
+# filepath: /home/jezzy/huskybot/src/huskybot_segmentation/launch/segmentation.launch.py
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, LogInfo
-from launch.substitutions import LaunchConfiguration, TextSubstitution
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
-    # Deteksi model file
+    # Model detection
     model_file = None
     model_extensions = ['.engine', '.onnx', '.pt']
-    model_names = ['yolo11x-seg', 'yolov8n-seg', 'yolov8s-seg', 'yolov8m-seg', 'yolov8l-seg', 'yolov8x-seg']
+    model_names = ['yolo11n-seg', 'yolo11s-seg', 'yolo11m-seg']  # Prefer smaller/faster models
     
     search_paths = [
         os.getcwd(),
@@ -28,9 +29,7 @@ def generate_launch_description():
                 potential_path = os.path.join(search_path, f"{model_name}{ext}")
                 if os.path.exists(potential_path):
                     model_file = potential_path
-                    print(f"[INFO] File model YOLOv11 ditemukan: {os.path.basename(model_file)}")
-                    print(f"[INFO] File model YOLOv11 valid: {model_file}")
-                    print(f"[INFO] File model YOLOv12 valid: {model_file}")
+                    print(f"[INFO] Found ultra-fast model: {os.path.basename(model_file)}")
                     break
             if model_file:
                 break
@@ -38,14 +37,11 @@ def generate_launch_description():
             break
     
     if not model_file:
-        model_file = 'yolo11x-seg.pt'  # Default fallback
-        print(f"[WARNING] Model tidak ditemukan, menggunakan default: {model_file}")
-    
-    # Print launch info
-    print("[INFO] Launching huskybot_segmentation node...")
-    
+        model_file = 'yolo11x-seg.engine'
+        print(f"[WARNING] Using default: {model_file}")
+
     return LaunchDescription([
-        # Launch arguments dengan tipe yang eksplisit
+        # Launch arguments
         DeclareLaunchArgument(
             'model_path',
             default_value=model_file,
@@ -55,53 +51,59 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'device',
             default_value='cuda:0',
-            description='Device for inference (cuda:0/cpu)'
+            description='Device for inference'
         ),
         
         DeclareLaunchArgument(
-            'conf_thres',
-            default_value='0.25',
-            description='Confidence threshold'
+            'target_fps',
+            default_value='60.0',
+            description='Target FPS (60+)'
         ),
         
-        DeclareLaunchArgument(
-            'visualization_enabled',
-            default_value='true',
-            description='Enable visualization output'
-        ),
-        
-        # Segmentation node dengan parameter yang diperbaiki
+        # Ultra high-performance segmentation node
         Node(
             package='huskybot_segmentation',
             executable='multicam_segmentation_node',
             name='multicam_segmentation',
             output='screen',
             parameters=[{
-                # FIXED: Semua parameters dengan tipe data yang eksplisit
+                # Basic parameters
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
-                'device': LaunchConfiguration('device'),  # Pastikan ini string
-                'conf_thres': 0.25,
+                'device': LaunchConfiguration('device'),
+                'conf_thres': 0.5,  # Higher threshold for speed
                 'visualization_enabled': True,
-                'publish_rate': 10.0,
+                'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # Camera topics sebagai individual parameters
+                # Ultra performance optimizations
+                'inference_threads': 6,  # One per camera
+                'input_size': 320,  # Much smaller for ultra speed
+                'half_precision': True,
+                'batch_size': 1,
+                'max_det': 50,  # Aggressively limit detections
+                
+                # Ultra visualization optimizations
+                'viz_scale': 0.25,  # Very small visualization
+                'viz_fps_limit': 30.0,  # Limit viz refresh
+                'show_fps': True,
+                'grid_layout': True,
+                'skip_masks': True,  # Skip mask processing
+                'simple_viz': True,  # Ultra simple visualization
+                
+                # Performance tuning
+                'queue_size': 1,  # Minimal latency
+                'async_publish': True,  # Async publishing
+                'memory_pool': True,  # Pre-allocated memory
+                
+                # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
                 'camera_topic_1': '/camera_front_left/image_raw',
                 'camera_topic_2': '/camera_left/image_raw', 
                 'camera_topic_3': '/camera_rear/image_raw',
                 'camera_topic_4': '/camera_rear_right/image_raw',
                 'camera_topic_5': '/camera_right/image_raw',
-                
-                # Additional parameters
-                'image_width': 1920,
-                'image_height': 1080,
-                'max_detection_distance': 50.0,
-                'min_detection_size': 0.01,
-                'enable_diagnostics': True,
-                'log_level': 'INFO',
             }],
             respawn=True,
-            respawn_delay=2.0
+            respawn_delay=1.0
         )
     ])
