@@ -83,7 +83,47 @@ class MultiCamSegmentationNode(Node):
     """Node ROS2 untuk segmentasi multicamera menggunakan YOLOv12."""
 
     def __init__(self):
-        super().__init__('multicam_segmentation')  # Nama node
+        super().__init__('multicam_segmentation_node')
+        
+        # Declare parameters dengan tipe yang tepat
+        self.declare_parameter('cam_count', 6)
+        self.declare_parameter('model_path', 'yolo11x-seg.engine')
+        self.declare_parameter('device', 'cuda:0')
+        self.declare_parameter('conf_thres', 0.25)
+        self.declare_parameter('visualization_enabled', True)
+        self.declare_parameter('publish_rate', 10.0)
+        
+        # FIXED: Declare camera topics sebagai parameter individual
+        for i in range(6):
+            default_topic = f'/camera_{self._get_camera_name(i)}/image_raw'
+            self.declare_parameter(f'camera_topic_{i}', default_topic)
+        
+        # Get parameters
+        self.cam_count = self.get_parameter('cam_count').get_parameter_value().integer_value
+        self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
+        self.device = self.get_parameter('device').get_parameter_value().string_value
+        self.conf_thres = self.get_parameter('conf_thres').get_parameter_value().double_value
+        self.visualization_enabled = self.get_parameter('visualization_enabled').get_parameter_value().bool_value
+        self.publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
+        
+        # FIXED: Build camera topics list dari individual parameters
+        self.camera_topics = []
+        for i in range(self.cam_count):
+            topic = self.get_parameter(f'camera_topic_{i}').get_parameter_value().string_value
+            self.camera_topics.append(topic)
+        
+        self.get_logger().info(f"Camera topics: {self.camera_topics}")
+        
+        # Initialize rest of the node...
+        self._initialize_node()
+
+    def _get_camera_name(self, index):
+        """Get camera name based on hexagonal arrangement"""
+        camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
+        return camera_names[index] if index < len(camera_names) else f'camera_{index}'
+
+    def _initialize_node(self):
+        """Inisialisasi node setelah parameter dibaca."""
         self.log_file_path = None  # Path file log
         self._setup_logging()  # Setup logging awal
         self.get_logger().info("Menginisialisasi multicam_segmentation node...")
