@@ -329,25 +329,34 @@ class MulticamSegmentationNode(Node):
         self.stats_timer = self.create_timer(3.0, self.log_statistics)  # Less frequent
 
     def image_callback(self, msg, camera_index):
-        """Optimized image callback with frame skipping"""
+        """Optimized image callback with error handling"""
         try:
+            # Check if shutting down
+            if hasattr(self, '_shutdown_flag') and self._shutdown_flag:
+                return
+            
             # Frame skipping for performance
             self.frame_counters[camera_index] += 1
             if self.frame_counters[camera_index] % self.process_every_nth_frame != 0:
                 return  # Skip this frame
             
-            # Convert ROS image to OpenCV
-            cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+            # Convert ROS image to OpenCV with error handling
+            try:
+                cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+            except Exception as e:
+                self.get_logger().warn(f"Image conversion failed for camera {camera_index}: {e}")
+                return
             
             # Non-blocking queue insertion - drop if full
             if not self.image_queues[camera_index].full():
                 self.image_queues[camera_index].put((cv_image, msg.header, camera_index))
             
         except Exception as e:
+        if not hasattr(self, '_shutdown_flag') or not self._shutdown_flag:
             self.get_logger().error(f"❌ Image callback error camera {camera_index}: {e}")
 
     def _inference_worker(self, worker_id):
-        """Optimized inference worker handling multiple cameras"""
+        """ULTRA-OPTIMIZED inference worker for HIGH FPS"""
         camera_assignments = list(range(worker_id, self.cam_count, self.inference_threads))
         
         while True:
@@ -360,32 +369,36 @@ class MulticamSegmentationNode(Node):
                         cv_image, header, cam_idx = self.image_queues[camera_index].get_nowait()
                         processed_any = True
                         
-                        # Ultra-fast preprocessing
+                        # ULTRA-FAST preprocessing with aggressive optimization
                         h, w = cv_image.shape[:2]
-                        scale = self.input_size / max(h, w)
-                        new_h, new_w = int(h * scale), int(w * scale)
                         
-                        # Use memory pool
-                        padded_image = self._get_from_pool('resized')
-                        if padded_image is None:
-                            padded_image = np.zeros((self.input_size, self.input_size, 3), dtype=np.uint8)
-                        else:
-                            padded_image.fill(0)
+                        # Use smaller input size for speed
+                        target_size = self.input_size
                         
-                        # Fast resize
-                        resized = cv2.resize(cv_image, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-                        padded_image[:new_h, :new_w] = resized
+                        # Simple resize without padding for maximum speed
+                        resized = cv2.resize(cv_image, (target_size, target_size), 
+                                           interpolation=cv2.INTER_LINEAR)
                         
-                        # Optimized inference
+                        # Calculate scale for coordinate conversion
+                        scale_x = target_size / w
+                        scale_y = target_size / h
+                        scale = min(scale_x, scale_y)  # Use minimum for aspect ratio
+                        
+                        # ULTRA-OPTIMIZED inference with aggressive settings
                         start_time = time.time()
-                        results = self.model(padded_image,
+                        results = self.model(resized,
                                            conf=self.conf_thres,
                                            task='segment',
                                            device=self.device,
                                            half=self.half_precision,
                                            max_det=self.max_det,
                                            verbose=False,
-                                           stream=False)
+                                           stream=False,
+                                           # Additional speed optimizations
+                                           agnostic_nms=True,  # Faster NMS
+                                           save=False,
+                                           save_txt=False,
+                                           save_conf=False)
                         inference_time = time.time() - start_time
                         
                         # Update statistics
@@ -398,14 +411,16 @@ class MulticamSegmentationNode(Node):
                                 / total_frames
                             )
                             self.stats['fps'] = 1.0 / inference_time if inference_time > 0 else 0
-                        
-                        # Process results
+                    
+                        # Process results with corrected scaling
                         result_data = {
                             'results': results[0],
                             'original_image': cv_image,
                             'header': header,
                             'camera_index': camera_index,
-                            'scale': scale,
+                            'scale': scale,  # Use calculated scale
+                            'scale_x': scale_x,  # Individual scales for correction
+                            'scale_y': scale_y,
                             'inference_time': inference_time
                         }
                         
@@ -415,13 +430,13 @@ class MulticamSegmentationNode(Node):
                                 self.result_queues[camera_index].put(result_data)
                         else:
                             self._process_results(result_data)
-                            
+                        
                     except queue.Empty:
                         continue
+            
+            if not processed_any:
+                time.sleep(0.0001)  # Extremely short sleep for maximum responsiveness
                 
-                if not processed_any:
-                    time.sleep(0.001)  # Very short sleep if no work
-                    
             except Exception as e:
                 with self.lock:
                     self.stats['failed_segmentations'] += 1
@@ -506,20 +521,16 @@ class MulticamSegmentationNode(Node):
         return seg_msg
 
     def _create_optimized_segmentation_visualization(self, image, results, scale, inference_time):
-        """Create high-quality segmentation visualization like Ultralytics"""
+        """Create high-quality segmentation visualization with correct coordinate mapping"""
         # Scale down for visualization (larger than before)
         viz_h = int(image.shape[0] * self.viz_scale)
         viz_w = int(image.shape[1] * self.viz_scale)
         
-        # Use memory pool if available
-        vis_image = self._get_from_pool('viz')
-        if vis_image is None or vis_image.shape[:2] != (viz_h, viz_w):
-            vis_image = cv2.resize(image, (viz_w, viz_h), interpolation=cv2.INTER_AREA)
-        else:
-            cv2.resize(image, (viz_w, viz_h), dst=vis_image, interpolation=cv2.INTER_AREA)
+        # Resize original image to visualization size
+        vis_image = cv2.resize(image, (viz_w, viz_h), interpolation=cv2.INTER_AREA)
         
         if results.boxes is not None and len(results.boxes) > 0:
-            # Draw masks first with smooth blending
+            # Draw masks first with CORRECTED scaling
             if results.masks is not None and not self.skip_masks:
                 # Create mask overlay
                 mask_overlay = np.zeros_like(vis_image, dtype=np.float32)
@@ -528,9 +539,20 @@ class MulticamSegmentationNode(Node):
                     # Get mask data
                     mask_data = mask.data[0].cpu().numpy()
                     
-                    # Resize mask with smooth interpolation
+                    # Calculate correct scaling for mask
+                    # mask_data is at model input size, need to scale to original then to viz
+                    mask_h, mask_w = mask_data.shape
+                    orig_h, orig_w = image.shape[:2]
+                    
+                    # First scale mask to original image size
+                    mask_original_size = cv2.resize(
+                        mask_data, (orig_w, orig_h), 
+                        interpolation=cv2.INTER_CUBIC
+                    )
+                    
+                    # Then scale to visualization size
                     mask_resized = cv2.resize(
-                        mask_data, (viz_w, viz_h), 
+                        mask_original_size, (viz_w, viz_h), 
                         interpolation=cv2.INTER_CUBIC
                     )
                     
@@ -550,86 +572,102 @@ class MulticamSegmentationNode(Node):
                     alpha = mask_resized * self.mask_alpha
                     for c in range(3):
                         mask_overlay[:, :, c] = (1 - alpha) * mask_overlay[:, :, c] + alpha * mask_colored[:, :, c]
-                
-                # Apply mask overlay to image
-                vis_image = vis_image.astype(np.float32)
-                vis_image = (1 - self.mask_alpha) * vis_image + mask_overlay
-                vis_image = np.clip(vis_image, 0, 255).astype(np.uint8)
             
-            # Draw clean bounding boxes and labels
-            for i, box in enumerate(results.boxes):
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                
-                # Scale coordinates to visualization size
-                x1 = int((x1 / scale) * self.viz_scale)
-                y1 = int((y1 / scale) * self.viz_scale)
-                x2 = int((x2 / scale) * self.viz_scale)
-                y2 = int((y2 / scale) * self.viz_scale)
-                
-                # Get class info
-                class_id = int(box.cls)
-                confidence = float(box.conf)
-                class_name = results.names[class_id]
-                
-                # Get class color
-                color = self.class_colors[class_id % len(self.class_colors)]
-                
-                # Draw thick, clean bounding box
-                cv2.rectangle(vis_image, (x1, y1), (x2, y2), color, 3)
-                
-                # Draw corner markers for modern look
-                corner_length = 15
-                cv2.line(vis_image, (x1, y1), (x1 + corner_length, y1), color, 4)
-                cv2.line(vis_image, (x1, y1), (x1, y1 + corner_length), color, 4)
-                cv2.line(vis_image, (x2, y1), (x2 - corner_length, y1), color, 4)
-                cv2.line(vis_image, (x2, y1), (x2, y1 + corner_length), color, 4)
-                cv2.line(vis_image, (x1, y2), (x1 + corner_length, y2), color, 4)
-                cv2.line(vis_image, (x1, y2), (x1, y2 - corner_length), color, 4)
-                cv2.line(vis_image, (x2, y2), (x2 - corner_length, y2), color, 4)
-                cv2.line(vis_image, (x2, y2), (x2, y2 - corner_length), color, 4)
-                
-                # Draw professional label
-                if self.show_labels:
-                    if self.show_confidence:
-                        label = f'{class_name} {confidence:.2f}'
-                    else:
-                        label = class_name
-                    
-                    # Calculate text size
-                    font_scale = 0.7
-                    thickness = 2
-                    (text_w, text_h), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
-                    
-                    # Draw rounded label background
-                    label_bg_y1 = y1 - text_h - 20
-                    label_bg_y2 = y1 - 5
-                    label_bg_x1 = x1
-                    label_bg_x2 = x1 + text_w + 20
-                    
-                    # Ensure label stays in bounds
-                    if label_bg_y1 < 0:
-                        label_bg_y1 = y2 + 5
-                        label_bg_y2 = y2 + text_h + 20
-                    
-                    # Draw label background with slight transparency
-                    overlay = vis_image.copy()
-                    cv2.rectangle(overlay, (label_bg_x1, label_bg_y1), (label_bg_x2, label_bg_y2), color, -1)
-                    cv2.addWeighted(overlay, 0.8, vis_image, 0.2, 0, vis_image)
-                    
-                    # Draw label text
-                    text_y = label_bg_y1 + text_h + 10
-                    cv2.putText(vis_image, label, (x1 + 10, text_y), 
-                              cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), thickness)
+            # Apply mask overlay to image
+            vis_image = vis_image.astype(np.float32)
+            vis_image = (1 - self.mask_alpha) * vis_image + mask_overlay
+            vis_image = np.clip(vis_image, 0, 255).astype(np.uint8)
         
-        # Add professional FPS overlay
-        if self.show_fps:
-            fps_text = f'FPS: {1.0/inference_time:.1f}' if inference_time > 0 else 'FPS: --'
-            # Draw FPS background
-            cv2.rectangle(vis_image, (5, 5), (120, 40), (0, 0, 0), -1)
-            cv2.putText(vis_image, fps_text, (10, 28), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        
-        return vis_image
+        # Draw CORRECTED bounding boxes and labels
+        for i, box in enumerate(results.boxes):
+            x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+            
+            # CORRECT scaling: from model input coordinates to visualization coordinates
+            # Original image dimensions
+            orig_h, orig_w = image.shape[:2]
+            
+            # Scale from model input size to original image size
+            x1_orig = x1 / scale
+            y1_orig = y1 / scale
+            x2_orig = x2 / scale
+            y2_orig = y2 / scale
+            
+            # Then scale to visualization size
+            x1 = int(x1_orig * self.viz_scale)
+            y1 = int(y1_orig * self.viz_scale)
+            x2 = int(x2_orig * self.viz_scale)
+            y2 = int(y2_orig * self.viz_scale)
+            
+            # Ensure coordinates are within bounds
+            x1 = max(0, min(x1, viz_w))
+            y1 = max(0, min(y1, viz_h))
+            x2 = max(0, min(x2, viz_w))
+            y2 = max(0, min(y2, viz_h))
+            
+            # Get class info
+            class_id = int(box.cls)
+            confidence = float(box.conf)
+            class_name = results.names[class_id]
+            
+            # Get class color
+            color = self.class_colors[class_id % len(self.class_colors)]
+            
+            # Draw thick, clean bounding box
+            cv2.rectangle(vis_image, (x1, y1), (x2, y2), color, 3)
+            
+            # Draw corner markers for modern look
+            corner_length = 15
+            cv2.line(vis_image, (x1, y1), (x1 + corner_length, y1), color, 4)
+            cv2.line(vis_image, (x1, y1), (x1, y1 + corner_length), color, 4)
+            cv2.line(vis_image, (x2, y1), (x2 - corner_length, y1), color, 4)
+            cv2.line(vis_image, (x2, y1), (x2, y1 + corner_length), color, 4)
+            cv2.line(vis_image, (x1, y2), (x1 + corner_length, y2), color, 4)
+            cv2.line(vis_image, (x1, y2), (x1, y2 - corner_length), color, 4)
+            cv2.line(vis_image, (x2, y2), (x2 - corner_length, y2), color, 4)
+            cv2.line(vis_image, (x2, y2), (x2, y2 - corner_length), color, 4)
+            
+            # Draw professional label
+            if self.show_labels:
+                if self.show_confidence:
+                    label = f'{class_name} {confidence:.2f}'
+                else:
+                    label = class_name
+                
+                # Calculate text size
+                font_scale = 0.7
+                thickness = 2
+                (text_w, text_h), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
+                
+                # Draw rounded label background
+                label_bg_y1 = y1 - text_h - 20
+                label_bg_y2 = y1 - 5
+                label_bg_x1 = x1
+                label_bg_x2 = x1 + text_w + 20
+                
+                # Ensure label stays in bounds
+                if label_bg_y1 < 0:
+                    label_bg_y1 = y2 + 5
+                    label_bg_y2 = y2 + text_h + 20
+                
+                # Draw label background with slight transparency
+                overlay = vis_image.copy()
+                cv2.rectangle(overlay, (label_bg_x1, label_bg_y1), (label_bg_x2, label_bg_y2), color, -1)
+                cv2.addWeighted(overlay, 0.8, vis_image, 0.2, 0, vis_image)
+                
+                # Draw label text
+                text_y = label_bg_y1 + text_h + 10
+                cv2.putText(vis_image, label, (x1 + 10, text_y), 
+                          cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), thickness)
+    
+    # Add professional FPS overlay
+    if self.show_fps:
+        fps_text = f'FPS: {1.0/inference_time:.1f}' if inference_time > 0 else 'FPS: --'
+        # Draw FPS background
+        cv2.rectangle(vis_image, (5, 5), (120, 40), (0, 0, 0), -1)
+        cv2.putText(vis_image, fps_text, (10, 28), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+    
+    return vis_image
 
     def _visualization_worker(self):
         """Optimized grid visualization worker"""
@@ -748,15 +786,6 @@ class MulticamSegmentationNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"❌ Error creating large grid layout: {e}")
-            return None
-
-    def log_statistics(self):
-        """Log optimized performance statistics"""
-        try:
-            with self.lock:
-                stats = self.stats.copy()
-            
-            if stats['total_frames'] > 0:
                 success_rate = (stats['successful_segmentations'] / stats['total_frames']) * 100
                 
                 self.get_logger().info(
@@ -771,20 +800,43 @@ class MulticamSegmentationNode(Node):
             self.get_logger().error(f"❌ Error logging statistics: {e}")
 
     def destroy_node(self):
-        """Clean shutdown"""
+        """Clean shutdown with proper error handling"""
         try:
+            self.get_logger().info("🛑 Shutting down segmentation node...")
+            
+            # Stop all processing
+            self._shutdown_flag = True
+            
+            # Wait for threads to finish
+            if hasattr(self, 'inference_threads_list'):
+                for thread in self.inference_threads_list:
+                    if thread.is_alive():
+                        thread.join(timeout=1.0)
+            
             # Shutdown thread pool
             if hasattr(self, 'thread_pool'):
                 self.thread_pool.shutdown(wait=False)
             
+            # Clear queues
+            if hasattr(self, 'image_queues'):
+                for q in self.image_queues:
+                    try:
+                        while not q.empty():
+                            q.get_nowait()
+                    except:
+                        pass
+            
             # Close OpenCV windows
-            cv2.destroyAllWindows()
+            try:
+                cv2.destroyAllWindows()
+            except:
+                pass
             
             # Call parent destroy
             super().destroy_node()
             
         except Exception as e:
-            self.get_logger().error(f"❌ Error during cleanup: {e}")
+            print(f"Warning during cleanup: {e}")
 
 def main(args=None):
     rclpy.init(args=args)
@@ -795,8 +847,13 @@ def main(args=None):
     except:
         pass
     
+    node = None
     try:
         node = MulticamSegmentationNode()
+        
+        # Add shutdown flag
+        node._shutdown_flag = False
+        
         rclpy.spin(node)
     except KeyboardInterrupt:
         print("KeyboardInterrupt, shutting down...")
@@ -805,6 +862,12 @@ def main(args=None):
         traceback.print_exc()
     finally:
         cv2.destroyAllWindows()
+        if node is not None:
+            try:
+                node._shutdown_flag = True
+                node.destroy_node()
+            except:
+                pass
         try:
             rclpy.shutdown()
         except:

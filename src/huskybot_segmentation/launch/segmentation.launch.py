@@ -7,9 +7,10 @@ from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
-    # Model detection
+    # Model detection - prioritize smaller models for speed
     model_file = None
     model_extensions = ['.engine', '.onnx', '.pt']
+    # PRIORITIZE SMALLER MODELS FOR HIGHER FPS
     model_names = ['yolo11n-seg', 'yolo11s-seg', 'yolo11m-seg', 'yolo11x-seg']
     
     search_paths = [
@@ -28,7 +29,7 @@ def generate_launch_description():
                 potential_path = os.path.join(search_path, f"{model_name}{ext}")
                 if os.path.exists(potential_path):
                     model_file = potential_path
-                    print(f"[INFO] Found optimized segmentation model: {os.path.basename(model_file)}")
+                    print(f"[INFO] Found HIGH-SPEED segmentation model: {os.path.basename(model_file)}")
                     break
             if model_file:
                 break
@@ -36,15 +37,15 @@ def generate_launch_description():
             break
     
     if not model_file:
-        model_file = 'yolo11x-seg.engine'
-        print(f"[WARNING] Using default: {model_file}")
+        model_file = 'yolo11n-seg.engine'  # Default to fastest model
+        print(f"[WARNING] Using default FASTEST model: {model_file}")
 
     return LaunchDescription([
         # Launch arguments
         DeclareLaunchArgument(
             'model_path',
             default_value=model_file,
-            description='Path to optimized YOLOv11 segmentation model'
+            description='Path to OPTIMIZED YOLOv11 segmentation model'
         ),
         
         DeclareLaunchArgument(
@@ -55,11 +56,11 @@ def generate_launch_description():
         
         DeclareLaunchArgument(
             'target_fps',
-            default_value='10.0',
-            description='Realistic target FPS'
+            default_value='30.0',  # Increase target FPS
+            description='HIGH-SPEED target FPS'
         ),
         
-        # Optimized segmentation node
+        # ULTRA-OPTIMIZED segmentation node for HIGH FPS
         Node(
             package='huskybot_segmentation',
             executable='multicam_segmentation_node',
@@ -70,33 +71,33 @@ def generate_launch_description():
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
                 'device': LaunchConfiguration('device'),
-                'conf_thres': 0.3,  # Higher for quality
+                'conf_thres': 0.5,  # Higher threshold = fewer detections = faster
                 'visualization_enabled': True,
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # OPTIMIZED Performance parameters
-                'inference_threads': 3,  # Reduced for stability
-                'input_size': 480,  # Smaller for speed
+                # ULTRA-OPTIMIZED Performance parameters for HIGH FPS
+                'inference_threads': 6,  # More threads for parallel processing
+                'input_size': 320,  # Smaller input = much faster (was 480)
                 'half_precision': True,
                 'batch_size': 1,
-                'max_det': 50,  # Limit detections
+                'max_det': 25,  # Fewer detections = faster processing
                 
-                # LARGE visualization parameters
-                'viz_scale': 0.8,  # Much larger display
-                'viz_fps_limit': 15.0,  # Lower for performance
+                # OPTIMIZED visualization parameters
+                'viz_scale': 0.6,  # Smaller visualization = faster processing
+                'viz_fps_limit': 30.0,  # Match target FPS
                 'show_fps': True,
                 'grid_layout': True,
-                'skip_masks': False,  # Keep segmentation
-                'simple_viz': False,  # Full quality
+                'skip_masks': False,  # Keep segmentation but optimize
+                'simple_viz': False,
                 'show_confidence': True,
                 'show_labels': True,
-                'mask_alpha': 0.4,  # Good visibility
+                'mask_alpha': 0.3,  # Lighter masks = faster blending
                 
-                # Speed optimizations
+                # AGGRESSIVE speed optimizations
                 'queue_size': 1,  # Minimal latency
                 'async_publish': True,
                 'memory_pool': True,
-                'process_every_nth_frame': 3,  # Skip frames for speed
+                'process_every_nth_frame': 2,  # Process every 2nd frame (was 3)
                 
                 # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
