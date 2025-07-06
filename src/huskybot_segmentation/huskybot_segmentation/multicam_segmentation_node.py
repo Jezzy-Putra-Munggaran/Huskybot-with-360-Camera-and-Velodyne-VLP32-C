@@ -217,19 +217,19 @@ class MulticamSegmentationNode(Node):
             raise e
 
     def _setup_threading(self):
-        """Setup threading with detailed logging"""
-        # Dedicated thread pool for max performance
-        self.thread_pool = ThreadPoolExecutor(max_workers=self.inference_threads + 2)
+        """Setup threading with optimal configuration"""
+        # Reduced thread pool for better resource management
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.inference_threads + 1)
         
-        # Queues with larger size for debugging
-        self.image_queues = [queue.Queue(maxsize=self.queue_size) for _ in range(self.cam_count)]
-        self.result_queues = [queue.Queue(maxsize=self.queue_size) for _ in range(self.cam_count)]
+        # Smaller queues for speed
+        self.image_queues = [queue.Queue(maxsize=1) for _ in range(self.cam_count)]
+        self.result_queues = [queue.Queue(maxsize=1) for _ in range(self.cam_count)]
         
         # Pre-allocate memory pools for speed
         if self.memory_pool:
             self._setup_memory_pools()
         
-        # Start DEDICATED inference threads
+        # Start OPTIMIZED inference threads (fewer threads, better performance)
         self.inference_threads_list = []
         for i in range(self.cam_count):
             thread = threading.Thread(target=self._dedicated_inference_worker, args=(i,), daemon=True)
@@ -237,7 +237,7 @@ class MulticamSegmentationNode(Node):
             self.inference_threads_list.append(thread)
             self.get_logger().info(f"🔄 Started inference thread for camera {i}")
         
-        # Async publishing for speed
+        # Enable async publishing
         if self.async_publish:
             self.publish_thread = threading.Thread(target=self._ultra_fast_publisher_worker, daemon=True)
             self.publish_thread.start()
@@ -571,14 +571,18 @@ class MulticamSegmentationNode(Node):
         return vis_image
 
     def _publish_grid(self):
-        """Create and publish grid visualization"""
+        """Create and publish grid visualization with detailed logging"""
         try:
-            # Create 2x3 grid
-            if len(self.latest_vis_images) >= 6:
+            # Check if we have all images
+            valid_images = [img for img in self.latest_vis_images if img is not None]
+            self.get_logger().info(f"🖼️ Grid check: {len(valid_images)}/6 images available")
+            
+            if len(valid_images) >= 6:
                 # Get dimensions from first image
                 h, w = self.latest_vis_images[0].shape[:2]
+                self.get_logger().info(f"🎨 Creating grid with image size: {w}x{h}")
                 
-                # Create grid
+                # Create 2x3 grid
                 top_row = np.hstack([self.latest_vis_images[0], self.latest_vis_images[1], self.latest_vis_images[2]])
                 bottom_row = np.hstack([self.latest_vis_images[3], self.latest_vis_images[4], self.latest_vis_images[5]])
                 grid = np.vstack([top_row, bottom_row])
@@ -589,8 +593,15 @@ class MulticamSegmentationNode(Node):
                 grid_msg.header.frame_id = "segmentation_grid"
                 self.grid_pub.publish(grid_msg)
                 
+                self.get_logger().info(f"✅ Grid published! Size: {grid.shape[1]}x{grid.shape[0]}")
+                
+            else:
+                self.get_logger().warn(f"⚠️ Not enough images for grid: {len(valid_images)}/6")
+                
         except Exception as e:
             self.get_logger().error(f"❌ Error creating grid: {e}")
+            import traceback
+            traceback.print_exc()
 
     def debug_callback_status(self):
         """Enhanced debug callback"""

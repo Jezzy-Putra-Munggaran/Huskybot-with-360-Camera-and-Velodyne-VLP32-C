@@ -70,33 +70,33 @@ def generate_launch_description():
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
                 'device': LaunchConfiguration('device'),
-                'conf_thres': 0.5,
+                'conf_thres': 0.25,  # ✅ Lower threshold
                 'visualization_enabled': True,
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # Performance parameters - FIXED INPUT SIZE
-                'inference_threads': 6,
-                'input_size': 640,  # ✅ CHANGED: Match model input size
+                # Performance parameters - OPTIMIZED FOR SPEED
+                'inference_threads': 3,  # ✅ Reduced threads
+                'input_size': 320,  # ✅ BACK TO 320 for speed
                 'half_precision': True,
                 'batch_size': 1,
-                'max_det': 25,
+                'max_det': 15,  # ✅ Reduced detections
                 
-                # Visualization parameters
-                'viz_scale': 0.4,  # ✅ SMALLER for better performance
-                'viz_fps_limit': 30.0,
+                # Visualization parameters - OPTIMIZED
+                'viz_scale': 0.25,  # ✅ Much smaller for speed
+                'viz_fps_limit': 15.0,  # ✅ Lower viz FPS
                 'show_fps': True,
                 'grid_layout': True,
-                'skip_masks': False,
-                'simple_viz': False,
-                'show_confidence': True,
+                'skip_masks': True,  # ✅ SKIP masks for speed
+                'simple_viz': True,  # ✅ Simple visualization
+                'show_confidence': False,  # ✅ Disable for speed
                 'show_labels': True,
                 'mask_alpha': 0.3,
                 
-                # Optimizations
-                'queue_size': 2,
-                'async_publish': False,
+                # Optimizations - AGGRESSIVE
+                'queue_size': 1,  # ✅ Smaller queue
+                'async_publish': True,  # ✅ Enable async
                 'memory_pool': True,
-                'process_every_nth_frame': 1,
+                'process_every_nth_frame': 2,  # ✅ Process every 2nd frame
                 
                 # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
