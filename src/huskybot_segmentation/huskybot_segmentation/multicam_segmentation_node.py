@@ -28,11 +28,18 @@ except ImportError:
 
 class MulticamSegmentationNode(Node):
     def __init__(self):
-        super().__init__('multicam_segmentation_node')
+        super().__init__('multicam_segmentation')
         
         # Initialize basic components
         self.bridge = CvBridge()
         self.lock = threading.Lock()
+        
+        # Debug counters
+        self.debug_counters = {
+            'image_callbacks': [0] * 6,
+            'last_callback_time': [0.0] * 6,
+            'total_callbacks': 0
+        }
         
         # Setup parameters
         self._setup_parameters()
@@ -66,6 +73,41 @@ class MulticamSegmentationNode(Node):
         self._setup_class_colors()
         
         self.get_logger().info("🚀 Optimized YOLOv11 Segmentation Node initialized")
+        
+        # Start debug timer
+        self.debug_timer = self.create_timer(5.0, self.debug_callback_status)
+
+    def debug_callback_status(self):
+        """Debug callback to check data flow"""
+        current_time = time.time()
+        total_recent_callbacks = 0
+        
+        for i in range(self.cam_count):
+            recent_callbacks = self.debug_counters['image_callbacks'][i]
+            time_since_last = current_time - self.debug_counters['last_callback_time'][i]
+            total_recent_callbacks += recent_callbacks
+            
+            if recent_callbacks > 0:
+                self.get_logger().info(f"📸 Camera {i}: {recent_callbacks} frames received, last {time_since_last:.1f}s ago")
+            else:
+                self.get_logger().warn(f"⚠️ Camera {i}: NO DATA - checking topic {self.camera_topics[i]}")
+        
+        if total_recent_callbacks == 0:
+            self.get_logger().error("❌ NO CAMERA DATA RECEIVED - Check camera nodes and topics!")
+            # Try to list available topics
+            try:
+                import subprocess
+                result = subprocess.run(['ros2', 'topic', 'list'], capture_output=True, text=True)
+                available_topics = result.stdout.strip().split('\n')
+                image_topics = [t for t in available_topics if 'image' in t]
+                self.get_logger().info(f"🔍 Available image topics: {image_topics}")
+            except:
+                pass
+        else:
+            self.get_logger().info(f"✅ Total callbacks: {total_recent_callbacks}, Processing frames...")
+        
+        # Reset counters
+        self.debug_counters['image_callbacks'] = [0] * 6
 
     def _setup_class_colors(self):
         """Setup vibrant colors for COCO classes"""
@@ -91,23 +133,23 @@ class MulticamSegmentationNode(Node):
         try:
             # Core parameters
             self.declare_parameter('cam_count', 6)
-            self.declare_parameter('model_path', 'yolo11x-seg.engine')
+            self.declare_parameter('model_path', 'yolo11n-seg.engine')
             self.declare_parameter('device', 'cuda:0')
-            self.declare_parameter('conf_thres', 0.3)  # Slightly higher for quality
+            self.declare_parameter('conf_thres', 0.3)
             self.declare_parameter('visualization_enabled', True)
-            self.declare_parameter('publish_rate', 10.0)  # More realistic target
+            self.declare_parameter('publish_rate', 15.0)  # Reduce for testing
             self.declare_parameter('image_width', 1920)
             self.declare_parameter('image_height', 1080)
             
             # OPTIMIZED Performance parameters
-            self.declare_parameter('inference_threads', 3)  # Reduce threads for stability
-            self.declare_parameter('input_size', 480)  # Smaller input for speed
+            self.declare_parameter('inference_threads', 3)  # Reduce for debugging
+            self.declare_parameter('input_size', 320)  # Smaller input for speed
             self.declare_parameter('half_precision', True)
             self.declare_parameter('batch_size', 1)
-            self.declare_parameter('max_det', 50)  # Limit detections for speed
+            self.declare_parameter('max_det', 25)  # Limit detections for speed
             
             # LARGER Visualization parameters
-            self.declare_parameter('viz_scale', 0.8)  # Much larger visualization
+            self.declare_parameter('viz_scale', 0.4)  # Smaller for testing
             self.declare_parameter('viz_fps_limit', 15.0)  # Lower viz FPS for performance
             self.declare_parameter('show_fps', True)
             self.declare_parameter('grid_layout', True)
@@ -115,7 +157,7 @@ class MulticamSegmentationNode(Node):
             self.declare_parameter('simple_viz', False)
             self.declare_parameter('show_confidence', True)
             self.declare_parameter('show_labels', True)
-            self.declare_parameter('mask_alpha', 0.4)  # Slightly more opaque
+            self.declare_parameter('mask_alpha', 0.3)
             
             # Performance tuning for speed
             self.declare_parameter('queue_size', 1)  # Minimal queue for low latency
@@ -123,11 +165,25 @@ class MulticamSegmentationNode(Node):
             self.declare_parameter('memory_pool', True)
             self.declare_parameter('process_every_nth_frame', 3)  # Process every 3rd frame
             
-            # Camera topics
-            camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
+            # Camera topics with multiple possible patterns
+            camera_patterns = [
+                ['front', 'front_left', 'left', 'rear', 'rear_right', 'right'],
+                ['camera_0', 'camera_1', 'camera_2', 'camera_3', 'camera_4', 'camera_5'],
+                ['cam0', 'cam1', 'cam2', 'cam3', 'cam4', 'cam5']
+            ]
+            
+            # Try different topic patterns
             for i in range(6):
                 topic_param = f'camera_topic_{i}'
-                default_topic = f'/camera_{camera_names[i]}/image_raw'
+                # Try different naming conventions
+                possible_topics = [
+                    f'/camera_{camera_patterns[0][i]}/image_raw',
+                    f'/camera_{camera_patterns[1][i]}/image_raw', 
+                    f'/{camera_patterns[2][i]}/image_raw',
+                    f'/video_source_{i}/image_raw',
+                    f'/image_raw_{i}',
+                ]
+                default_topic = possible_topics[0]  # Use first as default
                 self.declare_parameter(topic_param, default_topic)
             
             # Get parameters
@@ -187,7 +243,7 @@ class MulticamSegmentationNode(Node):
             self.get_logger().info(f"🔧 Device: {self.device}")
             self.get_logger().info(f"⚡ Optimized: {self.inference_threads} threads, input_size={self.input_size}")
             self.get_logger().info(f"🎯 Target FPS: {self.publish_rate}")
-            self.get_logger().info(f"🎨 Large Display: viz_scale={self.viz_scale}")
+            self.get_logger().info(f"🎨 Display: viz_scale={self.viz_scale}")
             self.get_logger().info(f"⏩ Frame Skip: process every {self.process_every_nth_frame} frames")
             
         except Exception as e:
@@ -212,7 +268,7 @@ class MulticamSegmentationNode(Node):
             dummy_image = np.zeros((self.input_size, self.input_size, 3), dtype=np.uint8)
             
             # Multiple warm-up runs
-            for i in range(5):
+            for i in range(3):  # Reduce warm-up for faster startup
                 results = self.model(dummy_image, 
                                    conf=self.conf_thres, 
                                    task='segment',
@@ -274,7 +330,7 @@ class MulticamSegmentationNode(Node):
         return pool[idx]
 
     def _setup_topics(self):
-        """Setup subscriptions and publishers"""
+        """Setup subscriptions and publishers with debug info"""
         try:
             # Create subscriptions
             self.image_subs = []
@@ -329,8 +385,13 @@ class MulticamSegmentationNode(Node):
         self.stats_timer = self.create_timer(3.0, self.log_statistics)  # Less frequent
 
     def image_callback(self, msg, camera_index):
-        """Optimized image callback with error handling"""
+        """Optimized image callback with debug info"""
         try:
+            # Debug tracking
+            self.debug_counters['image_callbacks'][camera_index] += 1
+            self.debug_counters['last_callback_time'][camera_index] = time.time()
+            self.debug_counters['total_callbacks'] += 1
+            
             # Check if shutting down
             if hasattr(self, '_shutdown_flag') and self._shutdown_flag:
                 return
@@ -343,6 +404,9 @@ class MulticamSegmentationNode(Node):
             # Convert ROS image to OpenCV with error handling
             try:
                 cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+                # Log first successful conversion
+                if self.debug_counters['image_callbacks'][camera_index] == 1:
+                    self.get_logger().info(f"✅ Camera {camera_index}: First frame received! Size: {cv_image.shape}")
             except Exception as e:
                 self.get_logger().warn(f"Image conversion failed for camera {camera_index}: {e}")
                 return
@@ -789,22 +853,27 @@ class MulticamSegmentationNode(Node):
             return None
 
     def log_statistics(self):
-        """Log performance statistics"""
+        """Log performance statistics with debug info"""
         try:
             with self.lock:
                 stats = self.stats.copy()
+            
+            total_callbacks = sum(self.debug_counters['image_callbacks'])
             
             if stats['total_frames'] > 0:
                 success_rate = (stats['successful_segmentations'] / stats['total_frames']) * 100
                 
                 self.get_logger().info(
-                    f"🚀 Optimized Performance: "
+                    f"🚀 Performance: "
+                    f"Callbacks={total_callbacks}, "
                     f"Frames={stats['total_frames']}, "
-                    f"Success Rate={success_rate:.1f}%, "
+                    f"Success={success_rate:.1f}%, "
                     f"Inference={stats['average_inference_time']*1000:.0f}ms, "
-                    f"FPS={stats['fps']:.1f}, "
-                    f"VizFPS={stats['viz_fps']:.1f}"
+                    f"FPS={stats['fps']:.1f}"
                 )
+            else:
+                self.get_logger().warn(f"⚠️ No frames processed yet. Callbacks received: {total_callbacks}")
+                
         except Exception as e:
             self.get_logger().error(f"❌ Error logging statistics: {e}")
 

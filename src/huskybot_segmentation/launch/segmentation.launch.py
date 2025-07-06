@@ -56,8 +56,14 @@ def generate_launch_description():
         
         DeclareLaunchArgument(
             'target_fps',
-            default_value='30.0',  # Increase target FPS
+            default_value='15.0',  # Reduce FPS for testing
             description='HIGH-SPEED target FPS'
+        ),
+        
+        DeclareLaunchArgument(
+            'debug_mode',
+            default_value='true',
+            description='Enable debug mode'
         ),
         
         # ULTRA-OPTIMIZED segmentation node for HIGH FPS
@@ -76,15 +82,15 @@ def generate_launch_description():
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
                 # ULTRA-OPTIMIZED Performance parameters for HIGH FPS
-                'inference_threads': 6,  # More threads for parallel processing
-                'input_size': 320,  # Smaller input = much faster (was 480)
+                'inference_threads': 3,  # Reduce threads for debugging
+                'input_size': 320,  # Smaller input = much faster
                 'half_precision': True,
                 'batch_size': 1,
                 'max_det': 25,  # Fewer detections = faster processing
                 
                 # OPTIMIZED visualization parameters
-                'viz_scale': 0.6,  # Smaller visualization = faster processing
-                'viz_fps_limit': 30.0,  # Match target FPS
+                'viz_scale': 0.4,  # Even smaller for testing
+                'viz_fps_limit': 15.0,  # Match target FPS
                 'show_fps': True,
                 'grid_layout': True,
                 'skip_masks': False,  # Keep segmentation but optimize
@@ -97,12 +103,12 @@ def generate_launch_description():
                 'queue_size': 1,  # Minimal latency
                 'async_publish': True,
                 'memory_pool': True,
-                'process_every_nth_frame': 2,  # Process every 2nd frame (was 3)
+                'process_every_nth_frame': 3,  # Process every 3rd frame for testing
                 
-                # Camera topics
+                # DEBUG: Try different topic patterns
                 'camera_topic_0': '/camera_front/image_raw',
-                'camera_topic_1': '/camera_front_left/image_raw',
-                'camera_topic_2': '/camera_left/image_raw', 
+                'camera_topic_1': '/camera_front_left/image_raw', 
+                'camera_topic_2': '/camera_left/image_raw',
                 'camera_topic_3': '/camera_rear/image_raw',
                 'camera_topic_4': '/camera_rear_right/image_raw',
                 'camera_topic_5': '/camera_right/image_raw',
