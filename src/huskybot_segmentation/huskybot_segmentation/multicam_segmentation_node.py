@@ -62,40 +62,56 @@ class MulticamSegmentationNode(Node):
             'viz_fps': 0.0
         }
         
-        self.get_logger().info("🚀 Ultra High-Performance YOLOv11 Segmentation + Visualization Node initialized")
+        # COCO class colors for segmentation
+        self._setup_class_colors()
+        
+        self.get_logger().info("🚀 Ultra High-Performance YOLOv11 Segmentation + Full Visualization Node initialized")
+
+    def _setup_class_colors(self):
+        """Setup colors for COCO classes"""
+        # Generate distinct colors for 80 COCO classes
+        np.random.seed(42)  # For consistent colors
+        self.class_colors = []
+        for i in range(80):
+            # Generate bright, distinct colors
+            color = [int(x) for x in np.random.randint(50, 255, 3)]
+            self.class_colors.append(tuple(color))
 
     def _setup_parameters(self):
-        """Setup parameters untuk 60+ FPS"""
+        """Setup parameters untuk segmentasi penuh"""
         try:
             # Core parameters
             self.declare_parameter('cam_count', 6)
             self.declare_parameter('model_path', 'yolo11x-seg.engine')
             self.declare_parameter('device', 'cuda:0')
-            self.declare_parameter('conf_thres', 0.5)  # Higher threshold for speed
+            self.declare_parameter('conf_thres', 0.25)  # Lower for more detections
             self.declare_parameter('visualization_enabled', True)
-            self.declare_parameter('publish_rate', 60.0)  # Target 60 FPS
+            self.declare_parameter('publish_rate', 30.0)  # More realistic target
             self.declare_parameter('image_width', 1920)
             self.declare_parameter('image_height', 1080)
             
-            # Ultra performance optimization parameters
+            # Performance optimization parameters
             self.declare_parameter('inference_threads', 6)  # One per camera
-            self.declare_parameter('input_size', 320)  # Much smaller input for speed
+            self.declare_parameter('input_size', 640)  # Larger for better quality
             self.declare_parameter('half_precision', True)  # FP16 for speed
             self.declare_parameter('batch_size', 1)
-            self.declare_parameter('max_det', 50)  # Limit detections aggressively
+            self.declare_parameter('max_det', 100)  # More detections
             
-            # Ultra visualization parameters
-            self.declare_parameter('viz_scale', 0.25)  # Scale down visualization significantly
-            self.declare_parameter('viz_fps_limit', 30.0)  # Limit viz FPS
+            # Visualization parameters
+            self.declare_parameter('viz_scale', 0.5)  # Larger visualization
+            self.declare_parameter('viz_fps_limit', 30.0)
             self.declare_parameter('show_fps', True)
             self.declare_parameter('grid_layout', True)
-            self.declare_parameter('skip_masks', True)  # Skip mask processing for speed
-            self.declare_parameter('simple_viz', True)  # Ultra simple visualization
+            self.declare_parameter('skip_masks', False)  # Enable masks!
+            self.declare_parameter('simple_viz', False)  # Full visualization
+            self.declare_parameter('show_confidence', True)
+            self.declare_parameter('show_labels', True)
+            self.declare_parameter('mask_alpha', 0.3)  # Mask transparency
             
             # Performance tuning
-            self.declare_parameter('queue_size', 1)  # Minimal queue for lowest latency
-            self.declare_parameter('async_publish', True)  # Async publishing
-            self.declare_parameter('memory_pool', True)  # Pre-allocated memory
+            self.declare_parameter('queue_size', 2)  # Slightly larger queue
+            self.declare_parameter('async_publish', True)
+            self.declare_parameter('memory_pool', True)
             
             # Camera topics
             camera_names = ['front', 'front_left', 'left', 'rear', 'rear_right', 'right']
@@ -136,6 +152,9 @@ class MulticamSegmentationNode(Node):
             self.grid_layout = self.get_parameter('grid_layout').get_parameter_value().bool_value
             self.skip_masks = self.get_parameter('skip_masks').get_parameter_value().bool_value
             self.simple_viz = self.get_parameter('simple_viz').get_parameter_value().bool_value
+            self.show_confidence = self.get_parameter('show_confidence').get_parameter_value().bool_value
+            self.show_labels = self.get_parameter('show_labels').get_parameter_value().bool_value
+            self.mask_alpha = self.get_parameter('mask_alpha').get_parameter_value().double_value
             
             # Performance tuning
             self.queue_size = self.get_parameter('queue_size').get_parameter_value().integer_value
@@ -152,15 +171,16 @@ class MulticamSegmentationNode(Node):
             self.get_logger().info(f"📹 Camera topics: {self.camera_topics}")
             self.get_logger().info(f"🤖 Model: {self.model_path}")
             self.get_logger().info(f"🔧 Device: {self.device}")
-            self.get_logger().info(f"⚡ Ultra Performance: {self.inference_threads} threads, input_size={self.input_size}, half_precision={self.half_precision}")
+            self.get_logger().info(f"⚡ Performance: {self.inference_threads} threads, input_size={self.input_size}, half_precision={self.half_precision}")
             self.get_logger().info(f"🎯 Target FPS: {self.publish_rate}")
+            self.get_logger().info(f"🎨 Full Segmentation: masks={not self.skip_masks}, labels={self.show_labels}, conf={self.show_confidence}")
             
         except Exception as e:
             self.get_logger().error(f"❌ Error setting up parameters: {e}")
             raise e
 
     def _initialize_model(self):
-        """Initialize YOLO model with ultra optimizations"""
+        """Initialize YOLO model with optimizations"""
         try:
             if not ULTRALYTICS_AVAILABLE:
                 raise ImportError("Ultralytics tidak tersedia")
@@ -172,10 +192,9 @@ class MulticamSegmentationNode(Node):
             self.get_logger().info(f"🔄 Loading model: {self.model_path}")
             self.model = YOLO(self.model_path)
             
-            # For TensorRT models, device is handled in inference
             self.get_logger().info(f"✅ Model loaded successfully")
             
-            # Test inference with ultra optimizations
+            # Test inference
             dummy_image = np.zeros((self.input_size, self.input_size, 3), dtype=np.uint8)
             results = self.model(dummy_image, 
                                conf=self.conf_thres, 
@@ -183,24 +202,20 @@ class MulticamSegmentationNode(Node):
                                device=self.device,
                                half=self.half_precision,
                                max_det=self.max_det,
-                               verbose=False,
-                               agnostic_nms=True,  # Faster NMS
-                               retina_masks=False)  # Disable retina masks for speed
+                               verbose=False)
             
             self.get_logger().info(f"📊 Model classes: {len(self.model.names)}")
-            self.get_logger().info(f"🚀 Model ready for ultra-high performance inference")
+            self.get_logger().info(f"🚀 Model ready for segmentation inference")
             
         except Exception as e:
             self.get_logger().error(f"❌ Failed to initialize model: {e}")
             raise e
 
     def _setup_threading(self):
-        """Setup thread pools for ultra high performance"""
-        # FIX: Gunakan nama variabel yang berbeda untuk menghindari konflik dengan ROS executor
-        # Dedicated thread pool untuk inference - NAMA DIUBAH dari 'executor' ke 'thread_pool'
-        self.thread_pool = ThreadPoolExecutor(max_workers=self.inference_threads + 2)  # +2 for publishing
+        """Setup thread pools for performance"""
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.inference_threads + 2)
         
-        # Minimal queues for lowest latency
+        # Queues
         self.image_queues = [queue.Queue(maxsize=self.queue_size) for _ in range(self.cam_count)]
         self.result_queues = [queue.Queue(maxsize=2) for _ in range(self.cam_count)]
         
@@ -208,7 +223,7 @@ class MulticamSegmentationNode(Node):
         if self.memory_pool:
             self._setup_memory_pools()
         
-        # Start dedicated inference threads per camera
+        # Start inference threads per camera
         self.inference_threads_list = []
         for i in range(self.cam_count):
             thread = threading.Thread(target=self._inference_worker, args=(i,), daemon=True)
@@ -221,7 +236,7 @@ class MulticamSegmentationNode(Node):
             self.publish_thread.start()
 
     def _setup_memory_pools(self):
-        """Pre-allocate memory pools for zero-copy operations"""
+        """Pre-allocate memory pools"""
         self.memory_pools = {
             'resized': [np.zeros((self.input_size, self.input_size, 3), dtype=np.uint8) 
                        for _ in range(self.cam_count * 2)],
@@ -241,21 +256,21 @@ class MulticamSegmentationNode(Node):
         return pool[idx]
 
     def _setup_topics(self):
-        """Setup subscriptions and publishers with minimal queues"""
+        """Setup subscriptions and publishers"""
         try:
-            # Create subscriptions with minimal queue
+            # Create subscriptions
             self.image_subs = []
             for i, topic in enumerate(self.camera_topics):
                 sub = self.create_subscription(
                     Image,
                     topic,
                     lambda msg, cam_idx=i: self.image_callback(msg, cam_idx),
-                    1  # Minimal queue for lowest latency
+                    2  # Slightly larger queue
                 )
                 self.image_subs.append(sub)
                 self.get_logger().info(f"📡 Subscribed to: {topic}")
             
-            # Create publishers with minimal queue
+            # Create publishers
             self.segmentation_pubs = []
             self.visualization_pubs = []
             
@@ -281,42 +296,41 @@ class MulticamSegmentationNode(Node):
             raise e
 
     def _setup_visualization(self):
-        """Setup ultra-fast OpenCV visualization"""
+        """Setup OpenCV visualization"""
         if self.visualization_enabled and self.grid_layout:
             self.latest_vis_images = [None] * self.cam_count
             self.viz_lock = threading.Lock()
             self.last_viz_time = time.time()
             
-            # Start visualization thread with higher priority
+            # Start visualization thread
             self.viz_thread = threading.Thread(target=self._visualization_worker, daemon=True)
             self.viz_thread.start()
 
     def _setup_timers(self):
         """Setup timers"""
-        self.stats_timer = self.create_timer(2.0, self.log_statistics)  # More frequent stats
+        self.stats_timer = self.create_timer(2.0, self.log_statistics)
 
     def image_callback(self, msg, camera_index):
-        """Ultra-fast image callback - minimal processing"""
+        """Image callback"""
         try:
-            # Convert ROS image to OpenCV (fastest method)
+            # Convert ROS image to OpenCV
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
-            # Non-blocking queue insertion - drop if full
+            # Non-blocking queue insertion
             if not self.image_queues[camera_index].full():
                 self.image_queues[camera_index].put((cv_image, msg.header, camera_index))
-            # If queue full, just drop the frame for lowest latency
             
         except Exception as e:
             self.get_logger().error(f"❌ Image callback error camera {camera_index}: {e}")
 
     def _inference_worker(self, camera_index):
-        """Ultra-fast inference worker per camera"""
+        """Inference worker per camera"""
         while True:
             try:
-                # Get image from queue with minimal timeout
+                # Get image from queue
                 cv_image, header, cam_idx = self.image_queues[camera_index].get(timeout=0.5)
                 
-                # Ultra-fast resize using pre-allocated memory
+                # Resize for inference
                 h, w = cv_image.shape[:2]
                 scale = self.input_size / max(h, w)
                 new_h, new_w = int(h * scale), int(w * scale)
@@ -326,13 +340,13 @@ class MulticamSegmentationNode(Node):
                 if padded_image is None:
                     padded_image = np.zeros((self.input_size, self.input_size, 3), dtype=np.uint8)
                 else:
-                    padded_image.fill(0)  # Clear previous data
+                    padded_image.fill(0)
                 
-                # Fastest resize method
+                # Resize
                 resized = cv2.resize(cv_image, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
                 padded_image[:new_h, :new_w] = resized
                 
-                # Ultra-fast inference
+                # Inference
                 start_time = time.time()
                 results = self.model(padded_image,
                                    conf=self.conf_thres,
@@ -340,9 +354,7 @@ class MulticamSegmentationNode(Node):
                                    device=self.device,
                                    half=self.half_precision,
                                    max_det=self.max_det,
-                                   verbose=False,
-                                   agnostic_nms=True,
-                                   retina_masks=False)
+                                   verbose=False)
                 inference_time = time.time() - start_time
                 
                 # Update statistics
@@ -356,7 +368,7 @@ class MulticamSegmentationNode(Node):
                     )
                     self.stats['fps'] = 1.0 / inference_time if inference_time > 0 else 0
                 
-                # Process results immediately
+                # Process results
                 result_data = {
                     'results': results[0],
                     'original_image': cv_image,
@@ -366,7 +378,7 @@ class MulticamSegmentationNode(Node):
                     'inference_time': inference_time
                 }
                 
-                # Process and publish with minimal delay
+                # Process and publish
                 if self.async_publish:
                     if not self.result_queues[camera_index].full():
                         self.result_queues[camera_index].put(result_data)
@@ -381,7 +393,7 @@ class MulticamSegmentationNode(Node):
                 self.get_logger().error(f"❌ Inference worker error camera {camera_index}: {e}")
 
     def _async_publisher_worker(self):
-        """Async publisher worker for maximum throughput"""
+        """Async publisher worker"""
         while True:
             try:
                 for camera_index in range(self.cam_count):
@@ -390,12 +402,12 @@ class MulticamSegmentationNode(Node):
                         self._process_results(result_data)
                     except queue.Empty:
                         continue
-                time.sleep(0.001)  # Minimal sleep
+                time.sleep(0.001)
             except Exception as e:
                 self.get_logger().error(f"❌ Async publisher error: {e}")
 
     def _process_results(self, result_data):
-        """Ultra-fast result processing"""
+        """Process results with full segmentation"""
         try:
             results = result_data['results']
             original_image = result_data['original_image']
@@ -403,15 +415,16 @@ class MulticamSegmentationNode(Node):
             camera_index = result_data['camera_index']
             scale = result_data['scale']
             
-            # Create and publish segmentation message (simplified)
-            if not self.skip_masks:  # Only if masks are needed
-                seg_msg = self._create_fast_segmentation_message(results, header, camera_index, scale)
+            # Create and publish segmentation message
+            if not self.skip_masks:
+                seg_msg = self._create_segmentation_message(results, header, camera_index, scale)
                 if camera_index < len(self.segmentation_pubs):
                     self.segmentation_pubs[camera_index].publish(seg_msg)
             
-            # Create ultra-fast visualization
+            # Create full segmentation visualization
             if self.visualization_enabled:
-                vis_image = self._create_ultra_fast_visualization(original_image, results, scale, result_data['inference_time'])
+                vis_image = self._create_full_segmentation_visualization(
+                    original_image, results, scale, result_data['inference_time'])
                 
                 # Publish individual visualization
                 if camera_index < len(self.visualization_pubs):
@@ -427,8 +440,8 @@ class MulticamSegmentationNode(Node):
         except Exception as e:
             self.get_logger().error(f"❌ Error processing results: {e}")
 
-    def _create_fast_segmentation_message(self, results, header, camera_index, scale):
-        """Ultra-fast segmentation message creation"""
+    def _create_segmentation_message(self, results, header, camera_index, scale):
+        """Create segmentation message with masks"""
         seg_msg = Yolov12Inference()
         seg_msg.header = header
         seg_msg.camera_name = f'camera_{camera_index}'
@@ -448,51 +461,113 @@ class MulticamSegmentationNode(Node):
                 inference_result.right = int(x2 / scale)
                 inference_result.bottom = int(y2 / scale)
                 
-                # Skip mask processing for ultra speed
+                # Add mask if available
+                if results.masks is not None and i < len(results.masks):
+                    mask = results.masks[i].data[0].cpu().numpy()
+                    # Convert mask to indices (simplified)
+                    mask_indices = np.where(mask > 0.5)
+                    if len(mask_indices[0]) > 0:
+                        # Sample some mask points (limit to avoid huge messages)
+                        step = max(1, len(mask_indices[0]) // 100)
+                        inference_result.mask_indices = [
+                            int(idx) for idx in mask_indices[0][::step]
+                        ]
+                
                 seg_msg.yolov12_inference.append(inference_result)
         
         return seg_msg
 
-    def _create_ultra_fast_visualization(self, image, results, scale, inference_time):
-        """Ultra-fast visualization - minimal drawing"""
-        # Scale down for visualization using memory pool
+    def _create_full_segmentation_visualization(self, image, results, scale, inference_time):
+        """Create full segmentation visualization like Ultralytics docs"""
+        # Scale down for visualization
         viz_h = int(image.shape[0] * self.viz_scale)
         viz_w = int(image.shape[1] * self.viz_scale)
         
-        vis_image = self._get_from_pool('viz')
-        if vis_image is None or vis_image.shape[:2] != (viz_h, viz_w):
-            vis_image = cv2.resize(image, (viz_w, viz_h), interpolation=cv2.INTER_LINEAR)
-        else:
-            cv2.resize(image, (viz_w, viz_h), dst=vis_image, interpolation=cv2.INTER_LINEAR)
+        vis_image = cv2.resize(image, (viz_w, viz_h), interpolation=cv2.INTER_LINEAR)
         
-        if self.simple_viz and results.boxes is not None and len(results.boxes) > 0:
-            # Ultra-simple visualization - only boxes
-            for box in results.boxes:
+        if results.boxes is not None and len(results.boxes) > 0:
+            # Draw masks first (if available)
+            if results.masks is not None and not self.skip_masks:
+                mask_overlay = vis_image.copy()
+                
+                for i, mask in enumerate(results.masks):
+                    # Get mask data
+                    mask_data = mask.data[0].cpu().numpy()
+                    
+                    # Resize mask to visualization size
+                    mask_resized = cv2.resize(
+                        mask_data, (viz_w, viz_h), 
+                        interpolation=cv2.INTER_NEAREST
+                    )
+                    
+                    # Get class color
+                    class_id = int(results.boxes[i].cls)
+                    color = self.class_colors[class_id % len(self.class_colors)]
+                    
+                    # Apply colored mask
+                    mask_colored = np.zeros_like(vis_image)
+                    mask_colored[mask_resized > 0.5] = color
+                    
+                    # Blend with image
+                    vis_image = cv2.addWeighted(
+                        vis_image, 1 - self.mask_alpha,
+                        mask_colored, self.mask_alpha, 0
+                    )
+            
+            # Draw bounding boxes and labels
+            for i, box in enumerate(results.boxes):
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                 
-                # Scale coordinates
+                # Scale coordinates to visualization size
                 x1 = int((x1 / scale) * self.viz_scale)
                 y1 = int((y1 / scale) * self.viz_scale)
                 x2 = int((x2 / scale) * self.viz_scale)
                 y2 = int((y2 / scale) * self.viz_scale)
                 
-                # Simple green box only
-                cv2.rectangle(vis_image, (x1, y1), (x2, y2), (0, 255, 0), 1)
+                # Get class info
+                class_id = int(box.cls)
+                confidence = float(box.conf)
+                class_name = results.names[class_id]
+                
+                # Get class color
+                color = self.class_colors[class_id % len(self.class_colors)]
+                
+                # Draw bounding box
+                cv2.rectangle(vis_image, (x1, y1), (x2, y2), color, 2)
+                
+                # Draw label with confidence
+                if self.show_labels:
+                    if self.show_confidence:
+                        label = f'{class_name}: {confidence:.2f}'
+                    else:
+                        label = class_name
+                    
+                    # Label background
+                    label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
+                    cv2.rectangle(vis_image, 
+                                (x1, y1 - label_size[1] - 10), 
+                                (x1 + label_size[0], y1), 
+                                color, -1)
+                    
+                    # Label text
+                    cv2.putText(vis_image, label, (x1, y1 - 5), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         
-        # Add FPS info if enabled
+        # Add FPS info
         if self.show_fps:
-            fps_text = f'FPS: {1.0/inference_time:.0f}' if inference_time > 0 else 'FPS: --'
-            cv2.putText(vis_image, fps_text, (5, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+            fps_text = f'FPS: {1.0/inference_time:.1f}' if inference_time > 0 else 'FPS: --'
+            cv2.putText(vis_image, fps_text, (5, 20), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
         
         return vis_image
 
     def _visualization_worker(self):
-        """Ultra-fast grid visualization worker"""
+        """Grid visualization worker"""
         while True:
             try:
                 current_time = time.time()
                 if current_time - self.last_viz_time < (1.0 / self.viz_fps_limit):
-                    time.sleep(0.005)  # Minimal sleep
+                    time.sleep(0.005)
                     continue
                 
                 with self.viz_lock:
@@ -500,14 +575,14 @@ class MulticamSegmentationNode(Node):
                 
                 # Check if we have enough images
                 valid_images = [img for img in images if img is not None]
-                if len(valid_images) < 2:  # Lower threshold
+                if len(valid_images) < 2:
                     time.sleep(0.01)
                     continue
                 
-                # Create ultra-fast grid layout
-                grid_image = self._create_ultra_fast_grid_layout(images)
+                # Create grid layout
+                grid_image = self._create_grid_layout(images)
                 if grid_image is not None:
-                    cv2.imshow('HuskyBot YOLOv11 Segmentation - Ultra High Performance', grid_image)
+                    cv2.imshow('HuskyBot YOLOv11 Segmentation - Full Visualization', grid_image)
                     cv2.waitKey(1)
                     
                     # Update viz FPS
@@ -521,48 +596,48 @@ class MulticamSegmentationNode(Node):
                 self.get_logger().error(f"❌ Visualization worker error: {e}")
                 time.sleep(0.01)
 
-    def _create_ultra_fast_grid_layout(self, images):
-        """Ultra-fast 2x3 grid layout"""
+    def _create_grid_layout(self, images):
+        """Create 2x3 grid layout"""
         try:
-            # Ultra-small target size for maximum performance
-            target_width, target_height = 240, 180
+            target_width, target_height = 320, 240  # Larger for better visibility
             
             display_images = []
-            camera_names = ['FL', 'F', 'R', 'L', 'Rear', 'RR']  # Shorter names
+            camera_names = ['FL', 'F', 'R', 'L', 'Rear', 'RR']
             
             for i, name in enumerate(camera_names):
                 if i < len(images) and images[i] is not None:
-                    img = cv2.resize(images[i], (target_width, target_height), interpolation=cv2.INTER_LINEAR)
+                    img = cv2.resize(images[i], (target_width, target_height), 
+                                   interpolation=cv2.INTER_LINEAR)
                 else:
                     # Simple placeholder
                     img = np.zeros((target_height, target_width, 3), dtype=np.uint8)
-                    cv2.putText(img, name, (5, target_height//2), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (100, 100, 100), 1)
+                    cv2.putText(img, name, (10, target_height//2), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (100, 100, 100), 2)
                 
-                # Add minimal camera label
-                cv2.putText(img, name, (2, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 255), 1)
+                # Add camera label
+                cv2.putText(img, name, (5, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
                 display_images.append(img)
             
             # Arrange in 2x3 grid
             if len(display_images) >= 6:
-                # Top row: [1], [0], [2] -> front_left, front, right
+                # Top row: front_left, front, right
                 top_row = np.hstack([display_images[1], display_images[0], display_images[2]])
-                # Bottom row: [3], [4], [5] -> left, rear, rear_right  
+                # Bottom row: left, rear, rear_right  
                 bottom_row = np.hstack([display_images[3], display_images[4], display_images[5]])
                 
                 combined = np.vstack([top_row, bottom_row])
                 
-                # Minimal title
-                title_height = 40
+                # Title with stats
+                title_height = 50
                 title_img = np.zeros((title_height, combined.shape[1], 3), dtype=np.uint8)
                 
                 with self.lock:
-                    stats_text = f'HuskyBot Ultra | FPS: {self.stats["fps"]:.0f} | Viz: {self.stats["viz_fps"]:.0f} | Frames: {self.stats["total_frames"]}'
+                    stats_text = f'HuskyBot YOLOv11 Segmentation | FPS: {self.stats["fps"]:.1f} | Viz: {self.stats["viz_fps"]:.1f} | Frames: {self.stats["total_frames"]}'
                 
-                cv2.putText(title_img, stats_text, (5, 20), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 1)
-                cv2.putText(title_img, f'Inf: {self.stats["average_inference_time"]*1000:.0f}ms', 
-                           (5, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+                cv2.putText(title_img, stats_text, (10, 25), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(title_img, f'Inference: {self.stats["average_inference_time"]*1000:.0f}ms', 
+                           (10, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 
                 final_img = np.vstack([title_img, combined])
                 return final_img
@@ -574,7 +649,7 @@ class MulticamSegmentationNode(Node):
             return None
 
     def log_statistics(self):
-        """Log ultra performance statistics"""
+        """Log performance statistics"""
         try:
             with self.lock:
                 stats = self.stats.copy()
@@ -583,7 +658,7 @@ class MulticamSegmentationNode(Node):
                 success_rate = (stats['successful_segmentations'] / stats['total_frames']) * 100
                 
                 self.get_logger().info(
-                    f"🚀 Ultra Performance: "
+                    f"🚀 Segmentation Performance: "
                     f"Frames={stats['total_frames']}, "
                     f"Success={stats['successful_segmentations']}, "
                     f"Failed={stats['failed_segmentations']}, "
@@ -616,7 +691,7 @@ def main(args=None):
     
     # Set process priority for better performance
     try:
-        os.nice(-10)  # Higher priority
+        os.nice(-10)
     except:
         pass
     
