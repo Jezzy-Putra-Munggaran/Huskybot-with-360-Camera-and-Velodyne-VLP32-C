@@ -28,7 +28,7 @@ def generate_launch_description():
                 potential_path = os.path.join(search_path, f"{model_name}{ext}")
                 if os.path.exists(potential_path):
                     model_file = potential_path
-                    print(f"[INFO] Found segmentation model: {os.path.basename(model_file)}")
+                    print(f"[INFO] Found optimized segmentation model: {os.path.basename(model_file)}")
                     break
             if model_file:
                 break
@@ -44,7 +44,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'model_path',
             default_value=model_file,
-            description='Path to YOLOv11 segmentation model'
+            description='Path to optimized YOLOv11 segmentation model'
         ),
         
         DeclareLaunchArgument(
@@ -55,11 +55,11 @@ def generate_launch_description():
         
         DeclareLaunchArgument(
             'target_fps',
-            default_value='30.0',
-            description='Target FPS (realistic)'
+            default_value='10.0',
+            description='Realistic target FPS'
         ),
         
-        # Full segmentation node
+        # Optimized segmentation node
         Node(
             package='huskybot_segmentation',
             executable='multicam_segmentation_node',
@@ -70,32 +70,33 @@ def generate_launch_description():
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
                 'device': LaunchConfiguration('device'),
-                'conf_thres': 0.25,  # Lower for more detections
+                'conf_thres': 0.3,  # Higher for quality
                 'visualization_enabled': True,
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # Performance optimizations
-                'inference_threads': 6,
-                'input_size': 640,  # Better quality
+                # OPTIMIZED Performance parameters
+                'inference_threads': 3,  # Reduced for stability
+                'input_size': 480,  # Smaller for speed
                 'half_precision': True,
                 'batch_size': 1,
-                'max_det': 100,  # More detections
+                'max_det': 50,  # Limit detections
                 
-                # Full visualization
-                'viz_scale': 0.5,  # Larger visualization
-                'viz_fps_limit': 30.0,
+                # LARGE visualization parameters
+                'viz_scale': 0.8,  # Much larger display
+                'viz_fps_limit': 15.0,  # Lower for performance
                 'show_fps': True,
                 'grid_layout': True,
-                'skip_masks': False,  # Enable masks!
-                'simple_viz': False,  # Full visualization
+                'skip_masks': False,  # Keep segmentation
+                'simple_viz': False,  # Full quality
                 'show_confidence': True,
                 'show_labels': True,
-                'mask_alpha': 0.3,  # Mask transparency
+                'mask_alpha': 0.4,  # Good visibility
                 
-                # Performance tuning
-                'queue_size': 2,
+                # Speed optimizations
+                'queue_size': 1,  # Minimal latency
                 'async_publish': True,
                 'memory_pool': True,
+                'process_every_nth_frame': 3,  # Skip frames for speed
                 
                 # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
