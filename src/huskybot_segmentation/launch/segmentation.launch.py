@@ -28,7 +28,7 @@ def generate_launch_description():
                 potential_path = os.path.join(search_path, f"{model_name}{ext}")
                 if os.path.exists(potential_path):
                     model_file = potential_path
-                    print(f"[INFO] Found DEBUG model: {os.path.basename(model_file)}")
+                    print(f"[INFO] Found model: {os.path.basename(model_file)}")
                     break
             if model_file:
                 break
@@ -37,14 +37,14 @@ def generate_launch_description():
     
     if not model_file:
         model_file = 'yolo11n-seg.engine'
-        print(f"[WARNING] Using default DEBUG model: {model_file}")
+        print(f"[WARNING] Using default model: {model_file}")
 
     return LaunchDescription([
-        # Launch arguments for DEBUGGING
+        # Launch arguments
         DeclareLaunchArgument(
             'model_path',
             default_value=model_file,
-            description='Path to YOLOv11 model for debugging'
+            description='Path to YOLOv11 segmentation model'
         ),
         
         DeclareLaunchArgument(
@@ -55,11 +55,11 @@ def generate_launch_description():
         
         DeclareLaunchArgument(
             'target_fps',
-            default_value='30.0',  # Lower target for debugging
-            description='Target FPS for debugging'
+            default_value='30.0',
+            description='Target FPS'
         ),
         
-        # DEBUG segmentation node
+        # Segmentation node
         Node(
             package='huskybot_segmentation',
             executable='multicam_segmentation_node',
@@ -70,33 +70,33 @@ def generate_launch_description():
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
                 'device': LaunchConfiguration('device'),
-                'conf_thres': 0.5,  # Lower for more detections
+                'conf_thres': 0.5,
                 'visualization_enabled': True,
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # DEBUG Performance parameters
+                # Performance parameters - FIXED INPUT SIZE
                 'inference_threads': 6,
-                'input_size': 320,  # Slightly larger for stability
+                'input_size': 640,  # ✅ CHANGED: Match model input size
                 'half_precision': True,
                 'batch_size': 1,
-                'max_det': 25,  # More detections for testing
+                'max_det': 25,
                 
-                # DEBUG visualization - FULL features
-                'viz_scale': 0.5,  # Larger for visibility
+                # Visualization parameters
+                'viz_scale': 0.4,  # ✅ SMALLER for better performance
                 'viz_fps_limit': 30.0,
                 'show_fps': True,
-                'grid_layout': True,  # ENABLE for debugging
-                'skip_masks': False,  # ENABLE masks
-                'simple_viz': False,  # Full visualization
-                'show_confidence': True,  # Show confidence
-                'show_labels': True,  # Show labels
+                'grid_layout': True,
+                'skip_masks': False,
+                'simple_viz': False,
+                'show_confidence': True,
+                'show_labels': True,
                 'mask_alpha': 0.3,
                 
-                # DEBUG optimizations
-                'queue_size': 2,  # Larger queue
-                'async_publish': False,  # Synchronous for debugging
+                # Optimizations
+                'queue_size': 2,
+                'async_publish': False,
                 'memory_pool': True,
-                'process_every_nth_frame': 1,  # Process all frames
+                'process_every_nth_frame': 1,
                 
                 # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
