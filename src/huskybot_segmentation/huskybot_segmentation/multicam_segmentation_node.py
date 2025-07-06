@@ -352,8 +352,8 @@ class MulticamSegmentationNode(Node):
                 self.image_queues[camera_index].put((cv_image, msg.header, camera_index))
             
         except Exception as e:
-        if not hasattr(self, '_shutdown_flag') or not self._shutdown_flag:
-            self.get_logger().error(f"❌ Image callback error camera {camera_index}: {e}")
+            if not hasattr(self, '_shutdown_flag') or not self._shutdown_flag:
+                self.get_logger().error(f"❌ Image callback error camera {camera_index}: {e}")
 
     def _inference_worker(self, worker_id):
         """ULTRA-OPTIMIZED inference worker for HIGH FPS"""
@@ -434,8 +434,8 @@ class MulticamSegmentationNode(Node):
                     except queue.Empty:
                         continue
             
-            if not processed_any:
-                time.sleep(0.0001)  # Extremely short sleep for maximum responsiveness
+                if not processed_any:
+                    time.sleep(0.0001)  # Extremely short sleep for maximum responsiveness
                 
             except Exception as e:
                 with self.lock:
@@ -659,15 +659,15 @@ class MulticamSegmentationNode(Node):
                 cv2.putText(vis_image, label, (x1 + 10, text_y), 
                           cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), thickness)
     
-    # Add professional FPS overlay
-    if self.show_fps:
-        fps_text = f'FPS: {1.0/inference_time:.1f}' if inference_time > 0 else 'FPS: --'
-        # Draw FPS background
-        cv2.rectangle(vis_image, (5, 5), (120, 40), (0, 0, 0), -1)
-        cv2.putText(vis_image, fps_text, (10, 28), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-    
-    return vis_image
+        # Add professional FPS overlay
+        if self.show_fps:
+            fps_text = f'FPS: {1.0/inference_time:.1f}' if inference_time > 0 else 'FPS: --'
+            # Draw FPS background
+            cv2.rectangle(vis_image, (5, 5), (120, 40), (0, 0, 0), -1)
+            cv2.putText(vis_image, fps_text, (10, 28), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        
+        return vis_image
 
     def _visualization_worker(self):
         """Optimized grid visualization worker"""
@@ -786,6 +786,15 @@ class MulticamSegmentationNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"❌ Error creating large grid layout: {e}")
+            return None
+
+    def log_statistics(self):
+        """Log performance statistics"""
+        try:
+            with self.lock:
+                stats = self.stats.copy()
+            
+            if stats['total_frames'] > 0:
                 success_rate = (stats['successful_segmentations'] / stats['total_frames']) * 100
                 
                 self.get_logger().info(
