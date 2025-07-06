@@ -7,11 +7,10 @@ from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
-    # ULTRA-AGGRESSIVE model prioritization for MAXIMUM FPS
+    # Find model with debugging
     model_file = None
     model_extensions = ['.engine', '.onnx', '.pt']
-    # PRIORITIZE NANO MODEL ONLY for 60+ FPS
-    model_names = ['yolo11n-seg']  # ONLY nano model for speed
+    model_names = ['yolo11n-seg', 'yolov8n-seg']
     
     search_paths = [
         os.getcwd(),
@@ -29,7 +28,7 @@ def generate_launch_description():
                 potential_path = os.path.join(search_path, f"{model_name}{ext}")
                 if os.path.exists(potential_path):
                     model_file = potential_path
-                    print(f"[INFO] Found ULTRA-FAST model: {os.path.basename(model_file)}")
+                    print(f"[INFO] Found DEBUG model: {os.path.basename(model_file)}")
                     break
             if model_file:
                 break
@@ -38,14 +37,14 @@ def generate_launch_description():
     
     if not model_file:
         model_file = 'yolo11n-seg.engine'
-        print(f"[WARNING] Using default ULTRA-FAST model: {model_file}")
+        print(f"[WARNING] Using default DEBUG model: {model_file}")
 
     return LaunchDescription([
-        # Launch arguments for MAXIMUM SPEED
+        # Launch arguments for DEBUGGING
         DeclareLaunchArgument(
             'model_path',
             default_value=model_file,
-            description='Path to ULTRA-OPTIMIZED YOLOv11 nano model'
+            description='Path to YOLOv11 model for debugging'
         ),
         
         DeclareLaunchArgument(
@@ -56,11 +55,11 @@ def generate_launch_description():
         
         DeclareLaunchArgument(
             'target_fps',
-            default_value='60.0',  # TARGET 60 FPS
-            description='ULTRA-HIGH target FPS'
+            default_value='30.0',  # Lower target for debugging
+            description='Target FPS for debugging'
         ),
         
-        # ULTRA-OPTIMIZED segmentation node for 60+ FPS
+        # DEBUG segmentation node
         Node(
             package='huskybot_segmentation',
             executable='multicam_segmentation_node',
@@ -71,35 +70,35 @@ def generate_launch_description():
                 'cam_count': 6,
                 'model_path': LaunchConfiguration('model_path'),
                 'device': LaunchConfiguration('device'),
-                'conf_thres': 0.7,  # HIGHER threshold = much fewer detections = FASTER
+                'conf_thres': 0.5,  # Lower for more detections
                 'visualization_enabled': True,
                 'publish_rate': LaunchConfiguration('target_fps'),
                 
-                # ULTRA-AGGRESSIVE Performance for 60+ FPS
-                'inference_threads': 6,  # One thread per camera
-                'input_size': 256,  # MUCH smaller input = MUCH faster (was 320)
+                # DEBUG Performance parameters
+                'inference_threads': 6,
+                'input_size': 320,  # Slightly larger for stability
                 'half_precision': True,
                 'batch_size': 1,
-                'max_det': 10,  # VERY few detections = MUCH faster (was 25)
+                'max_det': 25,  # More detections for testing
                 
-                # MINIMAL visualization for speed
-                'viz_scale': 0.25,  # Much smaller visualization
-                'viz_fps_limit': 30.0,  # Limit viz FPS to save resources
+                # DEBUG visualization - FULL features
+                'viz_scale': 0.5,  # Larger for visibility
+                'viz_fps_limit': 30.0,
                 'show_fps': True,
-                'grid_layout': False,  # DISABLE grid for speed
-                'skip_masks': True,  # SKIP segmentation masks for speed
-                'simple_viz': True,  # Use simple visualization
-                'show_confidence': False,  # Disable confidence display
-                'show_labels': False,  # Disable labels for speed
-                'mask_alpha': 0.1,
+                'grid_layout': True,  # ENABLE for debugging
+                'skip_masks': False,  # ENABLE masks
+                'simple_viz': False,  # Full visualization
+                'show_confidence': True,  # Show confidence
+                'show_labels': True,  # Show labels
+                'mask_alpha': 0.3,
                 
-                # MAXIMUM speed optimizations
-                'queue_size': 1,
-                'async_publish': True,
+                # DEBUG optimizations
+                'queue_size': 2,  # Larger queue
+                'async_publish': False,  # Synchronous for debugging
                 'memory_pool': True,
-                'process_every_nth_frame': 1,  # Process EVERY frame for 60 FPS
+                'process_every_nth_frame': 1,  # Process all frames
                 
-                # Optimized camera topics
+                # Camera topics
                 'camera_topic_0': '/camera_front/image_raw',
                 'camera_topic_1': '/camera_front_left/image_raw', 
                 'camera_topic_2': '/camera_left/image_raw',
@@ -108,6 +107,6 @@ def generate_launch_description():
                 'camera_topic_5': '/camera_right/image_raw',
             }],
             respawn=True,
-            respawn_delay=1.0
+            respawn_delay=2.0
         )
     ])
