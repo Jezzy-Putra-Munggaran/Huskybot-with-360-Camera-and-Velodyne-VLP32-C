@@ -2,9 +2,9 @@
 gpu-id=0
 net-scale-factor=0.0039215697906911373
 model-color-format=0
-model-engine-file=yolo11n-seg.engine
+model-engine-file=/home/kmp-orin/jezzy/huskybot/yolo11n-seg.engine  # ✅ FULL PATH
 labelfile-path=labels.txt
-batch-size=6
+batch-size=3
 network-mode=2
 num-detected-classes=80
 interval=0

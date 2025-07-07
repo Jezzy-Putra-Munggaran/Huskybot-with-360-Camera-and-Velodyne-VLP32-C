@@ -97,6 +97,7 @@ class SimpleFusionNode(Node):
             enhanced_msg.camera_name = detection_msg.camera_name
             enhanced_msg.task = detection_msg.task
             enhanced_msg.frame_type = detection_msg.frame_type + "_fused"
+            enhanced_msg.note = f"Enhanced with LiDAR fusion from {camera_name}"  # ✅ ADDED
             
             # Process each detection with enhanced data
             for detection in detection_msg.yolov12_inference:
