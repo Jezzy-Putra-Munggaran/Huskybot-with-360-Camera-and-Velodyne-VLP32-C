@@ -53,12 +53,12 @@ class DeepStreamYOLONode(Node):
     def setup_parameters(self):
         """Setup parameters"""
         self.declare_parameter('model_engine', 'yolo11n-seg.engine')
-        self.declare_parameter('input_width', 320)  # Smaller for speed
-        self.declare_parameter('input_height', 320)
+        self.declare_parameter('input_width', 640)   # ✅ Match model
+        self.declare_parameter('input_height', 640)  # ✅ Match model
         self.declare_parameter('batch_size', 6)
         self.declare_parameter('fps_target', 60)
         self.declare_parameter('device_id', 0)
-        self.declare_parameter('skip_frames', 2)  # Process every 2nd frame
+        self.declare_parameter('skip_frames', 5)     # Process every 5th frame
         
         self.model_engine = self.get_parameter('model_engine').value
         self.input_width = self.get_parameter('input_width').value
@@ -135,6 +135,9 @@ class DeepStreamYOLONode(Node):
     def camera_callback(self, msg, camera_idx):
         """OPTIMIZED camera callback with frame skipping"""
         try:
+            if camera_idx == 0:  # Log hanya camera pertama
+                self.get_logger().info(f"📸 Received frame from camera {camera_idx}")
+            
             # Frame skipping for performance
             self.frame_skip_counters[camera_idx] += 1
             if self.frame_skip_counters[camera_idx] % self.skip_frames != 0:
