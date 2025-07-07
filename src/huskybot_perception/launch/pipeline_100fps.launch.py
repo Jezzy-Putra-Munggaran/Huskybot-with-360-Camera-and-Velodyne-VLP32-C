@@ -2,15 +2,20 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import IncludeLaunchDescription, TimerAction, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
     return LaunchDescription([
         
-        # 1. Start Velodyne
+        # Arguments
+        DeclareLaunchArgument('model_path', default_value='yolo11n-seg.engine'),
+        DeclareLaunchArgument('fps_target', default_value='100'),
+        
+        # 1. Start Velodyne LiDAR
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
                 os.path.join(get_package_share_directory('velodyne'),
@@ -31,15 +36,23 @@ def generate_launch_description():
             ]
         ),
         
-        # 3. Start ULTRA-FAST DeepStream
+        # 3. Start ULTRA-FAST DeepStream (FIX: Use correct executable)
         TimerAction(
             period=10.0,
             actions=[
                 Node(
                     package='huskybot_deepstream',
-                    executable='ultra_fast_deepstream',
-                    name='ultra_fast_deepstream',
-                    output='screen'
+                    executable='deepstream_yolo_node',  # ✅ CHANGED FROM ultra_fast_deepstream
+                    name='deepstream_yolo',
+                    output='screen',
+                    parameters=[{
+                        'model_engine': LaunchConfiguration('model_path'),
+                        'fps_target': LaunchConfiguration('fps_target'),
+                        'input_width': 320,  # Small for speed
+                        'input_height': 320,
+                        'skip_frames': 2,
+                        'batch_size': 6
+                    }]
                 )
             ]
         ),
