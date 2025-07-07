@@ -34,8 +34,8 @@ class DeepStreamYOLONode(Node):
         # Setup ROS topics
         self.setup_ros_topics()
         
-        # Setup DeepStream pipeline
-        self.setup_deepstream_pipeline()
+        # Initialize frame processing
+        self.setup_frame_processing()
         
         # Statistics
         self.frame_count = 0
@@ -85,149 +85,115 @@ class DeepStreamYOLONode(Node):
         
         self.get_logger().info("📡 ROS2 topics configured")
 
-    def setup_deepstream_pipeline(self):
-        """Setup DeepStream pipeline"""
+    def setup_frame_processing(self):
+        """Setup simplified frame processing for now"""
+        self.latest_frames = [None] * 6
+        self.frame_times = [0.0] * 6
+        
+        # For now, use CPU-based YOLO processing
+        # Later we'll integrate with actual DeepStream pipeline
         try:
-            # Create pipeline
-            self.pipeline = Gst.Pipeline()
+            from ultralytics import YOLO
+            model_path = os.path.join(os.path.dirname(__file__), 'config', self.model_engine)
+            if not os.path.exists(model_path):
+                model_path = self.model_engine
             
-            # Create elements
-            self.create_pipeline_elements()
-            
-            # Add elements to pipeline
-            self.add_elements_to_pipeline()
-            
-            # Link elements
-            self.link_pipeline_elements()
-            
-            # Setup bus and start
-            bus = self.pipeline.get_bus()
-            bus.add_signal_watch()
-            bus.connect("message", self.bus_call)
-            
-            # Start pipeline
-            ret = self.pipeline.set_state(Gst.State.PLAYING)
-            if ret == Gst.StateChangeReturn.FAILURE:
-                self.get_logger().error("❌ Failed to start DeepStream pipeline")
-                return False
-            
-            self.get_logger().info("✅ DeepStream pipeline started successfully")
-            return True
-            
+            self.yolo_model = YOLO(model_path)
+            self.get_logger().info(f"✅ YOLO model loaded: {model_path}")
         except Exception as e:
-            self.get_logger().error(f"❌ Error setting up DeepStream: {e}")
-            return False
-
-    def create_pipeline_elements(self):
-        """Create DeepStream elements"""
-        # Multi-stream muxer
-        self.streammux = Gst.ElementFactory.make("nvstreammux", "stream-muxer")
-        self.streammux.set_property('width', self.input_width)
-        self.streammux.set_property('height', self.input_height)
-        self.streammux.set_property('batch-size', self.batch_size)
-        self.streammux.set_property('batched-push-timeout', 4000000)
-        
-        # Primary inference engine
-        self.pgie = Gst.ElementFactory.make("nvinfer", "primary-nvinference-engine")
-        config_path = os.path.join(os.path.dirname(__file__), 'config', 'config_infer_yolo11.txt')
-        self.pgie.set_property('config-file-path', config_path)
-        
-        # Video converter
-        self.nvvidconv = Gst.ElementFactory.make("nvvideoconvert", "convertor")
-        
-        # OSD for visualization
-        self.nvosd = Gst.ElementFactory.make("nvdsosd", "onscreendisplay")
-        
-        # Tiler for multi-stream
-        self.tiler = Gst.ElementFactory.make("nvmultistreamtiler", "nvtiler")
-        self.tiler.set_property("rows", 2)
-        self.tiler.set_property("columns", 3)
-        self.tiler.set_property("width", 1920)
-        self.tiler.set_property("height", 1080)
-        
-        # Sink
-        self.fakesink = Gst.ElementFactory.make("fakesink", "fakesink")
-
-    def add_elements_to_pipeline(self):
-        """Add elements to pipeline"""
-        elements = [
-            self.streammux, self.pgie, self.nvvidconv, 
-            self.nvosd, self.tiler, self.fakesink
-        ]
-        
-        for element in elements:
-            if not self.pipeline.add(element):
-                self.get_logger().error(f"❌ Failed to add {element.get_name()}")
-                return False
-        return True
-
-    def link_pipeline_elements(self):
-        """Link pipeline elements"""
-        # Link elements
-        if not self.streammux.link(self.pgie):
-            self.get_logger().error("❌ Failed to link streammux -> pgie")
-            return False
-            
-        if not self.pgie.link(self.nvvidconv):
-            self.get_logger().error("❌ Failed to link pgie -> nvvidconv")
-            return False
-            
-        if not self.nvvidconv.link(self.nvosd):
-            self.get_logger().error("❌ Failed to link nvvidconv -> nvosd")
-            return False
-            
-        if not self.nvosd.link(self.tiler):
-            self.get_logger().error("❌ Failed to link nvosd -> tiler")
-            return False
-            
-        if not self.tiler.link(self.fakesink):
-            self.get_logger().error("❌ Failed to link tiler -> fakesink")
-            return False
-        
-        self.get_logger().info("✅ Pipeline elements linked")
-        return True
-
-    def bus_call(self, bus, message):
-        """Handle bus messages"""
-        t = message.type
-        if t == Gst.MessageType.EOS:
-            self.get_logger().info("End-of-stream")
-        elif t == Gst.MessageType.ERROR:
-            err, debug = message.parse_error()
-            self.get_logger().error(f"❌ Error: {err}: {debug}")
-        return True
+            self.get_logger().warn(f"⚠️ YOLO model not available: {e}")
+            self.yolo_model = None
 
     def camera_callback(self, msg, camera_idx):
-        """Handle camera input"""
+        """Handle camera input with high-speed processing"""
         try:
             # Convert ROS image to CV
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
-            # Feed to DeepStream (simplified for now)
-            self.process_frame(cv_image, camera_idx)
+            # Store latest frame
+            self.latest_frames[camera_idx] = cv_image
+            self.frame_times[camera_idx] = time.time()
+            
+            # Process frame
+            self.process_frame_fast(cv_image, msg.header, camera_idx)
             
             self.frame_count += 1
             
         except Exception as e:
             self.get_logger().error(f"❌ Camera callback error {camera_idx}: {e}")
 
-    def process_frame(self, frame, camera_idx):
-        """Process frame with DeepStream"""
-        # Placeholder - implement DeepStream processing
-        # For now, create dummy detection message
+    def process_frame_fast(self, frame, header, camera_idx):
+        """Fast frame processing"""
         try:
+            # Create detection message
             detection_msg = Yolov12Inference()
-            detection_msg.header.stamp = self.get_clock().now().to_msg()
-            detection_msg.header.frame_id = f"camera_{camera_idx}"
+            detection_msg.header = header
             detection_msg.camera_name = f"camera_{camera_idx}"
             detection_msg.task = "detect"
             
-            # Publish
+            # Quick YOLO inference if available
+            if self.yolo_model:
+                # Resize for faster inference
+                small_frame = cv2.resize(frame, (320, 320))
+                results = self.yolo_model(small_frame, conf=0.5, verbose=False)
+                
+                if results[0].boxes is not None:
+                    for box in results[0].boxes:
+                        result = InferenceResult()
+                        result.class_name = results[0].names[int(box.cls)]
+                        result.confidence = float(box.conf)
+                        
+                        # Scale back to original size
+                        scale_x = frame.shape[1] / 320
+                        scale_y = frame.shape[0] / 320
+                        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                        
+                        result.left = int(x1 * scale_x)
+                        result.top = int(y1 * scale_y)
+                        result.right = int(x2 * scale_x)
+                        result.bottom = int(y2 * scale_y)
+                        
+                        detection_msg.yolov12_inference.append(result)
+            
+            # Publish detection
             if camera_idx < len(self.result_pubs):
                 self.result_pubs[camera_idx].publish(detection_msg)
+            
+            # Create visualization if needed
+            if camera_idx == 0:  # Only process front camera for visualization
+                self.create_and_publish_visualization(frame, detection_msg, header)
                 
         except Exception as e:
             self.get_logger().error(f"❌ Process frame error: {e}")
+
+    def create_and_publish_visualization(self, frame, detection_msg, header):
+        """Create simple visualization"""
+        try:
+            vis_frame = frame.copy()
+            
+            # Draw detections
+            for detection in detection_msg.yolov12_inference:
+                x1, y1, x2, y2 = detection.left, detection.top, detection.right, detection.bottom
+                
+                # Draw rectangle
+                cv2.rectangle(vis_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                
+                # Draw label
+                label = f"{detection.class_name}: {detection.confidence:.2f}"
+                cv2.putText(vis_frame, label, (x1, y1-10), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            
+            # Add camera info
+            cv2.putText(vis_frame, "DeepStream Front Camera", (10, 30), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            
+            # Publish visualization
+            vis_msg = self.bridge.cv2_to_imgmsg(vis_frame, 'bgr8')
+            vis_msg.header = header
+            self.grid_pub.publish(vis_msg)
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Visualization error: {e}")
 
     def log_fps(self):
         """Log FPS statistics"""
@@ -252,8 +218,6 @@ class DeepStreamYOLONode(Node):
     def destroy_node(self):
         """Clean shutdown"""
         try:
-            if hasattr(self, 'pipeline'):
-                self.pipeline.set_state(Gst.State.NULL)
             self.get_logger().info("🛑 DeepStream node shutdown")
             super().destroy_node()
         except:
