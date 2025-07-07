@@ -48,9 +48,9 @@ def generate_launch_description():
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 320,  # Small for speed
-                        'input_height': 320,
-                        'skip_frames': 2,
+                        'input_width': 640,  # Small for speed
+                        'input_height': 640,
+                        'skip_frames': 3,
                         'batch_size': 6
                     }]
                 )
