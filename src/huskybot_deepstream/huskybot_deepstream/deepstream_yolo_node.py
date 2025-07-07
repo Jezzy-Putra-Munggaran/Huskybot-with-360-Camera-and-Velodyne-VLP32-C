@@ -168,28 +168,35 @@ class DeepStreamYOLONode(Node):
         except Exception as e:
             self.get_logger().error(f"❌ Camera callback error {camera_idx}: {e}")
 
-    def process_single_frame(self, frame, header, camera_idx):
-        """FAST single frame processing"""
+    def process_single_frame(self, frame, header, camera_idx):  # ✅ FIXED indentation
+        """FAST single frame processing with DETAILED logging"""
         try:
             if not self.yolo_model:
+                self.get_logger().warn("❌ No YOLO model available")
                 return
             
-            # Resize for faster inference
+            # Resize for faster inference - MATCH model size exactly
             resized = cv2.resize(frame, (self.input_width, self.input_height), 
                                interpolation=cv2.INTER_LINEAR)
             
-            # Fast inference
+            # Fast inference with detailed logging
             start_time = time.time()
             results = self.yolo_model(resized, 
-                                   conf=0.4,  # Higher confidence for speed
+                                   conf=0.25,  # ✅ LOWER confidence for more detections
                                    device='cuda:0',
                                    half=True,
                                    verbose=False,
                                    agnostic_nms=True,
-                                   max_det=5,  # Fewer detections for speed
+                                   max_det=10,  # ✅ More detections
                                    imgsz=self.input_width)
             
             inference_time = time.time() - start_time
+            
+            # DETAILED result logging
+            if results[0].boxes is not None:
+                self.get_logger().info(f"🎯 Camera {camera_idx}: Found {len(results[0].boxes)} raw detections")
+            else:
+                self.get_logger().warn(f"⚠️ Camera {camera_idx}: No boxes detected, conf_thres might be too high")
             
             # Create detection message
             detection_msg = Yolov12Inference()
@@ -197,13 +204,13 @@ class DeepStreamYOLONode(Node):
             detection_msg.camera_name = f"camera_{camera_idx}"
             detection_msg.task = "detect"
             
-            # Process results
+            # Process results with detailed logging
             detection_count = 0
             if results[0].boxes is not None and len(results[0].boxes) > 0:
                 scale_x = frame.shape[1] / self.input_width
                 scale_y = frame.shape[0] / self.input_height
                 
-                for box in results[0].boxes:
+                for i, box in enumerate(results[0].boxes):
                     result = InferenceResult()
                     result.class_name = results[0].names[int(box.cls)]
                     result.confidence = float(box.conf)
@@ -217,19 +224,35 @@ class DeepStreamYOLONode(Node):
                     
                     detection_msg.yolov12_inference.append(result)
                     detection_count += 1
+                    
+                    # Log first few detections for debugging
+                    if i < 3:  # Log first 3 detections
+                        self.get_logger().info(
+                            f"🎯 Detection {i+1}: {result.class_name} "
+                            f"conf={result.confidence:.2f} "
+                            f"bbox=({result.left},{result.top},{result.right},{result.bottom})"
+                        )
             
-            # Publish detection
+            # Publish detection with confirmation
             if camera_idx < len(self.result_pubs):
                 self.result_pubs[camera_idx].publish(detection_msg)
+                if detection_count > 0:
+                    self.get_logger().info(f"✅ Published {detection_count} detections for camera {camera_idx}")
             
             self.detection_count += detection_count
             
-            # Log first detection
-            if detection_count > 0 and camera_idx == 0:
-                self.get_logger().info(f"🎯 Camera {camera_idx}: {detection_count} detections, {inference_time*1000:.1f}ms")
+            # Performance logging
+            if camera_idx == 0:  # Log only camera 0 to reduce spam
+                self.get_logger().info(
+                    f"📊 Camera {camera_idx}: {detection_count} detections, "
+                    f"{inference_time*1000:.1f}ms inference, "
+                    f"input_size: {self.input_width}x{self.input_height}"
+                )
                 
         except Exception as e:
             self.get_logger().error(f"❌ Process frame error {camera_idx}: {e}")
+            import traceback
+            traceback.print_exc()
 
     def try_create_grid(self):
         """Create grid visualization if enough images available"""

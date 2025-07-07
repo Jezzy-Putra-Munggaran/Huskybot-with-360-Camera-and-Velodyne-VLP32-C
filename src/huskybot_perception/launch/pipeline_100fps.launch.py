@@ -13,7 +13,7 @@ def generate_launch_description():
         
         # Arguments
         DeclareLaunchArgument('model_path', default_value='yolo11n-seg.engine'),
-        DeclareLaunchArgument('fps_target', default_value='100'),
+        DeclareLaunchArgument('fps_target', default_value='60'),  # ✅ REALISTIC target
         
         # 1. Start Velodyne LiDAR
         IncludeLaunchDescription(
@@ -36,22 +36,23 @@ def generate_launch_description():
             ]
         ),
         
-        # 3. Start ULTRA-FAST DeepStream (FIX: Use correct executable)
+        # 3. Start OPTIMIZED DeepStream
         TimerAction(
             period=10.0,
             actions=[
                 Node(
                     package='huskybot_deepstream',
-                    executable='deepstream_yolo_node',  # ✅ CHANGED FROM ultra_fast_deepstream
+                    executable='deepstream_yolo_node',
                     name='deepstream_yolo',
                     output='screen',
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 640,  # Small for speed
-                        'input_height': 640,
-                        'skip_frames': 3,
-                        'batch_size': 6
+                        'input_width': 640,   # ✅ MATCH model exactly
+                        'input_height': 640,  # ✅ MATCH model exactly
+                        'skip_frames': 2,     # ✅ REDUCED for better performance
+                        'batch_size': 3,      # ✅ REDUCED for stability
+                        'device_id': 0
                     }]
                 )
             ]
