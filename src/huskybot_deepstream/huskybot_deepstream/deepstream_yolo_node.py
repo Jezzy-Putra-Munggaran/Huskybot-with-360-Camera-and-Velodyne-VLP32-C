@@ -34,24 +34,31 @@ class DeepStreamYOLONode(Node):
         # Setup ROS topics
         self.setup_ros_topics()
         
-        # Initialize frame processing
-        self.setup_frame_processing()
+        # Initialize OPTIMIZED frame processing
+        self.setup_optimized_processing()
         
         # Statistics
         self.frame_count = 0
+        self.detection_count = 0
         self.fps_timer = self.create_timer(2.0, self.log_fps)
         self.last_fps_time = time.time()
         
-        self.get_logger().info("🚀 DeepStream YOLO Node initialized for 100+ FPS!")
+        # Camera data tracking
+        self.latest_images = [None] * 6
+        self.latest_headers = [None] * 6
+        self.last_process_time = [0.0] * 6
+        
+        self.get_logger().info("🚀 OPTIMIZED DeepStream YOLO Node initialized!")
 
     def setup_parameters(self):
         """Setup parameters"""
         self.declare_parameter('model_engine', 'yolo11n-seg.engine')
-        self.declare_parameter('input_width', 640)
-        self.declare_parameter('input_height', 640)
+        self.declare_parameter('input_width', 320)  # Smaller for speed
+        self.declare_parameter('input_height', 320)
         self.declare_parameter('batch_size', 6)
-        self.declare_parameter('fps_target', 120)
+        self.declare_parameter('fps_target', 60)
         self.declare_parameter('device_id', 0)
+        self.declare_parameter('skip_frames', 2)  # Process every 2nd frame
         
         self.model_engine = self.get_parameter('model_engine').value
         self.input_width = self.get_parameter('input_width').value
@@ -59,6 +66,10 @@ class DeepStreamYOLONode(Node):
         self.batch_size = self.get_parameter('batch_size').value
         self.fps_target = self.get_parameter('fps_target').value
         self.device_id = self.get_parameter('device_id').value
+        self.skip_frames = self.get_parameter('skip_frames').value
+        
+        # Frame skip counters
+        self.frame_skip_counters = [0] * 6
 
     def setup_ros_topics(self):
         """Setup ROS2 topics"""
@@ -70,14 +81,15 @@ class DeepStreamYOLONode(Node):
             topic = f'/camera_{name}/image_raw'
             sub = self.create_subscription(
                 Image, topic, 
-                lambda msg, idx=i: self.camera_callback(msg, idx), 10)
+                lambda msg, idx=i: self.camera_callback(msg, idx), 1)  # Small queue
             self.camera_subs.append(sub)
+            self.get_logger().info(f"📡 Subscribed to: {topic}")
         
         # Publishers for results
         self.result_pubs = []
         for name in camera_names:
             pub = self.create_publisher(
-                Yolov12Inference, f'/camera_{name}/deepstream_detections', 10)
+                Yolov12Inference, f'/camera_{name}/deepstream_detections', 1)
             self.result_pubs.append(pub)
         
         # Grid visualization publisher
@@ -85,13 +97,9 @@ class DeepStreamYOLONode(Node):
         
         self.get_logger().info("📡 ROS2 topics configured")
 
-    def setup_frame_processing(self):
-        """Setup simplified frame processing for now"""
-        self.latest_frames = [None] * 6
-        self.frame_times = [0.0] * 6
-        
-        # For now, use CPU-based YOLO processing
-        # Later we'll integrate with actual DeepStream pipeline
+    def setup_optimized_processing(self):
+        """Setup ULTRA-OPTIMIZED processing"""
+        # Load model with optimizations
         try:
             from ultralytics import YOLO
             model_path = os.path.join(os.path.dirname(__file__), 'config', self.model_engine)
@@ -99,120 +107,210 @@ class DeepStreamYOLONode(Node):
                 model_path = self.model_engine
             
             self.yolo_model = YOLO(model_path)
-            self.get_logger().info(f"✅ YOLO model loaded: {model_path}")
+            
+            # AGGRESSIVE warm-up
+            self.get_logger().info(f"🔥 Warming up model with {self.input_width}x{self.input_height}...")
+            dummy_image = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
+            
+            # Multiple warmup iterations
+            for i in range(3):
+                start_time = time.time()
+                results = self.yolo_model(dummy_image, 
+                                       conf=0.5, 
+                                       device='cuda:0',
+                                       half=True,
+                                       verbose=False,
+                                       agnostic_nms=True,
+                                       max_det=10,
+                                       imgsz=self.input_width)
+                warmup_time = time.time() - start_time
+                self.get_logger().info(f"🔥 Warmup {i+1}: {warmup_time*1000:.1f}ms")
+            
+            self.get_logger().info(f"✅ Model loaded and optimized: {model_path}")
+            
         except Exception as e:
-            self.get_logger().warn(f"⚠️ YOLO model not available: {e}")
+            self.get_logger().error(f"❌ Model loading failed: {e}")
             self.yolo_model = None
 
     def camera_callback(self, msg, camera_idx):
-        """Handle camera input with high-speed processing"""
+        """OPTIMIZED camera callback with frame skipping"""
         try:
-            # Convert ROS image to CV
+            # Frame skipping for performance
+            self.frame_skip_counters[camera_idx] += 1
+            if self.frame_skip_counters[camera_idx] % self.skip_frames != 0:
+                return
+            
+            # Check if too frequent
+            current_time = time.time()
+            if current_time - self.last_process_time[camera_idx] < 0.033:  # Max 30 FPS per camera
+                return
+            
+            self.last_process_time[camera_idx] = current_time
+            
+            # Convert image
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
-            # Store latest frame
-            self.latest_frames[camera_idx] = cv_image
-            self.frame_times[camera_idx] = time.time()
+            # Store for batch processing
+            self.latest_images[camera_idx] = cv_image
+            self.latest_headers[camera_idx] = msg.header
             
-            # Process frame
-            self.process_frame_fast(cv_image, msg.header, camera_idx)
+            # Process immediately for real-time feedback
+            self.process_single_frame(cv_image, msg.header, camera_idx)
+            
+            # Try to create grid if we have enough images
+            self.try_create_grid()
             
             self.frame_count += 1
             
         except Exception as e:
             self.get_logger().error(f"❌ Camera callback error {camera_idx}: {e}")
 
-    def process_frame_fast(self, frame, header, camera_idx):
-        """Fast frame processing"""
+    def process_single_frame(self, frame, header, camera_idx):
+        """FAST single frame processing"""
         try:
+            if not self.yolo_model:
+                return
+            
+            # Resize for faster inference
+            resized = cv2.resize(frame, (self.input_width, self.input_height), 
+                               interpolation=cv2.INTER_LINEAR)
+            
+            # Fast inference
+            start_time = time.time()
+            results = self.yolo_model(resized, 
+                                   conf=0.4,  # Higher confidence for speed
+                                   device='cuda:0',
+                                   half=True,
+                                   verbose=False,
+                                   agnostic_nms=True,
+                                   max_det=5,  # Fewer detections for speed
+                                   imgsz=self.input_width)
+            
+            inference_time = time.time() - start_time
+            
             # Create detection message
             detection_msg = Yolov12Inference()
             detection_msg.header = header
             detection_msg.camera_name = f"camera_{camera_idx}"
             detection_msg.task = "detect"
             
-            # Quick YOLO inference if available
-            if self.yolo_model:
-                # Resize for faster inference
-                small_frame = cv2.resize(frame, (320, 320))
-                results = self.yolo_model(small_frame, conf=0.5, verbose=False)
+            # Process results
+            detection_count = 0
+            if results[0].boxes is not None and len(results[0].boxes) > 0:
+                scale_x = frame.shape[1] / self.input_width
+                scale_y = frame.shape[0] / self.input_height
                 
-                if results[0].boxes is not None:
-                    for box in results[0].boxes:
-                        result = InferenceResult()
-                        result.class_name = results[0].names[int(box.cls)]
-                        result.confidence = float(box.conf)
-                        
-                        # Scale back to original size
-                        scale_x = frame.shape[1] / 320
-                        scale_y = frame.shape[0] / 320
-                        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                        
-                        result.left = int(x1 * scale_x)
-                        result.top = int(y1 * scale_y)
-                        result.right = int(x2 * scale_x)
-                        result.bottom = int(y2 * scale_y)
-                        
-                        detection_msg.yolov12_inference.append(result)
+                for box in results[0].boxes:
+                    result = InferenceResult()
+                    result.class_name = results[0].names[int(box.cls)]
+                    result.confidence = float(box.conf)
+                    
+                    # Scale back to original size
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    result.left = int(x1 * scale_x)
+                    result.top = int(y1 * scale_y)
+                    result.right = int(x2 * scale_x)
+                    result.bottom = int(y2 * scale_y)
+                    
+                    detection_msg.yolov12_inference.append(result)
+                    detection_count += 1
             
             # Publish detection
             if camera_idx < len(self.result_pubs):
                 self.result_pubs[camera_idx].publish(detection_msg)
             
-            # Create visualization if needed
-            if camera_idx == 0:  # Only process front camera for visualization
-                self.create_and_publish_visualization(frame, detection_msg, header)
+            self.detection_count += detection_count
+            
+            # Log first detection
+            if detection_count > 0 and camera_idx == 0:
+                self.get_logger().info(f"🎯 Camera {camera_idx}: {detection_count} detections, {inference_time*1000:.1f}ms")
                 
         except Exception as e:
-            self.get_logger().error(f"❌ Process frame error: {e}")
+            self.get_logger().error(f"❌ Process frame error {camera_idx}: {e}")
 
-    def create_and_publish_visualization(self, frame, detection_msg, header):
-        """Create simple visualization"""
+    def try_create_grid(self):
+        """Create grid visualization if enough images available"""
         try:
-            vis_frame = frame.copy()
+            # Check if we have recent images from all cameras
+            current_time = time.time()
+            valid_images = []
             
-            # Draw detections
-            for detection in detection_msg.yolov12_inference:
-                x1, y1, x2, y2 = detection.left, detection.top, detection.right, detection.bottom
+            for i in range(6):
+                if (self.latest_images[i] is not None and 
+                    current_time - self.last_process_time[i] < 2.0):  # Within 2 seconds
+                    valid_images.append(i)
+            
+            # Need at least 4 cameras for grid
+            if len(valid_images) >= 4:
+                self.create_grid_visualization(valid_images)
                 
-                # Draw rectangle
-                cv2.rectangle(vis_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                
-                # Draw label
-                label = f"{detection.class_name}: {detection.confidence:.2f}"
-                cv2.putText(vis_frame, label, (x1, y1-10), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+        except Exception as e:
+            self.get_logger().error(f"❌ Grid creation error: {e}")
+
+    def create_grid_visualization(self, valid_cameras):
+        """Create and publish grid visualization"""
+        try:
+            # Get images and resize for grid
+            grid_images = []
+            target_size = (320, 240)  # Small for performance
             
-            # Add camera info
-            cv2.putText(vis_frame, "DeepStream Front Camera", (10, 30), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            for i in range(6):
+                if i in valid_cameras and self.latest_images[i] is not None:
+                    img = cv2.resize(self.latest_images[i], target_size)
+                    
+                    # Add camera label
+                    cv2.putText(img, f"Cam {i}", (10, 30), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    grid_images.append(img)
+                else:
+                    # Black placeholder
+                    black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
+                    cv2.putText(black_img, f"Cam {i} OFF", (50, 120), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                    grid_images.append(black_img)
             
-            # Publish visualization
-            vis_msg = self.bridge.cv2_to_imgmsg(vis_frame, 'bgr8')
-            vis_msg.header = header
-            self.grid_pub.publish(vis_msg)
+            # Create 2x3 grid
+            top_row = np.hstack([grid_images[0], grid_images[1], grid_images[2]])
+            bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
+            grid = np.vstack([top_row, bottom_row])
+            
+            # Add info overlay
+            info_text = f"FPS: {self.frame_count/2.0:.1f} | Detections: {self.detection_count}"
+            cv2.putText(grid, info_text, (10, grid.shape[0] - 10), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            
+            # Publish grid
+            grid_msg = self.bridge.cv2_to_imgmsg(grid, 'bgr8')
+            grid_msg.header.stamp = self.get_clock().now().to_msg()
+            grid_msg.header.frame_id = "deepstream_grid"
+            self.grid_pub.publish(grid_msg)
+            
+            self.get_logger().info(f"📸 Grid published with {len(valid_cameras)} active cameras")
             
         except Exception as e:
-            self.get_logger().error(f"❌ Visualization error: {e}")
+            self.get_logger().error(f"❌ Grid visualization error: {e}")
 
     def log_fps(self):
-        """Log FPS statistics"""
+        """Enhanced FPS logging"""
         current_time = time.time()
         elapsed = current_time - self.last_fps_time
         
         if elapsed > 0:
             fps = self.frame_count / elapsed
-            self.get_logger().info(f"🚀 DeepStream FPS: {fps:.1f}")
+            detection_rate = self.detection_count / elapsed
             
-            if fps >= 60:
-                self.get_logger().info("🎯 Excellent performance!")
-            elif fps >= 30:
+            self.get_logger().info(f"🚀 DeepStream FPS: {fps:.1f} | Detections/s: {detection_rate:.1f}")
+            
+            if fps >= 30:
                 self.get_logger().info("✅ Good performance!")
+            elif fps >= 15:
+                self.get_logger().warn(f"⚡ Moderate performance: {fps:.1f} FPS")
             else:
-                self.get_logger().warn(f"⚡ Performance: {fps:.1f} FPS")
+                self.get_logger().warn(f"🐌 Low performance: {fps:.1f} FPS")
         
         # Reset counters
         self.frame_count = 0
+        self.detection_count = 0
         self.last_fps_time = current_time
 
     def destroy_node(self):
