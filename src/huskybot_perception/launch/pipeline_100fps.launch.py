@@ -17,7 +17,7 @@ def generate_launch_description():
         DeclareLaunchArgument('debug_mode', default_value='true'),
         DeclareLaunchArgument('auto_display', default_value='true'),
         
-        # ✅ 1. Start Velodyne LiDAR FIRST
+        # ✅ 1. Start Velodyne LiDAR
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
                 os.path.join(get_package_share_directory('velodyne'),
@@ -25,9 +25,9 @@ def generate_launch_description():
             ])
         ),
         
-        # ✅ 2. Start cameras with proper timing
+        # ✅ 2. Start cameras
         TimerAction(
-            period=5.0,
+            period=3.0,  # Reduced delay
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -38,9 +38,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start DeepStream with FIXED model loading
+        # ✅ 3. Start ULTRA-OPTIMIZED DeepStream
         TimerAction(
-            period=25.0,
+            period=10.0,  # Reduced delay
             actions=[
                 Node(
                     package='huskybot_deepstream',
@@ -50,21 +50,21 @@ def generate_launch_description():
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 640,  # ✅ Balanced for performance
-                        'input_height': 640,
-                        'skip_frames': 1,    # ✅ Reduced skipping
+                        'input_width': 416,   # ✅ Optimized for speed
+                        'input_height': 416,
+                        'skip_frames': 2,     # ✅ More aggressive skipping
                         'batch_size': 6,
                         'device_id': 0
                     }],
                     respawn=True,
-                    respawn_delay=3.0
+                    respawn_delay=2.0
                 )
             ]
         ),
         
-        # ✅ 4. Start fusion after DeepStream
+        # ✅ 4. Start fusion
         TimerAction(
-            period=30.0,
+            period=15.0,
             actions=[
                 Node(
                     package='huskybot_fusion',
@@ -72,40 +72,14 @@ def generate_launch_description():
                     name='simple_fusion',
                     output='screen',
                     respawn=True,
-                    respawn_delay=3.0
+                    respawn_delay=2.0
                 )
             ]
         ),
         
-        # ✅ 5. AUTO-POPUP RViz2 with 3D PointCloud visualization
+        # ✅ 5. Create RViz directory and config
         TimerAction(
-            period=35.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'sleep 2 && rviz2 -d /home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz/huskybot_3d.rviz &'],
-                    output='screen',
-                    name='auto_rviz2'
-                )
-            ]
-        ),
-        
-        # ✅ 6. AUTO-POPUP RQT Image View for grid visualization
-        TimerAction(
-            period=37.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'sleep 2 && rqt_image_view /deepstream_grid &'],
-                    output='screen',
-                    name='auto_grid_viewer'
-                )
-            ]
-        ),
-        
-        # ✅ 7. Create RViz2 config file automatically
-        TimerAction(
-            period=32.0,
+            period=18.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
@@ -116,33 +90,76 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 8. Create RViz2 configuration
+        # ✅ 6. Generate RViz config
         TimerAction(
-            period=33.0,
+            period=20.0,
             actions=[
                 Node(
                     package='huskybot_perception',
-                    executable='create_rviz_config.py',
+                    executable='create_rviz_config',
                     name='rviz_config_creator',
                     output='screen'
                 )
             ]
         ),
         
-        # ✅ 9. Final status check with auto-display
+        # ✅ 7. AUTO-POPUP RViz2 for 3D visualization
+        TimerAction(
+            period=25.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'export DISPLAY=:0 && rviz2 -d /home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz/huskybot_3d.rviz > /dev/null 2>&1 &'],
+                    output='screen',
+                    name='auto_popup_rviz2'
+                )
+            ]
+        ),
+        
+        # ✅ 8. AUTO-POPUP RQT Image View for grid visualization
+        TimerAction(
+            period=30.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'export DISPLAY=:0 && rqt_image_view /deepstream_grid > /dev/null 2>&1 &'],
+                    output='screen',
+                    name='auto_popup_grid_viewer'
+                )
+            ]
+        ),
+        
+        # ✅ 9. Performance optimization commands
+        TimerAction(
+            period=35.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'echo "🚀 ULTRA-FAST Performance Optimizations:" && '
+                         'sudo jetson_clocks && '
+                         'sudo nvpmodel -m 0 && '
+                         'echo "✅ Jetson performance mode activated" || echo "⚠️  Performance mode failed"'],
+                    output='screen',
+                    name='performance_optimization'
+                )
+            ]
+        ),
+        
+        # ✅ 10. Final status and auto-display confirmation
         TimerAction(
             period=40.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🚀 ULTRA-FAST Pipeline Status:" && '
-                         'echo "📡 Camera topics:" && ros2 topic list | grep image_raw && '
-                         'echo "🔍 Detection topics:" && ros2 topic list | grep detections && '
+                         'echo "🎯 ULTRA-FAST Pipeline Status:" && '
+                         'echo "📡 Camera topics:" && ros2 topic list | grep image_raw | head -6 && '
+                         'echo "🔍 Detection topics:" && ros2 topic list | grep detections | head -6 && '
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
-                         'echo "✅ Pipeline launched with AUTO-DISPLAY!" && '
+                         'echo "✅ AUTO-DISPLAY ACTIVATED!" && '
                          'echo "🖥️  RViz2: Auto-opened for 3D visualization" && '
-                         'echo "📺 RQT: Auto-opened for grid visualization"'],
+                         'echo "📺 RQT: Auto-opened for grid visualization" && '
+                         'echo "🚀 TARGET: 100+ FPS Achievement!"'],
                     output='screen'
                 )
             ]

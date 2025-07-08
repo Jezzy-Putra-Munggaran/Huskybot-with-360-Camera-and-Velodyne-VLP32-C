@@ -15,29 +15,16 @@ has_readme = os.path.exists('README.md')
 # Find all launch files
 launch_files = glob('launch/*.launch.py')
 
-# Check if we're on a Jetson platform
-is_jetson = os.path.exists('/etc/nv_tegra_release')
-
 # Create config directory if needed
 config_dir = 'config'
-if not os.path.exists(config_dir):
-    try:
-        os.makedirs(config_dir, exist_ok=True)
-        default_config_path = os.path.join(config_dir, 'default_params.yaml')
-        with open(default_config_path, 'w') as f:
-            f.write("""# Default parameters for huskybot_perception
-fusion_visualizer_node:
-  ros__parameters:
-    show_bounding_box: true
-    show_class: true
-    show_confidence: true
-    show_distance: true
-    show_coordinates: true
-    fusion_topic: '/fusion/objects3d'
-    display_window: true
-""")
-    except Exception:
-        pass
+rviz_dir = 'rviz'
+
+for directory in [config_dir, rviz_dir]:
+    if not os.path.exists(directory):
+        try:
+            os.makedirs(directory, exist_ok=True)
+        except Exception:
+            pass
 
 # Build data_files list
 data_files = [
@@ -56,7 +43,11 @@ if os.path.exists(config_dir):
     if config_files:
         data_files.append(('share/' + package_name + '/config', config_files))
 
-# ✅ FIXED - Single setup() only
+if os.path.exists(rviz_dir):
+    rviz_files = glob('rviz/*.rviz')
+    if rviz_files:
+        data_files.append(('share/' + package_name + '/rviz', rviz_files))
+
 setup(
     name=package_name,
     version='0.1.0',
@@ -86,7 +77,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'create_rviz_config = huskybot_perception.create_rviz_config:create_rviz_config',  # ✅ FIXED
+            # ✅ FIXED: Correct executable path
+            'create_rviz_config = huskybot_perception.create_rviz_config:main',
             'visualizer_node = huskybot_perception.visualizer_node:main',
             'logger_node = huskybot_perception.logger_node:main',
             'fusion_visualizer_node = huskybot_perception.fusion_visualizer_node:main',
