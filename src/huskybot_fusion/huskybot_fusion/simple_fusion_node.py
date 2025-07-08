@@ -14,22 +14,21 @@ class SimpleFusionNode(Node):
     def __init__(self):
         super().__init__('simple_fusion')
         
-        # ✅ CORRECTED Camera angle mapping for real hardware
+        # ✅ Camera angle mapping
         self.camera_angles = {
-            'rear': 180,        # BELAKANG (was front)
-            'rear_left': 225,   # KIRI BELAKANG (was front_left)
-            'front_left': 315,  # KIRI DEPAN (was left)
-            'front': 0,         # DEPAN (was rear)
-            'front_right': 45,  # KANAN DEPAN (was rear_right)
-            'rear_right': 135   # KANAN BELAKANG (was right)
+            'rear': 180,        
+            'rear_left': 225,   
+            'front_left': 315,  
+            'front': 0,         
+            'front_right': 45,  
+            'rear_right': 135   
         }
         
-        # ✅ ENHANCED subscriptions with corrected names
+        # ✅ Enhanced subscriptions
         self.detection_subs = []
-        camera_names = ['rear', 'rear_left', 'front_left', 'front', 'front_right', 'rear_right']
+        self.camera_names = ['rear', 'rear_left', 'front_left', 'front', 'front_right', 'rear_right']
         
-        for name in camera_names:
-            # Subscribe to both detection and segmentation
+        for name in self.camera_names:
             det_sub = self.create_subscription(
                 Yolov12Inference,
                 f'/camera_{name}/detections',
@@ -50,14 +49,14 @@ class SimpleFusionNode(Node):
         self.pointcloud_sub = self.create_subscription(
             PointCloud2, '/velodyne_points', self.pointcloud_callback, 10)
         
-        # Publishers for enhanced results
+        # ✅ Publishers for enhanced results
         self.fused_pubs = {}
-        for name in camera_names:
+        for name in self.camera_names:
             pub = self.create_publisher(
                 Yolov12Inference, f'/camera_{name}/fused_detections', 10)
             self.fused_pubs[name] = pub
         
-        # ✅ ENHANCED 3D visualization publisher
+        # ✅ FIXED 3D visualization publisher
         self.objects_3d_pub = self.create_publisher(
             PointCloud2, '/objects_3d_pointcloud', 10)
         
@@ -68,58 +67,40 @@ class SimpleFusionNode(Node):
         self.last_laser_time = 0
         self.last_pointcloud_time = 0
         
-        # ✅ Monitoring
+        # ✅ Enhanced monitoring
         self.fusion_count = 0
         self.fusion_timer = self.create_timer(5.0, self.log_fusion_stats)
         
         self.get_logger().info("🔗 ULTRA-Enhanced Fusion Node initialized")
-        self.get_logger().info(f"📐 Corrected camera angles: {self.camera_angles}")
 
     def detection_callback(self, msg, camera_name):
-        """Process detection/segmentation results with enhanced fusion"""
+        """Process detection results with enhanced fusion"""
         self.latest_detections[camera_name] = msg
         
-        # ✅ CHECK LiDAR data availability
+        # ✅ Check LiDAR availability
         current_time = time.time()
         if not self.latest_laser or (current_time - self.last_laser_time) > 2.0:
-            if not self.latest_laser:
-                self.get_logger().warn("⚠️ No LiDAR LaserScan data available yet")
-            else:
-                self.get_logger().warn(f"⚠️ LiDAR LaserScan data is stale ({current_time - self.last_laser_time:.1f}s old)")
             return
             
-        # Enhanced fusion with REAL distance and coordinates
+        # Enhanced fusion
         self.enhanced_fusion(msg, camera_name)
 
     def laser_callback(self, msg):
-        """Process LaserScan for distance measurement"""
+        """Process LaserScan"""
         self.latest_laser = msg
         self.last_laser_time = time.time()
-        
-        # ✅ LOG LiDAR data reception
-        valid_ranges = [r for r in msg.ranges if not (math.isinf(r) or math.isnan(r) or r <= 0)]
-        if len(valid_ranges) % 100 == 0:  # Log every 100th callback to reduce spam
-            self.get_logger().info(
-                f"📡 LiDAR LaserScan: {len(valid_ranges)}/{len(msg.ranges)} valid ranges, "
-                f"angle: {math.degrees(msg.angle_min):.1f}° to {math.degrees(msg.angle_max):.1f}°"
-            )
 
     def pointcloud_callback(self, msg):
-        """Process PointCloud for 3D coordinates"""
+        """Process PointCloud"""
         self.latest_pointcloud = msg
         self.last_pointcloud_time = time.time()
-        
-        # ✅ LOG PointCloud data reception (reduced frequency)
-        point_count = msg.width * msg.height
-        if point_count % 10000 == 0:  # Log occasionally
-            self.get_logger().info(f"📡 LiDAR PointCloud: {point_count} points")
 
     def enhanced_fusion(self, detection_msg, camera_name):
-        """Enhanced fusion with REAL distance and 3D coordinates"""
+        """Enhanced fusion with REAL distance and coordinates"""
         try:
             base_angle = self.camera_angles.get(camera_name, 0)
             
-            # Enhanced message with fusion data
+            # Create enhanced message
             enhanced_msg = Yolov12Inference()
             enhanced_msg.header = detection_msg.header
             enhanced_msg.camera_name = detection_msg.camera_name
@@ -127,9 +108,8 @@ class SimpleFusionNode(Node):
             enhanced_msg.frame_type = detection_msg.frame_type + "_fused"
             enhanced_msg.note = f"Enhanced with LiDAR fusion from {camera_name}"
             
-            # Process each detection with enhanced data
             for detection in detection_msg.yolov12_inference:
-                # ✅ CREATE new enhanced detection (copy all fields)
+                # ✅ Copy all detection fields properly
                 enhanced_detection = InferenceResult()
                 enhanced_detection.class_name = detection.class_name
                 enhanced_detection.confidence = detection.confidence
@@ -138,82 +118,60 @@ class SimpleFusionNode(Node):
                 enhanced_detection.right = detection.right
                 enhanced_detection.bottom = detection.bottom
                 
-                # Copy existing data
-                enhanced_detection.distance = getattr(detection, 'distance', 0.0)
-                enhanced_detection.coordinate_x = getattr(detection, 'coordinate_x', 0.0)
-                enhanced_detection.coordinate_y = getattr(detection, 'coordinate_y', 0.0)
-                enhanced_detection.coordinate_z = getattr(detection, 'coordinate_z', 0.5)
-                enhanced_detection.angle = getattr(detection, 'angle', 0.0)
-                enhanced_detection.mask_data = getattr(detection, 'mask_data', [])
-                enhanced_detection.mask_width = getattr(detection, 'mask_width', 0)
-                enhanced_detection.mask_height = getattr(detection, 'mask_height', 0)
-                enhanced_detection.color_r = getattr(detection, 'color_r', 255)
-                enhanced_detection.color_g = getattr(detection, 'color_g', 255)
-                enhanced_detection.color_b = getattr(detection, 'color_b', 255)
+                # Copy mask and color data
+                enhanced_detection.mask_data = detection.mask_data if hasattr(detection, 'mask_data') else []
+                enhanced_detection.mask_width = detection.mask_width if hasattr(detection, 'mask_width') else 0
+                enhanced_detection.mask_height = detection.mask_height if hasattr(detection, 'mask_height') else 0
+                enhanced_detection.color_r = detection.color_r if hasattr(detection, 'color_r') else 255
+                enhanced_detection.color_g = detection.color_g if hasattr(detection, 'color_g') else 255
+                enhanced_detection.color_b = detection.color_b if hasattr(detection, 'color_b') else 255
                 
-                # ✅ ENHANCED Calculate object angle within camera FOV
+                # ✅ Calculate object angle
                 bbox_center_x = (detection.left + detection.right) / 2
-                image_width = 1920  # Arducam IMX477 resolution
-                
-                # Map bbox position to angle offset (-30° to +30° for 60° FOV)
+                image_width = 1920
                 angle_offset = ((bbox_center_x / image_width) - 0.5) * 60
                 object_angle = (base_angle + angle_offset) % 360
                 enhanced_detection.angle = object_angle
                 
-                # ✅ ENHANCED Get REAL distance from LaserScan
+                # ✅ Get REAL distance from LaserScan
                 distance, ray_index = self.get_distance_from_laser(object_angle)
                 enhanced_detection.distance = distance
                 
-                # ✅ ENHANCED Calculate REAL 3D coordinates
+                # ✅ Calculate REAL 3D coordinates
                 x, y, z = self.calculate_3d_coordinates(object_angle, distance)
                 enhanced_detection.coordinate_x = x
                 enhanced_detection.coordinate_y = y
                 enhanced_detection.coordinate_z = z
                 
-                # Add to enhanced message
                 enhanced_msg.yolov12_inference.append(enhanced_detection)
-                
-                # ✅ ENHANCED Log TARGET FORMAT
-                self.get_logger().info(
-                    f"🎯 Camera {camera_name}: Found distance {distance:.2f}m at ray {ray_index} (target angle={object_angle:.1f}°)"
-                )
-                self.get_logger().info(
-                    f"🎯 Camera {camera_name}: {detection.class_name} conf={detection.confidence:.2f} "
-                    f"Distance={distance:.2f}m Coordinate=({x:.2f}, {y:.2f}, {z:.2f})"
-                )
-                
                 self.fusion_count += 1
             
             # Publish enhanced result
             if camera_name in self.fused_pubs:
                 self.fused_pubs[camera_name].publish(enhanced_msg)
             
-            # ✅ ENHANCED Create 3D visualization
-            self.create_enhanced_3d_visualization(enhanced_msg)
+            # ✅ Create FIXED 3D visualization
+            self.create_fixed_3d_visualization(enhanced_msg)
             
         except Exception as e:
-            self.get_logger().error(f"❌ Enhanced fusion error: {e}")
-            import traceback
-            traceback.print_exc()
+            self.get_logger().error(f"❌ Fusion error: {e}")
 
     def get_distance_from_laser(self, angle_deg):
         """Get distance from LaserScan at specific angle"""
         if not self.latest_laser:
-            return 10.0, -1  # Default distance, invalid ray
+            return 10.0, -1
             
         try:
-            # Convert angle to LaserScan index
             angle_rad = math.radians(angle_deg)
             
-            # ✅ Handle angle wrap-around
+            # Handle angle wrap-around
             while angle_rad > math.pi:
                 angle_rad -= 2 * math.pi
             while angle_rad < -math.pi:
                 angle_rad += 2 * math.pi
             
-            # Calculate index in LaserScan ranges array
+            # Calculate index
             if angle_rad < self.latest_laser.angle_min or angle_rad > self.latest_laser.angle_max:
-                # Handle out-of-range angles
                 return 15.0, -1
             
             angle_normalized = (angle_rad - self.latest_laser.angle_min) / self.latest_laser.angle_increment
@@ -221,70 +179,57 @@ class SimpleFusionNode(Node):
             
             distance = self.latest_laser.ranges[ray_index]
             
-            # ✅ Filter invalid readings
+            # Filter invalid readings
             if math.isinf(distance) or math.isnan(distance) or distance <= 0:
-                return 15.0, ray_index  # Default for invalid readings
+                return 15.0, ray_index
             
-            # Cap at reasonable maximum
-            distance = min(distance, 100.0)
-                
-            return distance, ray_index
+            return min(distance, 100.0), ray_index
             
         except Exception as e:
-            self.get_logger().error(f"❌ Distance calculation error: {e}")
             return 10.0, -1
 
     def calculate_3d_coordinates(self, angle_deg, distance):
         """Calculate 3D coordinates in robot base frame"""
         try:
-            # Convert to radians
             angle_rad = math.radians(angle_deg)
-            
-            # ✅ 3D position relative to robot base_link
-            # Standard ROS coordinate system: x=forward, y=left, z=up
-            x = distance * math.cos(angle_rad)  # Forward/backward
-            y = distance * math.sin(angle_rad)  # Left/right
-            z = 0.5  # Assume average object height above ground
-            
+            x = distance * math.cos(angle_rad)
+            y = distance * math.sin(angle_rad)
+            z = 0.5  # Average object height
             return x, y, z
-            
         except Exception as e:
-            self.get_logger().error(f"❌ 3D coordinate calculation error: {e}")
             return 0.0, 0.0, 0.0
 
-    def create_enhanced_3d_visualization(self, enhanced_msg):
-        """Create ENHANCED 3D PointCloud visualization for RViz2"""
+    def create_fixed_3d_visualization(self, enhanced_msg):
+        """Create FIXED 3D PointCloud visualization for RViz2"""
         try:
-            # Create points for each detected object
             points = []
             for detection in enhanced_msg.yolov12_inference:
-                # ✅ Add object center point with confidence as intensity
+                # ✅ Add object center point
                 points.append([
-                    detection.coordinate_x,
-                    detection.coordinate_y, 
-                    detection.coordinate_z,
-                    detection.confidence  # Use confidence as intensity/color
+                    float(detection.coordinate_x),
+                    float(detection.coordinate_y), 
+                    float(detection.coordinate_z),
+                    float(detection.confidence * 100.0)  # Scale confidence for visibility
                 ])
                 
-                # ✅ ADD additional visualization points for better visibility
-                # Create a small cluster representing the object
-                for dx in [-0.2, 0.0, 0.2]:
-                    for dy in [-0.2, 0.0, 0.2]:
-                        for dz in [0.0, 0.2, 0.4]:
+                # ✅ Add cluster points for better visibility
+                for dx in [-0.3, 0.0, 0.3]:
+                    for dy in [-0.3, 0.0, 0.3]:
+                        for dz in [0.0, 0.3, 0.6]:
                             points.append([
-                                detection.coordinate_x + dx,
-                                detection.coordinate_y + dy,
-                                detection.coordinate_z + dz,
-                                detection.confidence * 0.8  # Slightly lower intensity
+                                float(detection.coordinate_x + dx),
+                                float(detection.coordinate_y + dy),
+                                float(detection.coordinate_z + dz),
+                                float(detection.confidence * 80.0)
                             ])
             
             if points:
-                # ✅ ENHANCED PointCloud2 message creation
+                # ✅ FIXED PointCloud2 message
                 pc_msg = PointCloud2()
                 pc_msg.header.stamp = self.get_clock().now().to_msg()
-                pc_msg.header.frame_id = "base_link"  # Robot base frame
+                pc_msg.header.frame_id = "base_link"  # ✅ Correct frame
                 
-                # Define fields with enhanced structure
+                # ✅ FIXED field definitions
                 pc_msg.fields = [
                     PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
                     PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
@@ -292,48 +237,41 @@ class SimpleFusionNode(Node):
                     PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
                 ]
                 
-                # Pack data
+                # ✅ FIXED packing
                 pc_msg.height = 1
                 pc_msg.width = len(points)
                 pc_msg.point_step = 16
                 pc_msg.row_step = pc_msg.point_step * pc_msg.width
                 pc_msg.is_dense = True
                 
-                buffer = []
+                # ✅ FIXED data packing
+                data = bytearray()
                 for point in points:
-                    buffer.append(struct.pack('ffff', *point))
-                pc_msg.data = b''.join(buffer)
+                    data.extend(struct.pack('ffff', point[0], point[1], point[2], point[3]))
+                pc_msg.data = bytes(data)
                 
-                # Publish enhanced 3D visualization
+                # Publish
                 self.objects_3d_pub.publish(pc_msg)
                 
                 self.get_logger().info(
                     f"📊 Published 3D PointCloud: {len(enhanced_msg.yolov12_inference)} objects, "
-                    f"{len(points)} total points to /objects_3d_pointcloud"
+                    f"{len(points)} points to /objects_3d_pointcloud"
                 )
                 
         except Exception as e:
-            self.get_logger().error(f"❌ Enhanced 3D visualization error: {e}")
+            self.get_logger().error(f"❌ 3D visualization error: {e}")
 
     def log_fusion_stats(self):
         """Log fusion statistics"""
         current_time = time.time()
-        
-        # Check data freshness
         laser_age = current_time - self.last_laser_time if self.last_laser_time > 0 else float('inf')
         pc_age = current_time - self.last_pointcloud_time if self.last_pointcloud_time > 0 else float('inf')
         
         self.get_logger().info(
-            f"🔗 Fusion Stats: {self.fusion_count} objects fused in 5s, "
-            f"LaserScan age: {laser_age:.1f}s, PointCloud age: {pc_age:.1f}s"
+            f"🔗 Fusion: {self.fusion_count} objects/5s, "
+            f"Laser: {laser_age:.1f}s, PC: {pc_age:.1f}s"
         )
         
-        if laser_age > 5.0:
-            self.get_logger().warn("⚠️ LaserScan data is too old!")
-        if pc_age > 5.0:
-            self.get_logger().warn("⚠️ PointCloud data is too old!")
-            
-        # Reset counter
         self.fusion_count = 0
 
 def main(args=None):

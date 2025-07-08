@@ -13,7 +13,7 @@ def generate_launch_description():
         
         # Arguments
         DeclareLaunchArgument('model_path', default_value='yolo11n-seg.engine'),
-        DeclareLaunchArgument('fps_target', default_value='30'),  # ✅ REALISTIC target
+        DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('debug_mode', default_value='true'),
         
         # ✅ 1. Start Velodyne LiDAR FIRST
@@ -24,9 +24,9 @@ def generate_launch_description():
             ])
         ),
         
-        # ✅ 2. Wait for LiDAR, then start cameras
+        # ✅ 2. Start cameras immediately (parallel)
         TimerAction(
-            period=8.0,  # ✅ INCREASED wait time for LiDAR
+            period=5.0,  # ✅ Reduced wait time
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -37,9 +37,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Wait for cameras, then start DeepStream
+        # ✅ 3. Start DeepStream ASAP
         TimerAction(
-            period=15.0,  # ✅ INCREASED wait time for cameras
+            period=10.0,  # ✅ Reduced wait time
             actions=[
                 Node(
                     package='huskybot_deepstream',
@@ -49,21 +49,21 @@ def generate_launch_description():
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 640,   # ✅ MATCH model exactly
-                        'input_height': 640,  # ✅ MATCH model exactly
-                        'skip_frames': 2,     # ✅ OPTIMIZED for better performance
-                        'batch_size': 3,      # ✅ REDUCED for stability
+                        'input_width': 640,
+                        'input_height': 640,
+                        'skip_frames': 0,     # ✅ NO frame skipping
+                        'batch_size': 6,      # ✅ FULL batch processing
                         'device_id': 0
                     }],
                     respawn=True,
-                    respawn_delay=3.0
+                    respawn_delay=2.0
                 )
             ]
         ),
         
-        # ✅ 4. Wait for detections, then start fusion
+        # ✅ 4. Start fusion quickly
         TimerAction(
-            period=25.0,  # ✅ INCREASED wait time for detections
+            period=15.0,  # ✅ Reduced wait time
             actions=[
                 Node(
                     package='huskybot_fusion',
@@ -71,17 +71,17 @@ def generate_launch_description():
                     name='simple_fusion',
                     output='screen',
                     respawn=True,
-                    respawn_delay=3.0
+                    respawn_delay=2.0
                 )
             ]
         ),
         
-        # ✅ 5. Debug monitoring (optional)
+        # ✅ 5. Launch confirmation
         TimerAction(
-            period=30.0,
+            period=20.0,
             actions=[
                 ExecuteProcess(
-                    cmd=['echo', '🚀 Pipeline fully launched! Check topics with: ros2 topic list'],
+                    cmd=['echo', '🚀 ULTRA Pipeline launched! Check: ros2 topic list | grep camera'],
                     output='screen'
                 )
             ]
