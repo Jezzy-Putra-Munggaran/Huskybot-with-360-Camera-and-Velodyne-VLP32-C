@@ -144,3 +144,33 @@ if __name__ == '__main__':
     info_print(f"- Platform: {'Jetson AGX Orin' if is_jetson else 'Standard/Simulation'}")
     info_print(f"- Dependencies: OpenCV, NumPy, Ultralytics YOLOv12, TF2, cv_bridge, ROS2 Humble")
     info_print(f"- Compatible with: Gazebo simulation and real hardware (Clearpath Husky A200 + Velodyne VLP32-C)")
+
+
+from setuptools import setup
+
+package_name = 'huskybot_perception'
+
+setup(
+    name=package_name,
+    version='0.1.0',
+    packages=[package_name],
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/pipeline_100fps.launch.py']),
+        ('share/' + package_name + '/rviz', []),  # Create rviz directory
+    ],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='Jezzy Putra Munggaran',
+    maintainer_email='mungguran.jezzy.putra@gmail.com',
+    description='100+ FPS perception pipeline with auto-display',
+    license='Apache-2.0',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'create_rviz_config.py = huskybot_perception.create_rviz_config:create_rviz_config',
+        ],
+    },
+)
