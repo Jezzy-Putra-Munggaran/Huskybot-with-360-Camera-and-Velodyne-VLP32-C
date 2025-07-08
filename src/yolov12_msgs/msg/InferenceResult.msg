@@ -6,16 +6,23 @@
 # ===================== FIELD WAJIB (SELALU DIISI) =====================
 string class_name         # Nama class hasil deteksi (misal: "person", "car"). WAJIB diisi, digunakan untuk label visualisasi, logger, dan evaluasi.
 float32 confidence        # Confidence score hasil deteksi (0.0 - 1.0). WAJIB diisi, digunakan untuk thresholding dan evaluasi.
-int32 top                 # Koordinat atas bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
 int32 left                # Koordinat kiri bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
-int32 bottom              # Koordinat bawah bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
+int32 top                 # Koordinat atas bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
 int32 right               # Koordinat kanan bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
+int32 bottom              # Koordinat bawah bounding box (pixel). WAJIB diisi, untuk cropping dan visualisasi.
 
 # ===================== FIELD OPSIONAL (TERGANTUNG MODE YOLO) =====================
-int32 track_id            # ID tracking objek (misal: DeepSORT, YOLO tracking). WAJIB diisi jika mode tracking aktif, -1 jika tidak ada.
-float32 obb_angle         # Sudut OBB (oriented bounding box) dalam derajat. WAJIB diisi jika mode OBB aktif, -1 jika tidak ada.
-int32[] mask_indices      # Indeks pixel mask segmentasi (flattened). WAJIB diisi jika mode segmentasi aktif, [] jika tidak ada.
-string note               # PERBAIKAN: Tambahkan field note jika belum ada
+float32 distance          # Jarak objek terdeteksi (m). WAJIB diisi jika mode pengukuran jarak aktif, -1 jika tidak ada.
+float32 coordinate_x      # Koordinat X objek dalam sistem koordinat dunia (m). WAJIB diisi jika mode koordinat dunia aktif, -1 jika tidak ada.
+float32 coordinate_y      # Koordinat Y objek dalam sistem koordinat dunia (m). WAJIB diisi jika mode koordinat dunia aktif, -1 jika tidak ada.
+float32 coordinate_z      # Koordinat Z objek dalam sistem koordinat dunia (m). WAJIB diisi jika mode koordinat dunia aktif, -1 jika tidak ada.
+float32 angle             # Sudut orientasi objek dalam derajat. WAJIB diisi jika mode orientasi aktif, -1 jika tidak ada.
+uint8[] mask_data        # Data mask segmentasi (compressed). WAJIB diisi jika mode segmentasi aktif, [] jika tidak ada.
+int32 mask_width          # Lebar mask segmentasi (pixel). WAJIB diisi jika mode segmentasi aktif, -1 jika tidak ada.
+int32 mask_height         # Tinggi mask segmentasi (pixel). WAJIB diisi jika mode segmentasi aktif, -1 jika tidak ada.
+uint8 color_r             # Komponen merah warna bounding box (0-255). WAJIB diisi jika mode penandaan warna aktif.
+uint8 color_g             # Komponen hijau warna bounding box (0-255). WAJIB diisi jika mode penandaan warna aktif.
+uint8 color_b             # Komponen biru warna bounding box (0-255). WAJIB diisi jika mode penandaan warna aktif.
 
 # ===================== ERROR HANDLING & BEST PRACTICE =====================
 # - Field wajib (class_name, confidence, top, left, bottom, right) harus selalu diisi
