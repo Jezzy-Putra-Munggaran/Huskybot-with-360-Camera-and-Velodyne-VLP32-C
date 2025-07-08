@@ -11,8 +11,8 @@ import threading
 import time
 import os
 import queue
-import concurrent.futures
 import random
+import colorsys
 
 class DeepStreamYOLONode(Node):
     def __init__(self):
@@ -24,7 +24,7 @@ class DeepStreamYOLONode(Node):
         # Setup parameters
         self.setup_parameters()
         
-        # Setup ROS topics with CORRECTED mapping
+        # ✅ FIXED: Setup ROS topics FIRST before threading
         self.setup_ros_topics()
         
         # Initialize OPTIMIZED frame processing
@@ -33,16 +33,13 @@ class DeepStreamYOLONode(Node):
         # ✅ ENHANCED COCO Colors - 80 distinct colors
         self.setup_enhanced_coco_colors()
         
-        # ✅ ULTRA-OPTIMIZED Multi-threading setup
-        self.setup_threading()
-        
         # Statistics
         self.frame_count = 0
         self.detection_count = 0
         self.fps_timer = self.create_timer(2.0, self.log_fps)
         self.last_fps_time = time.time()
         
-        # ✅ Enhanced camera data tracking with locks
+        # ✅ FIXED: Enhanced camera data tracking with proper locks
         self.latest_images = [None] * 6
         self.latest_headers = [None] * 6
         self.latest_detections = [[] for _ in range(6)]
@@ -53,17 +50,20 @@ class DeepStreamYOLONode(Node):
         self.fused_data = [[] for _ in range(6)]
         self.fused_locks = [threading.Lock() for _ in range(6)]
         
-        self.get_logger().info("🚀 ULTRA-ENHANCED DeepStream YOLO Node initialized!")
+        # ✅ FIXED: Setup threading AFTER everything else is initialized
+        self.setup_fixed_threading()
+        
+        self.get_logger().info("🚀 FIXED DeepStream YOLO Node initialized!")
 
     def setup_parameters(self):
         """Setup parameters for 100+ FPS"""
         self.declare_parameter('model_engine', 'yolo11n-seg.engine')
         self.declare_parameter('input_width', 640)
         self.declare_parameter('input_height', 640)
-        self.declare_parameter('batch_size', 6)  # ✅ FULL batch processing
+        self.declare_parameter('batch_size', 6)
         self.declare_parameter('fps_target', 120)
         self.declare_parameter('device_id', 0)
-        self.declare_parameter('skip_frames', 0)  # ✅ NO frame skipping for max FPS
+        self.declare_parameter('skip_frames', 0)
         
         self.model_engine = self.get_parameter('model_engine').value
         self.input_width = self.get_parameter('input_width').value
@@ -75,64 +75,45 @@ class DeepStreamYOLONode(Node):
 
     def setup_enhanced_coco_colors(self):
         """Setup 80 highly distinct colors for COCO classes"""
-        # ✅ Predefined 80 distinct colors with high contrast
-        self.coco_colors = [
-            [255, 0, 0],     # 0: person - bright red
-            [0, 255, 0],     # 1: bicycle - bright green  
-            [0, 0, 255],     # 2: car - bright blue
-            [255, 255, 0],   # 3: motorcycle - yellow
-            [255, 0, 255],   # 4: airplane - magenta
-            [0, 255, 255],   # 5: bus - cyan
-            [128, 0, 0],     # 6: train - dark red
-            [0, 128, 0],     # 7: truck - dark green
-            [0, 0, 128],     # 8: boat - dark blue
-            [255, 128, 0],   # 9: traffic light - orange
-            [128, 255, 0],   # 10: fire hydrant - lime
-            [0, 128, 255],   # 11: stop sign - light blue
-            [255, 0, 128],   # 12: parking meter - pink
-            [128, 0, 255],   # 13: bench - purple
-            [255, 255, 128], # 14: bird - light yellow
-            [128, 255, 255], # 15: cat - light cyan
-        ]
+        self.coco_colors = []
         
-        # Generate remaining 64 colors with high contrast
-        for i in range(16, 80):
-            # Use HSV for better color distribution
+        # ✅ Generate 80 distinct colors using HSV for better distribution
+        for i in range(80):
             hue = (i * 137.5) % 360  # Golden angle for even distribution
-            sat = 0.7 + (i % 3) * 0.1  # Vary saturation
-            val = 0.8 + (i % 2) * 0.2  # Vary brightness
+            sat = 0.8 + (i % 3) * 0.1  # Vary saturation 0.8-1.0
+            val = 0.8 + (i % 2) * 0.2  # Vary brightness 0.8-1.0
             
             # Convert HSV to RGB
-            import colorsys
             r, g, b = colorsys.hsv_to_rgb(hue/360.0, sat, val)
             self.coco_colors.append([int(r*255), int(g*255), int(b*255)])
 
-    def setup_threading(self):
-        """Setup ULTRA-OPTIMIZED threading for 100+ FPS"""
-        # ✅ Thread pools for parallel processing
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=8)
+    def setup_fixed_threading(self):
+        """Setup FIXED threading for 100+ FPS"""
+        # ✅ FIXED: Use simple queue processing without complex executors
+        self.frame_queues = [queue.Queue(maxsize=3) for _ in range(6)]
+        self.processing_active = True
         
-        # ✅ Queues for batch processing
-        self.frame_queues = [queue.Queue(maxsize=2) for _ in range(6)]
-        
-        # ✅ Processing threads
+        # ✅ FIXED: Single processing thread per camera
         self.processing_threads = []
         for i in range(6):
-            thread = threading.Thread(target=self.camera_processing_worker, args=(i,), daemon=True)
+            thread = threading.Thread(
+                target=self.camera_processing_worker, 
+                args=(i,), 
+                daemon=True
+            )
             thread.start()
             self.processing_threads.append(thread)
         
-        # ✅ Batch inference thread
-        self.batch_thread = threading.Thread(target=self.batch_inference_worker, daemon=True)
-        self.batch_thread.start()
-        
-        # ✅ Grid creation thread
-        self.grid_thread = threading.Thread(target=self.grid_creation_worker, daemon=True)
+        # ✅ FIXED: Grid creation thread
+        self.grid_thread = threading.Thread(
+            target=self.grid_creation_worker, 
+            daemon=True
+        )
         self.grid_thread.start()
 
     def setup_ros_topics(self):
         """Setup ROS2 topics with CORRECTED camera mapping"""
-        # ✅ CORRECTED camera mapping
+        # ✅ CORRECTED camera mapping based on your explanation
         self.camera_subs = []
         self.camera_names = ['rear', 'rear_left', 'front_left', 'front', 'front_right', 'rear_right']
         actual_topics = [
@@ -147,27 +128,29 @@ class DeepStreamYOLONode(Node):
         for i, (name, topic) in enumerate(zip(self.camera_names, actual_topics)):
             sub = self.create_subscription(
                 Image, topic, 
-                lambda msg, idx=i: self.camera_callback(msg, idx), 1)
+                lambda msg, idx=i: self.camera_callback(msg, idx), 
+                10  # ✅ Increased queue size
+            )
             self.camera_subs.append(sub)
             self.get_logger().info(f"📡 Subscribed to: {topic} -> Camera {name}")
         
         # ✅ Publishers for results
         self.result_pubs = []
         for name in self.camera_names:
-            det_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/detections', 1)
-            seg_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/segmentation', 1)
+            det_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/detections', 10)
+            seg_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/segmentation', 10)
             self.result_pubs.append((det_pub, seg_pub))
         
         # ✅ Fusion data subscription
         self.fusion_subs = []
-        for name in self.camera_names:
+        for i, name in enumerate(self.camera_names):
             fusion_sub = self.create_subscription(
                 Yolov12Inference, f'/camera_{name}/fused_detections',
-                lambda msg, idx=self.camera_names.index(name): self.fusion_callback(msg, idx), 1)
+                lambda msg, idx=i: self.fusion_callback(msg, idx), 10)
             self.fusion_subs.append(fusion_sub)
         
         # ✅ EXTRA LARGE Grid visualization publisher
-        self.grid_pub = self.create_publisher(Image, '/deepstream_grid', 1)
+        self.grid_pub = self.create_publisher(Image, '/deepstream_grid', 10)
         
         self.get_logger().info("📡 ROS2 topics configured with fusion integration")
 
@@ -194,23 +177,22 @@ class DeepStreamYOLONode(Node):
             
             # ✅ ULTRA-AGGRESSIVE warm-up
             self.get_logger().info(f"🔥 ULTRA-Warming up model for 100+ FPS...")
-            dummy_batch = np.zeros((self.batch_size, self.input_height, self.input_width, 3), dtype=np.uint8)
+            dummy_img = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
             
-            # Extensive warmup with batch processing
+            # Extensive warmup
             for i in range(3):
                 start_time = time.time()
-                for j in range(self.batch_size):
-                    results = self.yolo_model(dummy_batch[j], 
-                                           conf=0.15,  # ✅ Lower conf for more detections
-                                           device='cuda:0',
-                                           half=True,
-                                           verbose=False,
-                                           agnostic_nms=True,
-                                           max_det=50,  # ✅ More detections
-                                           imgsz=self.input_width,
-                                           task='segment')
+                results = self.yolo_model(dummy_img, 
+                                       conf=0.25,
+                                       device='cuda:0',
+                                       half=True,
+                                       verbose=False,
+                                       agnostic_nms=True,
+                                       max_det=100,
+                                       imgsz=self.input_width,
+                                       task='segment')
                 warmup_time = time.time() - start_time
-                self.get_logger().info(f"🔥 Batch-Warmup {i+1}: {warmup_time*1000:.1f}ms")
+                self.get_logger().info(f"🔥 Warmup {i+1}: {warmup_time*1000:.1f}ms")
             
             self.get_logger().info(f"✅ Model ULTRA-optimized for 100+ FPS: {model_path}")
             
@@ -219,12 +201,12 @@ class DeepStreamYOLONode(Node):
             self.yolo_model = None
 
     def camera_callback(self, msg, camera_idx):
-        """ULTRA-FAST camera callback with thread dispatch"""
+        """ULTRA-FAST camera callback with fixed dispatch"""
         try:
             current_time = time.time()
             
-            # ✅ Skip if too frequent (rate limiting for stability)
-            if current_time - self.last_process_time[camera_idx] < 0.005:  # Max 200 FPS per camera
+            # ✅ Rate limiting for stability
+            if current_time - self.last_process_time[camera_idx] < 0.01:  # Max 100 FPS per camera
                 return
             
             self.last_process_time[camera_idx] = current_time
@@ -249,11 +231,15 @@ class DeepStreamYOLONode(Node):
             self.get_logger().error(f"❌ Camera callback error {camera_idx}: {e}")
 
     def camera_processing_worker(self, camera_idx):
-        """Worker thread for processing camera frames"""
-        while True:
+        """FIXED worker thread for processing camera frames"""
+        while self.processing_active:
             try:
-                # Get frame from queue
-                frame_data = self.frame_queues[camera_idx].get(timeout=1.0)
+                # Get frame from queue with timeout
+                try:
+                    frame_data = self.frame_queues[camera_idx].get(timeout=0.1)
+                except queue.Empty:
+                    continue
+                
                 cv_image, header, idx = frame_data
                 
                 # Process frame
@@ -265,43 +251,19 @@ class DeepStreamYOLONode(Node):
                 
                 self.frame_queues[camera_idx].task_done()
                 
-            except queue.Empty:
-                continue
             except Exception as e:
                 self.get_logger().error(f"❌ Processing worker error {camera_idx}: {e}")
-
-    def batch_inference_worker(self):
-        """Worker thread for batch inference optimization"""
-        while True:
-            try:
-                # Collect frames for batch processing
-                batch_frames = []
-                batch_headers = []
-                batch_indices = []
-                
-                for i in range(6):
-                    with self.camera_locks[i]:
-                        if self.latest_images[i] is not None:
-                            batch_frames.append(self.latest_images[i])
-                            batch_headers.append(self.latest_headers[i])
-                            batch_indices.append(i)
-                
-                if len(batch_frames) >= 3:  # Process when we have at least 3 cameras
-                    self.process_batch_inference(batch_frames, batch_headers, batch_indices)
-                
-                time.sleep(0.01)  # 100 Hz processing
-                
-            except Exception as e:
-                self.get_logger().error(f"❌ Batch inference error: {e}")
+                time.sleep(0.1)
 
     def grid_creation_worker(self):
-        """Worker thread for grid visualization"""
-        while True:
+        """FIXED worker thread for grid visualization"""
+        while self.processing_active:
             try:
                 self.create_ultra_grid_visualization()
                 time.sleep(0.033)  # 30 FPS for visualization
             except Exception as e:
                 self.get_logger().error(f"❌ Grid creation error: {e}")
+                time.sleep(0.1)
 
     def process_single_frame_ultra(self, frame, header, camera_idx):
         """ULTRA-ENHANCED processing with proper segmentation"""
@@ -310,19 +272,19 @@ class DeepStreamYOLONode(Node):
             if not self.yolo_model:
                 return detections
             
-            # ✅ ULTRA-FAST resize with optimized interpolation
+            # ✅ ULTRA-FAST resize
             resized = cv2.resize(frame, (self.input_width, self.input_height), 
-                               interpolation=cv2.INTER_LINEAR)  # Better quality
+                               interpolation=cv2.INTER_LINEAR)
             
             # ✅ ULTRA-FAST inference
             start_time = time.time()
             results = self.yolo_model(resized, 
-                                   conf=0.15,  # ✅ Lower threshold for more detections
+                                   conf=0.25,  # ✅ Reasonable threshold
                                    device='cuda:0',
                                    half=True,
                                    verbose=False,
                                    agnostic_nms=True,
-                                   max_det=50,  # ✅ More detections
+                                   max_det=100,
                                    imgsz=self.input_width,
                                    task='segment')
             
@@ -366,17 +328,16 @@ class DeepStreamYOLONode(Node):
                     result.bottom = int(y2 * scale_y)
                     
                     # ✅ TEMPORARY distance/coords (will be updated by fusion)
-                    bbox_area = (result.right - result.left) * (result.bottom - result.top)
-                    result.distance = 0.0  # Will be updated by fusion
-                    result.coordinate_x = 0.0  # Will be updated by fusion
-                    result.coordinate_y = 0.0  # Will be updated by fusion
-                    result.coordinate_z = 0.0  # Will be updated by fusion
-                    result.angle = 0.0  # Will be updated by fusion
+                    result.distance = 0.0
+                    result.coordinate_x = 0.0
+                    result.coordinate_y = 0.0
+                    result.coordinate_z = 0.0
+                    result.angle = 0.0
                     
                     # ✅ ENHANCED segmentation mask processing
                     if masks is not None and i < len(masks):
                         # Get original mask at input resolution
-                        mask = masks[i]  # Shape: (input_height, input_width)
+                        mask = masks[i]
                         
                         # Resize mask to original image size
                         mask_full = cv2.resize(mask, (frame.shape[1], frame.shape[0]), 
@@ -438,27 +399,11 @@ class DeepStreamYOLONode(Node):
         
         return detections
 
-    def process_batch_inference(self, batch_frames, batch_headers, batch_indices):
-        """Process multiple frames in batch for better GPU utilization"""
-        try:
-            if not self.yolo_model or len(batch_frames) == 0:
-                return
-            
-            # ✅ Process batch sequentially but optimized
-            for i, (frame, header, idx) in enumerate(zip(batch_frames, batch_headers, batch_indices)):
-                # This could be further optimized with true batch processing
-                self.process_single_frame_ultra(frame, header, idx)
-                
-        except Exception as e:
-            self.get_logger().error(f"❌ Batch processing error: {e}")
-
     def create_ultra_grid_visualization(self):
         """Create EXTRA-LARGE grid with fused data display"""
         try:
-            current_time = time.time()
-            
             # ✅ EXTRA LARGE grid size for maximum visibility
-            target_size = (800, 600)  # MUCH LARGER
+            target_size = (800, 600)
             
             grid_images = []
             total_detections = 0
@@ -558,9 +503,9 @@ class DeepStreamYOLONode(Node):
                         cv2.putText(black_img, f"{self.camera_names[i].upper()}", 
                                   (target_size[0]//4, target_size[1]//2-20), 
                                   cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
-                        cv2.putText(black_img, "OFFLINE", 
+                        cv2.putText(black_img, "WAITING...", 
                                   (target_size[0]//4, target_size[1]//2+20), 
-                                  cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                                  cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 0), 2)
                         grid_images.append(black_img)
             
             # ✅ Create EXTRA LARGE 2x3 grid
@@ -577,7 +522,7 @@ class DeepStreamYOLONode(Node):
                 info_panel = np.zeros((info_height, grid.shape[1], 3), dtype=np.uint8)
                 
                 # Main stats
-                main_info = f"ULTRA-DeepStream | FPS: {current_fps:.1f} | Total Det: {total_detections} | Active: 6/6"
+                main_info = f"FIXED-DeepStream | FPS: {current_fps:.1f} | Total Det: {total_detections} | Active: 6/6"
                 cv2.putText(info_panel, main_info, (20, 40), 
                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
                 
@@ -592,7 +537,7 @@ class DeepStreamYOLONode(Node):
                 # ✅ Publish EXTRA-LARGE grid
                 grid_msg = self.bridge.cv2_to_imgmsg(final_grid, 'bgr8')
                 grid_msg.header.stamp = self.get_clock().now().to_msg()
-                grid_msg.header.frame_id = "ultra_deepstream_grid_enhanced"
+                grid_msg.header.frame_id = "fixed_deepstream_grid"
                 self.grid_pub.publish(grid_msg)
                 
         except Exception as e:
@@ -608,7 +553,7 @@ class DeepStreamYOLONode(Node):
             detection_rate = self.detection_count / elapsed
             
             self.get_logger().info(
-                f"🚀 ULTRA-DeepStream FPS: {fps:.1f} | Det/s: {detection_rate:.1f}"
+                f"🚀 FIXED-DeepStream FPS: {fps:.1f} | Det/s: {detection_rate:.1f}"
             )
             
             if fps >= 100:
@@ -625,7 +570,8 @@ class DeepStreamYOLONode(Node):
 
     def destroy_node(self):
         """Clean shutdown"""
-        self.get_logger().info("🛑 ULTRA-DeepStream node shutdown")
+        self.processing_active = False
+        self.get_logger().info("🛑 FIXED-DeepStream node shutdown")
         super().destroy_node()
 
 def main(args=None):

@@ -24,9 +24,9 @@ def generate_launch_description():
             ])
         ),
         
-        # ✅ 2. Start cameras immediately (parallel)
+        # ✅ 2. Start cameras with proper timing
         TimerAction(
-            period=5.0,  # ✅ Reduced wait time
+            period=5.0,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -37,9 +37,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start DeepStream ASAP
+        # ✅ 3. Start DeepStream with enough time for camera initialization
         TimerAction(
-            period=10.0,  # ✅ Reduced wait time
+            period=25.0,  # ✅ FIXED: Wait longer for cameras to be stable
             actions=[
                 Node(
                     package='huskybot_deepstream',
@@ -51,19 +51,19 @@ def generate_launch_description():
                         'fps_target': LaunchConfiguration('fps_target'),
                         'input_width': 640,
                         'input_height': 640,
-                        'skip_frames': 0,     # ✅ NO frame skipping
-                        'batch_size': 6,      # ✅ FULL batch processing
+                        'skip_frames': 0,
+                        'batch_size': 6,
                         'device_id': 0
                     }],
                     respawn=True,
-                    respawn_delay=2.0
+                    respawn_delay=3.0
                 )
             ]
         ),
         
-        # ✅ 4. Start fusion quickly
+        # ✅ 4. Start fusion after DeepStream is stable
         TimerAction(
-            period=15.0,  # ✅ Reduced wait time
+            period=30.0,
             actions=[
                 Node(
                     package='huskybot_fusion',
@@ -71,17 +71,22 @@ def generate_launch_description():
                     name='simple_fusion',
                     output='screen',
                     respawn=True,
-                    respawn_delay=2.0
+                    respawn_delay=3.0
                 )
             ]
         ),
         
-        # ✅ 5. Launch confirmation
+        # ✅ 5. Final status check
         TimerAction(
-            period=20.0,
+            period=35.0,
             actions=[
                 ExecuteProcess(
-                    cmd=['echo', '🚀 ULTRA Pipeline launched! Check: ros2 topic list | grep camera'],
+                    cmd=['bash', '-c', 
+                         'echo "🚀 FIXED Pipeline Status:" && '
+                         'echo "📡 Camera topics:" && ros2 topic list | grep image_raw && '
+                         'echo "🔍 Detection topics:" && ros2 topic list | grep detections && '
+                         'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
+                         'echo "✅ Pipeline launched successfully!"'],
                     output='screen'
                 )
             ]
