@@ -43,10 +43,10 @@ class UltraFastDeepStreamNode(Node):
         """Setup ultra-optimized model"""
         try:
             from ultralytics import YOLO
-            model_path = os.path.join(os.path.dirname(__file__), 'config', 'yolo11n-seg.engine')
+            model_path = os.path.join(os.path.dirname(__file__), 'config', 'yolo11x-seg.engine')
             
             if not os.path.exists(model_path):
-                model_path = os.path.expanduser('~/jezzy/yolo_models/yolo11n-seg.engine')
+                model_path = os.path.expanduser('~/jezzy/yolo_models/yolo11x-seg.engine')
             
             self.model = YOLO(model_path)
             

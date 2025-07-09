@@ -87,7 +87,7 @@ class MulticamSegmentationNode(Node):
         try:
             # Core parameters
             self.declare_parameter('cam_count', 6)
-            self.declare_parameter('model_path', 'yolo11n-seg.engine')
+            self.declare_parameter('model_path', 'yolo11x-seg.engine')
             self.declare_parameter('device', 'cuda:0')
             self.declare_parameter('conf_thres', 0.5)  # Lower for more detections to test
             self.declare_parameter('visualization_enabled', True)

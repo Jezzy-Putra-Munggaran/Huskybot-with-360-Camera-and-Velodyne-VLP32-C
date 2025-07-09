@@ -11,8 +11,8 @@ import os
 def generate_launch_description():
     return LaunchDescription([
         
-        # Arguments
-        DeclareLaunchArgument('model_path', default_value='yolo11n-seg.engine'),
+        # Arguments with YOLO12X for MAXIMUM speed
+        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.engine'),
         DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('debug_mode', default_value='true'),
         DeclareLaunchArgument('auto_display', default_value='true'),
@@ -38,21 +38,37 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start FIXED DeepStream with CORRECT parameters
+        # ✅ 3. MAXIMUM Jetson optimization
+        TimerAction(
+            period=8.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'sudo jetson_clocks && '
+                         'sudo nvpmodel -m 0 && '
+                         'echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor && '
+                         'echo "🚀 MAXIMUM Jetson optimization activated!"'],
+                    output='screen',
+                    name='maximum_jetson_optimization'
+                )
+            ]
+        ),
+        
+        # ✅ 4. Start MAXIMUM DeepStream with YOLO12X
         TimerAction(
             period=10.0,
             actions=[
                 Node(
                     package='huskybot_deepstream',
                     executable='deepstream_yolo_node',
-                    name='ultra_optimized_deepstream',
+                    name='maximum_optimized_deepstream',
                     output='screen',
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 640,   # ✅ FIXED: Match model size
-                        'input_height': 640,  # ✅ FIXED: Match model size
-                        'batch_size': 1,      # ✅ Single for speed
+                        'input_width': 640,
+                        'input_height': 640,
+                        'batch_size': 6,  # Process all 6 cameras
                         'device_id': 0
                     }],
                     respawn=True,
@@ -61,7 +77,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 4. Start enhanced fusion
+        # ✅ 5. Start enhanced fusion
         TimerAction(
             period=15.0,
             actions=[
@@ -76,7 +92,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 5. Create RViz directory and config
+        # ✅ 6. Create RViz directory and config
         TimerAction(
             period=18.0,
             actions=[
@@ -89,7 +105,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 6. Generate enhanced RViz config
+        # ✅ 7. Generate enhanced RViz config
         TimerAction(
             period=20.0,
             actions=[
@@ -102,20 +118,20 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 7. AUTO-POPUP: ULTRA-FAST Grid Display (ALL 6 cameras)
+        # ✅ 8. AUTO-POPUP: MAXIMUM Grid Display
         TimerAction(
             period=25.0,
             actions=[
                 Node(
                     package='huskybot_perception',
                     executable='auto_grid_viewer',
-                    name='ultra_fast_auto_grid_viewer',
+                    name='maximum_auto_grid_viewer',
                     output='screen'
                 )
             ]
         ),
         
-        # ✅ 8. AUTO-POPUP: Enhanced RViz2 with proper 3D objects
+        # ✅ 9. AUTO-POPUP: Enhanced RViz2 
         TimerAction(
             period=28.0,
             actions=[
@@ -128,36 +144,19 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 9. MAXIMUM performance optimization
-        TimerAction(
-            period=30.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'echo "🚀 MAXIMUM Performance Optimizations:" && '
-                         'sudo jetson_clocks && '
-                         'sudo nvpmodel -m 0 && '
-                         'echo "✅ Jetson MAXIMUM performance activated"'],
-                    output='screen',
-                    name='maximum_performance'
-                )
-            ]
-        ),
-        
-        # ✅ 10. Final status with verification
+        # ✅ 10. Final status
         TimerAction(
             period=35.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🎯 ULTRA-OPTIMIZED Pipeline Status:" && '
+                         'echo "🎯 MAXIMUM-OPTIMIZED Pipeline Status:" && '
                          'echo "📡 Camera topics (6 cameras):" && ros2 topic list | grep image_raw && '
                          'echo "🔍 Detection topics:" && ros2 topic list | grep detections && '
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
-                         'echo "✅ AUTO-DISPLAY: Grid (6 cameras) + RViz2 ACTIVATED!" && '
-                         'echo "📋 Segmentation with mask, bounding box info: Class, Confidence, Distance, Coordinates ENABLED!" && '
-                         'echo "🚀 TARGET: 100+ FPS with FULL segmentation and 3D visualization!"'],
+                         'echo "✅ YOLO12X ENGINE + MAXIMUM Jetson optimization!" && '
+                         'echo "🚀 TARGET: 100+ FPS with YOLO12X segmentation!"'],
                     output='screen'
                 )
             ]

@@ -8,7 +8,7 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     return LaunchDescription([
         
-        DeclareLaunchArgument('model_engine', default_value='yolo11n-seg.engine'),
+        DeclareLaunchArgument('model_engine', default_value='yolo11x-seg.engine'),
         DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('batch_size', default_value='6'),
         

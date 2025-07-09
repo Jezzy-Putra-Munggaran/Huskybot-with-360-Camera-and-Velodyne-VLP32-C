@@ -9,7 +9,7 @@ import os
 def generate_launch_description():
     return LaunchDescription([
         # Launch arguments
-        DeclareLaunchArgument('model_path', default_value='yolo11n-seg.engine'),
+        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.engine'),
         DeclareLaunchArgument('device', default_value='cuda:0'),
         DeclareLaunchArgument('target_fps', default_value='15.0'),
         

@@ -46,9 +46,9 @@ class UltraFastDeepStreamNode(Node):
             
             # Try to find model
             model_candidates = [
-                'yolo11n-seg.engine',
-                'yolo11n.pt',
-                '/home/kmp-orin/yolo11n.pt'
+                'yolo11x-seg.engine',
+                'yolo11x.pt',
+                '/home/kmp-orin/yolo11x.pt'
             ]
             
             model_path = None
@@ -59,7 +59,7 @@ class UltraFastDeepStreamNode(Node):
             
             if not model_path:
                 self.get_logger().warn("❌ No model found, using default")
-                model_path = 'yolo11n.pt'
+                model_path = 'yolo11x.pt'
             
             self.model = YOLO(model_path)
             self.get_logger().info(f"✅ Model loaded: {model_path}")

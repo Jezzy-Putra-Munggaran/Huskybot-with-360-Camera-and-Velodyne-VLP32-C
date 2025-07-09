@@ -10,7 +10,7 @@ def generate_launch_description():
     # Find model with debugging
     model_file = None
     model_extensions = ['.engine', '.onnx', '.pt']
-    model_names = ['yolo11n-seg', 'yolov8n-seg']
+    model_names = ['yolo11x-seg', 'yolov8n-seg']
     
     search_paths = [
         os.getcwd(),
@@ -36,7 +36,7 @@ def generate_launch_description():
             break
     
     if not model_file:
-        model_file = 'yolo11n-seg.engine'
+        model_file = 'yolo11x-seg.engine'
         print(f"[WARNING] Using default model: {model_file}")
 
     return LaunchDescription([
