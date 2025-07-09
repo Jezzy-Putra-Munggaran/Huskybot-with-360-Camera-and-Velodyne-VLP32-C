@@ -56,7 +56,7 @@ class EnhancedFusionNode(Node):
                 Yolov12Inference, f'/camera_{name}/fused_detections', 10)
             self.fused_pubs[name] = pub
         
-        # ✅ FIXED 3D visualization publisher with correct format
+        # ✅ ENHANCED 3D visualization publisher
         self.objects_3d_pub = self.create_publisher(
             PointCloud2, '/objects_3d_pointcloud', 10)
         
@@ -70,6 +70,7 @@ class EnhancedFusionNode(Node):
         # ✅ Enhanced monitoring
         self.fusion_count = 0
         self.fusion_timer = self.create_timer(5.0, self.log_fusion_stats)
+        self.publish_timer = self.create_timer(0.1, self.create_continuous_3d_visualization)
         
         self.get_logger().info("🔗 ENHANCED Fusion Node initialized")
 
@@ -153,9 +154,6 @@ class EnhancedFusionNode(Node):
             if camera_name in self.fused_pubs:
                 self.fused_pubs[camera_name].publish(enhanced_msg)
             
-            # ✅ Create ENHANCED 3D visualization
-            self.create_enhanced_3d_visualization(enhanced_msg)
-            
         except Exception as e:
             self.get_logger().error(f"❌ Enhanced fusion error: {e}")
 
@@ -218,64 +216,68 @@ class EnhancedFusionNode(Node):
         except Exception as e:
             return 0.0, 0.0, 0.5
 
-    def create_enhanced_3d_visualization(self, enhanced_msg):
-        """Create ENHANCED 3D object visualization for RViz2"""
+    def create_continuous_3d_visualization(self):
+        """✅ CONTINUOUS 3D object visualization for RViz2"""
         try:
-            points = []
+            all_points = []
             
-            for detection in enhanced_msg.yolov12_inference:
-                # ✅ ENHANCED: Create object-shaped point cloud
-                center_x = detection.coordinate_x
-                center_y = detection.coordinate_y
-                center_z = detection.coordinate_z
-                
-                # ✅ Create object shape based on class
-                object_size = self.get_object_size(detection.class_name)
-                intensity = detection.confidence * 255.0
-                
-                # ✅ Create object-shaped point cloud
-                if detection.class_name in ['person', 'bicycle', 'motorcycle']:
-                    # Vertical objects
-                    for dz in np.linspace(0, object_size['height'], 10):
-                        for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 5):
-                            for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 5):
-                                points.append([
-                                    center_x + dx,
-                                    center_y + dy,
-                                    dz,
-                                    intensity
-                                ])
-                elif detection.class_name in ['car', 'truck', 'bus']:
-                    # Rectangular objects
-                    for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 8):
-                        for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 8):
-                            for dz in np.linspace(0, object_size['height'], 6):
-                                points.append([
-                                    center_x + dx,
-                                    center_y + dy,
-                                    dz,
-                                    intensity
-                                ])
-                else:
-                    # Generic objects - sphere-like
-                    for i in range(50):  # More points for better visibility
-                        theta = np.random.uniform(0, 2*np.pi)
-                        phi = np.random.uniform(0, np.pi)
-                        r = np.random.uniform(0, object_size['width']/2)
-                        
-                        dx = r * np.sin(phi) * np.cos(theta)
-                        dy = r * np.sin(phi) * np.sin(theta)
-                        dz = r * np.cos(phi) + object_size['height']/2
-                        
-                        points.append([
-                            center_x + dx,
-                            center_y + dy,
-                            max(0, dz),
-                            intensity
-                        ])
+            # ✅ Collect ALL detections from ALL cameras
+            for camera_name, detection_msg in self.latest_detections.items():
+                if detection_msg and hasattr(detection_msg, 'yolov12_inference'):
+                    for detection in detection_msg.yolov12_inference:
+                        if hasattr(detection, 'coordinate_x'):
+                            # ✅ ENHANCED: Create object-shaped point cloud
+                            center_x = detection.coordinate_x
+                            center_y = detection.coordinate_y
+                            center_z = detection.coordinate_z
+                            
+                            # ✅ Create object shape based on class
+                            object_size = self.get_object_size(detection.class_name)
+                            intensity = detection.confidence * 255.0
+                            
+                            # ✅ Generate points based on object type
+                            if detection.class_name in ['person', 'bicycle', 'motorcycle']:
+                                # Vertical objects
+                                for dz in np.linspace(0, object_size['height'], 8):
+                                    for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 4):
+                                        for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 4):
+                                            all_points.append([
+                                                center_x + dx,
+                                                center_y + dy,
+                                                dz,
+                                                intensity
+                                            ])
+                            elif detection.class_name in ['car', 'truck', 'bus']:
+                                # Rectangular objects
+                                for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 6):
+                                    for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 10):
+                                        for dz in np.linspace(0, object_size['height'], 4):
+                                            all_points.append([
+                                                center_x + dx,
+                                                center_y + dy,
+                                                dz,
+                                                intensity
+                                            ])
+                            else:
+                                # Generic objects - sphere-like
+                                for i in range(30):
+                                    theta = np.random.uniform(0, 2*np.pi)
+                                    phi = np.random.uniform(0, np.pi)
+                                    r = np.random.uniform(0, object_size['width']/2)
+                                    
+                                    dx = r * np.sin(phi) * np.cos(theta)
+                                    dy = r * np.sin(phi) * np.sin(theta)
+                                    dz = r * np.cos(phi) + object_size['height']/2
+                                    
+                                    all_points.append([
+                                        center_x + dx,
+                                        center_y + dy,
+                                        max(0, dz),
+                                        intensity
+                                    ])
             
-            if points:
-                # ✅ ENHANCED PointCloud2 message with correct format
+            if all_points:
+                # ✅ ENHANCED PointCloud2 message
                 pc_msg = PointCloud2()
                 pc_msg.header.stamp = self.get_clock().now().to_msg()
                 pc_msg.header.frame_id = "base_link"
@@ -290,7 +292,7 @@ class EnhancedFusionNode(Node):
                 
                 # ✅ CORRECT message format
                 pc_msg.height = 1
-                pc_msg.width = len(points)
+                pc_msg.width = len(all_points)
                 pc_msg.point_step = 16
                 pc_msg.row_step = pc_msg.point_step * pc_msg.width
                 pc_msg.is_dense = True
@@ -298,20 +300,35 @@ class EnhancedFusionNode(Node):
                 
                 # ✅ ENHANCED data packing
                 data = bytearray()
-                for point in points:
+                for point in all_points:
                     data.extend(struct.pack('<ffff', point[0], point[1], point[2], point[3]))
                 pc_msg.data = bytes(data)
                 
                 # Publish
                 self.objects_3d_pub.publish(pc_msg)
                 
-                self.get_logger().info(
-                    f"📊 Enhanced 3D: {len(enhanced_msg.yolov12_inference)} objects, "
-                    f"{len(points)} points → /objects_3d_pointcloud"
-                )
+            else:
+                # ✅ Publish empty pointcloud to keep topic alive
+                pc_msg = PointCloud2()
+                pc_msg.header.stamp = self.get_clock().now().to_msg()
+                pc_msg.header.frame_id = "base_link"
+                pc_msg.fields = [
+                    PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+                    PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+                    PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+                    PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+                ]
+                pc_msg.height = 1
+                pc_msg.width = 0
+                pc_msg.point_step = 16
+                pc_msg.row_step = 0
+                pc_msg.is_dense = True
+                pc_msg.is_bigendian = False
+                pc_msg.data = bytes()
+                self.objects_3d_pub.publish(pc_msg)
                 
         except Exception as e:
-            self.get_logger().error(f"❌ Enhanced 3D visualization error: {e}")
+            self.get_logger().error(f"❌ 3D visualization error: {e}")
 
     def get_object_size(self, class_name):
         """Get estimated object size for better visualization"""
@@ -334,8 +351,11 @@ class EnhancedFusionNode(Node):
         laser_age = current_time - self.last_laser_time if self.last_laser_time > 0 else float('inf')
         pc_age = current_time - self.last_pointcloud_time if self.last_pointcloud_time > 0 else float('inf')
         
+        total_objects = sum(len(msg.yolov12_inference) if msg and hasattr(msg, 'yolov12_inference') else 0 
+                           for msg in self.latest_detections.values())
+        
         self.get_logger().info(
-            f"🔗 Enhanced Fusion: {self.fusion_count} objects/5s, "
+            f"🔗 Enhanced Fusion: {self.fusion_count} processed, {total_objects} active objects, "
             f"Laser: {laser_age:.1f}s, PC: {pc_age:.1f}s"
         )
         

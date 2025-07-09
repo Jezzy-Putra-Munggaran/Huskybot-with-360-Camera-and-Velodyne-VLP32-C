@@ -43,11 +43,11 @@ class UltraOptimizedDeepStreamNode(Node):
         self.get_logger().info("🚀 ULTRA-OPTIMIZED DeepStream Node initialized!")
 
     def setup_parameters(self):
-        """Setup ULTRA-OPTIMIZED parameters"""
+        """Setup ULTRA-OPTIMIZED parameters with FIXED input size"""
         self.declare_parameter('model_engine', 'yolo11n-seg.engine')
-        self.declare_parameter('input_width', 320)   # ✅ MAXIMUM reduction for speed
-        self.declare_parameter('input_height', 320)  # ✅ MAXIMUM reduction for speed
-        self.declare_parameter('batch_size', 1)      # ✅ Single for speed
+        self.declare_parameter('input_width', 640)   # ✅ FIXED: Match model size
+        self.declare_parameter('input_height', 640)  # ✅ FIXED: Match model size
+        self.declare_parameter('batch_size', 1)      
         self.declare_parameter('fps_target', 120)
         self.declare_parameter('device_id', 0)
         
@@ -59,7 +59,7 @@ class UltraOptimizedDeepStreamNode(Node):
         self.device_id = self.get_parameter('device_id').value
 
     def setup_ultra_optimized_model(self):
-        """✅ MAXIMUM model optimizations"""
+        """✅ FIXED: Model loading with correct input size"""
         try:
             from ultralytics import YOLO
             
@@ -72,21 +72,21 @@ class UltraOptimizedDeepStreamNode(Node):
             
             self.get_logger().info(f"🔥 Loading ULTRA-OPTIMIZED model: {model_path}")
             
-            # ✅ Load with MAXIMUM optimizations
+            # ✅ Load with CORRECT input size
             self.yolo_model = YOLO(model_path)
             
-            # ✅ MAXIMUM warmup with smaller dummy
+            # ✅ FIXED warmup with correct dummy size
             dummy_array = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
             
             start_time = time.time()
             for _ in range(3):
                 results = self.yolo_model(dummy_array, 
-                                       conf=0.3,  # Optimal confidence
+                                       conf=0.25,  # Lower for more detections
                                        device='cuda:0',
                                        half=True,
                                        verbose=False,
                                        agnostic_nms=True,
-                                       max_det=10,  # Reduced for speed
+                                       max_det=50,  # More detections
                                        imgsz=(self.input_width, self.input_height),
                                        task='segment')
             
@@ -98,26 +98,26 @@ class UltraOptimizedDeepStreamNode(Node):
             self.yolo_model = None
 
     def setup_enhanced_coco_colors(self):
-        """Setup 80 distinct colors for COCO classes"""
+        """Setup 80 DISTINCT colors for COCO classes"""
         self.coco_colors = []
         self.text_colors = []
         
-        # ✅ Enhanced color generation
+        # ✅ Enhanced color generation with MAXIMUM contrast
         for i in range(80):
             hue = (i * 137.5) % 360
-            sat = 0.8 + (i % 3) * 0.1
-            val = 0.7 + (i % 4) * 0.1
+            sat = 0.9 + (i % 2) * 0.1  # Higher saturation
+            val = 0.8 + (i % 3) * 0.1  # Brighter values
             
             r, g, b = colorsys.hsv_to_rgb(hue/360.0, sat, val)
             color = [int(r*255), int(g*255), int(b*255)]
             self.coco_colors.append(color)
             
-            # ✅ Optimal text color for contrast
+            # ✅ Optimal text color for MAXIMUM contrast
             brightness = (color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114) / 255
             self.text_colors.append((0, 0, 0) if brightness > 0.5 else (255, 255, 255))
 
     def setup_ros_topics(self):
-        """Setup ROS2 topics with CORRECT mapping"""
+        """Setup ROS2 topics with CORRECT camera mapping"""
         self.camera_subs = []
         self.camera_names = ['rear', 'rear_right', 'front_right', 'front', 'front_left', 'rear_left']
         actual_topics = [
@@ -219,24 +219,34 @@ class UltraOptimizedDeepStreamNode(Node):
                 continue
 
     def maximum_speed_inference_with_display(self, frame, header, camera_idx):
-        """✅ MAXIMUM speed inference with ENHANCED bounding box info"""
+        """✅ FIXED: Maximum speed inference with PERFECT segmentation display"""
         try:
             if not self.yolo_model:
+                # ✅ Show camera info even without model
+                display_frame = frame.copy()
+                camera_name = self.camera_names[camera_idx].upper().replace('_', ' ')
+                cv2.putText(display_frame, f"CAM {camera_idx+1}: {camera_name}", 
+                          (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
+                cv2.putText(display_frame, "MODEL NOT LOADED", 
+                          (20, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                
+                with self.image_locks[camera_idx]:
+                    self.latest_images[camera_idx] = display_frame
                 return
             
-            # ✅ Ultra-fast resize
+            # ✅ FIXED: Correct resize
             resized = cv2.resize(frame, (self.input_width, self.input_height), 
-                               interpolation=cv2.INTER_AREA)
+                               interpolation=cv2.INTER_LINEAR)
             
             # ✅ MAXIMUM optimized inference
             start_time = time.time()
             results = self.yolo_model(resized, 
-                                   conf=0.3,
+                                   conf=0.25,  # Lower for more detections
                                    device='cuda:0',
                                    half=True,
                                    verbose=False,
                                    agnostic_nms=True,
-                                   max_det=10,
+                                   max_det=50,  # More detections
                                    imgsz=(self.input_width, self.input_height),
                                    task='segment')
             
@@ -259,13 +269,22 @@ class UltraOptimizedDeepStreamNode(Node):
             segmentation_msg.frame_type = f"ultra_optimized_{camera_idx}"
             segmentation_msg.note = f"Inference: {inference_time*1000:.1f}ms"
             
-            # ✅ Create display image with ENHANCED annotations
+            # ✅ Create ENHANCED display image
             display_frame = frame.copy()
+            
+            # ✅ Add camera info
+            camera_name = self.camera_names[camera_idx].upper().replace('_', ' ')
+            cv2.rectangle(display_frame, (0, 0), (frame.shape[1], 60), (0, 0, 0), -1)
+            cv2.putText(display_frame, f"CAM {camera_idx+1}: {camera_name}", 
+                      (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+            cv2.putText(display_frame, f"FPS: {1000/max(1, inference_time*1000):.1f} | Det: {len(results[0].boxes) if results[0].boxes is not None else 0}", 
+                      (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
             if results[0].boxes is not None and len(results[0].boxes) > 0:
                 scale_x = frame.shape[1] / self.input_width
                 scale_y = frame.shape[0] / self.input_height
                 
+                # ✅ Get masks if available
                 masks = None
                 if results[0].masks is not None:
                     masks = results[0].masks.data.cpu().numpy()
@@ -276,46 +295,48 @@ class UltraOptimizedDeepStreamNode(Node):
                     result.class_name = results[0].names[class_id]
                     result.confidence = float(box.conf)
                     
-                    # ✅ Scale coordinates
+                    # ✅ Scale coordinates correctly
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                     result.left = int(x1 * scale_x)
                     result.top = int(y1 * scale_y)
                     result.right = int(x2 * scale_x)
                     result.bottom = int(y2 * scale_y)
                     
-                    # ✅ Calculate angle from camera position
+                    # ✅ Calculate ACCURATE angle and distance
                     bbox_center_x = (result.left + result.right) / 2
                     image_width = frame.shape[1]
                     
+                    # ✅ FIXED camera base angles mapping
                     camera_base_angles = {0: 180, 1: 225, 2: 315, 3: 0, 4: 45, 5: 135}
                     base_angle = camera_base_angles.get(camera_idx, 0)
                     angle_offset = ((bbox_center_x / image_width) - 0.5) * 60
                     object_angle = (base_angle + angle_offset) % 360
                     result.angle = object_angle
                     
-                    # ✅ Estimate distance
+                    # ✅ ENHANCED distance estimation
                     bbox_height = result.bottom - result.top
-                    estimated_distance = max(1.0, 800.0 / bbox_height)
-                    result.distance = estimated_distance
+                    bbox_width = result.right - result.left
+                    bbox_area = bbox_height * bbox_width
                     
-                    # ✅ Calculate 3D coordinates
+                    # ✅ Object-specific distance estimation
+                    if result.class_name in ['person']:
+                        estimated_distance = max(1.0, 1000.0 / bbox_height)
+                    elif result.class_name in ['car', 'truck', 'bus']:
+                        estimated_distance = max(2.0, 1500.0 / bbox_height)
+                    elif result.class_name in ['bicycle', 'motorcycle']:
+                        estimated_distance = max(1.0, 800.0 / bbox_height)
+                    else:
+                        estimated_distance = max(1.0, 600.0 / bbox_height)
+                    
+                    result.distance = min(estimated_distance, 50.0)  # Cap at 50m
+                    
+                    # ✅ Calculate ACCURATE 3D coordinates
                     angle_rad = np.radians(object_angle)
-                    result.coordinate_x = estimated_distance * np.cos(angle_rad)
-                    result.coordinate_y = estimated_distance * np.sin(angle_rad)
-                    result.coordinate_z = 0.5
+                    result.coordinate_x = result.distance * np.cos(angle_rad)
+                    result.coordinate_y = result.distance * np.sin(angle_rad)
+                    result.coordinate_z = 0.5  # Assume ground level
                     
-                    # ✅ Enhanced mask processing
-                    if masks is not None and i < len(masks):
-                        mask = masks[i]
-                        mask_resized = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
-                        mask_binary = (mask_resized > 0.5).astype(np.uint8)
-                        
-                        # ✅ Enhanced mask data
-                        result.mask_width = frame.shape[1]
-                        result.mask_height = frame.shape[0]
-                        result.mask_data = mask_binary.flatten().tolist()
-                    
-                    # ✅ Enhanced colors
+                    # ✅ Get DISTINCT color for this class
                     if class_id < len(self.coco_colors):
                         color = self.coco_colors[class_id]
                         text_color = self.text_colors[class_id]
@@ -325,49 +346,60 @@ class UltraOptimizedDeepStreamNode(Node):
                         text_color = (0, 0, 0)
                         result.color_r = result.color_g = result.color_b = 255
                     
-                    # ✅ ENHANCED bounding box with ALL INFO
-                    cv2.rectangle(display_frame, (result.left, result.top), 
-                                (result.right, result.bottom), color, 3)
-                    
-                    # ✅ Enhanced info text with ALL required data
-                    info_lines = [
-                        f"Class: {result.class_name}",
-                        f"Conf: {result.confidence:.2f}",
-                        f"Dist: {result.distance:.1f}m",
-                        f"Pos: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})",
-                        f"Angle: {result.angle:.0f}°"
-                    ]
-                    
-                    # ✅ Draw enhanced info box
-                    text_y = result.top - 10
-                    for line_idx, info_line in enumerate(info_lines):
-                        text_size = cv2.getTextSize(info_line, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-                        
-                        # ✅ Background for readability
-                        cv2.rectangle(display_frame, 
-                                    (result.left, text_y - text_size[1] - 5), 
-                                    (result.left + text_size[0] + 10, text_y + 5), 
-                                    color, -1)
-                        
-                        cv2.putText(display_frame, info_line, 
-                                  (result.left + 5, text_y), 
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2)
-                        
-                        text_y -= (text_size[1] + 8)
-                    
-                    # ✅ Enhanced mask overlay
+                    # ✅ ENHANCED mask processing and display
                     if masks is not None and i < len(masks):
                         mask = masks[i]
+                        # ✅ Resize mask to original frame size
                         mask_resized = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
+                        mask_binary = (mask_resized > 0.5).astype(np.uint8)
+                        
+                        # ✅ Store mask data
+                        result.mask_width = frame.shape[1]
+                        result.mask_height = frame.shape[0]
+                        result.mask_data = mask_binary.flatten().tolist()
+                        
+                        # ✅ PERFECT mask overlay with DISTINCT colors
                         mask_colored = np.zeros_like(display_frame)
                         mask_colored[:,:] = color
                         
-                        alpha = 0.3
-                        mask_area = mask_resized > 0.5
-                        display_frame[mask_area] = cv2.addWeighted(
-                            display_frame[mask_area], 1-alpha,
-                            mask_colored[mask_area], alpha, 0
-                        )
+                        # ✅ Apply mask with transparency
+                        alpha = 0.4
+                        mask_area = mask_binary > 0
+                        if np.any(mask_area):
+                            display_frame[mask_area] = cv2.addWeighted(
+                                display_frame[mask_area], 1-alpha,
+                                mask_colored[mask_area], alpha, 0
+                            )
+                    
+                    # ✅ ENHANCED bounding box with THICK borders
+                    cv2.rectangle(display_frame, (result.left, result.top), 
+                                (result.right, result.bottom), color, 4)
+                    
+                    # ✅ ALL required information display
+                    info_lines = [
+                        f"Camera: {camera_name}",
+                        f"Class: {result.class_name}",
+                        f"Conf: {result.confidence:.2f}",
+                        f"Distance: {result.distance:.1f}m",
+                        f"Coordinate: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})"
+                    ]
+                    
+                    # ✅ LARGE info box for visibility
+                    text_y = max(80, result.top - 10)
+                    for line_idx, info_line in enumerate(info_lines):
+                        text_size = cv2.getTextSize(info_line, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+                        
+                        # ✅ Background for readability
+                        cv2.rectangle(display_frame, 
+                                    (result.left, text_y - text_size[1] - 8), 
+                                    (result.left + text_size[0] + 15, text_y + 8), 
+                                    color, -1)
+                        
+                        cv2.putText(display_frame, info_line, 
+                                  (result.left + 8, text_y), 
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.8, text_color, 2)
+                        
+                        text_y -= (text_size[1] + 12)
                     
                     detection_msg.yolov12_inference.append(result)
                     segmentation_msg.yolov12_inference.append(result)
@@ -391,15 +423,15 @@ class UltraOptimizedDeepStreamNode(Node):
         while self.processing_active:
             try:
                 self.create_ultra_enhanced_grid()
-                time.sleep(0.0333)  # 30 FPS for grid
+                time.sleep(0.0167)  # 60 FPS for grid
             except Exception as e:
                 self.get_logger().error(f"❌ Grid error: {e}")
                 time.sleep(0.1)
 
     def create_ultra_enhanced_grid(self):
-        """✅ MAXIMUM enhanced 2x3 grid with ALL cameras"""
+        """✅ MAXIMUM enhanced 2x3 grid with ALL cameras and FULL info"""
         try:
-            target_size = (640, 360)  # Optimal per camera
+            target_size = (960, 540)  # ✅ LARGER for better visibility
             grid_images = []
             
             for i in range(6):
@@ -413,8 +445,11 @@ class UltraOptimizedDeepStreamNode(Node):
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
                     camera_name = self.camera_names[i].upper().replace('_', ' ')
                     cv2.putText(black_img, f"CAM {i+1}: {camera_name}", 
-                              (target_size[0]//4, target_size[1]//2), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                              (target_size[0]//4, target_size[1]//2-20), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
+                    cv2.putText(black_img, "WAITING...", 
+                              (target_size[0]//3, target_size[1]//2+30), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -422,30 +457,31 @@ class UltraOptimizedDeepStreamNode(Node):
                 bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
                 grid = np.vstack([top_row, bottom_row])
                 
-                # ✅ Enhanced status info
+                # ✅ ENHANCED status info
                 avg_inference = self.total_inference_time / max(1, self.inference_count)
                 theoretical_fps = 1.0 / avg_inference if avg_inference > 0 else 0
                 
-                status_height = 80
+                status_height = 100
                 cv2.rectangle(grid, (0, grid.shape[0]-status_height), (grid.shape[1], grid.shape[0]), (0, 0, 0), -1)
                 
                 status_color = (0, 255, 0) if theoretical_fps >= 100 else (0, 255, 255)
                 
                 info_lines = [
-                    f"HUSKYBOT ULTRA-OPTIMIZED 360° | Detections: Active",
+                    f"HUSKYBOT 360° ULTRA-OPTIMIZED SEGMENTATION | Detection: ACTIVE",
                     f"Theoretical FPS: {theoretical_fps:.1f} | Target: 100+ | Status: {'ACHIEVED!' if theoretical_fps >= 100 else 'OPTIMIZING...'}",
-                    f"Inference: {avg_inference*1000:.1f}ms | All 6 cameras active with bounding box info"
+                    f"Inference: {avg_inference*1000:.1f}ms | ALL 6 cameras with FULL segmentation + distance + coordinates",
+                    f"Resolution: {grid.shape[1]}x{grid.shape[0]} | Press 'q' in auto_grid_viewer to quit"
                 ]
                 
                 for idx, info_line in enumerate(info_lines):
                     y_pos = grid.shape[0] - status_height + 20 + (idx * 20)
                     cv2.putText(grid, info_line, (20, y_pos), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, status_color, 2)
                 
                 # ✅ Publish grid
                 grid_msg = self.bridge.cv2_to_imgmsg(grid, 'bgr8')
                 grid_msg.header.stamp = self.get_clock().now().to_msg()
-                grid_msg.header.frame_id = "ultra_optimized_grid_all_cameras"
+                grid_msg.header.frame_id = "ultra_optimized_grid_all_cameras_segmentation"
                 self.grid_pub.publish(grid_msg)
                 
         except Exception as e:

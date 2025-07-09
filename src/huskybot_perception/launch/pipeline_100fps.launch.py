@@ -38,7 +38,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start ULTRA-OPTIMIZED DeepStream
+        # ✅ 3. Start FIXED DeepStream with CORRECT parameters
         TimerAction(
             period=10.0,
             actions=[
@@ -50,8 +50,8 @@ def generate_launch_description():
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 320,   # ✅ MAXIMUM reduction for speed
-                        'input_height': 320,  # ✅ MAXIMUM reduction for speed
+                        'input_width': 640,   # ✅ FIXED: Match model size
+                        'input_height': 640,  # ✅ FIXED: Match model size
                         'batch_size': 1,      # ✅ Single for speed
                         'device_id': 0
                     }],
@@ -156,8 +156,8 @@ def generate_launch_description():
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
                          'echo "✅ AUTO-DISPLAY: Grid (6 cameras) + RViz2 ACTIVATED!" && '
-                         'echo "📋 Bounding box info: Class, Confidence, Distance, Coordinates ENABLED!" && '
-                         'echo "🚀 TARGET: 100+ FPS with full segmentation!"'],
+                         'echo "📋 Segmentation with mask, bounding box info: Class, Confidence, Distance, Coordinates ENABLED!" && '
+                         'echo "🚀 TARGET: 100+ FPS with FULL segmentation and 3D visualization!"'],
                     output='screen'
                 )
             ]
