@@ -72,13 +72,13 @@ setup(
     zip_safe=True,
     maintainer='Jezzy Putra Munggaran',
     maintainer_email='mungguran.jezzy.putra@gmail.com',
-    description='100+ FPS perception pipeline with auto-display',
+    description='100+ FPS perception pipeline with AUTO-POPUP display',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # ✅ FIXED: Correct executable path
             'create_rviz_config = huskybot_perception.create_rviz_config:main',
+            'auto_grid_viewer = huskybot_perception.auto_grid_viewer:main',
             'visualizer_node = huskybot_perception.visualizer_node:main',
             'logger_node = huskybot_perception.logger_node:main',
             'fusion_visualizer_node = huskybot_perception.fusion_visualizer_node:main',
