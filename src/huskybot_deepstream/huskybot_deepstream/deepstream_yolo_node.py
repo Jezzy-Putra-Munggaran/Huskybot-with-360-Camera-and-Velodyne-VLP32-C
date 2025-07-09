@@ -82,33 +82,35 @@ class MaximumOptimizedDeepStreamNode(Node):
             self.get_logger().warn(f"Jetson optimization warning: {e}")
 
     def setup_maximum_optimized_model(self):
-        """✅ MAXIMUM optimized model with auto-fallback"""
+        """✅ MAXIMUM optimized model with YOLO11X (terbaru dan tercepat)"""
         try:
             from ultralytics import YOLO
             
-            # ✅ FIXED: Updated model candidates dengan fallback yang lebih baik
+            # ✅ FIXED: Use YOLO11X (yang benar-benar tersedia)
             model_candidates = [
-                # YOLO12X variants (paling cepat)
-                f"/home/kmp-orin/jezzy/huskybot/yolo12x-seg.engine",
-                f"/home/kmp-orin/jezzy/huskybot/yolo12x.engine",
-                f"/home/kmp-orin/jezzy/huskybot/yolo12x-seg.pt",
-                
-                # YOLO11X fallback
+                # YOLO11X variants (model terbaru dan tercepat)
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine",
+                f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine", 
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",
+                f"/home/kmp-orin/jezzy/huskybot/yolo11x.pt",
+                
+                # Current directory fallback
+                "./yolo11x-seg.engine",
+                "./yolo11x-seg.pt",
+                "./yolo11x.pt",
                 
                 # Parameter fallback
                 f"/home/kmp-orin/jezzy/huskybot/{self.model_engine}",
                 
                 # Global fallback untuk auto-download
-                "yolo12x-seg.pt",  # Akan auto-download jika tidak ada
-                "yolo11x-seg.pt"   # Fallback terakhir
+                "yolo11x-seg.pt",  # Model terbaru yang benar-benar ada
+                "yolo11x.pt",      # Fallback detection only
+                "yolo11n-seg.pt"   # Ultimate fallback (nano)
             ]
             
             model_path = None
             for candidate in model_candidates:
-                if candidate.startswith("yolo") and not candidate.startswith("/"):
+                if candidate.startswith("yolo") and not candidate.startswith("/") and not candidate.startswith("./"):
                     # Model akan auto-download
                     model_path = candidate
                     self.get_logger().info(f"🔄 Will auto-download: {candidate}")
@@ -119,33 +121,35 @@ class MaximumOptimizedDeepStreamNode(Node):
                     break
             
             if not model_path:
-                # Ultimate fallback - force download YOLO11X
+                # Ultimate fallback - YOLO11X yang pasti ada
                 model_path = "yolo11x-seg.pt"
-                self.get_logger().warn("⚠️ No local models found, will auto-download yolo11x-seg.pt")
+                self.get_logger().warn("⚠️ Using fallback: yolo11x-seg.pt")
             
-            self.get_logger().info(f"🔥 Loading MAXIMUM-OPTIMIZED model: {model_path}")
+            self.get_logger().info(f"🔥 Loading YOLO11X MAXIMUM-OPTIMIZED model: {model_path}")
             
             # ✅ Load with auto-download capability
             self.yolo_model = YOLO(model_path)
             
-            # ✅ Auto-export to engine if .pt file
+            # ✅ Auto-export to engine if .pt file and local
             if model_path.endswith('.pt') and not model_path.startswith('/'):
-                self.get_logger().info("🚀 Auto-converting to TensorRT engine for maximum speed...")
+                self.get_logger().info("🚀 Auto-converting YOLO11X to TensorRT engine...")
                 try:
                     engine_path = self.yolo_model.export(
                         format='engine',
                         device=0,
                         half=True,
-                        workspace=4,
+                        workspace=8,  # Increase for Jetson
                         verbose=False,
-                        batch=1,  # Single for compatibility
-                        imgsz=640
+                        batch=1,
+                        imgsz=640,
+                        optimize=True,
+                        simplify=True
                     )
                     # Reload with engine
                     self.yolo_model = YOLO(engine_path)
-                    self.get_logger().info(f"✅ Successfully converted and loaded: {engine_path}")
+                    self.get_logger().info(f"✅ YOLO11X TensorRT engine loaded: {engine_path}")
                 except Exception as e:
-                    self.get_logger().warn(f"Engine conversion failed, using PT model: {e}")
+                    self.get_logger().warn(f"TensorRT conversion failed, using PT: {e}")
             
             # ✅ Configure for MAXIMUM speed
             if hasattr(self.yolo_model, 'model'):

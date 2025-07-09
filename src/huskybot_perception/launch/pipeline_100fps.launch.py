@@ -12,7 +12,7 @@ def generate_launch_description():
     return LaunchDescription([
         
         # Arguments with YOLO12X for MAXIMUM speed
-        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.engine'),
+        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.pt'),  # ✅ Use YOLO11X
         DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('debug_mode', default_value='true'),
         DeclareLaunchArgument('auto_display', default_value='true'),
