@@ -27,7 +27,7 @@ def generate_launch_description():
         
         # ✅ 2. Start cameras
         TimerAction(
-            period=3.0,  # Reduced delay
+            period=3.0,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -38,9 +38,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start ULTRA-OPTIMIZED DeepStream
+        # ✅ 3. Start ULTRA-OPTIMIZED DeepStream (FIXED parameters)
         TimerAction(
-            period=10.0,  # Reduced delay
+            period=10.0,
             actions=[
                 Node(
                     package='huskybot_deepstream',
@@ -50,9 +50,9 @@ def generate_launch_description():
                     parameters=[{
                         'model_engine': LaunchConfiguration('model_path'),
                         'fps_target': LaunchConfiguration('fps_target'),
-                        'input_width': 416,   # ✅ Optimized for speed
-                        'input_height': 416,
-                        'skip_frames': 2,     # ✅ More aggressive skipping
+                        'input_width': 640,   # ✅ FIXED to match model
+                        'input_height': 640,  # ✅ FIXED to match model
+                        'skip_frames': 1,     # ✅ Minimal skipping for speed
                         'batch_size': 6,
                         'device_id': 0
                     }],
@@ -103,28 +103,58 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 7. AUTO-POPUP RViz2 for 3D visualization
+        # ✅ 7. AUTO-POPUP: Large Grid Display (960x720 per camera)
         TimerAction(
             period=25.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'export DISPLAY=:0 && '
+                         'python3 -c "'
+                         'import cv2; import rclpy; '
+                         'from rclpy.node import Node; '
+                         'from sensor_msgs.msg import Image; '
+                         'from cv_bridge import CvBridge; '
+                         'import threading; '
+                         'import time; '
+                         'import numpy as np; '
+                         'class GridViewer(Node): '
+                         '    def __init__(self): '
+                         '        super().__init__(\\\"grid_viewer\\\"); '
+                         '        self.bridge = CvBridge(); '
+                         '        self.latest_grid = None; '
+                         '        self.sub = self.create_subscription(Image, \\\"/deepstream_grid\\\", self.grid_callback, 1); '
+                         '        threading.Thread(target=self.display_loop, daemon=True).start(); '
+                         '    def grid_callback(self, msg): '
+                         '        try: self.latest_grid = self.bridge.imgmsg_to_cv2(msg, \\\"bgr8\\\"); '
+                         '        except: pass; '
+                         '    def display_loop(self): '
+                         '        cv2.namedWindow(\\\"HUSKYBOT 360° ULTRA-FAST\\\", cv2.WINDOW_NORMAL); '
+                         '        cv2.resizeWindow(\\\"HUSKYBOT 360° ULTRA-FAST\\\", 1920, 1080); '
+                         '        while True: '
+                         '            if self.latest_grid is not None: '
+                         '                cv2.imshow(\\\"HUSKYBOT 360° ULTRA-FAST\\\", self.latest_grid); '
+                         '            if cv2.waitKey(1) & 0xFF == ord(\\\"q\\\"): break; '
+                         '            time.sleep(0.033); '
+                         'rclpy.init(); '
+                         'viewer = GridViewer(); '
+                         'rclpy.spin(viewer); '
+                         'cv2.destroyAllWindows()" &'],
+                    output='screen',
+                    name='auto_popup_large_grid'
+                )
+            ]
+        ),
+        
+        # ✅ 8. AUTO-POPUP RViz2 for 3D visualization
+        TimerAction(
+            period=30.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
                          'export DISPLAY=:0 && rviz2 -d /home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz/huskybot_3d.rviz > /dev/null 2>&1 &'],
                     output='screen',
                     name='auto_popup_rviz2'
-                )
-            ]
-        ),
-        
-        # ✅ 8. AUTO-POPUP RQT Image View for grid visualization
-        TimerAction(
-            period=30.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'export DISPLAY=:0 && rqt_image_view /deepstream_grid > /dev/null 2>&1 &'],
-                    output='screen',
-                    name='auto_popup_grid_viewer'
                 )
             ]
         ),
@@ -145,7 +175,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 10. Final status and auto-display confirmation
+        # ✅ 10. Final status and confirmation
         TimerAction(
             period=40.0,
             actions=[
@@ -157,8 +187,8 @@ def generate_launch_description():
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
                          'echo "✅ AUTO-DISPLAY ACTIVATED!" && '
-                         'echo "🖥️  RViz2: Auto-opened for 3D visualization" && '
-                         'echo "📺 RQT: Auto-opened for grid visualization" && '
+                         'echo "🖥️  Large Grid: Auto-opened (960x720 per camera)" && '
+                         'echo "📺 RViz2: Auto-opened for 3D visualization" && '
                          'echo "🚀 TARGET: 100+ FPS Achievement!"'],
                     output='screen'
                 )
