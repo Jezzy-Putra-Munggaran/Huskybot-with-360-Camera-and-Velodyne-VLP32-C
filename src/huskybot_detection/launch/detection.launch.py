@@ -31,7 +31,7 @@ from launch.events import Shutdown  # Untuk shutdown event
 DEFAULT_MODEL_PATHS = [
     "yolo12x.engine",     # TensorRT (Jetson) - prioritas utama jika Jetson
     "yolo12x.onnx",       # ONNX (universal) - fallback jika tidak ada TensorRT
-    "yolo12x.pt",         # PyTorch (fallback) - fallback terakhir
+    "yolo12x.engine",         # PyTorch (fallback) - fallback terakhir
 ]
 DEFAULT_CAMERA_TOPICS = [
     "/camera_front/image_raw",        # Kamera depan
@@ -122,7 +122,7 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
     ]
     base_name = os.path.splitext(model_path)[0]
     recommended_format = platform_info.get('recommended_format', 'engine' if platform_info.get('is_jetson', False) else 'onnx')
-    extensions = ['.engine', '.onnx', '.pt'] if recommended_format == 'engine' else ['.onnx', '.pt', '.engine']
+    extensions = ['.engine', '.onnx', '.engine'] if recommended_format == 'engine' else ['.onnx', '.engine', '.engine']
     for ext in extensions:
         possible_paths.append(f"{base_name}{ext}")
         possible_paths.append(os.path.join(os.getcwd(), f"{base_name}{ext}"))
@@ -145,10 +145,10 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
             os.path.join(os.getcwd(), 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.onnx'),
-            os.path.join(os.getcwd(), 'models', 'yolo*.pt'),
-            os.path.join(os.getcwd(), 'yolo*.pt'),
-            os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.pt'),
-            os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.pt')
+            os.path.join(os.getcwd(), 'models', 'yolo*.engine'),
+            os.path.join(os.getcwd(), 'yolo*.engine'),
+            os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.engine'),
+            os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.engine')
         ]
     else:
         pattern_searches = [
@@ -156,10 +156,10 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
             os.path.join(os.getcwd(), 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.onnx'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.onnx'),
-            os.path.join(os.getcwd(), 'models', 'yolo*.pt'),
-            os.path.join(os.getcwd(), 'yolo*.pt'),
-            os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.pt'),
-            os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.pt'),
+            os.path.join(os.getcwd(), 'models', 'yolo*.engine'),
+            os.path.join(os.getcwd(), 'yolo*.engine'),
+            os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.engine'),
+            os.path.join(os.path.expanduser('~'), 'huskybot', 'yolo*.engine'),
             os.path.join(os.getcwd(), 'models', 'yolo*.engine'),
             os.path.join(os.getcwd(), 'yolo*.engine'),
             os.path.join(os.path.expanduser('~'), 'huskybot', 'models', 'yolo*.engine'),
@@ -179,7 +179,7 @@ def validate_model_path(model_path: str, platform_info: Dict[str, Any]=None) -> 
             print(f"[WARNING] Error in pattern search '{pattern}': {e}", file=sys.stderr)
     print(f"[WARNING] No valid model file found at {model_path} or in fallback locations", file=sys.stderr)
     print("[WARNING] Make sure YOLOv12 model files are properly installed", file=sys.stderr)
-    print("[WARNING] Expected formats: .engine (TensorRT), .onnx (ONNX Runtime), or .pt (PyTorch)", file=sys.stderr)
+    print("[WARNING] Expected formats: .engine (TensorRT), .onnx (ONNX Runtime), or .engine (PyTorch)", file=sys.stderr)
     print("[WARNING] Node will likely fail at runtime without a valid model file", file=sys.stderr)
     return model_path
 
@@ -484,7 +484,7 @@ def generate_launch_description():
         default_model_path = 'yolo12x.onnx'
     elif default_model == 'onnx' and not check_python_dependency('onnxruntime'):
         print("[WARNING] ONNX Runtime not available, fallback to PyTorch", file=sys.stderr)
-        default_model_path = 'yolo12x.pt'
+        default_model_path = 'yolo12x.engine'
     else:
         default_model_path = 'yolo12x.engine' if default_model == 'engine' else 'yolo12x.onnx'
 
@@ -499,7 +499,7 @@ def generate_launch_description():
 
     # ===================== DECLARE LAUNCH ARGUMENTS (URUTAN WAJIB) =====================
     cam_count_arg = DeclareLaunchArgument('cam_count', default_value='6', description='Number of cameras (default: 6 for hexagonal array)', choices=[str(i) for i in range(1, 13)])  # Jumlah kamera
-    model_path_arg = DeclareLaunchArgument('model_path', default_value=model_path, description='Path to YOLOv12 model file (.pt, .onnx, .engine)')  # Path model
+    model_path_arg = DeclareLaunchArgument('model_path', default_value=model_path, description='Path to YOLOv12 model file (.engine, .onnx, .engine)')  # Path model
     namespace_arg = DeclareLaunchArgument('namespace', default_value='', description='Namespace prefix for multi-robot scenarios')  # Namespace multi-robot
     visualization_arg = DeclareLaunchArgument('visualization_enabled', default_value='true', description='Enable visualization of detection results in OpenCV window', choices=['true', 'false'])  # Visualisasi
     conf_thresh_arg = DeclareLaunchArgument('conf_thres', default_value='0.25', description='Confidence threshold for filtering detections (0.0-1.0)')  # Threshold confidence

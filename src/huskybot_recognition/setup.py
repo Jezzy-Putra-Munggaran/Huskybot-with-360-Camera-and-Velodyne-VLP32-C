@@ -23,7 +23,7 @@ setup(
         ('share/' + package_name + '/launch', glob('launch/*.py')),  # Install semua launch file ke share/package_name/launch/
         ('share/' + package_name + '/scripts', glob('scripts/*.py')),  # Install semua script Python ke share/package_name/scripts/
         ('share/' + package_name, ['README.md']),  # Install README untuk dokumentasi
-        ('share/' + package_name + '/scripts', glob('scripts/*.pt')),  # [SARAN] Install file model YOLOv12 (.pt) ke scripts/ agar node tidak error file hilang
+        ('share/' + package_name + '/scripts', glob('scripts/*.engine')),  # [SARAN] Install file model YOLOv12 (.engine) ke scripts/ agar node tidak error file hilang
         ('share/' + package_name + '/scripts', glob('scripts/*.engine')),  # [SARAN] Install file model YOLOv12 TensorRT (.engine) ke scripts/
         ('share/' + package_name + '/scripts', glob('scripts/*.onnx')),  # [SARAN] Install file model YOLOv12 ONNX (.onnx) ke scripts/
         ('share/' + package_name + '/calibration', glob('../huskybot_description/calibration/*.yaml')),  # [SARAN] Install file kalibrasi kamera jika ada
@@ -59,7 +59,7 @@ setup(
     entry_points={
         'console_scripts': [
             # Daftarkan semua script yang ingin bisa dijalankan via ros2 run/launch
-            'yolov12_ros2_pt.py = huskybot_recognition.scripts.yolov12_ros2_pt:main',  # Node utama YOLOv12 multi-kamera (.pt fallback)
+            'yolov12_ros2_pt.py = huskybot_recognition.scripts.yolov12_ros2_pt:main',  # Node utama YOLOv12 multi-kamera (.engine fallback)
             'yolov12_ros2_trt.py = huskybot_recognition.scripts.yolov12_ros2_trt:main',  # Node YOLOv12 TensorRT (.engine, Jetson Orin)
             'yolov12_ros2_onnx.py = huskybot_recognition.scripts.yolov12_ros2_onnx:main',  # Node YOLOv12 ONNX (.onnx fallback)
             'yolov12_stitcher_node.py = huskybot_recognition.scripts.yolov12_stitcher_node:main',  # Node stitcher panorama
@@ -82,7 +82,7 @@ setup(
 # - Sudah terhubung dengan pipeline stitching, YOLO, panorama, logger, dan listener di workspace.
 # - Error handling di setup.py: tidak ada error handling runtime, tapi dependency sudah fail-fast jika tidak ditemukan saat build/install.
 # - Saran peningkatan (SUDAH diimplementasikan di atas):
-#   1. Install file model YOLOv12 (.pt/.engine/.onnx) ke scripts/ agar node tidak error file hilang.
+#   1. Install file model YOLOv12 (.engine/.engine/.onnx) ke scripts/ agar node tidak error file hilang.
 #   2. Install file kalibrasi YAML ke calibration/ agar node stitcher tidak error file hilang.
 #   3. Install test/ script untuk CI/CD.
 #   4. Pastikan semua script Python sudah chmod +x (executable).

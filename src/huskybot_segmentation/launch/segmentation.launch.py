@@ -9,7 +9,7 @@ import os
 def generate_launch_description():
     # Find model with debugging
     model_file = None
-    model_extensions = ['.engine', '.onnx', '.pt']
+    model_extensions = ['.engine', '.onnx', '.engine']
     model_names = ['yolo11x-seg', 'yolov8n-seg']
     
     search_paths = [

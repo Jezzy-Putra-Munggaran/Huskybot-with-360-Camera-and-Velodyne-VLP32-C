@@ -25,7 +25,7 @@ for f in required_files:
 # Globbing semua launch file, test file, dan model (jika ada)
 launch_files = glob('launch/*.launch.py')  # Semua launch file Python
 test_files = glob('test/*.py')  # Semua unit test/linter
-model_files = glob('models/*.engine') + glob('models/*.onnx') + glob('models/*.pt')  # Semua model YOLOv12 (opsional)
+model_files = glob('models/*.engine') + glob('models/*.onnx') + glob('models/*.engine')  # Semua model YOLOv12 (opsional)
 
 # ===================== DATA FILES UNTUK INSTALL (SHARE KE ROS2) =====================
 data_files = [
@@ -116,7 +116,7 @@ setup(
 # - Sudah siap untuk ROS2 Humble, simulasi Gazebo, Jetson Orin, dan robot real (Clearpath Husky A200)
 # - FULL OOP di node utama (multicam_segmentation_node.py), setup.py hanya build system
 # - Sudah siap audit trail, multi-robot, dan integrasi pipeline workspace (fusion, logger, dsb)
-# - Saran: Tambahkan glob('models/*') jika folder models/ sudah ada (untuk YOLOv12 .engine/.onnx/.pt)
+# - Saran: Tambahkan glob('models/*') jika folder models/ sudah ada (untuk YOLOv12 .engine/.onnx/.engine)
 # - Saran: Tambahkan badge CI/CD dan coverage test di README jika pipeline sudah aktif
 # - Saran: Tambahkan test/launch/test_segmentation_launch.py untuk CI/CD
 # - Saran: Dokumentasikan semua parameter di README dan launch file

@@ -28,7 +28,7 @@ Node deteksi YOLOv12 multicamera untuk Huskybot (360° Arducam IMX477). Publish 
 - `test/` : Unit test dan linter (flake8, pep257, copyright). <!-- Folder test -->
 - `README.md` : Dokumentasi package ini. <!-- File dokumentasi -->
 - `setup.py`, `setup.cfg`, `package.xml` : Build system dan metadata ROS2. <!-- File build system dan metadata -->
-- `models/` : (Opsional) Model YOLOv12 (.engine/.onnx/.pt) untuk inference. <!-- Folder model YOLOv12 -->
+- `models/` : (Opsional) Model YOLOv12 (.engine/.onnx/.engine) untuk inference. <!-- Folder model YOLOv12 -->
 - `config/` : (Opsional) File konfigurasi YAML/JSON. <!-- Folder konfigurasi -->
 - `logs/` : (Otomatis) Folder log hasil deteksi. <!-- Folder log hasil deteksi -->
 

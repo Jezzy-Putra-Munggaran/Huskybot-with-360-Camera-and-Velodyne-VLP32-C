@@ -82,10 +82,10 @@ VALID_MODEL_TYPES = ['detection', 'segmentation', 'obb', 'tracking']  # Supporte
 
 # Paths for model files by type - used for validation
 MODEL_FILE_PATTERNS = {  # Dictionary mapping model types to expected file patterns
-    'detection': ['yolo12x.engine', 'yolo12x.pt', 'yolo12x.onnx'],  # Detection model file patterns
-    'segmentation': ['yolo11x-seg.engine', 'yolo11x-seg.pt', 'yolo11x-seg.onnx'],  # Segmentation model file patterns
-    'obb': ['yolo12x-obb.engine', 'yolo12x-obb.pt', 'yolo12x-obb.onnx'],  # OBB model file patterns
-    'tracking': ['yolo12x-track.engine', 'yolo12x-track.pt', 'yolo12x-track.onnx']  # Tracking model file patterns
+    'detection': ['yolo12x.engine', 'yolo12x.engine', 'yolo12x.onnx'],  # Detection model file patterns
+    'segmentation': ['yolo11x-seg.engine', 'yolo11x-seg.engine', 'yolo11x-seg.onnx'],  # Segmentation model file patterns
+    'obb': ['yolo12x-obb.engine', 'yolo12x-obb.engine', 'yolo12x-obb.onnx'],  # OBB model file patterns
+    'tracking': ['yolo12x-track.engine', 'yolo12x-track.engine', 'yolo12x-track.onnx']  # Tracking model file patterns
 }
 
 # Topic mapping for different model types - for validation and parameter passing

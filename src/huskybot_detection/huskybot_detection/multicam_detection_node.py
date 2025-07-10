@@ -176,7 +176,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
         
         self.declare_parameter('model_path', "yolo12x.engine", ParameterDescriptor(
             type=ParameterType.PARAMETER_STRING,
-            description='Path to YOLOv12 model file (.pt, .onnx, or .engine)'
+            description='Path to YOLOv12 model file (.engine, .onnx, or .engine)'
         ))
         
         self.declare_parameter('camera_topics_str', str(DEFAULT_CAMERA_TOPICS), ParameterDescriptor(
@@ -416,7 +416,7 @@ class MultiCamDetectionNode(Node):  # Node deteksi multicam YOLOv12, FULL OOP
             self.get_logger().error(f"Error publishing diagnostics: {e}")
 
     def _load_model(self):
-        # Load YOLOv12 model, fallback ke .pt jika .engine/.onnx gagal
+        # Load YOLOv12 model, fallback ke .engine jika .engine/.onnx gagal
         if not ULTRALYTICS_AVAILABLE:
             self.get_logger().error("Ultralytics not available, cannot load model")
             return

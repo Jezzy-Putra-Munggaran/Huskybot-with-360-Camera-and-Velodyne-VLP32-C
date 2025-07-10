@@ -102,7 +102,7 @@ def check_environment(context=None):
         
         if not verify_path_exists(segmentation_model_path, "YOLOv11 segmentation model"):
             # Check for alternative model formats
-            alt_formats = ['yolo11x-seg.pt', 'yolo11x-seg.onnx']
+            alt_formats = ['yolo11x-seg.engine', 'yolo11x-seg.onnx']
             found = False
             for format in alt_formats:
                 alt_path = os.path.join(segmentation_dir, 'models', format)
@@ -114,7 +114,7 @@ def check_environment(context=None):
             
             if not found:
                 return log_error_and_exit(f"YOLOv11 segmentation model not found in {os.path.join(segmentation_dir, 'models')}. \n"
-                                          "Please ensure you have 'yolo11x-seg.engine', 'yolo11x-seg.pt', or 'yolo11x-seg.onnx'.")
+                                          "Please ensure you have 'yolo11x-seg.engine', 'yolo11x-seg.engine', or 'yolo11x-seg.onnx'.")
     
     except Exception as e:
         return log_error_and_exit(f"Error checking YOLOv11 segmentation model: {e}")

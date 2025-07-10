@@ -101,7 +101,7 @@ def check_environment(context=None):
         
         if not verify_path_exists(yolo_model_path, "YOLOv12 model"):
             # Check for alternative model formats
-            alt_formats = ['yolo12x.pt', 'yolo12x.onnx']
+            alt_formats = ['yolo12x.engine', 'yolo12x.onnx']
             found = False
             for format in alt_formats:
                 alt_path = os.path.join(detection_dir, 'models', format)
@@ -113,7 +113,7 @@ def check_environment(context=None):
             
             if not found:
                 return log_error_and_exit(f"YOLOv12 model not found in {os.path.join(detection_dir, 'models')}. \n"
-                                          "Please ensure you have 'yolo12x.engine', 'yolo12x.pt', or 'yolo12x.onnx'.")
+                                          "Please ensure you have 'yolo12x.engine', 'yolo12x.engine', or 'yolo12x.onnx'.")
     
     except Exception as e:
         return log_error_and_exit(f"Error checking YOLOv12 model: {e}")

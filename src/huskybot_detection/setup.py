@@ -29,12 +29,12 @@ launch_files = glob('launch/*.launch.py')  # List semua launch file
 if not launch_files:
     print(f"[WARNING] Tidak ada launch file ditemukan di folder launch/", file=sys.stderr)
 
-# Install semua model files (.pt, .onnx, .engine) jika folder models/ ada
+# Install semua model files (.engine, .onnx, .engine) jika folder models/ ada
 model_files = []
 if os.path.isdir('models'):
-    model_files = glob('models/*.pt') + glob('models/*.onnx') + glob('models/*.engine')
+    model_files = glob('models/*.engine') + glob('models/*.onnx') + glob('models/*.engine')
     if not model_files:
-        print(f"[WARNING] Folder models/ ada, tapi tidak ada file model .pt/.onnx/.engine ditemukan", file=sys.stderr)
+        print(f"[WARNING] Folder models/ ada, tapi tidak ada file model .engine/.onnx/.engine ditemukan", file=sys.stderr)
 else:
     print(f"[INFO] Folder models/ tidak ditemukan, skip install model files", file=sys.stderr)
 
@@ -124,7 +124,7 @@ setup(
 
 # ===================== REVIEW & SARAN PENINGKATAN (SUDAH DIIMPLEMENTASIKAN) =====================
 # - Semua dependency di package.xml dan setup.py sudah disinkronkan (std_msgs, std_srvs, diagnostic_msgs, rcl_interfaces)
-# - Ditambahkan support untuk model files (.pt, .onnx, .engine) jika folder models/ ada (otomatis, robust)
+# - Ditambahkan support untuk model files (.engine, .onnx, .engine) jika folder models/ ada (otomatis, robust)
 # - Ditambahkan python_requires untuk pastikan Python 3.8+ (kompatibel dengan ROS2 Humble)
 # - Ditambahkan extras_require untuk development dependencies (pip install -e .[dev])
 # - Ditambahkan classifiers untuk metadata PyPI yang lebih baik

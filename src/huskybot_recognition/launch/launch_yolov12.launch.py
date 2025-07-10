@@ -8,7 +8,7 @@ import shutil  # [BEST PRACTICE] Untuk operasi file (backup log, dsb)
 import time  # [BEST PRACTICE] Untuk timestamp logging
 
 # ===================== ERROR HANDLING & LOGGER =====================
-def check_model_file(context, *args, **kwargs):  # [WAJIB] Validasi file model YOLOv12 (.pt/.engine/.onnx)
+def check_model_file(context, *args, **kwargs):  # [WAJIB] Validasi file model YOLOv12 (.engine/.engine/.onnx)
     model_path = LaunchConfiguration('model_path').perform(context)  # [WAJIB] Ambil path model dari argumen launch
     expanded_path = os.path.expanduser(model_path)  # [WAJIB] Expand ~ ke home user
     if not os.path.isfile(expanded_path):  # [WAJIB] Jika file model tidak ada
@@ -83,7 +83,7 @@ def generate_launch_description():  # [WAJIB] Fungsi utama generate LaunchDescri
         model_path_arg = DeclareLaunchArgument(
             'model_path',  # [WAJIB] Nama argumen
             default_value='~/jezzy/huskybot/src/huskybot_recognition/huskybot_recognition/scripts/yolo12x.engine',  # [WAJIB] Path default model YOLOv12 TensorRT
-            description='Path ke file model YOLOv12 (.engine/.onnx/.pt)'  # [WAJIB] Path file model YOLOv12
+            description='Path ke file model YOLOv12 (.engine/.onnx/.engine)'  # [WAJIB] Path file model YOLOv12
         )
         confidence_threshold_arg = DeclareLaunchArgument(
             'confidence_threshold',  # [WAJIB] Nama argumen

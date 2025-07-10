@@ -92,15 +92,15 @@ class MaximumOptimizedDeepStreamNode(Node):
             model_candidates = [
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine", 
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x.pt",
+                f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
+                f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine",
                 "./yolo11x-seg.engine",
-                "./yolo11x-seg.pt",
-                "./yolo11x.pt",
+                "./yolo11x-seg.engine",
+                "./yolo11x.engine",
                 f"/home/kmp-orin/jezzy/huskybot/{self.model_engine}",
-                "yolo11x-seg.pt",
-                "yolo11x.pt",
-                "yolo11n-seg.pt"
+                "yolo11x-seg.engine",
+                "yolo11x.engine",
+                "yolo11n-seg.engine"
             ]
             
             model_path = None
@@ -115,8 +115,8 @@ class MaximumOptimizedDeepStreamNode(Node):
                     break
             
             if not model_path:
-                model_path = "yolo11x-seg.pt"
-                self.get_logger().warn("⚠️ Using fallback: yolo11x-seg.pt")
+                model_path = "yolo11x-seg.engine"
+                self.get_logger().warn("⚠️ Using fallback: yolo11x-seg.engine")
             
             self.get_logger().info(f"🔥 Loading YOLO11X model: {model_path}")
             

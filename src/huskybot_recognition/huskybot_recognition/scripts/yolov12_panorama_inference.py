@@ -86,9 +86,9 @@ class PanoramaDetection(Node):  # [WAJIB] Definisi class node deteksi panorama (
             raise FileNotFoundError(f"Model YOLOv12 tidak ditemukan: {model_path}")
 
         try:
-            # ===================== LOAD MODEL YOLOv12 (.engine/.onnx/.pt) =====================
-            # [SARAN] Otomatis deteksi format model: .engine (TensorRT), .onnx, .pt
-            if model_path.endswith('.engine') or model_path.endswith('.onnx') or model_path.endswith('.pt'):
+            # ===================== LOAD MODEL YOLOv12 (.engine/.onnx/.engine) =====================
+            # [SARAN] Otomatis deteksi format model: .engine (TensorRT), .onnx, .engine
+            if model_path.endswith('.engine') or model_path.endswith('.onnx') or model_path.endswith('.engine'):
                 self.model = YOLO(model_path)  # [WAJIB] Load model YOLOv12 (pastikan path dan file model benar)
                 self.get_logger().info(f"YOLOv12 model loaded successfully: {model_path}")
                 log_to_file(f"YOLOv12 model loaded successfully: {model_path}")
@@ -260,6 +260,6 @@ if __name__ == '__main__':  # [WAJIB] Jika file dijalankan langsung
 #   5. Siap multi-robot (tinggal remap topic via launch file).
 #   6. Siap audit trail dan integrasi logger/fusion.
 #   7. Tambahkan try/except untuk error permission file log/stats.
-#   8. Otomatis deteksi format model (.engine/.onnx/.pt) dan error handling jika format tidak didukung.
+#   8. Otomatis deteksi format model (.engine/.onnx/.engine) dan error handling jika format tidak didukung.
 #   9. Error handling destroy_node dan rclpy.shutdown.
 # - Tidak ada bug/error, sudah best practice node deteksi panorama ROS2 Python.

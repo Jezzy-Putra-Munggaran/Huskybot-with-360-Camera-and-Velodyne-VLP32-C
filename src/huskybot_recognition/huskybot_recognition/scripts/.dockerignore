@@ -12,12 +12,12 @@ data/samples/*
 *.jpg
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
-**/*.pt
-**/*.pth
+**/*.engine
+**/*.engineh
 **/*.onnx
 **/*.mlmodel
 **/*.torchscript
-**/*.torchscript.pt
+**/*.torchscript.engine
 
 
 # Below Copied From .gitignore -----------------------------------------------------------------------------------------

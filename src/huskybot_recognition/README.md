@@ -30,7 +30,7 @@ ros2 launch huskybot_recognition panorama_inference.launch.py
 <!-- Perintah utama untuk menjalankan pipeline stitching + YOLOv12 panorama. -->
 
 **Parameter penting:**
-- `model_path`: Path ke model YOLOv12. <!-- Path file .pt/.engine/.onnx model YOLOv12, bisa diubah di launch file. -->
+- `model_path`: Path ke model YOLOv12. <!-- Path file .engine/.engine/.onnx model YOLOv12, bisa diubah di launch file. -->
 - `confidence_threshold`: Threshold confidence deteksi. <!-- Threshold confidence YOLOv12, bisa diubah di launch file. -->
 - `model_format`: engine/onnx/pt (auto pilih node). <!-- Format model, auto-switch node YOLOv12. -->
 - `log_stats_path`: Path file statistik deteksi. <!-- Path file CSV log deteksi, bisa diubah. -->
