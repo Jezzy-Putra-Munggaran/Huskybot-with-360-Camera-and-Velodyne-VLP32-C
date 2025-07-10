@@ -38,7 +38,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. MAXIMUM Jetson optimization
+        # ✅ 3. MAXIMUM Jetson optimization - MORE AGGRESSIVE
         TimerAction(
             period=8.0,
             actions=[
@@ -47,6 +47,7 @@ def generate_launch_description():
                          'sudo jetson_clocks && '
                          'sudo nvpmodel -m 0 && '
                          'echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor && '
+                         'sudo sh -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" || true && '
                          'echo "🚀 MAXIMUM Jetson optimization activated!"'],
                     output='screen',
                     name='maximum_jetson_optimization'

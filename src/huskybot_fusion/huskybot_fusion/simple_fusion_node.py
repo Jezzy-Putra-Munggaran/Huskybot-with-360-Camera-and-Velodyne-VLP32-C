@@ -221,60 +221,29 @@ class EnhancedFusionNode(Node):
         try:
             all_points = []
             
-            # ✅ Collect ALL detections from ALL cameras
+            # ✅ Collect ALL detections from ALL cameras with clearer logging
             for camera_name, detection_msg in self.latest_detections.items():
                 if detection_msg and hasattr(detection_msg, 'yolov12_inference'):
                     for detection in detection_msg.yolov12_inference:
                         if hasattr(detection, 'coordinate_x'):
-                            # ✅ ENHANCED: Create object-shaped point cloud
-                            center_x = detection.coordinate_x
-                            center_y = detection.coordinate_y
-                            center_z = detection.coordinate_z
+                            self.get_logger().debug(f"Adding 3D point for {detection.class_name} at ({detection.coordinate_x}, {detection.coordinate_y}, {detection.coordinate_z})")
                             
-                            # ✅ Create object shape based on class
+                            # Generate more points per object for better visibility
                             object_size = self.get_object_size(detection.class_name)
                             intensity = detection.confidence * 255.0
                             
-                            # ✅ Generate points based on object type
-                            if detection.class_name in ['person', 'bicycle', 'motorcycle']:
-                                # Vertical objects
-                                for dz in np.linspace(0, object_size['height'], 8):
-                                    for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 4):
-                                        for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 4):
-                                            all_points.append([
-                                                center_x + dx,
-                                                center_y + dy,
-                                                dz,
-                                                intensity
-                                            ])
-                            elif detection.class_name in ['car', 'truck', 'bus']:
-                                # Rectangular objects
-                                for dx in np.linspace(-object_size['width']/2, object_size['width']/2, 6):
-                                    for dy in np.linspace(-object_size['depth']/2, object_size['depth']/2, 10):
-                                        for dz in np.linspace(0, object_size['height'], 4):
-                                            all_points.append([
-                                                center_x + dx,
-                                                center_y + dy,
-                                                dz,
-                                                intensity
-                                            ])
-                            else:
-                                # Generic objects - sphere-like
-                                for i in range(30):
-                                    theta = np.random.uniform(0, 2*np.pi)
-                                    phi = np.random.uniform(0, np.pi)
-                                    r = np.random.uniform(0, object_size['width']/2)
-                                    
-                                    dx = r * np.sin(phi) * np.cos(theta)
-                                    dy = r * np.sin(phi) * np.sin(theta)
-                                    dz = r * np.cos(phi) + object_size['height']/2
-                                    
-                                    all_points.append([
-                                        center_x + dx,
-                                        center_y + dy,
-                                        max(0, dz),
-                                        intensity
-                                    ])
+                            # Generate 50+ points per object for better visibility
+                            for i in range(50):
+                                jitter_x = np.random.uniform(-0.2, 0.2) * object_size['width']
+                                jitter_y = np.random.uniform(-0.2, 0.2) * object_size['depth']
+                                jitter_z = np.random.uniform(0, 0.5) * object_size['height']
+                                
+                                all_points.append([
+                                    detection.coordinate_x + jitter_x,
+                                    detection.coordinate_y + jitter_y,
+                                    detection.coordinate_z + jitter_z,
+                                    intensity
+                                ])
             
             if all_points:
                 # ✅ ENHANCED PointCloud2 message

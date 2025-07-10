@@ -71,14 +71,23 @@ class MaximumOptimizedDeepStreamNode(Node):
         """✅ FORCE maximum Jetson optimization"""
         try:
             if torch.cuda.is_available():
-                torch.cuda.set_per_process_memory_fraction(0.95)
+                # ✅ MAXIMUM CUDA optimization
+                torch.cuda.set_per_process_memory_fraction(0.95)  # Use 95% of GPU memory
                 torch.backends.cudnn.benchmark = True
                 torch.backends.cudnn.deterministic = False
+                torch.backends.cuda.matmul.allow_tf32 = True
+                torch.backends.cudnn.allow_tf32 = True
                 
+                # ✅ MAXIMUM Jetson hardware optimization
                 os.system('sudo jetson_clocks')
-                os.system('sudo nvpmodel -m 0')
+                os.system('sudo nvpmodel -m 0')  # Maximum performance mode
+                os.system('echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor')
                 
-                self.get_logger().info("🔥 MAXIMUM Jetson optimization activated!")
+                # ✅ Memory optimization
+                gc.collect()
+                torch.cuda.empty_cache()
+                
+                self.get_logger().info("🔥 MAXIMUM Jetson optimization activated for 100+ FPS!")
                 
         except Exception as e:
             self.get_logger().warn(f"Jetson optimization warning: {e}")
@@ -90,17 +99,11 @@ class MaximumOptimizedDeepStreamNode(Node):
             
             # ✅ FIXED: Correct model candidates
             model_candidates = [
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine", 
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
-                f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine",
-                "./yolo11x-seg.engine",
-                "./yolo11x-seg.engine",
-                "./yolo11x.engine",
-                f"/home/kmp-orin/jezzy/huskybot/{self.model_engine}",
-                "yolo11x-seg.engine",
-                "yolo11x.engine",
-                "yolo11n-seg.engine"
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",  # Absolute path first
+                "./yolo11x-seg.engine",  # Relative path
+                "/home/jezzy/huskybot/yolo11x-seg.engine",  # Alternative path
+                "/opt/nvidia/deepstream/deepstream/samples/models/yolo11x-seg.engine",  # DeepStream path
+                "yolo11x-seg.engine",  # Auto-download
             ]
             
             model_path = None
@@ -274,7 +277,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 for i in range(6):
                     try:
                         frame_data = self.frame_queues[i].get(timeout=0.001)
-                        batch_frames[i], batch_headers[i], _ = frame_data
+                        batch_frames[i], batch_headers[i] = frame_data
                         frames_ready += 1
                     except queue.Empty:
                         continue
@@ -559,6 +562,8 @@ class MaximumOptimizedDeepStreamNode(Node):
         
         self.frame_count = 0
         self.detection_count = 0
+        self.total_inference_time = 0
+        self.inference_count = 0
         self.last_fps_time = current_time
 
     def destroy_node(self):

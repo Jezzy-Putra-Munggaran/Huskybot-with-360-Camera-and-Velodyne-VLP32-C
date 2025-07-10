@@ -7,12 +7,24 @@ from rclpy.node import Node
 def main():
     """Create RViz2 configuration for 3D visualization"""
     
-    # ✅ FIXED: Correct path structure
-    config_dir = '/home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz'
+    # ✅ FIXED: Use more general paths that work across systems
+    config_dir = os.path.expanduser('~/huskybot/install/huskybot_perception/share/huskybot_perception/rviz')
+    if not os.path.exists(config_dir):
+        try:
+            # Try alternative path
+            alt_path = '/home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz'
+            if os.path.exists(os.path.dirname(alt_path)):
+                config_dir = alt_path
+            else:
+                # Create it if it doesn't exist
+                os.makedirs(config_dir, exist_ok=True)
+        except:
+            # Final fallback
+            config_dir = '/tmp'
+    
     config_file = os.path.join(config_dir, 'huskybot_3d.rviz')
     
-    # Create directory
-    os.makedirs(config_dir, exist_ok=True)
+    print(f"✅ Creating RViz2 config at: {config_file}")
     
     # ✅ ENHANCED RViz2 config for 3D PointCloud visualization
     rviz_config = """Panels:
