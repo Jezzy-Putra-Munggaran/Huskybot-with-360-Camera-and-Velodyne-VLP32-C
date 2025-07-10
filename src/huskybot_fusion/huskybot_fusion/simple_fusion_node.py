@@ -70,7 +70,7 @@ class EnhancedFusionNode(Node):
         # ✅ Enhanced monitoring
         self.fusion_count = 0
         self.fusion_timer = self.create_timer(5.0, self.log_fusion_stats)
-        self.publish_timer = self.create_timer(0.1, self.create_continuous_3d_visualization)
+        self.publish_timer = self.create_timer(0.05, self.create_continuous_3d_visualization)  # 20Hz for better performance
         
         self.get_logger().info("🔗 ENHANCED Fusion Node initialized")
 
@@ -180,7 +180,7 @@ class EnhancedFusionNode(Node):
             
             # ✅ Enhanced distance filtering with multiple rays
             distances = []
-            for offset in [-2, -1, 0, 1, 2]:  # Check nearby rays
+            for offset in [-3, -2, -1, 0, 1, 2, 3]:  # Check more nearby rays
                 idx = (ray_index + offset) % len(self.latest_laser.ranges)
                 dist = self.latest_laser.ranges[idx]
                 if not (math.isinf(dist) or math.isnan(dist) or dist <= 0):
@@ -207,7 +207,7 @@ class EnhancedFusionNode(Node):
             if hasattr(detection, 'bottom') and hasattr(detection, 'top'):
                 bbox_height = detection.bottom - detection.top
                 # Estimate object height based on bbox size and distance
-                estimated_real_height = (bbox_height / 720.0) * distance * 0.5  # Rough estimation
+                estimated_real_height = (bbox_height / 720.0) * distance * 0.8  # Improved estimation
                 z = max(0.2, min(3.0, estimated_real_height))  # Clamp between reasonable values
             else:
                 z = 0.5  # Default height
@@ -233,24 +233,26 @@ class EnhancedFusionNode(Node):
                             
                             # Add center point
                             x, y, z = detection.coordinate_x, detection.coordinate_y, detection.coordinate_z
+                            intensity = (float(r) + float(g) + float(b)) / 3.0  # Average color as intensity
+                            all_points.append((x, y, z, intensity))
                             
                             # ✅ Add multiple points to create 3D object shape based on class
                             size = self.get_object_size(detection.class_name)
                             width, depth, height = size['width'], size['depth'], size['height']
                             
-                            # Create multiple points around the center to form a 3D shape
-                            for dx in [-width/4, 0, width/4]:
-                                for dy in [-depth/4, 0, depth/4]:
-                                    for dz in [0, height/4, height/2]:
-                                        point_x = x + dx
-                                        point_y = y + dy
-                                        point_z = z + dz
-                                        
-                                        # Intensity based on distance from center
-                                        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
-                                        intensity = max(0.3, 1.0 - (distance / max(width, depth, height)))
-                                        
-                                        all_points.append((point_x, point_y, point_z, intensity))
+                            # Create 3D bounding box around object with proper orientation
+                            angle_rad = math.radians(detection.angle) if hasattr(detection, 'angle') else 0
+                            cos_a, sin_a = math.cos(angle_rad), math.sin(angle_rad)
+                            
+                            # Create more points for better visualization
+                            for dx in [-width/2, 0, width/2]:
+                                for dy in [-depth/2, 0, depth/2]:
+                                    for dz in [0, height/2, height]:
+                                        # Rotate points based on object angle
+                                        px = x + dx * cos_a - dy * sin_a
+                                        py = y + dx * sin_a + dy * cos_a
+                                        pz = z + dz
+                                        all_points.append((px, py, pz, intensity))
         
             if all_points:
                 # ✅ ENHANCED PointCloud2 message
@@ -275,7 +277,6 @@ class EnhancedFusionNode(Node):
                 pc_msg.is_bigendian = False
                 
                 # ✅ ENHANCED data packing
-                import struct  # Add this import
                 data = bytearray()
                 for point in all_points:
                     data.extend(struct.pack('ffff', point[0], point[1], point[2], point[3]))
@@ -283,15 +284,16 @@ class EnhancedFusionNode(Node):
                 
                 # Publish and log success
                 self.objects_3d_pub.publish(pc_msg)
-                self.get_logger().info(f"Published 3D objects PointCloud with {len(all_points)} points")
+                # Reduce logging frequency to avoid spam
+                if self.fusion_count % 100 == 0:
+                    self.get_logger().info(f"Published 3D objects PointCloud with {len(all_points)} points")
             else:
-                if self.get_clock().now().nanoseconds % 5000000000 == 0:  # Log only every 5 seconds to avoid spam
+                # Only log occasionally when no objects detected
+                if self.get_clock().now().nanoseconds % 10000000000 == 0:  # Log only every 10 seconds
                     self.get_logger().info("No objects detected for 3D visualization")
-            
+        
         except Exception as e:
             self.get_logger().error(f"❌ 3D visualization error: {e}")
-            import traceback
-            traceback.print_exc()
 
     def get_object_size(self, class_name):
         """Get estimated object size for better visualization"""
@@ -304,6 +306,9 @@ class EnhancedFusionNode(Node):
             'truck': {'width': 2.5, 'depth': 8.0, 'height': 3.5},
             'traffic light': {'width': 0.3, 'depth': 0.3, 'height': 0.8},
             'stop sign': {'width': 0.8, 'depth': 0.1, 'height': 0.8},
+            'bottle': {'width': 0.1, 'depth': 0.1, 'height': 0.3},
+            'chair': {'width': 0.6, 'depth': 0.6, 'height': 1.0},
+            'laptop': {'width': 0.35, 'depth': 0.25, 'height': 0.05},
         }
         
         return sizes.get(class_name, {'width': 0.5, 'depth': 0.5, 'height': 0.5})

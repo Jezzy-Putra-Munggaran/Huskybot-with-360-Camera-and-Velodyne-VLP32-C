@@ -22,19 +22,19 @@ class UltraFastAutoGridViewer(Node):
         self.latest_timestamps = [0.0] * 6
         self.image_locks = [threading.Lock() for _ in range(6)]
         
-        # ✅ CORRECT camera mapping sesuai kondisi real
+        # ✅ CORRECT camera mapping with ENGLISH labels
         self.camera_topics = [
-            '/camera_front/image_raw',      # KAMERA BELAKANG (0)
-            '/camera_right/image_raw',      # KAMERA KANAN BELAKANG (1)
-            '/camera_rear_right/image_raw', # KAMERA KANAN DEPAN (2)
-            '/camera_rear/image_raw',       # KAMERA DEPAN (3)
-            '/camera_left/image_raw',       # KAMERA KIRI DEPAN (4)
-            '/camera_front_left/image_raw'  # KAMERA KIRI BELAKANG (5)
+            '/camera_front/image_raw',      # REAR CAMERA (0)
+            '/camera_right/image_raw',      # REAR RIGHT CAMERA (1)
+            '/camera_rear_right/image_raw', # FRONT RIGHT CAMERA (2)
+            '/camera_rear/image_raw',       # FRONT CAMERA (3)
+            '/camera_left/image_raw',       # FRONT LEFT CAMERA (4)
+            '/camera_front_left/image_raw'  # REAR LEFT CAMERA (5)
         ]
         
         self.camera_names = [
-            'BELAKANG', 'KANAN BELAKANG', 'KANAN DEPAN', 
-            'DEPAN', 'KIRI DEPAN', 'KIRI BELAKANG'
+            'REAR CAMERA', 'REAR RIGHT CAMERA', 'FRONT RIGHT CAMERA', 
+            'FRONT CAMERA', 'FRONT LEFT CAMERA', 'REAR LEFT CAMERA'
         ]
         
         # ✅ High-performance subscriptions
