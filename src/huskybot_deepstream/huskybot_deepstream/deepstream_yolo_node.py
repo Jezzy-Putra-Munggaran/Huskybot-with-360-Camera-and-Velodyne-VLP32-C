@@ -7,13 +7,14 @@ from yolov12_msgs.msg import Yolov12Inference, InferenceResult
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
-import time
 import threading
+import time
 import queue
-import colorsys
 import os
-import torch
 import gc
+import torch
+import colorsys
+import math
 
 class MaximumOptimizedDeepStreamNode(Node):
     def __init__(self):
@@ -32,7 +33,10 @@ class MaximumOptimizedDeepStreamNode(Node):
         self.setup_ros_topics()
         self.setup_enhanced_coco_colors()
         self.setup_maximum_optimized_model()
-        self.setup_parallel_processing()
+        
+        # Only setup processing if model loaded successfully
+        if self.yolo_model is not None:
+            self.setup_parallel_processing()
         
         # ✅ Performance monitoring
         self.frame_count = 0
@@ -49,10 +53,10 @@ class MaximumOptimizedDeepStreamNode(Node):
 
     def setup_parameters(self):
         """Setup MAXIMUM-OPTIMIZED parameters"""
-        self.declare_parameter('model_engine', 'yolo12x.engine')  # ✅ FIXED: Use YOLO12X for speed
+        self.declare_parameter('model_engine', 'yolo11x-seg.engine')
         self.declare_parameter('input_width', 640)
         self.declare_parameter('input_height', 640)
-        self.declare_parameter('batch_size', 6)  # ✅ Process all 6 cameras in batch
+        self.declare_parameter('batch_size', 6)
         self.declare_parameter('fps_target', 120)
         self.declare_parameter('device_id', 0)
         
@@ -66,15 +70,13 @@ class MaximumOptimizedDeepStreamNode(Node):
     def force_jetson_optimization(self):
         """✅ FORCE maximum Jetson optimization"""
         try:
-            # ✅ Force maximum GPU utilization
             if torch.cuda.is_available():
-                torch.cuda.set_per_process_memory_fraction(0.95)  # Use 95% GPU memory
-                torch.backends.cudnn.benchmark = True  # Optimize for fixed input size
-                torch.backends.cudnn.deterministic = False  # Allow non-deterministic for speed
+                torch.cuda.set_per_process_memory_fraction(0.95)
+                torch.backends.cudnn.benchmark = True
+                torch.backends.cudnn.deterministic = False
                 
-                # ✅ Set maximum GPU clocks
                 os.system('sudo jetson_clocks')
-                os.system('sudo nvpmodel -m 0')  # Maximum performance mode
+                os.system('sudo nvpmodel -m 0')
                 
                 self.get_logger().info("🔥 MAXIMUM Jetson optimization activated!")
                 
@@ -82,36 +84,28 @@ class MaximumOptimizedDeepStreamNode(Node):
             self.get_logger().warn(f"Jetson optimization warning: {e}")
 
     def setup_maximum_optimized_model(self):
-        """✅ MAXIMUM optimized model with YOLO11X (terbaru dan tercepat)"""
+        """✅ FIXED: Proper YOLO11X model loading"""
         try:
             from ultralytics import YOLO
             
-            # ✅ FIXED: Use YOLO11X (yang benar-benar tersedia)
+            # ✅ FIXED: Correct model candidates
             model_candidates = [
-                # YOLO11X variants (model terbaru dan tercepat)
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x.engine", 
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",
                 f"/home/kmp-orin/jezzy/huskybot/yolo11x.pt",
-                
-                # Current directory fallback
                 "./yolo11x-seg.engine",
                 "./yolo11x-seg.pt",
                 "./yolo11x.pt",
-                
-                # Parameter fallback
                 f"/home/kmp-orin/jezzy/huskybot/{self.model_engine}",
-                
-                # Global fallback untuk auto-download
-                "yolo11x-seg.pt",  # Model terbaru yang benar-benar ada
-                "yolo11x.pt",      # Fallback detection only
-                "yolo11n-seg.pt"   # Ultimate fallback (nano)
+                "yolo11x-seg.pt",
+                "yolo11x.pt",
+                "yolo11n-seg.pt"
             ]
             
             model_path = None
             for candidate in model_candidates:
                 if candidate.startswith("yolo") and not candidate.startswith("/") and not candidate.startswith("./"):
-                    # Model akan auto-download
                     model_path = candidate
                     self.get_logger().info(f"🔄 Will auto-download: {candidate}")
                     break
@@ -121,73 +115,53 @@ class MaximumOptimizedDeepStreamNode(Node):
                     break
             
             if not model_path:
-                # Ultimate fallback - YOLO11X yang pasti ada
                 model_path = "yolo11x-seg.pt"
                 self.get_logger().warn("⚠️ Using fallback: yolo11x-seg.pt")
             
-            self.get_logger().info(f"🔥 Loading YOLO11X MAXIMUM-OPTIMIZED model: {model_path}")
+            self.get_logger().info(f"🔥 Loading YOLO11X model: {model_path}")
             
-            # ✅ Load with auto-download capability
+            # ✅ FIXED: Proper model loading
             self.yolo_model = YOLO(model_path)
             
-            # ✅ Auto-export to engine if .pt file and local
-            if model_path.endswith('.pt') and not model_path.startswith('/'):
-                self.get_logger().info("🚀 Auto-converting YOLO11X to TensorRT engine...")
-                try:
-                    engine_path = self.yolo_model.export(
-                        format='engine',
-                        device=0,
-                        half=True,
-                        workspace=8,  # Increase for Jetson
-                        verbose=False,
-                        batch=1,
-                        imgsz=640,
-                        optimize=True,
-                        simplify=True
-                    )
-                    # Reload with engine
-                    self.yolo_model = YOLO(engine_path)
-                    self.get_logger().info(f"✅ YOLO11X TensorRT engine loaded: {engine_path}")
-                except Exception as e:
-                    self.get_logger().warn(f"TensorRT conversion failed, using PT: {e}")
-            
-            # ✅ Configure for MAXIMUM speed
-            if hasattr(self.yolo_model, 'model'):
+            # ✅ FIXED: Proper model configuration
+            if hasattr(self.yolo_model, 'model') and self.yolo_model.model is not None:
                 self.yolo_model.model.eval()
                 if torch.cuda.is_available():
                     self.yolo_model.model = self.yolo_model.model.cuda()
-                    self.yolo_model.model = self.yolo_model.model.half()
+                    if hasattr(self.yolo_model.model, 'half'):
+                        self.yolo_model.model = self.yolo_model.model.half()
             
-            # ✅ Warmup
+            # ✅ FIXED: Proper warmup
             dummy_image = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
             start_time = time.time()
             for _ in range(3):
-                results = self.yolo_model(dummy_image,
-                                       conf=0.35,
-                                       device='cuda:0',
-                                       half=True,
-                                       verbose=False,
-                                       agnostic_nms=True,
-                                       max_det=30,
-                                       imgsz=(self.input_width, self.input_height),
-                                       task='segment')
+                try:
+                    results = self.yolo_model(dummy_image,
+                                           conf=0.35,
+                                           device='cuda:0',
+                                           half=True,
+                                           verbose=False,
+                                           task='segment')
+                except Exception as e:
+                    self.get_logger().warn(f"Warmup warning: {e}")
+                    break
             
             warmup_time = time.time() - start_time
-            self.get_logger().info(f"✅ MAXIMUM-OPTIMIZED Model ready: {warmup_time*1000:.1f}ms")
+            self.get_logger().info(f"✅ YOLO11X Model ready: {warmup_time*1000:.1f}ms")
             
             gc.collect()
-            torch.cuda.empty_cache()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             
         except Exception as e:
             self.get_logger().error(f"❌ Model loading failed: {e}")
             self.yolo_model = None
 
     def setup_enhanced_coco_colors(self):
-        """Setup 80 DISTINCT colors for COCO classes with HIGH contrast"""
+        """Setup 80 DISTINCT colors for COCO classes"""
         self.coco_colors = []
         self.text_colors = []
         
-        # ✅ Pre-defined high-contrast colors for better visibility
         base_colors = [
             [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255], 
             [0, 255, 255], [255, 128, 0], [128, 255, 0], [255, 0, 128], [128, 0, 255],
@@ -199,7 +173,6 @@ class MaximumOptimizedDeepStreamNode(Node):
             if i < len(base_colors):
                 color = base_colors[i]
             else:
-                # Generate additional colors
                 hue = (i * 137.5) % 360
                 sat = 0.9 + (i % 2) * 0.1
                 val = 0.8 + (i % 3) * 0.1
@@ -208,28 +181,31 @@ class MaximumOptimizedDeepStreamNode(Node):
             
             self.coco_colors.append(color)
             
-            # ✅ Optimal text color for MAXIMUM contrast
             brightness = (color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114) / 255
             self.text_colors.append((0, 0, 0) if brightness > 0.5 else (255, 255, 255))
 
     def setup_ros_topics(self):
         """Setup ROS2 topics with CORRECT camera mapping"""
         self.camera_subs = []
-        self.camera_names = ['rear', 'rear_right', 'front_right', 'front', 'front_left', 'rear_left']
+        # ✅ FIXED: Use English camera names
+        self.camera_names = ['REAR', 'REAR_RIGHT', 'FRONT_RIGHT', 'FRONT', 'FRONT_LEFT', 'REAR_LEFT']
+        self.camera_labels = ['REAR CAMERA', 'REAR RIGHT CAMERA', 'FRONT RIGHT CAMERA', 
+                             'FRONT CAMERA', 'FRONT LEFT CAMERA', 'REAR LEFT CAMERA']
+        
         actual_topics = [
-            '/camera_front/image_raw',      # KAMERA BELAKANG
-            '/camera_right/image_raw',      # KAMERA KANAN BELAKANG  
-            '/camera_rear_right/image_raw', # KAMERA KANAN DEPAN
-            '/camera_rear/image_raw',       # KAMERA DEPAN
-            '/camera_left/image_raw',       # KAMERA KIRI DEPAN
-            '/camera_front_left/image_raw'  # KAMERA KIRI BELAKANG
+            '/camera_front/image_raw',      # REAR CAMERA
+            '/camera_right/image_raw',      # REAR RIGHT CAMERA
+            '/camera_rear_right/image_raw', # FRONT RIGHT CAMERA
+            '/camera_rear/image_raw',       # FRONT CAMERA
+            '/camera_left/image_raw',       # FRONT LEFT CAMERA
+            '/camera_front_left/image_raw'  # REAR LEFT CAMERA
         ]
         
         for i, (name, topic) in enumerate(zip(self.camera_names, actual_topics)):
             sub = self.create_subscription(
                 Image, topic, 
                 lambda msg, idx=i: self.maximum_speed_callback(msg, idx), 
-                1  # Minimal queue for speed
+                1
             )
             self.camera_subs.append(sub)
             self.get_logger().info(f"📡 Subscribed: {topic} -> {name}")
@@ -237,8 +213,8 @@ class MaximumOptimizedDeepStreamNode(Node):
         # ✅ Publishers for results
         self.result_pubs = []
         for name in self.camera_names:
-            det_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/detections', 1)
-            seg_pub = self.create_publisher(Yolov12Inference, f'/camera_{name}/segmentation', 1)
+            det_pub = self.create_publisher(Yolov12Inference, f'/camera_{name.lower()}/detections', 1)
+            seg_pub = self.create_publisher(Yolov12Inference, f'/camera_{name.lower()}/segmentation', 1)
             self.result_pubs.append((det_pub, seg_pub))
         
         # ✅ Enhanced grid publisher
@@ -246,10 +222,10 @@ class MaximumOptimizedDeepStreamNode(Node):
 
     def setup_parallel_processing(self):
         """✅ MAXIMUM parallel processing"""
-        self.frame_queues = [queue.Queue(maxsize=2) for _ in range(6)]  # Slightly larger buffer
+        self.frame_queues = [queue.Queue(maxsize=2) for _ in range(6)]
         self.processing_active = True
         
-        # ✅ Batch processing thread for MAXIMUM speed
+        # ✅ Batch processing thread
         self.batch_thread = threading.Thread(
             target=self.maximum_speed_batch_worker, 
             daemon=True
@@ -272,15 +248,15 @@ class MaximumOptimizedDeepStreamNode(Node):
                 self.latest_images[camera_idx] = cv_image
                 self.latest_headers[camera_idx] = msg.header
             
-            # ✅ Non-blocking queue add
-            try:
-                self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
-            except queue.Full:
+            if hasattr(self, 'frame_queues'):
                 try:
-                    self.frame_queues[camera_idx].get_nowait()
                     self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
-                except queue.Empty:
-                    pass
+                except queue.Full:
+                    try:
+                        self.frame_queues[camera_idx].get_nowait()
+                        self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
+                    except queue.Empty:
+                        pass
             
             self.frame_count += 1
             
@@ -288,13 +264,12 @@ class MaximumOptimizedDeepStreamNode(Node):
             self.get_logger().error(f"❌ Callback error {camera_idx}: {e}")
 
     def maximum_speed_batch_worker(self):
-        """✅ MAXIMUM speed batch processing for ALL 6 cameras"""
+        """✅ MAXIMUM speed batch processing"""
         batch_frames = [None] * 6
         batch_headers = [None] * 6
         
         while self.processing_active:
             try:
-                # ✅ Collect frames from all cameras
                 frames_ready = 0
                 for i in range(6):
                     try:
@@ -304,23 +279,21 @@ class MaximumOptimizedDeepStreamNode(Node):
                     except queue.Empty:
                         continue
                 
-                # ✅ Process batch if we have enough frames
-                if frames_ready >= 3:  # Process if at least half cameras have frames
+                if frames_ready >= 3:
                     self.maximum_speed_batch_inference(batch_frames, batch_headers)
                 
-                time.sleep(0.001)  # Very small delay for CPU
+                time.sleep(0.001)
                 
             except Exception as e:
                 self.get_logger().error(f"❌ Batch worker error: {e}")
                 time.sleep(0.01)
 
     def maximum_speed_batch_inference(self, batch_frames, batch_headers):
-        """✅ MAXIMUM speed batch inference with PERFECT segmentation display"""
+        """✅ MAXIMUM speed batch inference with PERFECT segmentation"""
         try:
             if not self.yolo_model:
                 return
             
-            # ✅ Process each camera individually for maximum accuracy
             for camera_idx in range(6):
                 if batch_frames[camera_idx] is None:
                     continue
@@ -334,15 +307,16 @@ class MaximumOptimizedDeepStreamNode(Node):
                 
                 # ✅ MAXIMUM optimized inference
                 start_time = time.time()
-                results = self.yolo_model(resized, 
-                                       conf=0.35,  # Higher confidence for speed
-                                       device='cuda:0',
-                                       half=True,
-                                       verbose=False,
-                                       agnostic_nms=True,
-                                       max_det=30,  # Fewer but better detections
-                                       imgsz=(self.input_width, self.input_height),
-                                       task='segment')
+                try:
+                    results = self.yolo_model(resized, 
+                                           conf=0.35,
+                                           device='cuda:0',
+                                           half=True,
+                                           verbose=False,
+                                           task='segment')
+                except Exception as e:
+                    self.get_logger().error(f"❌ Inference error: {e}")
+                    continue
                 
                 inference_time = time.time() - start_time
                 self.total_inference_time += inference_time
@@ -351,27 +325,27 @@ class MaximumOptimizedDeepStreamNode(Node):
                 # ✅ Create enhanced messages
                 detection_msg = Yolov12Inference()
                 detection_msg.header = header
-                detection_msg.camera_name = f"camera_{self.camera_names[camera_idx]}"
+                detection_msg.camera_name = f"camera_{self.camera_names[camera_idx].lower()}"
                 detection_msg.task = "detect"
                 detection_msg.frame_type = f"maximum_optimized_{camera_idx}"
                 detection_msg.note = f"Inference: {inference_time*1000:.1f}ms"
                 
                 segmentation_msg = Yolov12Inference()
                 segmentation_msg.header = header
-                segmentation_msg.camera_name = f"camera_{self.camera_names[camera_idx]}"
+                segmentation_msg.camera_name = f"camera_{self.camera_names[camera_idx].lower()}"
                 segmentation_msg.task = "segment"
                 segmentation_msg.frame_type = f"maximum_optimized_{camera_idx}"
                 segmentation_msg.note = f"Inference: {inference_time*1000:.1f}ms"
                 
-                # ✅ Create ENHANCED display image with PERFECT segmentation
+                # ✅ Create ENHANCED display image
                 display_frame = frame.copy()
                 
-                # ✅ Add camera info header
-                camera_name = self.camera_names[camera_idx].upper().replace('_', ' ')
+                # ✅ FIXED: English camera info header
+                camera_label = self.camera_labels[camera_idx]
                 cv2.rectangle(display_frame, (0, 0), (frame.shape[1], 80), (0, 0, 0), -1)
-                cv2.putText(display_frame, f"CAM {camera_idx+1}: {camera_name}", 
+                cv2.putText(display_frame, f"CAM {camera_idx+1}: {camera_label}", 
                           (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
-                cv2.putText(display_frame, f"FPS: {1000/max(1, inference_time*1000):.1f} | Det: {len(results[0].boxes) if results[0].boxes is not None else 0}", 
+                cv2.putText(display_frame, f"FPS: {1000/max(1, inference_time*1000):.1f} | Objects: {len(results[0].boxes) if results[0].boxes is not None else 0}", 
                           (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
                 
                 if results[0].boxes is not None and len(results[0].boxes) > 0:
@@ -396,22 +370,18 @@ class MaximumOptimizedDeepStreamNode(Node):
                         result.right = int(x2 * scale_x)
                         result.bottom = int(y2 * scale_y)
                         
-                        # ✅ Calculate ACCURATE angle and distance
-                        bbox_center_x = (result.left + result.right) / 2
-                        image_width = frame.shape[1]
-                        
-                        # ✅ FIXED camera base angles mapping
+                        # ✅ FIXED: Camera angle mapping (ENGLISH)
                         camera_base_angles = {0: 180, 1: 225, 2: 315, 3: 0, 4: 45, 5: 135}
                         base_angle = camera_base_angles.get(camera_idx, 0)
+                        
+                        bbox_center_x = (result.left + result.right) / 2
+                        image_width = frame.shape[1]
                         angle_offset = ((bbox_center_x / image_width) - 0.5) * 60
                         object_angle = (base_angle + angle_offset) % 360
                         result.angle = object_angle
                         
                         # ✅ ENHANCED distance estimation
                         bbox_height = result.bottom - result.top
-                        bbox_width = result.right - result.left
-                        
-                        # ✅ Object-specific distance estimation
                         if result.class_name in ['person']:
                             estimated_distance = max(1.0, 1200.0 / bbox_height)
                         elif result.class_name in ['car', 'truck', 'bus']:
@@ -423,85 +393,62 @@ class MaximumOptimizedDeepStreamNode(Node):
                         
                         result.distance = min(estimated_distance, 50.0)
                         
-                        # ✅ Calculate ACCURATE 3D coordinates
+                        # ✅ Calculate 3D coordinates
                         angle_rad = np.radians(object_angle)
                         result.coordinate_x = result.distance * np.cos(angle_rad)
                         result.coordinate_y = result.distance * np.sin(angle_rad)
                         result.coordinate_z = 0.5
                         
-                        # ✅ Get DISTINCT color for this class
-                        if class_id < len(self.coco_colors):
-                            color = self.coco_colors[class_id]
-                            text_color = self.text_colors[class_id]
-                            result.color_r, result.color_g, result.color_b = color
-                        else:
-                            color = [255, 255, 255]
-                            text_color = (0, 0, 0)
-                            result.color_r = result.color_g = result.color_b = 255
+                        # ✅ Get DISTINCT color
+                        color = self.coco_colors[class_id] if class_id < len(self.coco_colors) else [255, 255, 255]
+                        text_color = self.text_colors[class_id] if class_id < len(self.text_colors) else (255, 255, 255)
                         
-                        # ✅ PERFECT mask processing and display
+                        # ✅ PERFECT mask processing
                         if masks is not None and i < len(masks):
                             mask = masks[i]
-                            # ✅ Resize mask to original frame size
                             mask_resized = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
-                            mask_binary = (mask_resized > 0.5).astype(np.uint8)
-                            
-                            # ✅ Store mask data
-                            result.mask_width = frame.shape[1]
-                            result.mask_height = frame.shape[0]
-                            result.mask_data = mask_binary.flatten().tolist()
-                            
-                            # ✅ PERFECT mask overlay with DISTINCT colors
-                            mask_colored = np.zeros_like(display_frame)
-                            mask_colored[:,:] = color
-                            
-                            # ✅ Apply mask with transparency
-                            alpha = 0.4
-                            mask_area = mask_binary > 0
-                            if np.any(mask_area):
-                                display_frame[mask_area] = cv2.addWeighted(
-                                    display_frame[mask_area], 1-alpha,
-                                    mask_colored[mask_area], alpha, 0
-                                )
+                            mask_colored = np.zeros_like(frame)
+                            mask_colored[:, :] = color
+                            mask_overlay = cv2.bitwise_and(mask_colored, mask_colored, mask=(mask_resized > 0.5).astype(np.uint8))
+                            display_frame = cv2.addWeighted(display_frame, 1.0, mask_overlay, 0.3, 0)
                         
-                        # ✅ ENHANCED bounding box with THICK borders
+                        # ✅ ENHANCED bounding box
                         cv2.rectangle(display_frame, (result.left, result.top), 
                                     (result.right, result.bottom), color, 4)
                         
-                        # ✅ TARGET FORMAT: All information in one display
-                        info_text = f"Camera: {camera_name} | Class: {result.class_name} | Conf: {result.confidence:.2f} | Distance: {result.distance:.1f}m | Coordinate: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})"
-                        
-                        # ✅ Multi-line display for better readability
+                        # ✅ FIXED: English information display
                         info_lines = [
-                            f"Camera: {camera_name}",
+                            f"Camera: {camera_label}",
                             f"Class: {result.class_name}, Conf: {result.confidence:.2f}",
                             f"Distance: {result.distance:.1f}m",
                             f"Coordinate: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})"
                         ]
                         
-                        # ✅ LARGE info box for visibility
                         text_y = max(100, result.top - 15)
                         for line_idx, info_line in enumerate(info_lines):
-                            text_size = cv2.getTextSize(info_line, cv2.FONT_HERSHEY_SIMPLEX, 0.9, 2)[0]
+                            line_y = text_y + (line_idx * 25)
                             
-                            # ✅ Background for readability
+                            # Background for text
+                            text_size = cv2.getTextSize(info_line, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
                             cv2.rectangle(display_frame, 
-                                        (result.left, text_y - text_size[1] - 10), 
-                                        (result.left + text_size[0] + 20, text_y + 10), 
+                                        (result.left - 5, line_y - 20), 
+                                        (result.left + text_size[0] + 10, line_y + 5), 
                                         color, -1)
                             
                             cv2.putText(display_frame, info_line, 
-                                      (result.left + 10, text_y), 
-                                      cv2.FONT_HERSHEY_SIMPLEX, 0.9, text_color, 2)
-                            
-                            text_y -= (text_size[1] + 15)
+                                      (result.left, line_y), 
+                                      cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
                         
                         detection_msg.yolov12_inference.append(result)
                         segmentation_msg.yolov12_inference.append(result)
                         self.detection_count += 1
                         
-                        # ✅ Print to terminal as well
-                        self.get_logger().info(f"Camera: {camera_name} | Class: {result.class_name} | Conf: {result.confidence:.2f} | Distance: {result.distance:.1f}m | Coordinate: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})")
+                        # ✅ FIXED: English terminal output
+                        self.get_logger().info(
+                            f"Camera: {camera_label} | Class: {result.class_name} | "
+                            f"Conf: {result.confidence:.2f} | Distance: {result.distance:.1f}m | "
+                            f"Coordinate: ({result.coordinate_x:.1f}, {result.coordinate_y:.1f}, {result.coordinate_z:.1f})"
+                        )
                 
                 # ✅ Update display image
                 with self.image_locks[camera_idx]:
@@ -527,9 +474,9 @@ class MaximumOptimizedDeepStreamNode(Node):
                 time.sleep(0.1)
 
     def create_maximum_enhanced_grid(self):
-        """✅ MAXIMUM enhanced 2x3 grid with ALL cameras and FULL info"""
+        """✅ MAXIMUM enhanced 2x3 grid with ENGLISH labels"""
         try:
-            target_size = (960, 540)  # Large for better visibility
+            target_size = (960, 540)
             grid_images = []
             
             for i in range(6):
@@ -541,8 +488,8 @@ class MaximumOptimizedDeepStreamNode(Node):
                     grid_images.append(img_resized)
                 else:
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
-                    camera_name = self.camera_names[i].upper().replace('_', ' ')
-                    cv2.putText(black_img, f"CAM {i+1}: {camera_name}", 
+                    camera_label = self.camera_labels[i]
+                    cv2.putText(black_img, f"CAM {i+1}: {camera_label}", 
                               (target_size[0]//4, target_size[1]//2-20), 
                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
                     cv2.putText(black_img, "WAITING...", 
@@ -555,7 +502,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
                 grid = np.vstack([top_row, bottom_row])
                 
-                # ✅ ENHANCED status info
+                # ✅ FIXED: English status info
                 avg_inference = self.total_inference_time / max(1, self.inference_count)
                 theoretical_fps = 1.0 / avg_inference if avg_inference > 0 else 0
                 
@@ -565,7 +512,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 status_color = (0, 255, 0) if theoretical_fps >= 100 else (0, 255, 255)
                 
                 info_lines = [
-                    f"HUSKYBOT 360° MAXIMUM-OPTIMIZED SEGMENTATION | YOLO12X ENGINE",
+                    f"HUSKYBOT 360° MAXIMUM-OPTIMIZED SEGMENTATION | YOLO11X ENGINE",
                     f"Theoretical FPS: {theoretical_fps:.1f} | Target: 100+ | Status: {'TARGET ACHIEVED!' if theoretical_fps >= 100 else 'OPTIMIZING...'}",
                     f"Inference: {avg_inference*1000:.1f}ms | ALL 6 cameras with PERFECT segmentation + distance + coordinates",
                     f"Display: Camera, Class, Confidence, Distance, Coordinates | Resolution: {grid.shape[1]}x{grid.shape[0]}",
@@ -580,7 +527,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 # ✅ Publish grid
                 grid_msg = self.bridge.cv2_to_imgmsg(grid, 'bgr8')
                 grid_msg.header.stamp = self.get_clock().now().to_msg()
-                grid_msg.header.frame_id = "maximum_optimized_grid_all_cameras_segmentation_yolo12x"
+                grid_msg.header.frame_id = "maximum_optimized_grid_all_cameras_segmentation_yolo11x"
                 self.grid_pub.publish(grid_msg)
                 
         except Exception as e:
@@ -601,7 +548,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 self.get_logger().info(
                     f"🎯 TARGET ACHIEVED! Theoretical: {theoretical_fps:.1f} FPS | "
                     f"Actual: {actual_fps:.1f} FPS | Det/s: {detection_rate:.1f} | "
-                    f"Inference: {avg_inference*1000:.1f}ms | YOLO12X MAXIMUM SPEED!"
+                    f"Inference: {avg_inference*1000:.1f}ms | YOLO11X MAXIMUM SPEED!"
                 )
             else:
                 self.get_logger().info(
@@ -616,7 +563,9 @@ class MaximumOptimizedDeepStreamNode(Node):
 
     def destroy_node(self):
         """Clean shutdown"""
-        self.processing_active = False
+        if hasattr(self, 'processing_active'):
+            self.processing_active = False
+        time.sleep(0.1)
         super().destroy_node()
 
 def main(args=None):
