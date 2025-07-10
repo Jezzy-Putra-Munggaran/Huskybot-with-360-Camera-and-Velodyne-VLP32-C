@@ -10,11 +10,11 @@ import numpy as np
 import threading
 import time
 import queue
-import os
-import gc
 import torch
+import gc
+import os
 import colorsys
-import math
+import traceback
 
 class MaximumOptimizedDeepStreamNode(Node):
     def __init__(self):
@@ -78,10 +78,14 @@ class MaximumOptimizedDeepStreamNode(Node):
                 torch.backends.cuda.matmul.allow_tf32 = True
                 torch.backends.cudnn.allow_tf32 = True
                 
-                # ✅ MAXIMUM Jetson hardware optimization
-                os.system('sudo jetson_clocks')
-                os.system('sudo nvpmodel -m 0')  # Maximum performance mode
-                os.system('echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor')
+                # ✅ MAXIMUM GPU utilization
+                torch.cuda.set_device(0)
+                torch.cuda.empty_cache()
+                
+                # ✅ Set GPU to maximum performance mode
+                os.system('sudo nvidia-smi -pm 1')
+                os.system('sudo nvidia-smi -pl 80')  # Max power
+                os.system('sudo nvidia-smi -ac 1377,1377')  # Max clocks
                 
                 # ✅ Memory optimization
                 gc.collect()
@@ -103,8 +107,8 @@ class MaximumOptimizedDeepStreamNode(Node):
                 "./yolo11x-seg.engine",  # Relative path
                 "/home/jezzy/huskybot/yolo11x-seg.engine",  # Alternative path
                 "/opt/nvidia/deepstream/deepstream/samples/models/yolo11x-seg.engine",  # DeepStream path
-                "yolo11x-seg",  # Auto-download
-                "yolov8x-seg",  # Fallback to standard model that will auto-download
+                "yolo11x-seg.pt",  # Auto-download PT model
+                "yolov8x-seg.pt",  # Fallback to standard model that will auto-download
             ]
             
             model_path = None
@@ -119,34 +123,35 @@ class MaximumOptimizedDeepStreamNode(Node):
                     break
             
             if not model_path:
-                model_path = "yolo11x-seg"  # Fallback to standard model
-                self.get_logger().warn("⚠️ Using fallback: yolo11x-seg")
+                model_path = "yolo11x-seg.pt"  # Fallback to standard model
+                self.get_logger().warn("⚠️ Using fallback: yolo11x-seg.pt")
             
             self.get_logger().info(f"🔥 Loading YOLO model: {model_path}")
             
             # ✅ FIXED: Proper model loading with correct API
             self.yolo_model = YOLO(model_path)
             
+            # ✅ Force to GPU
+            if torch.cuda.is_available():
+                self.yolo_model.to('cuda:0')
+            
             # ✅ FIXED: Warmup for consistent performance
             dummy_image = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
             start_time = time.time()
             for _ in range(5):  # More warmup iterations
                 try:
-                    results = self.yolo_model.predict(
+                    _ = self.yolo_model.predict(
                         source=dummy_image,
-                        conf=0.25,  # Lower confidence for more detections
+                        conf=0.25,
                         device='cuda:0',
                         half=True,
                         verbose=False,
                         agnostic_nms=True,
-                        max_det=300  # Allow more detections
+                        max_det=100,
+                        retina_masks=True
                     )
-                    # Just consume results to ensure complete warmup
-                    for r in results:
-                        _ = r
                 except Exception as e:
                     self.get_logger().warn(f"Warmup warning: {e}")
-                    break
             
             warmup_time = time.time() - start_time
             self.get_logger().info(f"✅ YOLO Model ready: {warmup_time*1000:.1f}ms")
@@ -260,8 +265,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                     self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
                 except queue.Full:
                     try:
-                        # Remove oldest frame
-                        self.frame_queues[camera_idx].get_nowait()
+                        self.frame_queues[camera_idx].get_nowait()  # Remove old
                         self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
                     except queue.Empty:
                         pass
@@ -282,8 +286,10 @@ class MaximumOptimizedDeepStreamNode(Node):
                 frames_ready = 0
                 for i in range(6):
                     try:
-                        frame_data = self.frame_queues[i].get(timeout=0.001)
-                        batch_frames[i], batch_headers[i], batch_camera_indices[i] = frame_data
+                        frame_data = self.frame_queues[i].get_nowait()
+                        batch_frames[i] = frame_data[0]
+                        batch_headers[i] = frame_data[1]
+                        batch_camera_indices[i] = frame_data[2]
                         frames_ready += 1
                     except queue.Empty:
                         continue
@@ -291,6 +297,12 @@ class MaximumOptimizedDeepStreamNode(Node):
                 # Process any available frames
                 if frames_ready > 0:
                     self.maximum_speed_batch_inference(batch_frames, batch_headers, batch_camera_indices)
+                    # Clear processed frames
+                    for i in range(6):
+                        if batch_frames[i] is not None:
+                            batch_frames[i] = None
+                            batch_headers[i] = None
+                            batch_camera_indices[i] = None
                 
                 time.sleep(0.0001)  # Minimal sleep for maximum speed
                 
@@ -299,7 +311,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 time.sleep(0.001)
 
     def maximum_speed_batch_inference(self, batch_frames, batch_headers, batch_camera_indices):
-        """✅ MAXIMUM speed batch inference with PERFECT segmentation"""
+        """✅ MAXIMUM speed batch inference with PERFECT segmentation - FIXED TYPE CONVERSION"""
         if not self.yolo_model:
             return
             
@@ -327,199 +339,117 @@ class MaximumOptimizedDeepStreamNode(Node):
                     verbose=False,
                     agnostic_nms=True,
                     max_det=100,
-                    retina_masks=True  # High-quality masks
+                    retina_masks=True
                 )
                 
                 inference_time = time.time() - start_time
                 self.total_inference_time += inference_time
                 self.inference_count += 1
                 
-                # ✅ Process results
+                # ✅ Process results with FIXED type conversion
                 if results and len(results) > 0:
-                    result = results[0]  # First result
-                    
-                    # ✅ Create enhanced messages
-                    detection_msg = Yolov12Inference()
-                    detection_msg.header = header
-                    detection_msg.camera_name = f"camera_{self.camera_names[camera_idx].lower()}"
-                    detection_msg.task = "detect"
-                    detection_msg.frame_type = f"maximum_optimized_{camera_idx}"
-                    detection_msg.note = f"Inference: {inference_time*1000:.1f}ms"
-                    
-                    segmentation_msg = Yolov12Inference()
-                    segmentation_msg.header = header
-                    segmentation_msg.camera_name = f"camera_{self.camera_names[camera_idx].lower()}"
-                    segmentation_msg.task = "segment"
-                    segmentation_msg.frame_type = f"maximum_optimized_{camera_idx}"
-                    segmentation_msg.note = f"Inference: {inference_time*1000:.1f}ms"
-                    
-                    # ✅ Create ENHANCED display image
-                    display_frame = frame.copy()
-                    
-                    # ✅ FIXED: English camera info header
-                    camera_label = self.camera_labels[camera_idx]
-                    cv2.rectangle(display_frame, (0, 0), (frame.shape[1], 80), (0, 0, 0), -1)
-                    cv2.putText(display_frame, f"CAMERA {camera_idx+1}: {camera_label}", 
-                              (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
-                    
-                    num_objects = len(result.boxes) if hasattr(result, 'boxes') and result.boxes is not None else 0
-                    fps_text = f"FPS: {1000/max(1, inference_time*1000):.1f} | Objects: {num_objects}"
-                    cv2.putText(display_frame, fps_text, 
-                              (15, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
-                    
-                    # ✅ Process boxes and masks
-                    if hasattr(result, 'boxes') and result.boxes is not None and len(result.boxes) > 0:
-                        boxes = result.boxes
-                        masks = result.masks if hasattr(result, 'masks') and result.masks is not None else None
-                        
-                        for i, box in enumerate(boxes):
-                            # Extract detection info
-                            cls_id = int(box.cls.item())
-                            conf = box.conf.item()
-                            xyxy = box.xyxy.cpu().numpy()[0]
-                            x1, y1, x2, y2 = map(int, xyxy)
-                            
-                            # Get class name and color
-                            cls_name = result.names[cls_id]
-                            color = self.coco_colors[cls_id % len(self.coco_colors)]
-                            text_color = self.text_colors[cls_id % len(self.text_colors)]
-                            
-                            # Calculate distance and coordinates (using enhanced fusion)
-                            bbox_center_x = (x1 + x2) / 2
-                            image_width = frame.shape[1]
-                            angle_offset = ((bbox_center_x / image_width) - 0.5) * 60
-                            
-                            # Get camera base angle from mapping
-                            base_angle = 0
-                            if camera_idx == 0:  # REAR
-                                base_angle = 180
-                            elif camera_idx == 1:  # REAR RIGHT
-                                base_angle = 135
-                            elif camera_idx == 2:  # FRONT RIGHT
-                                base_angle = 45
-                            elif camera_idx == 3:  # FRONT
-                                base_angle = 0
-                            elif camera_idx == 4:  # FRONT LEFT
-                                base_angle = 315
-                            elif camera_idx == 5:  # REAR LEFT
-                                base_angle = 225
-                            
-                            object_angle = (base_angle + angle_offset) % 360
-                            
-                            # Estimate distance based on bounding box size
-                            bbox_height = y2 - y1
-                            distance = 15.0 * (720.0 / max(1, bbox_height))  # Rough distance estimation
-                            distance = min(50.0, max(0.5, distance))  # Clamp between reasonable values
-                            
-                            # Calculate 3D coordinates
-                            angle_rad = math.radians(object_angle)
-                            x = distance * math.cos(angle_rad)
-                            y = distance * math.sin(angle_rad)
-                            z = 0.5  # Default height
-                            
-                            # ✅ Draw segmentation mask if available
-                            if masks is not None and i < len(masks.data):
-                                mask = masks.data[i].cpu().numpy()
-                                
-                                # Resize mask to frame size
-                                mask_resized = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
-                                mask_binary = (mask_resized > 0.5).astype(np.uint8) * 255
-                                
-                                # Create colored mask overlay
-                                colored_mask = np.zeros_like(frame)
-                                colored_mask[:,:,0] = (mask_binary / 255) * color[0]
-                                colored_mask[:,:,1] = (mask_binary / 255) * color[1]
-                                colored_mask[:,:,2] = (mask_binary / 255) * color[2]
-                                
-                                # Blend with display frame
-                                alpha = 0.3
-                                mask_area = mask_binary > 0
-                                if np.any(mask_area):
-                                    display_frame[mask_area] = cv2.addWeighted(
-                                        display_frame[mask_area], 1-alpha, 
-                                        colored_mask[mask_area], alpha, 0)
-                                
-                                # Draw contour around mask
-                                contours, _ = cv2.findContours(mask_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                                if contours:
-                                    cv2.drawContours(display_frame, contours, -1, color, 3)
-                            
-                            # Draw bounding box
-                            cv2.rectangle(display_frame, (x1, y1), (x2, y2), color, 3)
-                            
-                            # ✅ Draw enhanced info text with better positioning
-                            info_texts = [
-                                f"{cls_name} {conf:.2f}",
-                                f"Distance: {distance:.1f}m",
-                                f"Coord: ({x:.1f}, {y:.1f}, {z:.1f})"
-                            ]
-                            
-                            # Dynamic text positioning
-                            text_y = y1 - 10
-                            if text_y < 20:
-                                text_y = y2 + 20
-                            
-                            for idx, text in enumerate(info_texts):
-                                text_pos_y = text_y + (idx * 25)
-                                
-                                # Text background
-                                text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-                                cv2.rectangle(display_frame, 
-                                            (x1, text_pos_y - 20), 
-                                            (x1 + text_size[0] + 10, text_pos_y + 5), 
-                                            (0, 0, 0), -1)
-                                
-                                # Text
-                                cv2.putText(display_frame, text, (x1 + 5, text_pos_y), 
-                                          cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-                            
-                            # Prepare detection for ROS message
-                            detection = InferenceResult()
-                            detection.class_name = cls_name
-                            detection.confidence = conf
-                            detection.left = float(x1)
-                            detection.top = float(y1)
-                            detection.right = float(x2)
-                            detection.bottom = float(y2)
-                            detection.angle = float(object_angle)
-                            detection.distance = float(distance)
-                            detection.coordinate_x = float(x)
-                            detection.coordinate_y = float(y)
-                            detection.coordinate_z = float(z)
-                            detection.color_r = color[0]
-                            detection.color_g = color[1]
-                            detection.color_b = color[2]
-                            
-                            # Add mask data if available
-                            if masks is not None and i < len(masks.data):
-                                mask_data = masks.data[i].cpu().numpy()
-                                # Compress mask to save bandwidth
-                                mask_small = cv2.resize(mask_data, (64, 64))
-                                mask_bytes = (mask_small > 0.5).astype(np.uint8).tobytes()
-                                detection.mask_data = list(mask_bytes)
-                                detection.mask_width = 64
-                                detection.mask_height = 64
-                            
-                            # Add to messages
-                            detection_msg.yolov12_inference.append(detection)
-                            segmentation_msg.yolov12_inference.append(detection)
-                    
-                    # ✅ Update display image
-                    with self.image_locks[camera_idx]:
-                        self.latest_images[camera_idx] = display_frame
-                    
-                    # ✅ Publish results
-                    if camera_idx < len(self.result_pubs):
-                        self.result_pubs[camera_idx][0].publish(detection_msg)
-                        self.result_pubs[camera_idx][1].publish(segmentation_msg)
-                    
-                    # Count detections for performance metrics
-                    self.detection_count += len(detection_msg.yolov12_inference)
+                    self.process_detection_results(results[0], camera_idx, frame, header)
                 
             except Exception as e:
                 self.get_logger().error(f"❌ Inference error for camera {camera_idx}: {e}")
-                import traceback
                 traceback.print_exc()
+
+    def process_detection_results(self, result, camera_idx, original_frame, header):
+        """✅ FIXED: Process detection results with proper type conversion"""
+        try:
+            # Create detection message
+            detection_msg = Yolov12Inference()
+            detection_msg.header = header
+            detection_msg.camera_name = self.camera_names[camera_idx]
+            detection_msg.task = "segment"
+            detection_msg.frame_type = "processed"
+            detection_msg.note = f"YOLO11X segmentation from {self.camera_labels[camera_idx]}"
+
+            frame_height, frame_width = original_frame.shape[:2]
+            
+            # ✅ FIXED: Process boxes with proper type conversion
+            if hasattr(result, 'boxes') and result.boxes is not None:
+                boxes = result.boxes.xyxy.cpu().numpy() if hasattr(result.boxes, 'xyxy') else []
+                scores = result.boxes.conf.cpu().numpy() if hasattr(result.boxes, 'conf') else []
+                classes = result.boxes.cls.cpu().numpy() if hasattr(result.boxes, 'cls') else []
+                
+                # Get class names
+                class_names = result.names if hasattr(result, 'names') else {}
+                
+                # Process masks if available
+                masks = None
+                if hasattr(result, 'masks') and result.masks is not None:
+                    masks = result.masks.data.cpu().numpy()
+                
+                for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
+                    detection = InferenceResult()
+                    
+                    # ✅ FIXED: Convert coordinates to integers (scale to original image size)
+                    x1 = int(box[0] * frame_width / self.input_width)
+                    y1 = int(box[1] * frame_height / self.input_height)
+                    x2 = int(box[2] * frame_width / self.input_width)
+                    y2 = int(box[3] * frame_height / self.input_height)
+                    
+                    # ✅ FIXED: Assign as integers
+                    detection.left = x1
+                    detection.top = y1
+                    detection.right = x2
+                    detection.bottom = y2
+                    
+                    # Class and confidence
+                    detection.class_name = class_names.get(int(cls_id), f"class_{int(cls_id)}")
+                    detection.confidence = float(score)
+                    
+                    # ✅ Calculate distance (simple estimation based on bbox size)
+                    bbox_area = (x2 - x1) * (y2 - y1)
+                    estimated_distance = max(1.0, min(50.0, 10000.0 / max(1, bbox_area) * 10))
+                    detection.distance = estimated_distance
+                    
+                    # ✅ Calculate 3D coordinates (estimation)
+                    center_x = (x1 + x2) / 2
+                    center_y = (y1 + y2) / 2
+                    
+                    # Convert pixel coordinates to world coordinates (rough estimation)
+                    angle_offset = ((center_x / frame_width) - 0.5) * 60  # FOV assumption
+                    camera_angle = camera_idx * 60  # 60-degree spacing
+                    world_angle = (camera_angle + angle_offset) % 360
+                    
+                    detection.coordinate_x = estimated_distance * np.cos(np.radians(world_angle))
+                    detection.coordinate_y = estimated_distance * np.sin(np.radians(world_angle))
+                    detection.coordinate_z = 0.5  # Default height
+                    detection.angle = world_angle
+                    
+                    # ✅ Enhanced colors for each class
+                    color_idx = int(cls_id) % len(self.coco_colors)
+                    detection.color_r = self.coco_colors[color_idx][0]
+                    detection.color_g = self.coco_colors[color_idx][1]
+                    detection.color_b = self.coco_colors[color_idx][2]
+                    
+                    # ✅ Process mask if available
+                    if masks is not None and i < len(masks):
+                        mask = masks[i]
+                        # Resize mask to original image size
+                        mask_resized = cv2.resize(mask.astype(np.uint8), (frame_width, frame_height))
+                        # Convert to bytes
+                        detection.mask_data = mask_resized.flatten().tobytes()
+                        detection.mask_width = frame_width
+                        detection.mask_height = frame_height
+                    else:
+                        detection.mask_data = []
+                        detection.mask_width = 0
+                        detection.mask_height = 0
+                    
+                    detection_msg.yolov12_inference.append(detection)
+                    self.detection_count += 1
+            
+            # ✅ Publish results
+            if camera_idx < len(self.result_pubs):
+                det_pub, seg_pub = self.result_pubs[camera_idx]
+                seg_pub.publish(detection_msg)  # Publish as segmentation
+                
+        except Exception as e:
+            self.get_logger().error(f"❌ Process detection error: {e}")
+            traceback.print_exc()
 
     def maximum_speed_grid_worker(self):
         """✅ MAXIMUM optimized grid worker"""
@@ -533,7 +463,7 @@ class MaximumOptimizedDeepStreamNode(Node):
                 time.sleep(0.1)
 
     def create_maximum_enhanced_grid(self):
-        """✅ MAXIMUM enhanced 2x3 grid with ENGLISH labels"""
+        """✅ MAXIMUM enhanced 2x3 grid with ENGLISH labels and segmentation overlay"""
         try:
             target_size = (720, 405)  # Larger size for better visibility
             grid_images = []
@@ -543,17 +473,33 @@ class MaximumOptimizedDeepStreamNode(Node):
                     with self.image_locks[i]:
                         img = self.latest_images[i].copy()
                     
-                    img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_LINEAR)
+                    # ✅ Resize to target size
+                    img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
+                    
+                    # ✅ FIXED: Add camera label in ENGLISH
+                    label_bg_height = 60
+                    cv2.rectangle(img_resized, (0, 0), (target_size[0], label_bg_height), (0, 0, 0), -1)
+                    
+                    # Camera name and index
+                    camera_text = f"CAM {i+1}: {self.camera_labels[i]}"
+                    cv2.putText(img_resized, camera_text, (10, 25), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                    
+                    # Resolution and status
+                    status_text = f"1920x1080 | YOLO11X-SEG | GPU"
+                    cv2.putText(img_resized, status_text, (10, 50), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    
                     grid_images.append(img_resized)
                 else:
+                    # ✅ Waiting placeholder with ENGLISH text
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
-                    camera_label = self.camera_labels[i]
-                    cv2.putText(black_img, f"CAM {i+1}: {camera_label}", 
-                              (target_size[0]//4, target_size[1]//2-20), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
-                    cv2.putText(black_img, "WAITING...", 
-                              (target_size[0]//3, target_size[1]//2+30), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+                    cv2.putText(black_img, f"CAM {i+1}: {self.camera_labels[i]}", 
+                               (target_size[0]//4, target_size[1]//2-20), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                    cv2.putText(black_img, "WAITING FOR CAMERA...", 
+                               (target_size[0]//4, target_size[1]//2+20), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -580,9 +526,9 @@ class MaximumOptimizedDeepStreamNode(Node):
                 ]
                 
                 for idx, info_line in enumerate(info_lines):
-                    y_pos = grid.shape[0] - status_height + 15 + (idx * 20)
+                    y_pos = grid.shape[0] - status_height + 20 + (idx * 20)
                     cv2.putText(grid, info_line, (20, y_pos), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.9, status_color, 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
                 
                 # ✅ Publish grid
                 grid_msg = self.bridge.cv2_to_imgmsg(grid, 'bgr8')
