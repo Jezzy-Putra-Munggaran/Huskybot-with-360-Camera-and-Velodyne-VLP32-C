@@ -38,16 +38,21 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ MAXIMUM Jetson optimization
+        # ✅ MAXIMUM Jetson optimization with GPU & memory boost
         ExecuteProcess(
             cmd=['bash', '-c', 
-                 'echo kmporin | sudo -S jetson_clocks && '
-                 'echo kmporin | sudo -S nvpmodel -m 0 && '
+                 'echo kmporin | sudo -S jetson_clocks --fan && '  # Maximum fan speed
+                 'echo kmporin | sudo -S nvpmodel -m 0 && '  # Maximum performance mode
                  'echo kmporin | sudo -S bash -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
                  'echo kmporin | sudo -S nvidia-smi -pm 1 && '  # Enable persistent mode
                  'echo kmporin | sudo -S nvidia-smi -ac 1377,1377 && '  # Max memory clock
+                 'echo kmporin | sudo -S nvidia-smi --gpu-reset && '  # Reset GPU for clean start
                  'echo kmporin | sudo -S bash -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" || true && '
-                 'echo "🚀 MAXIMUM Jetson optimization activated!"'],
+                 'echo kmporin | sudo -S bash -c "echo 2000000000 > /sys/devices/gpu.0/devfreq/17000000.gv11b/min_freq" || true && '  # Force min GPU freq
+                 'echo kmporin | sudo -S bash -c "echo 1 > /sys/kernel/debug/bpmp/debug/clk/gpu/mrq_rate_locked" || true && '
+                 'echo kmporin | sudo -S bash -c "echo 1 > /sys/kernel/debug/bpmp/debug/clk/gpu_gaa/mrq_rate_locked" || true && '
+                 'echo kmporin | sudo -S bash -c "echo 1 > /sys/kernel/debug/bpmp/debug/clk/gpcclk/mrq_rate_locked" || true && '
+                 'echo "🚀 MAXIMUM Jetson optimization activated with 100% performance!"'],
             output='screen',
             name='maximum_jetson_optimization'
         ),

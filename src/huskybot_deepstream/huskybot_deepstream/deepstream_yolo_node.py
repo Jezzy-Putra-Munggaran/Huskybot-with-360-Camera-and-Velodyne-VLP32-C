@@ -521,6 +521,8 @@ class MaximumOptimizedDeepStreamNode(Node):
             
     except Exception as e:
         self.get_logger().error(f"❌ Batch inference error: {e}")
+        import traceback
+        traceback.print_exc()
 
     def maximum_speed_grid_worker(self):
         """✅ MAXIMUM optimized grid worker"""

@@ -256,7 +256,7 @@ class EnhancedFusionNode(Node):
                 # ✅ ENHANCED PointCloud2 message
                 pc_msg = PointCloud2()
                 pc_msg.header.stamp = self.get_clock().now().to_msg()
-                pc_msg.header.frame_id = "base_link"  # Important for visualization!
+                pc_msg.header.frame_id = "base_link"  # CRITICAL: Must be base_link for RViz2!
                 
                 # ✅ CORRECT field definitions for RViz2
                 pc_msg.fields = [
@@ -275,6 +275,7 @@ class EnhancedFusionNode(Node):
                 pc_msg.is_bigendian = False
                 
                 # ✅ ENHANCED data packing
+                import struct  # Add this import
                 data = bytearray()
                 for point in all_points:
                     data.extend(struct.pack('ffff', point[0], point[1], point[2], point[3]))
@@ -289,6 +290,8 @@ class EnhancedFusionNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"❌ 3D visualization error: {e}")
+            import traceback
+            traceback.print_exc()
 
     def get_object_size(self, class_name):
         """Get estimated object size for better visualization"""
