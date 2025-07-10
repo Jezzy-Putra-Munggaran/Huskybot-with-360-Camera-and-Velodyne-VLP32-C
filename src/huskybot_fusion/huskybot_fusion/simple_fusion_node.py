@@ -225,31 +225,38 @@ class EnhancedFusionNode(Node):
             for camera_name, detection_msg in self.latest_detections.items():
                 if detection_msg and hasattr(detection_msg, 'yolov12_inference'):
                     for detection in detection_msg.yolov12_inference:
-                        if hasattr(detection, 'coordinate_x'):
-                            self.get_logger().debug(f"Adding 3D point for {detection.class_name} at ({detection.coordinate_x}, {detection.coordinate_y}, {detection.coordinate_z})")
+                        if hasattr(detection, 'coordinate_x') and hasattr(detection, 'coordinate_y') and hasattr(detection, 'coordinate_z'):
+                            # Extract color
+                            r = detection.color_r if hasattr(detection, 'color_r') else 255
+                            g = detection.color_g if hasattr(detection, 'color_g') else 255
+                            b = detection.color_b if hasattr(detection, 'color_b') else 255
                             
-                            # Generate more points per object for better visibility
-                            object_size = self.get_object_size(detection.class_name)
-                            intensity = detection.confidence * 255.0
+                            # Add center point
+                            x, y, z = detection.coordinate_x, detection.coordinate_y, detection.coordinate_z
                             
-                            # Generate 50+ points per object for better visibility
-                            for i in range(50):
-                                jitter_x = np.random.uniform(-0.2, 0.2) * object_size['width']
-                                jitter_y = np.random.uniform(-0.2, 0.2) * object_size['depth']
-                                jitter_z = np.random.uniform(0, 0.5) * object_size['height']
-                                
-                                all_points.append([
-                                    detection.coordinate_x + jitter_x,
-                                    detection.coordinate_y + jitter_y,
-                                    detection.coordinate_z + jitter_z,
-                                    intensity
-                                ])
-            
+                            # ✅ Add multiple points to create 3D object shape based on class
+                            size = self.get_object_size(detection.class_name)
+                            width, depth, height = size['width'], size['depth'], size['height']
+                            
+                            # Create multiple points around the center to form a 3D shape
+                            for dx in [-width/4, 0, width/4]:
+                                for dy in [-depth/4, 0, depth/4]:
+                                    for dz in [0, height/4, height/2]:
+                                        point_x = x + dx
+                                        point_y = y + dy
+                                        point_z = z + dz
+                                        
+                                        # Intensity based on distance from center
+                                        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+                                        intensity = max(0.3, 1.0 - (distance / max(width, depth, height)))
+                                        
+                                        all_points.append((point_x, point_y, point_z, intensity))
+        
             if all_points:
                 # ✅ ENHANCED PointCloud2 message
                 pc_msg = PointCloud2()
                 pc_msg.header.stamp = self.get_clock().now().to_msg()
-                pc_msg.header.frame_id = "base_link"
+                pc_msg.header.frame_id = "base_link"  # Important for visualization!
                 
                 # ✅ CORRECT field definitions for RViz2
                 pc_msg.fields = [
@@ -262,7 +269,7 @@ class EnhancedFusionNode(Node):
                 # ✅ CORRECT message format
                 pc_msg.height = 1
                 pc_msg.width = len(all_points)
-                pc_msg.point_step = 16
+                pc_msg.point_step = 16  # 4 floats * 4 bytes
                 pc_msg.row_step = pc_msg.point_step * pc_msg.width
                 pc_msg.is_dense = True
                 pc_msg.is_bigendian = False
@@ -270,32 +277,16 @@ class EnhancedFusionNode(Node):
                 # ✅ ENHANCED data packing
                 data = bytearray()
                 for point in all_points:
-                    data.extend(struct.pack('<ffff', point[0], point[1], point[2], point[3]))
+                    data.extend(struct.pack('ffff', point[0], point[1], point[2], point[3]))
                 pc_msg.data = bytes(data)
                 
-                # Publish
+                # Publish and log success
                 self.objects_3d_pub.publish(pc_msg)
-                
+                self.get_logger().info(f"Published 3D objects PointCloud with {len(all_points)} points")
             else:
-                # ✅ Publish empty pointcloud to keep topic alive
-                pc_msg = PointCloud2()
-                pc_msg.header.stamp = self.get_clock().now().to_msg()
-                pc_msg.header.frame_id = "base_link"
-                pc_msg.fields = [
-                    PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-                    PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-                    PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-                    PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
-                ]
-                pc_msg.height = 1
-                pc_msg.width = 0
-                pc_msg.point_step = 16
-                pc_msg.row_step = 0
-                pc_msg.is_dense = True
-                pc_msg.is_bigendian = False
-                pc_msg.data = bytes()
-                self.objects_3d_pub.publish(pc_msg)
-                
+                if self.get_clock().now().nanoseconds % 5000000000 == 0:  # Log only every 5 seconds to avoid spam
+                    self.get_logger().info("No objects detected for 3D visualization")
+            
         except Exception as e:
             self.get_logger().error(f"❌ 3D visualization error: {e}")
 

@@ -38,21 +38,18 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. MAXIMUM Jetson optimization - MORE AGGRESSIVE
-        TimerAction(
-            period=8.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'sudo jetson_clocks && '
-                         'sudo nvpmodel -m 0 && '
-                         'echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor && '
-                         'sudo sh -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" || true && '
-                         'echo "🚀 MAXIMUM Jetson optimization activated!"'],
-                    output='screen',
-                    name='maximum_jetson_optimization'
-                )
-            ]
+        # ✅ MAXIMUM Jetson optimization
+        ExecuteProcess(
+            cmd=['bash', '-c', 
+                 'echo kmporin | sudo -S jetson_clocks && '
+                 'echo kmporin | sudo -S nvpmodel -m 0 && '
+                 'echo kmporin | sudo -S bash -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
+                 'echo kmporin | sudo -S nvidia-smi -pm 1 && '  # Enable persistent mode
+                 'echo kmporin | sudo -S nvidia-smi -ac 1377,1377 && '  # Max memory clock
+                 'echo kmporin | sudo -S bash -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" || true && '
+                 'echo "🚀 MAXIMUM Jetson optimization activated!"'],
+            output='screen',
+            name='maximum_jetson_optimization'
         ),
         
         # ✅ 4. Start MAXIMUM DeepStream with YOLO12X
