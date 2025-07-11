@@ -56,6 +56,7 @@ setup(
     entry_points={
         'console_scripts': [
             # ✅ FIXED: Correct executable mapping
+            'ultra_maximum_deepstream.py = huskybot_deepstream.ultra_maximum_deepstream:main',
             'deepstream_yolo_node = huskybot_deepstream.deepstream_yolo_node:main',
         ],
     },

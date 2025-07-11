@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, PointCloud2, PointField  # ✅ FIXED: Added PointCloud2
 from yolov12_msgs.msg import Yolov12Inference, InferenceResult
 from cv_bridge import CvBridge
 import cv2
@@ -14,6 +14,9 @@ import gc
 import os
 import concurrent.futures
 import queue
+import colorsys  # ✅ FIXED: Added missing import
+import struct   # ✅ FIXED: Added missing import
+import traceback  # ✅ FIXED: Added missing import
 
 class UltraMaximumPerformanceNode(Node):
     def __init__(self):
@@ -480,39 +483,27 @@ class UltraMaximumPerformanceNode(Node):
                 if self.latest_images[i] is not None:
                     with self.image_locks[i]:
                         img = self.latest_images[i].copy()
-                        detections = self.latest_detections[i].copy()
                     
                     # ✅ Resize to target
                     img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
                     
-                    # ✅ Draw segmentation masks and info
-                    if detections:
+                    # ✅ Draw segmentation overlay with detections
+                    if i < len(self.latest_detections) and self.latest_detections[i]:
                         img_resized = self.draw_ultra_segmentation_overlay(
-                            img_resized, detections, target_size, img.shape
+                            img_resized, self.latest_detections[i], target_size, img.shape[:2]
                         )
                     
-                    # ✅ Camera label
-                    label_height = 120
-                    cv2.rectangle(img_resized, (0, 0), (target_size[0], label_height), (0, 0, 0), -1)
-                    
-                    camera_text = f"CAM {i+1}: {self.camera_mappings[i][1]}"
-                    cv2.putText(img_resized, camera_text, (20, 45), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
-                    
-                    status_text = f"YOLO11X-SEG | Objects: {len(detections)} | ULTRA-MAX"
-                    cv2.putText(img_resized, status_text, (20, 85), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
+                    # ✅ Add camera label
+                    cv2.putText(img_resized, self.camera_mappings[i][1], 
+                              (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
                     
                     grid_images.append(img_resized)
                 else:
-                    # Waiting placeholder
+                    # ✅ Black placeholder
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
-                    cv2.putText(black_img, f"CAM {i+1}: {self.camera_mappings[i][1]}", 
-                               (target_size[0]//4, target_size[1]//2-40), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 4)
-                    cv2.putText(black_img, "WAITING FOR CAMERA...", 
-                               (target_size[0]//4, target_size[1]//2+40), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
+                    cv2.putText(black_img, f"WAITING {self.camera_mappings[i][1]}", 
+                              (target_size[0]//4, target_size[1]//2), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 3)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -550,7 +541,7 @@ class UltraMaximumPerformanceNode(Node):
                 color = (detection.color_b, detection.color_g, detection.color_r)  # BGR
                 color_idx = 0
                 for i, (r, g, b) in enumerate(self.coco_colors):
-                    if detection.color_r == r and detection.color_g == g and detection.color_b == b:
+                    if r == detection.color_r and g == detection.color_g and b == detection.color_b:
                         color_idx = i
                         break
                 text_color = self.text_colors[color_idx]
@@ -558,47 +549,33 @@ class UltraMaximumPerformanceNode(Node):
                 # ✅ Draw segmentation mask
                 if hasattr(detection, 'mask_data') and len(detection.mask_data) > 0:
                     try:
-                        mask_data = np.frombuffer(detection.mask_data, dtype=np.uint8)
-                        mask = mask_data.reshape((detection.mask_height, detection.mask_width))
-                        mask_resized = cv2.resize(mask, target_size, interpolation=cv2.INTER_NEAREST)
-                        
-                        # Create colored mask with transparency
-                        colored_mask = np.zeros_like(img)
-                        colored_mask[mask_resized > 0] = color
-                        
-                        # Blend with image (35% mask, 65% original)
-                        cv2.addWeighted(img, 0.65, colored_mask, 0.35, 0, img)
-                        
-                        # Draw mask contours
-                        contours, _ = cv2.findContours(mask_resized, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                        cv2.drawContours(img, contours, -1, color, 3)
-                        
-                    except Exception as e:
-                        self.get_logger().warn(f"Mask drawing error: {e}")
+                        mask_array = np.frombuffer(detection.mask_data, dtype=np.uint8)
+                        if detection.mask_width > 0 and detection.mask_height > 0:
+                            mask = mask_array.reshape((detection.mask_height, detection.mask_width))
+                            mask_resized = cv2.resize(mask, target_size, interpolation=cv2.INTER_NEAREST)
+                            
+                            # Apply colored mask overlay
+                            mask_overlay = np.zeros_like(img)
+                            mask_overlay[mask_resized > 0] = color
+                            img = cv2.addWeighted(img, 0.7, mask_overlay, 0.3, 0)
+                    except Exception as mask_error:
+                        self.get_logger().warn(f"Mask processing error: {mask_error}")
                 
                 # ✅ Draw bounding box
                 cv2.rectangle(img, (x1, y1), (x2, y2), color, 4)
                 
                 # ✅ Draw detection info
-                info_lines = [
-                    f"Class: {detection.class_name}",
-                    f"Confidence: {detection.confidence:.2f}",
-                    f"Distance: {detection.distance:.1f}m",
-                    f"Coord: ({detection.coordinate_x:.1f},{detection.coordinate_y:.1f},{detection.coordinate_z:.1f})"
-                ]
+                info_text = f"{detection.class_name}: {detection.confidence:.2f}"
+                if hasattr(detection, 'distance') and detection.distance > 0:
+                    info_text += f" | {detection.distance:.1f}m"
+                if hasattr(detection, 'coordinate_x'):
+                    info_text += f" | ({detection.coordinate_x:.1f},{detection.coordinate_y:.1f},{detection.coordinate_z:.1f})"
                 
-                # ✅ Draw text with background
-                text_y = max(y1 - 20, 30)
-                for j, line in enumerate(info_lines):
-                    text_pos = (x1, text_y + j * 35)
-                    
-                    # Text background
-                    (text_w, text_h), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2)
-                    cv2.rectangle(img, (text_pos[0]-5, text_pos[1]-text_h-5), 
-                                 (text_pos[0]+text_w+5, text_pos[1]+5), color, -1)
-                    
-                    # Text
-                    cv2.putText(img, line, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 1.0, text_color, 2)
+                # Background for text
+                text_size = cv2.getTextSize(info_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+                cv2.rectangle(img, (x1, y1-30), (x1+text_size[0]+10, y1), color, -1)
+                cv2.putText(img, info_text, (x1+5, y1-10), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, text_color, 2)
             
             return img
             
