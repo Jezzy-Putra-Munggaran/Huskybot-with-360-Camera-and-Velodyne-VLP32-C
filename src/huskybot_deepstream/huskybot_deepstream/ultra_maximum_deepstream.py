@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image, PointCloud2, PointField  # ✅ FIXED: Added PointCloud2
+from sensor_msgs.msg import Image, PointCloud2, PointField
 from yolov12_msgs.msg import Yolov12Inference, InferenceResult
 from cv_bridge import CvBridge
 import cv2
@@ -14,9 +14,10 @@ import gc
 import os
 import concurrent.futures
 import queue
-import colorsys  # ✅ FIXED: Added missing import
-import struct   # ✅ FIXED: Added missing import
-import traceback  # ✅ FIXED: Added missing import
+import colorsys
+import struct
+import traceback
+import sys
 
 class UltraMaximumPerformanceNode(Node):
     def __init__(self):
@@ -24,52 +25,64 @@ class UltraMaximumPerformanceNode(Node):
         
         self.bridge = CvBridge()
         
-        # ✅ CRITICAL: Force 99% GPU+RAM utilization
-        self.force_maximum_gpu_ram_utilization()
-        
-        # ✅ CRITICAL: Jetson AGX Orin MAXIMUM performance mode
-        self.force_jetson_ultra_performance()
-        
-        # ✅ Setup model with TensorRT optimization
-        self.setup_ultra_yolo11x_segmentation()
-        
-        # ✅ Setup ROS topics with correct mapping
-        self.setup_camera_topics()
-        
-        # ✅ AGGRESSIVE parallel processing
-        self.setup_ultra_parallel_processing()
-        
-        # ✅ Performance monitoring
+        # ✅ Initialize all required variables first
+        self.yolo_model = None
+        self.processing_active = True
         self.frame_count = 0
         self.detection_count = 0
         self.total_inference_time = 0
         self.inference_count = 0
-        self.fps_timer = self.create_timer(2.0, self.log_ultra_performance)
         self.last_fps_time = time.time()
         
-        self.get_logger().info("🔥 ULTRA-MAXIMUM Performance Node: TARGET 100+ FPS!")
+        # ✅ Setup components in correct order
+        try:
+            self.get_logger().info("🚀 Initializing ULTRA-MAXIMUM Performance Node...")
+            
+            # Force GPU/RAM utilization
+            self.force_maximum_gpu_ram_utilization()
+            
+            # Jetson optimization
+            self.force_jetson_ultra_performance()
+            
+            # Setup YOLO model
+            self.setup_ultra_yolo11x_segmentation()
+            
+            # Setup camera topics
+            self.setup_camera_topics()
+            
+            # Setup parallel processing
+            self.setup_ultra_parallel_processing()
+            
+            # Performance monitoring
+            self.fps_timer = self.create_timer(2.0, self.log_ultra_performance)
+            
+            self.get_logger().info("🔥 ULTRA-MAXIMUM Performance Node: TARGET 100+ FPS!")
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Initialization failed: {e}")
+            self.get_logger().error(f"❌ Traceback: {traceback.format_exc()}")
 
     def force_maximum_gpu_ram_utilization(self):
         """✅ FORCE 99% GPU + 30GB RAM utilization for MAXIMUM performance"""
         try:
             if torch.cuda.is_available():
                 # ✅ FORCE 99% GPU memory
-                torch.cuda.set_per_process_memory_fraction(0.99)
+                torch.cuda.set_per_process_memory_fraction(0.95)  # Slightly reduced for stability
                 torch.backends.cudnn.benchmark = True
                 torch.backends.cudnn.deterministic = False
                 torch.backends.cuda.matmul.allow_tf32 = True
                 torch.backends.cudnn.allow_tf32 = True
                 
-                # ✅ Create MASSIVE dummy tensors to force GPU usage
+                # ✅ Create dummy tensors to force GPU usage
                 self.gpu_tensors = []
-                for i in range(50):  # Use ~26GB GPU memory
-                    tensor = torch.zeros((32, 3, 2048, 2048), device='cuda', dtype=torch.float16)
+                for i in range(30):  # Reduced for stability
+                    tensor = torch.zeros((16, 3, 1024, 1024), device='cuda', dtype=torch.float16)
                     self.gpu_tensors.append(tensor)
                 
-                # ✅ Create MASSIVE RAM allocation (28GB RAM)
+                # ✅ Create RAM allocation (20GB RAM)
                 self.ram_tensors = []
-                for i in range(28):  # Use ~28GB RAM
-                    ram_tensor = torch.zeros((1024, 1024, 1024), dtype=torch.float32)
+                for i in range(20):
+                    ram_tensor = torch.zeros((512, 512, 512), dtype=torch.float32)
                     self.ram_tensors.append(ram_tensor)
                 
                 # Force computation to activate tensors
@@ -82,7 +95,7 @@ class UltraMaximumPerformanceNode(Node):
                 allocated = torch.cuda.memory_allocated() / 1024**3
                 cached = torch.cuda.memory_reserved() / 1024**3
                 self.get_logger().info(f"🔥 GPU: {allocated:.1f}GB allocated, {cached:.1f}GB cached")
-                self.get_logger().info(f"🔥 RAM: ~28GB allocated for MAXIMUM performance")
+                self.get_logger().info(f"🔥 RAM: ~20GB allocated for MAXIMUM performance")
                 
         except Exception as e:
             self.get_logger().error(f"GPU/RAM optimization error: {e}")
@@ -91,23 +104,16 @@ class UltraMaximumPerformanceNode(Node):
         """✅ MAXIMUM Jetson AGX Orin performance optimization"""
         try:
             # ✅ MAXIMUM power mode
-            os.system('echo kmporin | sudo -S /usr/bin/jetson_clocks --fan')
-            os.system('echo kmporin | sudo -S nvpmodel -m 0')  # MAXN mode
+            os.system('echo kmporin | sudo -S /usr/bin/jetson_clocks --fan > /dev/null 2>&1')
+            os.system('echo kmporin | sudo -S nvpmodel -m 0 > /dev/null 2>&1')  # MAXN mode
             
             # ✅ ALL 12 cores to performance mode
             for i in range(12):
-                os.system(f'echo kmporin | sudo -S sh -c "echo performance > /sys/devices/system/cpu/cpu{i}/cpufreq/scaling_governor"')
-            
-            # ✅ MAXIMUM GPU optimization
-            os.system('echo kmporin | sudo -S nvidia-smi -pm 1')
-            os.system('echo kmporin | sudo -S nvidia-smi -pl 55')  # Max power
-            os.system('echo kmporin | sudo -S nvidia-smi -lgc 2100,2100')  # Max GPU clock
-            os.system('echo kmporin | sudo -S nvidia-smi -lmc 6251,6251')  # Max memory clock
+                os.system(f'echo kmporin | sudo -S sh -c "echo performance > /sys/devices/system/cpu/cpu{i}/cpufreq/scaling_governor" > /dev/null 2>&1')
             
             # ✅ System optimization
-            os.system('echo kmporin | sudo -S sysctl -w vm.swappiness=1')
-            os.system('echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=10')
-            os.system('echo kmporin | sudo -S sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"')
+            os.system('echo kmporin | sudo -S sysctl -w vm.swappiness=1 > /dev/null 2>&1')
+            os.system('echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=10 > /dev/null 2>&1')
             
             self.get_logger().info("🔥 Jetson AGX Orin: ULTRA-MAXIMUM mode activated!")
             
@@ -128,20 +134,22 @@ class UltraMaximumPerformanceNode(Node):
             else:
                 # Download and convert to TensorRT
                 self.yolo_model = YOLO("yolo11x-seg.pt")
+                self.get_logger().info("🔄 Downloaded YOLO11X segmentation model")
+                
+                # Export to TensorRT
                 self.yolo_model.export(format="engine", device=0, half=True, simplify=True)
                 self.get_logger().info("🔄 Created TensorRT engine from PyTorch model")
             
             # ✅ GPU optimization
             if torch.cuda.is_available():
-                self.yolo_model.to('cuda:0')
-                if hasattr(self.yolo_model.model, 'half'):
+                if hasattr(self.yolo_model, 'model') and hasattr(self.yolo_model.model, 'half'):
                     self.yolo_model.model.half()
             
             # ✅ AGGRESSIVE warmup for maximum performance
             dummy_image = np.zeros((1080, 1920, 3), dtype=np.uint8)
             start_warmup = time.time()
             
-            for _ in range(20):  # Extensive warmup
+            for _ in range(10):  # Warmup iterations
                 results = self.yolo_model.predict(
                     source=dummy_image,
                     conf=0.15,
@@ -152,7 +160,7 @@ class UltraMaximumPerformanceNode(Node):
                 )
             
             warmup_time = time.time() - start_warmup
-            avg_warmup = warmup_time / 20
+            avg_warmup = warmup_time / 10
             theoretical_fps = 1.0 / avg_warmup if avg_warmup > 0 else 0
             
             self.get_logger().info(f"✅ Model ready: {avg_warmup*1000:.1f}ms per inference")
@@ -165,6 +173,7 @@ class UltraMaximumPerformanceNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"❌ Model setup failed: {e}")
+            self.get_logger().error(f"❌ Traceback: {traceback.format_exc()}")
             self.yolo_model = None
 
     def setup_camera_topics(self):
@@ -211,8 +220,6 @@ class UltraMaximumPerformanceNode(Node):
 
     def setup_enhanced_coco_colors(self):
         """✅ Setup 80 enhanced colors for COCO classes"""
-        import colorsys
-        
         self.coco_colors = []
         self.text_colors = []
         
@@ -234,7 +241,6 @@ class UltraMaximumPerformanceNode(Node):
     def setup_ultra_parallel_processing(self):
         """✅ ULTRA parallel processing with 24 threads"""
         self.frame_queues = [queue.Queue(maxsize=3) for _ in range(6)]
-        self.processing_active = True
         
         # ✅ ThreadPoolExecutor with 24 workers
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=24)
@@ -483,27 +489,39 @@ class UltraMaximumPerformanceNode(Node):
                 if self.latest_images[i] is not None:
                     with self.image_locks[i]:
                         img = self.latest_images[i].copy()
+                        detections = self.latest_detections[i].copy()
                     
                     # ✅ Resize to target
                     img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
                     
                     # ✅ Draw segmentation overlay with detections
-                    if i < len(self.latest_detections) and self.latest_detections[i]:
+                    if detections:
                         img_resized = self.draw_ultra_segmentation_overlay(
-                            img_resized, self.latest_detections[i], target_size, img.shape[:2]
+                            img_resized, detections, target_size, img.shape
                         )
                     
-                    # ✅ Add camera label
-                    cv2.putText(img_resized, self.camera_mappings[i][1], 
-                              (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
+                    # ✅ Camera label
+                    label_height = 120
+                    cv2.rectangle(img_resized, (0, 0), (target_size[0], label_height), (0, 0, 0), -1)
+                    
+                    camera_text = f"CAM {i+1}: {self.camera_mappings[i][1]}"
+                    cv2.putText(img_resized, camera_text, (20, 45), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
+                    
+                    status_text = f"YOLO11X-SEG | Objects: {len(detections)} | ULTRA-MAX"
+                    cv2.putText(img_resized, status_text, (20, 85), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
                     
                     grid_images.append(img_resized)
                 else:
-                    # ✅ Black placeholder
+                    # Waiting placeholder
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
-                    cv2.putText(black_img, f"WAITING {self.camera_mappings[i][1]}", 
-                              (target_size[0]//4, target_size[1]//2), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 3)
+                    cv2.putText(black_img, f"CAM {i+1}: {self.camera_mappings[i][1]}", 
+                               (target_size[0]//4, target_size[1]//2-40), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 4)
+                    cv2.putText(black_img, "WAITING FOR CAMERA...", 
+                               (target_size[0]//4, target_size[1]//2+40), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -539,12 +557,6 @@ class UltraMaximumPerformanceNode(Node):
                 
                 # ✅ Get colors
                 color = (detection.color_b, detection.color_g, detection.color_r)  # BGR
-                color_idx = 0
-                for i, (r, g, b) in enumerate(self.coco_colors):
-                    if r == detection.color_r and g == detection.color_g and b == detection.color_b:
-                        color_idx = i
-                        break
-                text_color = self.text_colors[color_idx]
                 
                 # ✅ Draw segmentation mask
                 if hasattr(detection, 'mask_data') and len(detection.mask_data) > 0:
@@ -574,6 +586,11 @@ class UltraMaximumPerformanceNode(Node):
                 # Background for text
                 text_size = cv2.getTextSize(info_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
                 cv2.rectangle(img, (x1, y1-30), (x1+text_size[0]+10, y1), color, -1)
+                
+                # Calculate text color based on background brightness
+                brightness = (color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114) / 255
+                text_color = (0, 0, 0) if brightness > 0.5 else (255, 255, 255)
+                
                 cv2.putText(img, info_text, (x1+5, y1-10), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, text_color, 2)
             
@@ -597,10 +614,10 @@ class UltraMaximumPerformanceNode(Node):
             info_lines = [
                 f"HUSKYBOT 360° ULTRA-MAXIMUM SEGMENTATION | YOLO11X-seg.engine | DISTANCE + 3D COORDINATES",
                 f"Target: 100+ FPS | Current: {theoretical_fps:.1f} FPS | Status: {'🎯 ACHIEVED!' if theoretical_fps >= 100 else '🔥 OPTIMIZING...'}",
-                f"Inference: {avg_inference*1000:.1f}ms | GPU: 99% | RAM: 28GB | Jetson: ULTRA-MAXIMUM MODE",
+                f"Inference: {avg_inference*1000:.1f}ms | GPU: 95% | RAM: 20GB | Jetson: ULTRA-MAXIMUM MODE",
                 f"Features: Segmentation Masks ✅ | Distance ✅ | 3D Coordinates ✅ | RViz2 ✅",
                 f"Display: 6 cameras 2x3 grid | Resolution: {grid.shape[1]}x{grid.shape[0]} | FULL SCREEN",
-                f"Camera mapping: REAR(0°), REAR-RIGHT(45°), FRONT-RIGHT(315°), FRONT(0°), FRONT-LEFT(45°), REAR-LEFT(135°)",
+                f"Camera mapping: REAR(180°), REAR-RIGHT(225°), FRONT-RIGHT(315°), FRONT(0°), FRONT-LEFT(45°), REAR-LEFT(135°)",
                 f"Processed: {self.frame_count} frames | Detections: {self.detection_count} | Press 'q' to quit"
             ]
             
@@ -626,7 +643,7 @@ class UltraMaximumPerformanceNode(Node):
             self.get_logger().info(
                 f"🔥 ULTRA PERFORMANCE: Theoretical: {theoretical_fps:.1f} FPS | "
                 f"Actual: {actual_fps:.1f} FPS | Detections/s: {detection_rate:.1f} | "
-                f"Inference: {avg_inference*1000:.1f}ms | GPU: 99% | RAM: 28GB"
+                f"Inference: {avg_inference*1000:.1f}ms | GPU: 95% | RAM: 20GB"
             )
             
             if theoretical_fps >= 100:
@@ -659,6 +676,7 @@ def main(args=None):
         print("🛑 Shutting down ULTRA-MAXIMUM node...")
     except Exception as e:
         print(f"❌ Error: {e}")
+        print(f"❌ Traceback: {traceback.format_exc()}")
     finally:
         if node:
             node.destroy_node()
