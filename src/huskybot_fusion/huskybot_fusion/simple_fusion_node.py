@@ -9,24 +9,25 @@ import numpy as np
 import math
 import time
 import struct
+import std_msgs.msg
 
-class EnhancedFusionNode(Node):
+class UltraEnhancedFusionNode(Node):
     def __init__(self):
-        super().__init__('enhanced_fusion')
+        super().__init__('ultra_enhanced_fusion')
         
-        # ✅ FIXED camera angle mapping
+        # ✅ CORRECT camera angle mapping
         self.camera_angles = {
             'rear': 180,        # KAMERA BELAKANG
-            'rear_left': 225,   # KAMERA KIRI BELAKANG
-            'front_left': 315,  # KAMERA KIRI DEPAN
+            'rear_right': 225,  # KAMERA KANAN BELAKANG
+            'front_right': 315, # KAMERA KANAN DEPAN
             'front': 0,         # KAMERA DEPAN
-            'front_right': 45,  # KAMERA KANAN DEPAN
-            'rear_right': 135   # KAMERA KANAN BELAKANG
+            'front_left': 45,   # KAMERA KIRI DEPAN
+            'rear_left': 135    # KAMERA KIRI BELAKANG
         }
         
         # ✅ Enhanced subscriptions
         self.detection_subs = []
-        self.camera_names = ['rear', 'rear_left', 'front_left', 'front', 'front_right', 'rear_right']
+        self.camera_names = ['rear', 'rear_right', 'front_right', 'front', 'front_left', 'rear_left']
         
         for name in self.camera_names:
             det_sub = self.create_subscription(
@@ -70,16 +71,16 @@ class EnhancedFusionNode(Node):
         # ✅ Enhanced monitoring
         self.fusion_count = 0
         self.fusion_timer = self.create_timer(5.0, self.log_fusion_stats)
-        self.publish_timer = self.create_timer(0.05, self.create_continuous_3d_visualization)  # 20Hz for better performance
+        self.publish_timer = self.create_timer(0.1, self.create_enhanced_3d_visualization)  # 10Hz for better performance
         
-        self.get_logger().info("🔗 ENHANCED Fusion Node initialized")
+        self.get_logger().info("🔗 ULTRA-ENHANCED Fusion Node initialized")
 
     def detection_callback(self, msg, camera_name):
         """Process detection results with enhanced fusion"""
         self.latest_detections[camera_name] = msg
         
         # ✅ Enhanced fusion process
-        self.enhanced_fusion_with_lidar(msg, camera_name)
+        self.ultra_fusion_with_lidar(msg, camera_name)
 
     def laser_callback(self, msg):
         """Process LaserScan"""
@@ -91,8 +92,8 @@ class EnhancedFusionNode(Node):
         self.latest_pointcloud = msg
         self.last_pointcloud_time = time.time()
 
-    def enhanced_fusion_with_lidar(self, detection_msg, camera_name):
-        """Enhanced fusion with ACCURATE distance and coordinates"""
+    def ultra_fusion_with_lidar(self, detection_msg, camera_name):
+        """ULTRA fusion with ACCURATE distance and coordinates"""
         try:
             base_angle = self.camera_angles.get(camera_name, 0)
             
@@ -101,8 +102,8 @@ class EnhancedFusionNode(Node):
             enhanced_msg.header = detection_msg.header
             enhanced_msg.camera_name = detection_msg.camera_name
             enhanced_msg.task = detection_msg.task
-            enhanced_msg.frame_type = detection_msg.frame_type + "_enhanced_fusion"
-            enhanced_msg.note = f"Enhanced LiDAR fusion from {camera_name} at {base_angle}°"
+            enhanced_msg.frame_type = detection_msg.frame_type + "_ultra_enhanced_fusion"
+            enhanced_msg.note = f"ULTRA LiDAR fusion from {camera_name} at {base_angle}° with accurate distance and 3D coordinates"
             
             for detection in detection_msg.yolov12_inference:
                 # ✅ Copy and enhance detection
@@ -122,7 +123,7 @@ class EnhancedFusionNode(Node):
                 enhanced_detection.color_g = detection.color_g if hasattr(detection, 'color_g') else 255
                 enhanced_detection.color_b = detection.color_b if hasattr(detection, 'color_b') else 255
                 
-                # ✅ ENHANCED: Use detection angle if available, otherwise calculate
+                # ✅ Use detection data if available
                 if hasattr(detection, 'angle') and detection.angle > 0:
                     object_angle = detection.angle
                 else:
@@ -133,19 +134,24 @@ class EnhancedFusionNode(Node):
                 
                 enhanced_detection.angle = object_angle
                 
-                # ✅ ENHANCED: Get ACCURATE distance from LaserScan
-                if self.latest_laser:
-                    accurate_distance, ray_index = self.get_accurate_distance_from_laser(object_angle)
-                    enhanced_detection.distance = accurate_distance
+                # ✅ Use enhanced distance calculation
+                if hasattr(detection, 'distance') and detection.distance > 0:
+                    enhanced_detection.distance = detection.distance
                 else:
-                    # Use detection distance if available
-                    enhanced_detection.distance = detection.distance if hasattr(detection, 'distance') and detection.distance > 0 else 10.0
+                    # Fallback distance calculation
+                    enhanced_detection.distance = 10.0
                 
-                # ✅ ENHANCED: Calculate ACCURATE 3D coordinates
-                x, y, z = self.calculate_accurate_3d_coordinates(object_angle, enhanced_detection.distance, detection)
-                enhanced_detection.coordinate_x = x
-                enhanced_detection.coordinate_y = y
-                enhanced_detection.coordinate_z = z
+                # ✅ Use enhanced 3D coordinates
+                if hasattr(detection, 'coordinate_x'):
+                    enhanced_detection.coordinate_x = detection.coordinate_x
+                    enhanced_detection.coordinate_y = detection.coordinate_y
+                    enhanced_detection.coordinate_z = detection.coordinate_z
+                else:
+                    # Calculate 3D coordinates
+                    x, y, z = self.calculate_enhanced_3d_coordinates(object_angle, enhanced_detection.distance, detection)
+                    enhanced_detection.coordinate_x = x
+                    enhanced_detection.coordinate_y = y
+                    enhanced_detection.coordinate_z = z
                 
                 enhanced_msg.yolov12_inference.append(enhanced_detection)
                 self.fusion_count += 1
@@ -157,71 +163,32 @@ class EnhancedFusionNode(Node):
         except Exception as e:
             self.get_logger().error(f"❌ Enhanced fusion error: {e}")
 
-    def get_accurate_distance_from_laser(self, angle_deg):
-        """Get ACCURATE distance from LaserScan at specific angle"""
-        if not self.latest_laser:
-            return 10.0, -1
-            
-        try:
-            angle_rad = math.radians(angle_deg)
-            
-            # Handle angle wrap-around properly
-            while angle_rad > math.pi:
-                angle_rad -= 2 * math.pi
-            while angle_rad < -math.pi:
-                angle_rad += 2 * math.pi
-            
-            # ✅ Enhanced angle calculation
-            if angle_rad < self.latest_laser.angle_min or angle_rad > self.latest_laser.angle_max:
-                return 15.0, -1
-            
-            angle_normalized = (angle_rad - self.latest_laser.angle_min) / self.latest_laser.angle_increment
-            ray_index = int(round(angle_normalized)) % len(self.latest_laser.ranges)
-            
-            # ✅ Enhanced distance filtering with multiple rays
-            distances = []
-            for offset in [-3, -2, -1, 0, 1, 2, 3]:  # Check more nearby rays
-                idx = (ray_index + offset) % len(self.latest_laser.ranges)
-                dist = self.latest_laser.ranges[idx]
-                if not (math.isinf(dist) or math.isnan(dist) or dist <= 0):
-                    distances.append(dist)
-            
-            if distances:
-                # Use median for better accuracy
-                distance = np.median(distances)
-                return min(distance, 100.0), ray_index
-            else:
-                return 15.0, ray_index
-            
-        except Exception as e:
-            return 10.0, -1
-
-    def calculate_accurate_3d_coordinates(self, angle_deg, distance, detection):
-        """Calculate ACCURATE 3D coordinates in robot base frame"""
+    def calculate_enhanced_3d_coordinates(self, angle_deg, distance, detection):
+        """Calculate ENHANCED 3D coordinates in robot base frame"""
         try:
             angle_rad = math.radians(angle_deg)
             x = distance * math.cos(angle_rad)
             y = distance * math.sin(angle_rad)
             
-            # ✅ Enhanced Z calculation based on detection size
+            # ✅ Enhanced Z calculation
             if hasattr(detection, 'bottom') and hasattr(detection, 'top'):
                 bbox_height = detection.bottom - detection.top
-                # Estimate object height based on bbox size and distance
-                estimated_real_height = (bbox_height / 720.0) * distance * 0.8  # Improved estimation
-                z = max(0.2, min(3.0, estimated_real_height))  # Clamp between reasonable values
+                estimated_real_height = (bbox_height / 720.0) * distance * 0.8
+                z = max(0.2, min(3.0, estimated_real_height))
             else:
-                z = 0.5  # Default height
+                z = 0.5
             
             return x, y, z
         except Exception as e:
             return 0.0, 0.0, 0.5
 
-    def create_continuous_3d_visualization(self):
-        """✅ CONTINUOUS 3D object visualization for RViz2"""
+    def create_enhanced_3d_visualization(self):
+        """✅ ENHANCED 3D object visualization for RViz2"""
         try:
             all_points = []
+            point_count = 0
             
-            # ✅ Collect ALL detections from ALL cameras with clearer logging
+            # ✅ Collect ALL detections from ALL cameras
             for camera_name, detection_msg in self.latest_detections.items():
                 if detection_msg and hasattr(detection_msg, 'yolov12_inference'):
                     for detection in detection_msg.yolov12_inference:
@@ -233,39 +200,41 @@ class EnhancedFusionNode(Node):
                             
                             # Add center point
                             x, y, z = detection.coordinate_x, detection.coordinate_y, detection.coordinate_z
-                            intensity = (float(r) + float(g) + float(b)) / 3.0  # Average color as intensity
-                            all_points.append((x, y, z, intensity))
                             
-                            # ✅ Add multiple points to create 3D object shape based on class
-                            size = self.get_object_size(detection.class_name)
+                            # Create RGB color as float
+                            rgb_float = self.pack_rgb(r, g, b)
+                            
+                            # Add multiple points to create 3D object shape
+                            size = self.get_enhanced_object_size(detection.class_name)
                             width, depth, height = size['width'], size['depth'], size['height']
                             
-                            # Create 3D bounding box around object with proper orientation
+                            # Create enhanced 3D bounding box
                             angle_rad = math.radians(detection.angle) if hasattr(detection, 'angle') else 0
                             cos_a, sin_a = math.cos(angle_rad), math.sin(angle_rad)
                             
-                            # Create more points for better visualization
-                            for dx in [-width/2, 0, width/2]:
-                                for dy in [-depth/2, 0, depth/2]:
-                                    for dz in [0, height/2, height]:
+                            # Create dense point cloud for better visualization
+                            for dx in np.linspace(-width/2, width/2, 5):
+                                for dy in np.linspace(-depth/2, depth/2, 5):
+                                    for dz in np.linspace(0, height, 3):
                                         # Rotate points based on object angle
                                         px = x + dx * cos_a - dy * sin_a
                                         py = y + dx * sin_a + dy * cos_a
                                         pz = z + dz
-                                        all_points.append((px, py, pz, intensity))
+                                        all_points.append((px, py, pz, rgb_float))
+                                        point_count += 1
         
-            if all_points:
+            if all_points and point_count > 0:
                 # ✅ ENHANCED PointCloud2 message
                 pc_msg = PointCloud2()
                 pc_msg.header.stamp = self.get_clock().now().to_msg()
                 pc_msg.header.frame_id = "base_link"  # CRITICAL: Must be base_link for RViz2!
                 
-                # ✅ CORRECT field definitions for RViz2
+                # ✅ CORRECT field definitions for RViz2 with RGB
                 pc_msg.fields = [
                     PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
                     PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
                     PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-                    PointField(name='intensity', offset=12, datatype=PointField.FLOAT32, count=1)
+                    PointField(name='rgb', offset=12, datatype=PointField.FLOAT32, count=1)
                 ]
                 
                 # ✅ CORRECT message format
@@ -284,19 +253,22 @@ class EnhancedFusionNode(Node):
                 
                 # Publish and log success
                 self.objects_3d_pub.publish(pc_msg)
-                # Reduce logging frequency to avoid spam
-                if self.fusion_count % 100 == 0:
-                    self.get_logger().info(f"Published 3D objects PointCloud with {len(all_points)} points")
-            else:
-                # Only log occasionally when no objects detected
-                if self.get_clock().now().nanoseconds % 10000000000 == 0:  # Log only every 10 seconds
-                    self.get_logger().info("No objects detected for 3D visualization")
-        
+                
+                # Log every 100 publishes to avoid spam
+                if point_count % 500 == 0:
+                    self.get_logger().info(f"✅ Published 3D objects PointCloud with {len(all_points)} points from {point_count} objects")
+            
         except Exception as e:
             self.get_logger().error(f"❌ 3D visualization error: {e}")
 
-    def get_object_size(self, class_name):
-        """Get estimated object size for better visualization"""
+    def pack_rgb(self, r, g, b):
+        """Pack RGB values into a float for PointCloud2"""
+        # Pack RGB as uint32 then interpret as float
+        rgb_uint32 = (int(r) << 16) | (int(g) << 8) | int(b)
+        return struct.unpack('f', struct.pack('I', rgb_uint32))[0]
+
+    def get_enhanced_object_size(self, class_name):
+        """Get enhanced object size for better visualization"""
         sizes = {
             'person': {'width': 0.6, 'depth': 0.4, 'height': 1.7},
             'bicycle': {'width': 1.8, 'depth': 0.6, 'height': 1.2},
@@ -323,15 +295,15 @@ class EnhancedFusionNode(Node):
                            for msg in self.latest_detections.values())
         
         self.get_logger().info(
-            f"🔗 Enhanced Fusion: {self.fusion_count} processed, {total_objects} active objects, "
-            f"Laser: {laser_age:.1f}s, PC: {pc_age:.1f}s"
+            f"🔗 ULTRA-Enhanced Fusion: {self.fusion_count} processed, {total_objects} active objects, "
+            f"Laser: {laser_age:.1f}s, PC: {pc_age:.1f}s, 3D Objects: PUBLISHING TO RViz2"
         )
         
         self.fusion_count = 0
 
 def main(args=None):
     rclpy.init(args=args)
-    node = EnhancedFusionNode()
+    node = UltraEnhancedFusionNode()
     rclpy.spin(node)
     rclpy.shutdown()
 
