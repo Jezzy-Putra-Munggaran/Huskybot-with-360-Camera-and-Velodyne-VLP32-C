@@ -16,6 +16,7 @@ import os
 import colorsys
 import traceback
 import concurrent.futures
+import math
 
 class UltraMaximumDeepStreamNode(Node):
     def __init__(self):
@@ -191,10 +192,12 @@ class UltraMaximumDeepStreamNode(Node):
             self.get_logger().info(f"✅ Model ready: {warmup_time*1000:.1f}ms warmup")
             
             gc.collect()
-            torch.cuda.empty_cache()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             
         except Exception as e:
-            self.get_logger().error(f"❌ Model loading failed: {e}")
+            self.get_logger().error(f"❌ Model loading FAILED: {e}")
+            self.get_logger().error(f"❌ Traceback: {traceback.format_exc()}")
             self.yolo_model = None
 
     def setup_enhanced_coco_colors(self):
