@@ -12,26 +12,23 @@ def generate_launch_description():
     return LaunchDescription([
         
         # Arguments for ULTRA-MAXIMUM performance
-        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.engine'),
+        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.pt'),  # ✅ FIXED: Use .pt
         DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('debug_mode', default_value='true'),
         DeclareLaunchArgument('auto_display', default_value='true'),
         
-        # ✅ 1. MAXIMUM Jetson optimization with power management
+        # ✅ 1. MAXIMUM Jetson optimization with enhanced power management
         ExecuteProcess(
             cmd=['bash', '-c', 
                  'echo "🚀 Starting MAXIMUM Jetson AGX Orin optimization..." && '
-                 'echo kmporin | sudo -S /usr/bin/jetson_clocks --fan || echo "Jetson clocks completed" && '
-                 'echo kmporin | sudo -S nvpmodel -m 0 || echo "Power model set to MAX" && '
-                 'echo kmporin | sudo -S sh -c "echo 50000000 > /sys/kernel/debug/bpmp/debug/clk/nafll_cluster0/rate" || echo "CPU0 max" && '
-                 'echo kmporin | sudo -S sh -c "echo 50000000 > /sys/kernel/debug/bpmp/debug/clk/nafll_cluster1/rate" || echo "CPU1 max" && '
-                 'echo kmporin | sudo -S sh -c "echo 50000000 > /sys/kernel/debug/bpmp/debug/clk/nafll_cluster2/rate" || echo "CPU2 max" && '
-                 'echo kmporin | sudo -S nvidia-smi -pm 1 || echo "GPU persistence mode" && '
-                 'echo kmporin | sudo -S nvidia-smi -pl 50 || echo "GPU max power" && '
-                 'echo kmporin | sudo -S sh -c "echo 1377000000 > /sys/kernel/debug/bpmp/debug/clk/gpcclk/rate" || echo "GPU max freq" && '
-                 'echo kmporin | sudo -S sysctl -w vm.swappiness=1 || echo "Swappiness optimized" && '
-                 'echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=50 || echo "Cache optimized" && '
-                 'echo kmporin | sudo -S sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled" || echo "THP optimized" && '
+                 'echo kmporin | sudo -S /usr/bin/jetson_clocks --fan && '
+                 'echo kmporin | sudo -S nvpmodel -m 0 && '
+                 'echo kmporin | sudo -S nvidia-smi -pm 1 && '
+                 'echo kmporin | sudo -S nvidia-smi -pl 50 && '
+                 'echo kmporin | sudo -S sysctl -w vm.swappiness=1 && '
+                 'echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=50 && '
+                 'echo kmporin | sudo -S sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled" && '
+                 'echo kmporin | sudo -S sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
                  'echo "🔥 MAXIMUM Jetson optimization COMPLETED!"'],
             output='screen',
             name='maximum_jetson_optimization'
@@ -87,7 +84,9 @@ def generate_launch_description():
                         'CUDA_VISIBLE_DEVICES': '0', 
                         'OMP_NUM_THREADS': '12',  # Use all 12 cores
                         'CUDA_LAUNCH_BLOCKING': '0',  # Async CUDA
-                        'PYTORCH_CUDA_ALLOC_CONF': 'max_split_size_mb:512'
+                        'PYTORCH_CUDA_ALLOC_CONF': 'max_split_size_mb:512',
+                        'CUDA_CACHE_DISABLE': '0',  # Enable CUDA cache
+                        'CUDA_DEVICE_MAX_CONNECTIONS': '32'  # Max connections
                     }
                 )
             ]
@@ -171,7 +170,7 @@ def generate_launch_description():
                          'echo "🔍 Detection topics:" && ros2 topic list | grep -E "(detections|segmentation)" && '
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
-                         'echo "✅ YOLO11X ENGINE + MAXIMUM Jetson optimization!" && '
+                         'echo "✅ YOLO11X + MAXIMUM Jetson optimization!" && '
                          'echo "🚀 TARGET: 100+ FPS with YOLO11X segmentation + distance + coordinates!" && '
                          'echo "🎯 Features: Segmentation ✅ | Distance ✅ | 3D Coordinates ✅ | RViz2 ✅" && '
                          'echo "💪 GPU/RAM: MAXIMUM UTILIZATION | Power: FULL MODE"'],

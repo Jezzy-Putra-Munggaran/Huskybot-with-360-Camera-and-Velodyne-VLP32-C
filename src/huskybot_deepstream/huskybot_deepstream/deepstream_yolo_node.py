@@ -15,7 +15,6 @@ import gc
 import os
 import colorsys
 import traceback
-import subprocess
 
 class UltraMaximumDeepStreamNode(Node):
     def __init__(self):
@@ -36,9 +35,8 @@ class UltraMaximumDeepStreamNode(Node):
         self.setup_enhanced_coco_colors()
         self.setup_ultra_maximum_model()
         
-        # Only setup processing if model loaded successfully
-        if self.yolo_model is not None:
-            self.setup_parallel_processing()
+        # ✅ FIXED: Initialize processing BEFORE model check
+        self.setup_parallel_processing()
         
         # ✅ Performance monitoring
         self.frame_count = 0
@@ -55,7 +53,7 @@ class UltraMaximumDeepStreamNode(Node):
 
     def setup_parameters(self):
         """Setup ULTRA-MAXIMUM parameters"""
-        self.declare_parameter('model_engine', 'yolo11x-seg.engine')  # Use .engine for max speed
+        self.declare_parameter('model_engine', 'yolo11x-seg.pt')  # ✅ FIXED: Use .pt for proper loading
         self.declare_parameter('input_width', 640)
         self.declare_parameter('input_height', 640)
         self.declare_parameter('batch_size', 6)
@@ -86,7 +84,7 @@ class UltraMaximumDeepStreamNode(Node):
             
             if torch.cuda.is_available():
                 # ✅ MAXIMUM CUDA optimization
-                torch.cuda.set_per_process_memory_fraction(0.98)  # Use 98% GPU memory
+                torch.cuda.set_per_process_memory_fraction(0.95)  # Use 95% GPU memory
                 torch.backends.cudnn.benchmark = True
                 torch.backends.cudnn.deterministic = False
                 torch.backends.cuda.matmul.allow_tf32 = True
@@ -94,8 +92,19 @@ class UltraMaximumDeepStreamNode(Node):
                 
                 # ✅ Pre-allocate maximum GPU memory
                 torch.cuda.empty_cache()
-                dummy_tensor = torch.zeros((6, 3, 640, 640), device='cuda', dtype=torch.float16)
-                del dummy_tensor
+                
+                # ✅ Create large dummy tensors to force GPU memory allocation
+                dummy_tensors = []
+                for i in range(8):  # Create multiple large tensors
+                    dummy_tensor = torch.zeros((6, 3, 1024, 1024), device='cuda', dtype=torch.float16)
+                    dummy_tensors.append(dummy_tensor)
+                
+                # Force GPU computation
+                for tensor in dummy_tensors:
+                    _ = tensor.sum()
+                
+                # Clear dummy tensors
+                del dummy_tensors
                 torch.cuda.empty_cache()
                 
                 # ✅ Set maximum GPU clocks
@@ -107,18 +116,14 @@ class UltraMaximumDeepStreamNode(Node):
             self.get_logger().warn(f"Jetson optimization: {e}")
 
     def setup_ultra_maximum_model(self):
-        """✅ MAXIMUM model setup with TensorRT"""
+        """✅ MAXIMUM model setup with proper loading"""
         try:
             from ultralytics import YOLO
             
-            # ✅ Prioritize TensorRT engine for maximum speed
-            engine_path = "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine"
+            # ✅ Use PyTorch model for proper functionality
             pt_path = "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt"
             
-            if os.path.exists(engine_path):
-                model_path = engine_path
-                self.get_logger().info(f"🔥 Using TensorRT engine: {engine_path}")
-            elif os.path.exists(pt_path):
+            if os.path.exists(pt_path):
                 model_path = pt_path
                 self.get_logger().info(f"🔥 Using PyTorch model: {pt_path}")
             else:
@@ -135,43 +140,30 @@ class UltraMaximumDeepStreamNode(Node):
                 # ✅ Enable FP16 for maximum speed
                 if hasattr(self.yolo_model.model, 'half'):
                     self.yolo_model.model.half()
-                
-                # ✅ Export to TensorRT if not engine
-                if not model_path.endswith('.engine'):
-                    try:
-                        self.get_logger().info("🔄 Creating TensorRT engine for maximum speed...")
-                        self.yolo_model.export(
-                            format='engine', 
-                            device=0, 
-                            half=True, 
-                            optimize=True, 
-                            batch=1,
-                            workspace=8  # 8GB workspace
-                        )
-                        self.get_logger().info("✅ TensorRT engine created!")
-                    except Exception as e:
-                        self.get_logger().warn(f"TensorRT export: {e}")
             
-            # ✅ MAXIMUM warmup
-            dummy_image = np.zeros((self.input_height, self.input_width, 3), dtype=np.uint8)
+            # ✅ MAXIMUM warmup with different sizes
+            warmup_sizes = [(640, 640), (1280, 720), (1920, 1080)]
             start_time = time.time()
-            for _ in range(15):  # More warmup for stability
-                try:
-                    _ = self.yolo_model.predict(
-                        source=dummy_image,
-                        conf=0.25,
-                        device='cuda:0',
-                        half=True,
-                        verbose=False,
-                        agnostic_nms=True,
-                        max_det=100,
-                        imgsz=640,
-                        save=False,
-                        show=False,
-                        stream=False
-                    )
-                except Exception:
-                    pass
+            
+            for size in warmup_sizes:
+                dummy_image = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+                for _ in range(3):  # Multiple warmups per size
+                    try:
+                        _ = self.yolo_model.predict(
+                            source=dummy_image,
+                            conf=0.25,
+                            device='cuda:0',
+                            half=True,
+                            verbose=False,
+                            agnostic_nms=True,
+                            max_det=100,
+                            imgsz=640,
+                            save=False,
+                            show=False,
+                            stream=False
+                        )
+                    except Exception:
+                        pass
             
             warmup_time = time.time() - start_time
             self.get_logger().info(f"✅ Model ready: {warmup_time*1000:.1f}ms warmup")
@@ -194,7 +186,9 @@ class UltraMaximumDeepStreamNode(Node):
             (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), 
             (0, 255, 255), (255, 128, 0), (128, 255, 0), (0, 128, 255), (255, 0, 128),
             (128, 0, 255), (0, 255, 128), (255, 255, 128), (255, 128, 255), (128, 255, 255),
-            (192, 0, 0), (0, 192, 0), (0, 0, 192), (192, 192, 0), (192, 0, 192)
+            (192, 0, 0), (0, 192, 0), (0, 0, 192), (192, 192, 0), (192, 0, 192),
+            (0, 192, 192), (192, 128, 0), (128, 192, 0), (0, 128, 192), (192, 0, 128),
+            (128, 0, 192), (0, 192, 128), (255, 64, 0), (64, 255, 0), (0, 64, 255)
         ]
         
         for i in range(80):
@@ -217,7 +211,7 @@ class UltraMaximumDeepStreamNode(Node):
     def setup_ros_topics(self):
         """Setup ROS2 topics with CORRECT English camera mapping"""
         self.camera_subs = []
-        # ✅ CORRECT: English camera names 
+        # ✅ CORRECT: English camera names mapping to real positions
         self.camera_names = ['REAR', 'REAR_RIGHT', 'FRONT_RIGHT', 'FRONT', 'FRONT_LEFT', 'REAR_LEFT']
         self.camera_labels = ['REAR CAMERA', 'REAR RIGHT CAMERA', 'FRONT RIGHT CAMERA', 
                              'FRONT CAMERA', 'FRONT LEFT CAMERA', 'REAR LEFT CAMERA']
@@ -252,7 +246,7 @@ class UltraMaximumDeepStreamNode(Node):
 
     def setup_parallel_processing(self):
         """✅ MAXIMUM parallel processing"""
-        self.frame_queues = [queue.Queue(maxsize=1) for _ in range(6)]  # Minimal queue
+        self.frame_queues = [queue.Queue(maxsize=2) for _ in range(6)]  # Small queue for responsiveness
         self.processing_active = True
         
         # ✅ MAXIMUM speed processing threads
@@ -282,7 +276,7 @@ class UltraMaximumDeepStreamNode(Node):
                 self.latest_images[camera_idx] = cv_image
                 self.latest_headers[camera_idx] = msg.header
             
-            # Add to processing queue
+            # Add to processing queue with drop-oldest strategy
             try:
                 self.frame_queues[camera_idx].put_nowait((cv_image, msg.header, camera_idx))
             except queue.Full:
@@ -315,7 +309,7 @@ class UltraMaximumDeepStreamNode(Node):
             return
             
         try:
-            # ✅ Ultra-fast resize with GPU if possible
+            # ✅ Ultra-fast resize
             resized = cv2.resize(frame, (self.input_width, self.input_height), 
                               interpolation=cv2.INTER_LINEAR)
             
@@ -443,7 +437,7 @@ class UltraMaximumDeepStreamNode(Node):
                     detection_results.append(detection)
                     self.detection_count += 1
                     
-                    # ✅ ENHANCED: Print detection info to terminal
+                    # ✅ ENHANCED: Print detection info to terminal with English
                     self.get_logger().info(
                         f"📍 Camera {self.camera_labels[camera_idx]} | "
                         f"Class={class_name} | "
@@ -494,14 +488,14 @@ class UltraMaximumDeepStreamNode(Node):
     def create_ultra_enhanced_grid_with_segmentation(self):
         """✅ ENHANCED 2x3 grid with PERFECT segmentation overlay + detection info"""
         try:
-            target_size = (960, 540)  # Large size for clarity
+            target_size = (1280, 720)  # Larger size for better visibility
             grid_images = []
             
             for i in range(6):
                 if self.latest_images[i] is not None:
                     with self.image_locks[i]:
                         img = self.latest_images[i].copy()
-                        detections = self.latest_detections[i].copy()
+                        detections = self.latest_detections[i].copy() if self.latest_detections[i] else []
                     
                     # ✅ Resize image
                     img_resized = cv2.resize(img, target_size, interpolation=cv2.INTER_AREA)
@@ -510,17 +504,17 @@ class UltraMaximumDeepStreamNode(Node):
                     if detections:
                         img_resized = self.draw_enhanced_segmentation_overlay(img_resized, detections, target_size, img.shape)
                     
-                    # ✅ Add camera label
-                    label_height = 60
+                    # ✅ Add camera label with English names
+                    label_height = 80
                     cv2.rectangle(img_resized, (0, 0), (target_size[0], label_height), (0, 0, 0), -1)
                     
                     camera_text = f"CAM {i+1}: {self.camera_labels[i]}"
-                    cv2.putText(img_resized, camera_text, (10, 25), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                    cv2.putText(img_resized, camera_text, (10, 30), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
                     
                     status_text = f"YOLO11X-SEG | Objects: {len(detections)} | GPU FULL"
-                    cv2.putText(img_resized, status_text, (10, 45), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    cv2.putText(img_resized, status_text, (10, 60), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
                     
                     grid_images.append(img_resized)
                 else:
@@ -528,10 +522,10 @@ class UltraMaximumDeepStreamNode(Node):
                     black_img = np.zeros((target_size[1], target_size[0], 3), dtype=np.uint8)
                     cv2.putText(black_img, f"CAM {i+1}: {self.camera_labels[i]}", 
                                (target_size[0]//4, target_size[1]//2-20), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
                     cv2.putText(black_img, "WAITING FOR CAMERA...", 
                                (target_size[0]//4, target_size[1]//2+20), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -540,17 +534,17 @@ class UltraMaximumDeepStreamNode(Node):
                 bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
                 grid = np.vstack([top_row, bottom_row])
                 
-                # ✅ ENHANCED status info
+                # ✅ ENHANCED status info with English
                 avg_inference = self.total_inference_time / max(1, self.inference_count)
                 theoretical_fps = 1.0 / avg_inference if avg_inference > 0 else 0
                 
-                status_height = 180
+                status_height = 200
                 cv2.rectangle(grid, (0, grid.shape[0]-status_height), (grid.shape[1], grid.shape[0]), (0, 0, 0), -1)
                 
                 status_color = (0, 255, 0) if theoretical_fps >= 100 else (0, 255, 255)
                 
                 info_lines = [
-                    f"HUSKYBOT 360° ULTRA-MAXIMUM SEGMENTATION | YOLO11X ENGINE | DISTANCE + COORDINATES",
+                    f"HUSKYBOT 360° ULTRA-MAXIMUM SEGMENTATION | YOLO11X SEGMENTATION | DISTANCE + COORDINATES",
                     f"Theoretical FPS: {theoretical_fps:.1f} | Target: 100+ | Status: {'🎯 TARGET ACHIEVED!' if theoretical_fps >= 100 else '🔥 OPTIMIZING...'}",
                     f"Inference: {avg_inference*1000:.1f}ms | ALL 6 cameras | PERFECT segmentation + masks + distance + 3D coordinates",
                     f"Display: Camera, Class, Confidence, Distance(m), Coordinates(x,y,z) | Resolution: {grid.shape[1]}x{grid.shape[0]}",
@@ -561,9 +555,9 @@ class UltraMaximumDeepStreamNode(Node):
                 ]
                 
                 for idx, info_line in enumerate(info_lines):
-                    y_pos = grid.shape[0] - status_height + 15 + (idx * 20)
+                    y_pos = grid.shape[0] - status_height + 20 + (idx * 22)
                     cv2.putText(grid, info_line, (20, y_pos), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
                 
                 # ✅ Publish grid
                 grid_msg = self.bridge.cv2_to_imgmsg(grid, 'bgr8')
@@ -614,29 +608,28 @@ class UltraMaximumDeepStreamNode(Node):
                         self.get_logger().warn(f"Mask drawing error: {e}")
                 
                 # ✅ Draw bounding box
-                cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
+                cv2.rectangle(img, (x1, y1), (x2, y2), color, 4)
                 
-                # ✅ ENHANCED: Create info text with all data
+                # ✅ ENHANCED: Create info text with all data in English
                 info_lines = [
-                    f"Camera: {detection.class_name}",
-                    f"Class={detection.class_name}",
-                    f"Confidence={detection.confidence:.2f}",
-                    f"Distance={detection.distance:.1f}m",
-                    f"Coord=({detection.coordinate_x:.1f},{detection.coordinate_y:.1f},{detection.coordinate_z:.1f})"
+                    f"Class: {detection.class_name}",
+                    f"Confidence: {detection.confidence:.2f}",
+                    f"Distance: {detection.distance:.1f}m",
+                    f"Coord: ({detection.coordinate_x:.1f},{detection.coordinate_y:.1f},{detection.coordinate_z:.1f})"
                 ]
                 
                 # ✅ Draw info text with background
                 text_y = max(y1 - 10, 20)
                 for i, line in enumerate(info_lines):
-                    text_pos = (x1, text_y + i * 20)
+                    text_pos = (x1, text_y + i * 25)
                     
                     # Text background
-                    (text_w, text_h), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                    (text_w, text_h), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
                     cv2.rectangle(img, (text_pos[0]-2, text_pos[1]-text_h-2), 
                                  (text_pos[0]+text_w+2, text_pos[1]+2), color, -1)
                     
                     # Text
-                    cv2.putText(img, line, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2)
+                    cv2.putText(img, line, text_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
             
             return img
             
