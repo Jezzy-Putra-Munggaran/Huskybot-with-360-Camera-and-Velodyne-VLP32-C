@@ -12,26 +12,28 @@ def generate_launch_description():
     return LaunchDescription([
         
         # Arguments for ULTRA-MAXIMUM performance
-        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.pt'),  # ✅ FIXED: Use .pt
+        DeclareLaunchArgument('model_path', default_value='yolo11x-seg.engine'),  # ✅ Use .engine
         DeclareLaunchArgument('fps_target', default_value='120'),
         DeclareLaunchArgument('debug_mode', default_value='true'),
         DeclareLaunchArgument('auto_display', default_value='true'),
         
-        # ✅ 1. MAXIMUM Jetson optimization with enhanced power management
+        # ✅ 1. MAXIMUM Jetson optimization
         ExecuteProcess(
             cmd=['bash', '-c', 
-                 'echo "🚀 Starting MAXIMUM Jetson AGX Orin optimization..." && '
+                 'echo "🚀 Starting ULTRA-MAXIMUM Jetson AGX Orin optimization..." && '
                  'echo kmporin | sudo -S /usr/bin/jetson_clocks --fan && '
                  'echo kmporin | sudo -S nvpmodel -m 0 && '
                  'echo kmporin | sudo -S nvidia-smi -pm 1 && '
-                 'echo kmporin | sudo -S nvidia-smi -pl 50 && '
+                 'echo kmporin | sudo -S nvidia-smi -pl 55 && '
                  'echo kmporin | sudo -S sysctl -w vm.swappiness=1 && '
-                 'echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=50 && '
+                 'echo kmporin | sudo -S sysctl -w vm.vfs_cache_pressure=10 && '
                  'echo kmporin | sudo -S sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled" && '
-                 'echo kmporin | sudo -S sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
-                 'echo "🔥 MAXIMUM Jetson optimization COMPLETED!"'],
+                 'for i in {0..11}; do echo kmporin | sudo -S sh -c "echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor"; done && '
+                 'echo kmporin | sudo -S nvidia-smi -lgc 2100,2100 && '
+                 'echo kmporin | sudo -S nvidia-smi -lmc 6251,6251 && '
+                 'echo "🔥 ULTRA-MAXIMUM Jetson optimization COMPLETED!"'],
             output='screen',
-            name='maximum_jetson_optimization'
+            name='ultra_maximum_jetson_optimization'
         ),
         
         # ✅ 2. Start Velodyne LiDAR
@@ -79,14 +81,13 @@ def generate_launch_description():
                     }],
                     respawn=True,
                     respawn_delay=2.0,
-                    # ✅ MAXIMUM process priority and environment
                     additional_env={
                         'CUDA_VISIBLE_DEVICES': '0', 
-                        'OMP_NUM_THREADS': '12',  # Use all 12 cores
-                        'CUDA_LAUNCH_BLOCKING': '0',  # Async CUDA
-                        'PYTORCH_CUDA_ALLOC_CONF': 'max_split_size_mb:512',
-                        'CUDA_CACHE_DISABLE': '0',  # Enable CUDA cache
-                        'CUDA_DEVICE_MAX_CONNECTIONS': '32'  # Max connections
+                        'OMP_NUM_THREADS': '12',
+                        'CUDA_LAUNCH_BLOCKING': '0',
+                        'PYTORCH_CUDA_ALLOC_CONF': 'max_split_size_mb:1024',
+                        'CUDA_CACHE_DISABLE': '0',
+                        'CUDA_DEVICE_MAX_CONNECTIONS': '64'
                     }
                 )
             ]
@@ -107,35 +108,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 6. Create RViz directory and config
-        TimerAction(
-            period=23.0,
-            actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'mkdir -p /home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz'],
-                    output='screen',
-                    name='create_rviz_dir'
-                )
-            ]
-        ),
-        
-        # ✅ 7. Generate enhanced RViz config
+        # ✅ 6. AUTO-POPUP: MAXIMUM Grid Display  
         TimerAction(
             period=25.0,
-            actions=[
-                Node(
-                    package='huskybot_perception',
-                    executable='create_rviz_config',
-                    name='rviz_config_creator',
-                    output='screen'
-                )
-            ]
-        ),
-        
-        # ✅ 8. AUTO-POPUP: MAXIMUM Grid Display
-        TimerAction(
-            period=30.0,
             actions=[
                 Node(
                     package='huskybot_perception',
@@ -146,22 +121,23 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 9. AUTO-POPUP: Enhanced RViz2 
+        # ✅ 7. AUTO-POPUP: Enhanced RViz2 with LiDAR
         TimerAction(
-            period=35.0,
+            period=30.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'export DISPLAY=:0 && rviz2 -d /home/kmp-orin/jezzy/huskybot/install/huskybot_perception/share/huskybot_perception/rviz/huskybot_3d.rviz > /dev/null 2>&1 &'],
+                         'export DISPLAY=:0 && '
+                         'rviz2 -f velodyne --ros-args -p use_sim_time:=false > /dev/null 2>&1 &'],
                     output='screen',
-                    name='auto_popup_rviz2'
+                    name='auto_popup_rviz2_lidar'
                 )
             ]
         ),
         
-        # ✅ 10. MAXIMUM Performance monitoring
+        # ✅ 8. Performance monitoring with detailed info
         TimerAction(
-            period=40.0,
+            period=35.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
@@ -170,13 +146,13 @@ def generate_launch_description():
                          'echo "🔍 Detection topics:" && ros2 topic list | grep -E "(detections|segmentation)" && '
                          'echo "📊 Grid topic:" && ros2 topic list | grep deepstream_grid && '
                          'echo "🎯 3D Objects topic:" && ros2 topic list | grep objects_3d_pointcloud && '
-                         'echo "✅ YOLO11X + MAXIMUM Jetson optimization!" && '
-                         'echo "🚀 TARGET: 100+ FPS with YOLO11X segmentation + distance + coordinates!" && '
+                         'echo "🔴 LiDAR topics:" && ros2 topic list | grep -E "(scan|velodyne_points)" && '
+                         'echo "✅ YOLO11X-seg.engine + MAXIMUM Jetson optimization!" && '
+                         'echo "🚀 TARGET: 100+ FPS with PERFECT segmentation + distance + coordinates!" && '
                          'echo "🎯 Features: Segmentation ✅ | Distance ✅ | 3D Coordinates ✅ | RViz2 ✅" && '
                          'echo "💪 GPU/RAM: MAXIMUM UTILIZATION | Power: FULL MODE"'],
                     output='screen'
                 )
             ]
         ),
-        
     ])

@@ -32,6 +32,7 @@ class UltraFastAutoGridViewer(Node):
             '/camera_front_left/image_raw'  # REAR LEFT CAMERA (5)
         ]
         
+        # ✅ FIXED: English camera names
         self.camera_names = [
             'REAR CAMERA', 'REAR RIGHT CAMERA', 'FRONT RIGHT CAMERA', 
             'FRONT CAMERA', 'FRONT LEFT CAMERA', 'REAR LEFT CAMERA'
@@ -51,7 +52,7 @@ class UltraFastAutoGridViewer(Node):
         self.display_thread = threading.Thread(target=self.ultra_fast_display_loop, daemon=True)
         self.display_thread.start()
         
-        self.get_logger().info("🚀 ULTRA-FAST Auto Grid Viewer started - ALL 6 cameras")
+        self.get_logger().info("🚀 ULTRA-FAST Auto Grid Viewer started - ALL 6 cameras with English labels")
 
     def ultra_fast_callback(self, msg, camera_idx):
         """MAXIMUM speed image callback"""
@@ -68,9 +69,9 @@ class UltraFastAutoGridViewer(Node):
             self.get_logger().error(f"❌ Callback error {camera_idx}: {e}")
 
     def ultra_fast_display_loop(self):
-        """MAXIMUM performance display loop"""
+        """MAXIMUM performance display loop with English labels"""
         # ✅ Create OPTIMAL window size
-        window_name = "HUSKYBOT 360° ULTRA-FAST VISION - 6 CAMERAS"
+        window_name = "HUSKYBOT 360° ULTRA-FAST VISION - 6 CAMERAS (ENGLISH)"
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(window_name, 1920, 1080)  # Optimal size
         cv2.moveWindow(window_name, 0, 0)
@@ -92,7 +93,7 @@ class UltraFastAutoGridViewer(Node):
                         img_resized = cv2.resize(img, (target_width, target_height), 
                                                interpolation=cv2.INTER_AREA)
                         
-                        # ✅ Enhanced camera info overlay
+                        # ✅ Enhanced camera info overlay with English
                         cv2.rectangle(img_resized, (0, 0), (target_width, 40), (0, 0, 0), -1)
                         cv2.putText(img_resized, f"CAM {i+1}: {self.camera_names[i]}", 
                                   (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -105,7 +106,7 @@ class UltraFastAutoGridViewer(Node):
                         
                         grid_images.append(img_resized)
                     else:
-                        # ✅ Waiting placeholder
+                        # ✅ Waiting placeholder with English
                         black_img = np.zeros((target_height, target_width, 3), dtype=np.uint8)
                         cv2.putText(black_img, f"CAM {i+1}: {self.camera_names[i]}", 
                                   (target_width//4, target_height//2-20), 
@@ -121,7 +122,7 @@ class UltraFastAutoGridViewer(Node):
                     bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
                     grid = np.vstack([top_row, bottom_row])
                     
-                    # ✅ ENHANCED performance info
+                    # ✅ ENHANCED performance info with English
                     info_height = 60
                     cv2.rectangle(grid, (0, grid.shape[0]-info_height), (grid.shape[1], grid.shape[0]), (0, 0, 0), -1)
                     
@@ -132,7 +133,7 @@ class UltraFastAutoGridViewer(Node):
                     cv2.putText(grid, info_text, (20, grid.shape[0]-30), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
                     
-                    cv2.putText(grid, f"Resolution: {grid.shape[1]}x{grid.shape[0]} | Target: 100+ FPS", 
+                    cv2.putText(grid, f"Resolution: {grid.shape[1]}x{grid.shape[0]} | Target: 100+ FPS | ENGLISH LABELS", 
                                (20, grid.shape[0]-10), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
                     

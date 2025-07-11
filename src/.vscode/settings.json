@@ -121,5 +121,6 @@
         "thread": "cpp",
         "variant": "cpp"
     },
-    "cmake.sourceDirectory": "/home/jezzy/huskybot/src/huskybot_gazebo"
+    "cmake.sourceDirectory": "/home/jezzy/huskybot/src/huskybot_gazebo",
+    "ros.distro": "humble"
 }
