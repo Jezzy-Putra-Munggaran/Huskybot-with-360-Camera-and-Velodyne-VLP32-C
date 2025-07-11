@@ -5,7 +5,7 @@ import sys
 from glob import glob
 from setuptools import find_packages, setup
 
-# ✅ FIXED: Correct package name
+# ✅ FIXED: Correct package name - use underscore, not hyphen
 package_name = 'huskybot_deepstream'
 
 # ✅ FIXED: Proper data files structure
@@ -55,8 +55,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # ✅ FIXED: Correct executable mapping
-            'ultra_maximum_deepstream.py = huskybot_deepstream.ultra_maximum_deepstream:main',
+            # ✅ FIXED: Correct executable mapping without .py extension
+            'ultra_maximum_deepstream = huskybot_deepstream.ultra_maximum_deepstream:main',
             'deepstream_yolo_node = huskybot_deepstream.deepstream_yolo_node:main',
         ],
     },
