@@ -31,7 +31,7 @@ def generate_launch_description():
             name='ultra_maximum_optimization'
         ),
         
-        # ✅ 2. Enhanced camera stability reset
+        # ✅ 2. ENHANCED camera stability reset with FIXED daemon restart
         TimerAction(
             period=8.0,
             actions=[
@@ -41,6 +41,7 @@ def generate_launch_description():
                          'echo "kmporin" | sudo -S pkill -f nvargus-daemon || true && '
                          'echo "kmporin" | sudo -S pkill -f video_source || true && '
                          'sleep 3 && '
+                         'echo "kmporin" | sudo -S rm -f /tmp/.argus* || true && '
                          'echo "kmporin" | sudo -S systemctl restart nvargus-daemon && '
                          'sleep 5 && '
                          'echo "kmporin" | sudo -S chmod 666 /dev/video* 2>/dev/null || true && '

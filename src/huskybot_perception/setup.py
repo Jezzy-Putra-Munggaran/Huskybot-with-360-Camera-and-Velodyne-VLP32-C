@@ -82,6 +82,7 @@ setup(
             'visualizer_node = huskybot_perception.visualizer_node:main',
             'logger_node = huskybot_perception.logger_node:main',
             'fusion_visualizer_node = huskybot_perception.fusion_visualizer_node:main',
+            'ultra_mega_segmentation_node = huskybot_perception.ultra_mega_segmentation_node:main',
         ],
     },
 )
