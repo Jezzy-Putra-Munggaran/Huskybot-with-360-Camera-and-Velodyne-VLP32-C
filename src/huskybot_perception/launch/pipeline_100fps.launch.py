@@ -35,117 +35,153 @@ def generate_launch_description():
             ])
         ),
         
-        # ✅ 3. Start MAXIMUM resolution cameras (3 second delay)
+        # ✅ 3. Start MAXIMUM resolution cameras (5 second delay)
         TimerAction(
-            period=3.0,
+            period=5.0,
             actions=[
-                ExecuteProcess(
-                    cmd=['bash', '-c', 
-                         'echo "🚀 Starting MAXIMUM resolution cameras..." && '
-                         'ros2 launch huskybot_camera camera.launch.py '
-                         'resolution:=max '
-                         'fps:=60 '
-                         'exposure:=auto '
-                         'gain:=auto'],
-                    output='screen',
-                    name='max_resolution_cameras'
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource([
+                        os.path.join(get_package_share_directory('huskybot_camera'),
+                                   'launch', 'camera.launch.py')
+                    ])
                 )
             ]
         ),
         
-        # ✅ 4. Start ULTIMATE 100+ FPS Node (10 second delay)
-        TimerAction(
-            period=10.0,
-            actions=[
-                Node(
-                    package='huskybot_perception',
-                    executable='ultimate_100fps_node',
-                    name='ultimate_100fps_node',
-                    output='screen',
-                    respawn=True,
-                    respawn_delay=2.0,
-                    parameters=[
-                        {'use_sim_time': False},
-                        {'gpu_optimization': True},
-                        {'tensorrt_engine': True},
-                        {'max_fps_mode': True},
-                        {'full_resolution': True}
-                    ]
-                )
-            ]
-        ),
-        
-        # ✅ 5. Start ULTIMATE Auto-Popup Manager (15 second delay)
+        # ✅ 4. Start SIMPLE ULTIMATE WORKING node (15 second delay)
         TimerAction(
             period=15.0,
             actions=[
                 Node(
                     package='huskybot_perception',
-                    executable='ultimate_auto_popup_manager',
-                    name='ultimate_auto_popup_manager',
+                    executable='simple_ultimate_working_node',
+                    name='simple_ultimate_working_node',
                     output='screen',
                     respawn=True,
-                    respawn_delay=3.0
+                    respawn_delay=3.0,
+                    parameters=[
+                        {'use_sim_time': False}
+                    ]
                 )
             ]
         ),
         
-        # ✅ 6. Performance monitoring (20 second delay)
+        # ✅ 5. AUTO-POPUP LARGE Display (25 second delay)
         TimerAction(
-            period=20.0,
+            period=25.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['python3', '-c', '''
+import rclpy, cv2, numpy as np, time
+from rclpy.node import Node
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+
+class AutoDisplay(Node):
+    def __init__(self):
+        super().__init__("auto_display")
+        self.bridge = CvBridge()
+        self.latest_grid = None
+        self.sub = self.create_subscription(Image, "/ultimate_grid_display", self.callback, 10)
+        print("🎯 AUTO-DISPLAY STARTED - WAITING FOR GRID...")
+        
+    def callback(self, msg):
+        try:
+            self.latest_grid = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        except: 
+            pass
+        
+    def display_loop(self):
+        window_name = "HUSKYBOT 360° ULTIMATE SEGMENTATION - 100+ FPS TARGET - Press ESC/Q to exit"
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+        
+        # ✅ FULLSCREEN display
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        
+        frame_count = 0
+        fps_start = time.time()
+        
+        while True:
+            if self.latest_grid is not None:
+                display_img = self.latest_grid.copy()
+                
+                # ✅ FPS counter
+                frame_count += 1
+                if frame_count % 30 == 0:
+                    fps = 30.0 / (time.time() - fps_start)
+                    fps_start = time.time()
+                    
+                    cv2.putText(display_img, f"Display FPS: {fps:.1f}", 
+                               (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 4)
+                
+                cv2.imshow(window_name, display_img)
+            else:
+                blank = np.zeros((1080, 1920, 3), dtype=np.uint8)
+                cv2.putText(blank, "WAITING FOR GRID...", (600, 500), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255), 5)
+                cv2.imshow(window_name, blank)
+            
+            key = cv2.waitKey(1) & 0xFF
+            if key == 27 or key == ord("q"):
+                break
+        cv2.destroyAllWindows()
+
+rclpy.init()
+node = AutoDisplay()
+import threading
+display_thread = threading.Thread(target=node.display_loop, daemon=True)
+display_thread.start()
+rclpy.spin(node)
+                    '''],
+                    output='screen',
+                    name='auto_fullscreen_display'
+                )
+            ]
+        ),
+        
+        # ✅ 6. RViz2 auto-popup for LiDAR 3D mapping (180 second delay)
+        TimerAction(
+            period=180.0,  # 3 minutes
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🎯 ULTIMATE 100+ FPS Pipeline Status:" && '
-                         'echo "📡 Camera topics (should be 6):" && timeout 5 ros2 topic list | grep image_raw | wc -l && '
-                         'echo "🔥 ULTIMATE grid topic:" && timeout 5 ros2 topic list | grep ultimate_grid_display && '
-                         'echo "🔴 LiDAR topic:" && timeout 5 ros2 topic list | grep velodyne_points && '
-                         'echo "⚡ Performance:" && nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits && '
-                         'echo "✅ TARGET: 100+ FPS ACHIEVED!" && '
-                         'echo "🎯 ALL FEATURES WORKING: Segmentation + Distance + Coordinates + English + Large Display + RViz2!"'],
-                    output='screen'
+                         'export DISPLAY=:0 && '
+                         'echo "🚀 Starting RViz2 for LiDAR 3D mapping..." && '
+                         'rviz2 -f base_link --ros-args -p use_sim_time:=false > /dev/null 2>&1 &'],
+                    output='screen',
+                    name='delayed_rviz2'
                 )
             ]
         ),
         
-        # ✅ 7. Continuous performance optimization (30 second delay)
+        # ✅ 7. Status monitoring (30 second delay)
         TimerAction(
             period=30.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'while true; do '
-                         'echo "🔥 Performance Status:" && '
-                         'nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits && '
-                         'echo "💻 CPU Usage:" && top -bn1 | grep "Cpu(s)" | head -1 && '
-                         'echo "🚀 Memory Usage:" && free -h | grep "Mem:" && '
-                         'echo "Target: 100+ FPS with FULL GPU utilization" && '
-                         'sleep 10; '
-                         'done'],
-                    output='screen',
-                    name='continuous_monitoring'
+                         'echo "🎯 100+ FPS Pipeline Status:" && '
+                         'echo "📡 Camera topics (should be 6):" && timeout 5 ros2 topic list | grep image_raw | wc -l && '
+                         'echo "🔥 ULTIMATE grid topic:" && timeout 5 ros2 topic list | grep ultimate_grid_display && '
+                         'echo "🔴 LiDAR topic:" && timeout 5 ros2 topic list | grep scan && '
+                         'echo "✅ CHECK TERMINAL FOR DETECTION RESULTS!" && '
+                         'echo "📺 FULLSCREEN DISPLAY AUTO-POPUP IN ~10 SECONDS"'],
+                    output='screen'
                 )
             ]
         ),
         
-        # ✅ 8. Auto-restart if performance drops (60 second delay)
+        # ✅ 8. Performance monitoring (60 second delay)
         TimerAction(
             period=60.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🔍 Performance check..." && '
-                         'GPU_UTIL=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits) && '
-                         'if [ "$GPU_UTIL" -lt 80 ]; then '
-                         'echo "⚠️  GPU utilization below 80%, optimizing..." && '
-                         'sudo jetson_clocks && '
-                         'sudo nvidia-smi -lgc 1300,2100 && '
-                         'echo "🔥 Performance re-optimized!"; '
-                         'else '
-                         'echo "✅ Performance optimal: GPU ${GPU_UTIL}%"; '
-                         'fi'],
-                    output='screen',
-                    name='performance_guardian'
+                         'echo "💻 System Performance:" && '
+                         'nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits && '
+                         'echo "📊 Memory Usage:" && free -h | grep "Mem:" && '
+                         'echo "🎯 TARGET: 100+ FPS with MAXIMUM GPU utilization"'],
+                    output='screen'
                 )
             ]
         ),

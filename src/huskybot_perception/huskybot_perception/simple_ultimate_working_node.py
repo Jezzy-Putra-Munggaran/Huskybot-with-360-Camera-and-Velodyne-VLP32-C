@@ -187,8 +187,7 @@ class SimpleUltimateWorkingNode(Node):
                             conf=0.25,  # Good confidence threshold
                             iou=0.45,   # Good IoU threshold
                             verbose=False,
-                            task='segment',
-                            device='cuda:0' if torch.cuda.is_available() else 'cpu'
+                            task='segment'
                         )
                         
                         # ✅ Process results
@@ -366,7 +365,7 @@ class SimpleUltimateWorkingNode(Node):
         """Create WORKING 2x3 grid display"""
         try:
             # ✅ LARGE size per camera for clarity
-            cam_width, cam_height = 960, 720
+            cam_width, cam_height = 1280, 720  # Large for clear visibility
             grid_images = []
             
             for i in range(6):
@@ -382,26 +381,26 @@ class SimpleUltimateWorkingNode(Node):
                         img_resized = self.draw_working_detections(img_resized, self.detection_results[i], img.shape)
                     
                     # ✅ Camera label
-                    label_height = 60
+                    label_height = 80
                     cv2.rectangle(img_resized, (0, 0), (cam_width, label_height), (0, 0, 0), -1)
                     cv2.putText(img_resized, f"{self.camera_names[i]}", 
-                               (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+                               (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 4)
                     
                     # ✅ Detection count
                     det_count = len(self.detection_results[i])
                     cv2.putText(img_resized, f"Objects: {det_count}", 
-                               (cam_width-200, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+                               (cam_width-300, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
                     
                     grid_images.append(img_resized)
                 else:
                     # ✅ Waiting screen
                     black_img = np.zeros((cam_height, cam_width, 3), dtype=np.uint8)
                     cv2.putText(black_img, f"{self.camera_names[i]}", 
-                               (cam_width//4, cam_height//2-30), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
+                               (cam_width//4, cam_height//2-50), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 4)
                     cv2.putText(black_img, "WAITING FOR SIGNAL...", 
-                               (cam_width//6, cam_height//2+30), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
+                               (cam_width//6, cam_height//2+50), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
                     grid_images.append(black_img)
             
             if len(grid_images) == 6:
@@ -411,7 +410,7 @@ class SimpleUltimateWorkingNode(Node):
                 grid = np.vstack([top_row, bottom_row])
                 
                 # ✅ Status bar
-                status_height = 120
+                status_height = 150
                 total_width = grid.shape[1]
                 grid_with_status = np.zeros((grid.shape[0] + status_height, total_width, 3), dtype=np.uint8)
                 grid_with_status[:grid.shape[0], :] = grid
@@ -421,15 +420,15 @@ class SimpleUltimateWorkingNode(Node):
                 
                 main_status = f"HUSKYBOT 360° ULTIMATE SEGMENTATION | Total Objects: {total_detections} | TARGET: 100+ FPS"
                 cv2.putText(grid_with_status, main_status, 
-                           (30, grid.shape[0] + 30), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+                           (50, grid.shape[0] + 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 4)
                 
                 features_status = "Features: Segmentation ✅ | Distance ✅ | Coordinates ✅ | English Output ✅ | COCO Colors ✅"
                 cv2.putText(grid_with_status, features_status, 
-                           (30, grid.shape[0] + 65), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+                           (50, grid.shape[0] + 100), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
                 
                 performance_status = "Performance: GPU Optimized | Multi-threaded | Full Resolution | Real Camera Mapping"
                 cv2.putText(grid_with_status, performance_status, 
-                           (30, grid.shape[0] + 95), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
+                           (50, grid.shape[0] + 130), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 0), 2)
                 
                 # ✅ Publish grid
                 grid_msg = self.bridge.cv2_to_imgmsg(grid_with_status, 'bgr8')
@@ -473,10 +472,10 @@ class SimpleUltimateWorkingNode(Node):
                     
                     # ✅ Mask contours
                     contours, _ = cv2.findContours(mask_resized, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                    cv2.drawContours(img, contours, -1, bbox_color, 2)
+                    cv2.drawContours(img, contours, -1, bbox_color, 3)
                 
                 # ✅ Draw bounding box
-                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 3)
+                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 4)
                 
                 # ✅ FULL ENGLISH information
                 info_lines = [
@@ -487,8 +486,8 @@ class SimpleUltimateWorkingNode(Node):
                 ]
                 
                 # ✅ Text background
-                text_bg_height = 85
-                text_bg_width = max(len(line) * 12 for line in info_lines)
+                text_bg_height = 100
+                text_bg_width = max(len(line) * 15 for line in info_lines)
                 
                 text_x = x1
                 text_y = y1 - text_bg_height if y1 - text_bg_height > 0 else y2 + text_bg_height
@@ -500,8 +499,8 @@ class SimpleUltimateWorkingNode(Node):
                 # ✅ Draw text
                 for i, line in enumerate(info_lines):
                     cv2.putText(img, line, 
-                               (text_x + 5, text_y - text_bg_height + 20 + i*18), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2)
+                               (text_x + 10, text_y - text_bg_height + 25 + i*22), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
             
             return img
             
@@ -516,9 +515,6 @@ class SimpleUltimateWorkingNode(Node):
         super().destroy_node()
 
 def main(args=None):
-    # ✅ Add missing import
-    import torch
-    
     rclpy.init(args=args)
     
     node = None
