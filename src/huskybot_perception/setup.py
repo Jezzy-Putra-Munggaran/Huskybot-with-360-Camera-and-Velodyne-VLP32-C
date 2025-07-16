@@ -85,8 +85,9 @@ setup(
             'ultra_mega_segmentation_node = huskybot_perception.ultra_mega_segmentation_node:main',
             'simple_working_node = huskybot_perception.simple_working_node:main',
             'ultimate_display_manager = huskybot_perception.ultimate_display_manager:main',
-            'ultimate_100fps_node_fixed = huskybot_perception.ultimate_100fps_node_fixed:main',  # ✅ FIXED VERSION
+            'ultimate_100fps_node_fixed = huskybot_perception.ultimate_100fps_node_fixed:main',
             'ultimate_auto_popup_manager = huskybot_perception.ultimate_auto_popup_manager:main',
+            'simple_ultimate_working_node = huskybot_perception.simple_ultimate_working_node:main',  # ✅ NEW WORKING VERSION
         ],
     },
 )
