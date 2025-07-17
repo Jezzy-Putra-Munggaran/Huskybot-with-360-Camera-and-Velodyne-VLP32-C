@@ -39,7 +39,7 @@ class CameraRearUltimateNode(Node):
         # ✅ Setup processing - 100% MIRIP SIMPLE
         self.setup_processing()
         
-        self.get_logger().info("🚀 CAMERA REAR ULTIMATE NODE - 100% MIRIP SIMPLE!")
+        self.get_logger().info("🚀 CAMERA REAR ULTIMATE NODE - FIXED MASK SEGMENTATION!")
 
     def setup_yolo(self):
         """Setup YOLO - 100% MIRIP SIMPLE"""
@@ -164,6 +164,9 @@ class CameraRearUltimateNode(Node):
                         else:
                             continue
                     
+                    # ✅ Store original frame untuk mask positioning - FIXED
+                    original_frame = frame.copy()
+                    
                     # ✅ Resize frame untuk processing - 100% MIRIP SIMPLE
                     processing_height = 640
                     height, width = frame.shape[:2]
@@ -186,8 +189,8 @@ class CameraRearUltimateNode(Node):
                         device=0  # Force GPU
                     )
                     
-                    # ✅ Process results - 100% MIRIP SIMPLE
-                    detections = self.process_results(results, self.camera_idx, frame, scale, 0, 0)
+                    # ✅ Process results dengan original frame - FIXED
+                    detections = self.process_results(results, self.camera_idx, original_frame, scale)
                     self.detection_result = detections
                     
                     # ✅ TERMINAL OUTPUT - 100% MIRIP SIMPLE
@@ -210,8 +213,8 @@ class CameraRearUltimateNode(Node):
                 self.get_logger().error(f"❌ Processing loop error: {e}")
                 time.sleep(0.5)
 
-    def process_results(self, results, camera_idx, frame, scale, x_offset, y_offset):
-        """Process results - 100% MIRIP SIMPLE"""
+    def process_results(self, results, camera_idx, original_frame, processing_scale):
+        """Process results - FIXED MASK POSITIONING"""
         detections = []
         
         try:
@@ -219,7 +222,7 @@ class CameraRearUltimateNode(Node):
                 return detections
             
             result = results[0]
-            frame_height, frame_width = frame.shape[:2]
+            original_height, original_width = original_frame.shape[:2]
             
             # ✅ Camera angles - 100% MIRIP SIMPLE
             camera_angles = [180, 240, 300, 0, 60, 120]  # Sesuai simple
@@ -231,49 +234,56 @@ class CameraRearUltimateNode(Node):
                 classes = result.boxes.cls.cpu().numpy()
                 names = result.names if hasattr(result, 'names') else {}
                 
-                # ✅ Process masks - 100% MIRIP SIMPLE
+                # ✅ Process masks - FIXED POSITIONING
                 masks = None
                 if hasattr(result, 'masks') and result.masks is not None:
                     masks = result.masks.data.cpu().numpy()
                 
                 for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
-                    # ✅ Convert coordinates - 100% MIRIP SIMPLE
-                    x1 = int((box[0] - x_offset) / scale)
-                    y1 = int((box[1] - y_offset) / scale)
-                    x2 = int((box[2] - x_offset) / scale)
-                    y2 = int((box[3] - y_offset) / scale)
+                    # ✅ Scale coordinates back to original frame - FIXED
+                    x1 = int(box[0] / processing_scale)
+                    y1 = int(box[1] / processing_scale)
+                    x2 = int(box[2] / processing_scale)
+                    y2 = int(box[3] / processing_scale)
                     
-                    # ✅ Ensure coordinates are within frame - 100% MIRIP SIMPLE
-                    x1 = max(0, min(frame_width, x1))
-                    y1 = max(0, min(frame_height, y1))
-                    x2 = max(0, min(frame_width, x2))
-                    y2 = max(0, min(frame_height, y2))
+                    # ✅ Ensure coordinates are within original frame - FIXED
+                    x1 = max(0, min(original_width, x1))
+                    y1 = max(0, min(original_height, y1))
+                    x2 = max(0, min(original_width, x2))
+                    y2 = max(0, min(original_height, y2))
                     
                     class_name = names.get(int(cls_id), f"class_{int(cls_id)}")
                     
                     # ✅ Calculate distance - 100% MIRIP SIMPLE
                     bbox_area = (x2 - x1) * (y2 - y1)
-                    distance = self.calculate_distance(class_name, bbox_area, frame_width, frame_height)
+                    distance = self.calculate_distance(class_name, bbox_area, original_width, original_height)
                     
                     # ✅ Calculate 3D coordinates - 100% MIRIP SIMPLE
                     center_x = (x1 + x2) / 2
                     center_y = (y1 + y2) / 2
                     
                     # ✅ FOV calculation - 100% MIRIP SIMPLE
-                    angle_offset = ((center_x / frame_width) - 0.5) * 120  # 120° horizontal FOV
+                    angle_offset = ((center_x / original_width) - 0.5) * 120  # 120° horizontal FOV
                     object_angle = (base_angle + angle_offset) % 360
                     
                     coord_x = distance * np.cos(np.radians(object_angle))
                     coord_y = distance * np.sin(np.radians(object_angle))
                     
                     # ✅ Vertical angle - 100% MIRIP SIMPLE
-                    vertical_angle = ((center_y / frame_height) - 0.5) * 90
+                    vertical_angle = ((center_y / original_height) - 0.5) * 90
                     coord_z = 1.5 + distance * np.tan(np.radians(vertical_angle))
                     coord_z = max(0.0, min(3.0, coord_z))
                     
                     # ✅ Colors - 100% MIRIP SIMPLE
                     color = self.get_distinct_coco_color(int(cls_id))
                     text_color = self.get_contrasting_text_color(color)
+                    
+                    # ✅ Process mask untuk original frame - FIXED
+                    processed_mask = None
+                    if masks is not None and i < len(masks):
+                        processed_mask = self.process_mask_for_original_frame(
+                            masks[i], processing_scale, original_width, original_height
+                        )
                     
                     detection = {
                         'class': class_name,
@@ -286,9 +296,7 @@ class CameraRearUltimateNode(Node):
                         'angle': object_angle,
                         'color': color,
                         'text_color': text_color,
-                        'mask': masks[i] if masks is not None and i < len(masks) else None,
-                        'mask_scale': scale,
-                        'mask_offset': (x_offset, y_offset)
+                        'mask': processed_mask
                     }
                     
                     detections.append(detection)
@@ -297,6 +305,22 @@ class CameraRearUltimateNode(Node):
             self.get_logger().error(f"❌ Result processing error: {e}")
         
         return detections
+
+    def process_mask_for_original_frame(self, mask, processing_scale, original_width, original_height):
+        """Process mask untuk original frame dimensions - FIXED"""
+        try:
+            # ✅ Resize mask ke original frame size - FIXED
+            mask_resized = cv2.resize(
+                mask.astype(np.uint8), 
+                (original_width, original_height), 
+                interpolation=cv2.INTER_NEAREST
+            )
+            
+            return mask_resized
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Mask processing error: {e}")
+            return None
 
     def calculate_distance(self, class_name, bbox_area, frame_width, frame_height):
         """Calculate distance - 100% MIRIP SIMPLE"""
@@ -384,9 +408,9 @@ class CameraRearUltimateNode(Node):
                 x_offset = (display_width - new_width) // 2
                 canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = img_resized
                 
-                # ✅ Draw detections - 100% MIRIP SIMPLE
+                # ✅ Draw detections dengan FIXED mask - FIXED
                 if self.detection_result:
-                    canvas = self.draw_detections(canvas, self.detection_result, scale, x_offset, y_offset)
+                    canvas = self.draw_detections_fixed(canvas, self.detection_result, scale, x_offset, y_offset)
                 
                 # ✅ Camera label - 100% MIRIP SIMPLE
                 label_height = 80
@@ -429,55 +453,61 @@ class CameraRearUltimateNode(Node):
         except Exception as e:
             self.get_logger().error(f"❌ Display creation error: {e}")
 
-    def draw_detections(self, img, detections, scale, x_offset, y_offset):
-        """Draw detections - 100% MIRIP SIMPLE"""
+    def draw_detections_fixed(self, canvas, detections, display_scale, x_offset, y_offset):
+        """Draw detections dengan FIXED mask positioning"""
         try:
             for detection in detections:
-                # ✅ Scale bbox - 100% MIRIP SIMPLE
+                # ✅ Scale bbox untuk display - FIXED
                 x1, y1, x2, y2 = detection['bbox']
-                x1 = int(x1 * scale) + x_offset
-                y1 = int(y1 * scale) + y_offset
-                x2 = int(x2 * scale) + x_offset
-                y2 = int(y2 * scale) + y_offset
+                x1 = int(x1 * display_scale) + x_offset
+                y1 = int(y1 * display_scale) + y_offset
+                x2 = int(x2 * display_scale) + x_offset
+                y2 = int(y2 * display_scale) + y_offset
                 
                 bbox_color = detection['color']
                 text_color = detection['text_color']
                 
-                # ✅ Draw mask - 100% MIRIP SIMPLE
+                # ✅ Draw mask FIRST (behind bounding box) - FIXED
                 if detection['mask'] is not None:
                     try:
                         mask = detection['mask']
-                        mask_scale = detection['mask_scale']
-                        mask_offset_x, mask_offset_y = detection['mask_offset']
                         
-                        # Scale mask
+                        # ✅ Resize mask untuk display - FIXED
                         mask_height, mask_width = mask.shape
-                        scaled_mask_width = int(mask_width * mask_scale * scale)
-                        scaled_mask_height = int(mask_height * mask_scale * scale)
+                        display_mask_width = int(mask_width * display_scale)
+                        display_mask_height = int(mask_height * display_scale)
                         
-                        if scaled_mask_width > 0 and scaled_mask_height > 0:
-                            mask_resized = cv2.resize(mask.astype(np.uint8), 
-                                                    (scaled_mask_width, scaled_mask_height))
+                        if display_mask_width > 0 and display_mask_height > 0:
+                            mask_resized = cv2.resize(
+                                mask.astype(np.uint8), 
+                                (display_mask_width, display_mask_height),
+                                interpolation=cv2.INTER_NEAREST
+                            )
                             
-                            # Position mask
-                            mask_x = x_offset + int(mask_offset_x * scale)
-                            mask_y = y_offset + int(mask_offset_y * scale)
+                            # ✅ Position mask di canvas - FIXED
+                            mask_x_start = x_offset
+                            mask_y_start = y_offset
+                            mask_x_end = mask_x_start + display_mask_width
+                            mask_y_end = mask_y_start + display_mask_height
                             
-                            # Apply mask
-                            if (mask_x >= 0 and mask_y >= 0 and 
-                                mask_x + scaled_mask_width <= img.shape[1] and 
-                                mask_y + scaled_mask_height <= img.shape[0]):
+                            # ✅ Ensure mask fits in canvas - FIXED
+                            if (mask_x_end <= canvas.shape[1] and mask_y_end <= canvas.shape[0]):
+                                # ✅ Create mask overlay - FIXED
+                                mask_overlay = np.zeros_like(canvas)
+                                mask_area = mask_overlay[mask_y_start:mask_y_end, mask_x_start:mask_x_end]
                                 
-                                mask_overlay = np.zeros_like(img)
-                                mask_overlay[mask_y:mask_y+scaled_mask_height, 
-                                           mask_x:mask_x+scaled_mask_width][mask_resized > 0] = bbox_color
+                                # ✅ Apply mask color where mask > 0 - FIXED
+                                if mask_area.shape[:2] == mask_resized.shape[:2]:
+                                    mask_area[mask_resized > 0] = bbox_color
                                 
-                                img = cv2.addWeighted(img, 0.7, mask_overlay, 0.3, 0)
+                                # ✅ Blend mask with canvas - FIXED
+                                canvas = cv2.addWeighted(canvas, 0.7, mask_overlay, 0.3, 0)
+                            
                     except Exception as e:
                         self.get_logger().error(f"❌ Mask drawing error: {e}")
                 
-                # ✅ Draw bounding box - 100% MIRIP SIMPLE
-                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 6)
+                # ✅ Draw bounding box AFTER mask - FIXED
+                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 6)
                 
                 # ✅ Draw text - 100% MIRIP SIMPLE
                 info_lines = [
@@ -504,25 +534,25 @@ class CameraRearUltimateNode(Node):
                     text_x = x1
                     text_y = y2
                 
-                text_x = max(0, min(img.shape[1] - text_bg_width, text_x))
-                text_y = max(0, min(img.shape[0] - text_bg_height, text_y))
+                text_x = max(0, min(canvas.shape[1] - text_bg_width, text_x))
+                text_y = max(0, min(canvas.shape[0] - text_bg_height, text_y))
                 
                 # ✅ Draw text background - 100% MIRIP SIMPLE
-                cv2.rectangle(img, (text_x, text_y), 
+                cv2.rectangle(canvas, (text_x, text_y), 
                              (text_x + text_bg_width, text_y + text_bg_height), 
                              bbox_color, -1)
                 
                 # ✅ Draw text lines - 100% MIRIP SIMPLE
                 for i, line in enumerate(info_lines):
-                    cv2.putText(img, line, 
+                    cv2.putText(canvas, line, 
                                (text_x + 20, text_y + 35 + i * line_height),
                                cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
             
-            return img
+            return canvas
             
         except Exception as e:
             self.get_logger().error(f"❌ Drawing error: {e}")
-            return img
+            return canvas
 
     def destroy_node(self):
         """Clean shutdown - 100% MIRIP SIMPLE"""
