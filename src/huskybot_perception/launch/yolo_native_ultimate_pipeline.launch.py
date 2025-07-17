@@ -11,14 +11,14 @@ import os
 def generate_launch_description():
     return LaunchDescription([
         
-        # ✅ 1. ULTRA POWER OPTIMIZATION untuk 100+ FPS
+        # ✅ 1. FIXED POWER OPTIMIZATION
         ExecuteProcess(
             cmd=['bash', '-c', 
                  'echo "🔧 ULTRA POWER OPTIMIZATION..." && '
-                 'sudo nvpmodel -m 0 && '  # MAX-N mode
-                 'sudo jetson_clocks --fan && '  # Enable fan
-                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '  # Performance mode
-                 'echo "⚡ ULTRA POWER OPTIMIZED FOR 100+ FPS!"'],
+                 'sudo nvpmodel -m 0 && '
+                 'sudo jetson_clocks --fan && '
+                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
+                 'echo "⚡ POWER OPTIMIZED FOR 100+ FPS!"'],
             output='screen',
             name='ultra_power_optimization'
         ),
@@ -49,7 +49,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 4. Start YOLO NATIVE ULTIMATE node
+        # ✅ 4. Start YOLO NATIVE ULTIMATE node - FIXED
         TimerAction(
             period=20.0,
             actions=[
@@ -62,27 +62,27 @@ def generate_launch_description():
                     respawn_delay=3.0,
                     parameters=[
                         {'use_sim_time': False}
-                    ],
-                    # ✅ Optimize untuk maximum performance
-                    prefix=['nice', '-n', '-20']  # Highest priority
+                    ]
+                    # ✅ REMOVED problematic prefix
                 )
             ]
         ),
         
         # ✅ 5. RViz2 auto-popup untuk LiDAR (delayed)
         TimerAction(
-            period=180.0,  # 3 minutes delay
+            period=240.0,  # 4 minutes delay
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
                          'echo "🚀 Starting RViz2 for LiDAR..." && '
-                         'DISPLAY=:0 rviz2 -d $(ros2 pkg prefix huskybot_perception)/share/huskybot_perception/rviz/lidar_config.rviz &'],
+                         'export DISPLAY=:0 && '
+                         'rviz2 -d /tmp/huskybot_lidar_config.rviz || rviz2 &'],
                     output='screen'
                 )
             ]
         ),
         
-        # ✅ 6. Performance monitoring
+        # ✅ 6. FIXED Performance monitoring
         TimerAction(
             period=30.0,
             actions=[
@@ -90,9 +90,9 @@ def generate_launch_description():
                     cmd=['bash', '-c', 
                          'echo "🎯 YOLO NATIVE Performance Status:" && '
                          'echo "📡 Camera topics:" && timeout 3 ros2 topic list | grep image_raw | wc -l && '
-                         'echo "🔥 GPU Status:" && nvidia-smi --query-gpu=utilization.gpu,memory.used,temperature.gpu --format=csv,noheader,nounits && '
+                         'echo "🔥 GPU Status:" && (nvidia-smi --query-gpu=utilization.gpu,memory.used,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "GPU: Not available") && '
                          'echo "💻 CPU Usage:" && top -bn1 | grep "Cpu(s)" && '
-                         'echo "✅ CHECK 6 NATIVE YOLO WINDOWS!" && '
+                         'echo "✅ CHECKING YOLO NATIVE WINDOWS..." && '
                          'echo "🎯 TARGET: 100+ FPS dengan YOLO NATIVE DISPLAY"'],
                     output='screen'
                 )
