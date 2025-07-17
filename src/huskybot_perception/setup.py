@@ -88,6 +88,7 @@ setup(
             'ultimate_100fps_node_fixed = huskybot_perception.ultimate_100fps_node_fixed:main',
             'ultimate_auto_popup_manager = huskybot_perception.ultimate_auto_popup_manager:main',
             'simple_ultimate_working_node = huskybot_perception.simple_ultimate_working_node:main',  # ✅ NEW WORKING VERSION
+            'yolo_native_ultimate_node = huskybot_perception.yolo_native_ultimate_node:main',
         ],
     },
 )
