@@ -460,7 +460,7 @@ class SimpleUltimateWorkingNode(Node):
             self.get_logger().error(f"❌ Grid creation error: {e}")
 
     def draw_detections(self, img, detections, original_shape, scale, x_offset, y_offset):
-        """Draw detections dengan PERFECT text positioning"""
+        """Draw detections dengan PERFECT text positioning dan LARGER FONT"""
         try:
             for detection in detections:
                 # ✅ Scale bbox to display coordinates
@@ -497,9 +497,9 @@ class SimpleUltimateWorkingNode(Node):
                     img = cv2.addWeighted(img, 0.7, mask_overlay, 0.3, 0)
                 
                 # ✅ Draw bounding box
-                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 3)
+                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 4)  # Thicker bounding box
                 
-                # ✅ PERFECT text positioning
+                # ✅ PERFECT text positioning dengan LARGER FONT
                 info_lines = [
                     f"Class: {detection['class']}",
                     f"Confidence: {detection['confidence']:.2f}",
@@ -507,20 +507,23 @@ class SimpleUltimateWorkingNode(Node):
                     f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
                 ]
                 
-                # ✅ Text dimensions
-                line_height = 25
-                text_bg_height = len(info_lines) * line_height + 10
-                text_bg_width = max(len(line) * 12 for line in info_lines) + 20
+                # ✅ 🔥 LARGER FONT SETTINGS
+                font_scale = 0.9  # ✅ INCREASED from 0.6 to 0.9
+                font_thickness = 3  # ✅ INCREASED from 2 to 3
+                line_height = 35  # ✅ INCREASED from 25 to 35
+                
+                text_bg_height = len(info_lines) * line_height + 20  # ✅ INCREASED padding
+                text_bg_width = max(len(line) * 18 for line in info_lines) + 30  # ✅ INCREASED width
                 
                 # ✅ PERFECT positioning logic
-                if y1 - text_bg_height > 10:  # Space above
+                if y1 - text_bg_height > 15:  # Space above
                     text_x = x1
                     text_y = y1 - text_bg_height
-                    text_draw_y = y1 - 10
+                    text_draw_y = y1 - 15
                 else:  # Space below
                     text_x = x1
                     text_y = y2
-                    text_draw_y = y2 + text_bg_height - 10
+                    text_draw_y = y2 + text_bg_height - 15
                 
                 # ✅ Ensure text stays within image bounds
                 text_x = max(0, min(img.shape[1] - text_bg_width, text_x))
@@ -531,11 +534,11 @@ class SimpleUltimateWorkingNode(Node):
                              (text_x + text_bg_width, text_y + text_bg_height), 
                              bbox_color, -1)
                 
-                # ✅ Draw text lines
+                # ✅ Draw text lines dengan LARGER FONT
                 for i, line in enumerate(info_lines):
                     cv2.putText(img, line, 
-                               (text_x + 10, text_y + 20 + i * line_height), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2)
+                               (text_x + 15, text_y + 25 + i * line_height),  # ✅ INCREASED padding
+                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
             
             return img
             
