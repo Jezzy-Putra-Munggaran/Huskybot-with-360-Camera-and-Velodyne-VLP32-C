@@ -32,6 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'single_camera_ultimate_node = huskybot_single_camera.single_camera_ultimate_node:main',
+            'camera_test_node = huskybot_single_camera.camera_test_node:main',
         ],
     },
 )
