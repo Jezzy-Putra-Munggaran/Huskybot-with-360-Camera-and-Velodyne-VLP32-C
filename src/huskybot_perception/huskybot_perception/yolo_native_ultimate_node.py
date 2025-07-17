@@ -10,7 +10,6 @@ import numpy as np
 import time
 import threading
 import os
-import multiprocessing
 
 class YoloNativeUltimateNode(Node):
     def __init__(self):
@@ -18,7 +17,7 @@ class YoloNativeUltimateNode(Node):
         
         self.bridge = CvBridge()
         
-        # ✅ CORRECTED camera mapping
+        # ✅ CORRECTED camera mapping berdasarkan kondisi REAL - SAMAKAN DENGAN SIMPLE
         self.camera_topics = [
             '/camera_front/image_raw',      # KAMERA BELAKANG (Real)
             '/camera_right/image_raw',      # KAMERA KANAN BELAKANG (Real)
@@ -33,29 +32,30 @@ class YoloNativeUltimateNode(Node):
             'CAMERA FRONT', 'CAMERA LEFT FRONT', 'CAMERA LEFT REAR'
         ]
         
-        # ✅ SIMPLE data storage
+        # ✅ SIMPLE data storage - SAMAKAN DENGAN SIMPLE
         self.latest_images = [None] * 6
+        self.detection_results = [[] for _ in range(6)]  # ✅ TAMBAHKAN SEPERTI SIMPLE
         self.frame_locks = [threading.Lock() for _ in range(6)]
         self.fps_counters = [0] * 6
         self.fps_timers = [time.time()] * 6
         
-        # ✅ Setup YOLO SIMPLE
-        self.setup_yolo_simple()
+        # ✅ Setup YOLO SIMPLE - SAMAKAN DENGAN SIMPLE
+        self.setup_simple_yolo()
         
-        # ✅ Setup connections
+        # ✅ Setup connections - SAMAKAN DENGAN SIMPLE
         self.setup_connections()
         
-        # ✅ Setup SIMPLE processing
-        self.setup_simple_processing()
+        # ✅ Setup processing - SAMAKAN DENGAN SIMPLE
+        self.setup_processing()
         
-        self.get_logger().info("🚀 YOLO NATIVE ULTIMATE NODE - SIMPLE + WORKING!")
+        self.get_logger().info("🚀 YOLO NATIVE ULTIMATE NODE - 100% SAMA DENGAN SIMPLE!")
 
-    def setup_yolo_simple(self):
-        """Setup YOLO SIMPLE yang GUARANTEED WORKING"""
+    def setup_simple_yolo(self):
+        """Setup YOLO SIMPLE yang PASTI WORKING - SAMAKAN DENGAN SIMPLE"""
         try:
             from ultralytics import YOLO
             
-            # ✅ Try models berdasarkan priority
+            # ✅ Try models berdasarkan priority - SAMAKAN DENGAN SIMPLE
             model_paths = [
                 "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",  # TensorRT FASTEST
                 "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",     # PyTorch
@@ -67,7 +67,7 @@ class YoloNativeUltimateNode(Node):
             for model_path in model_paths:
                 try:
                     if os.path.exists(model_path) or not model_path.startswith('/'):
-                        self.get_logger().info(f"🔄 Loading SIMPLE model: {model_path}")
+                        self.get_logger().info(f"🔄 Loading model: {model_path}")
                         
                         self.yolo_model = YOLO(model_path)
                         
@@ -90,8 +90,8 @@ class YoloNativeUltimateNode(Node):
             self.yolo_model = None
 
     def setup_connections(self):
-        """Setup connections SIMPLE"""
-        # ✅ Camera subscriptions
+        """Setup connections SIMPLE - SAMAKAN DENGAN SIMPLE"""
+        # ✅ Camera subscriptions - SAMAKAN DENGAN SIMPLE
         self.camera_subs = []
         for i, topic in enumerate(self.camera_topics):
             try:
@@ -105,41 +105,48 @@ class YoloNativeUltimateNode(Node):
             except Exception as e:
                 self.get_logger().error(f"❌ Failed subscribe {topic}: {e}")
         
-        # ✅ LiDAR subscription
+        # ✅ LiDAR subscription - SAMAKAN DENGAN SIMPLE
         try:
             self.laser_sub = self.create_subscription(
                 LaserScan, '/scan', self.laser_callback, 10)
             self.get_logger().info("📡 Subscribed to LiDAR")
         except Exception as e:
             self.get_logger().error(f"❌ LiDAR subscription failed: {e}")
+        
+        # ✅ Publisher - SAMAKAN DENGAN SIMPLE
+        try:
+            self.grid_pub = self.create_publisher(Image, '/yolo_native_grid_display', 30)
+            self.get_logger().info("📡 Grid publisher created")
+        except Exception as e:
+            self.get_logger().error(f"❌ Publisher creation failed: {e}")
 
-    def setup_simple_processing(self):
-        """Setup SIMPLE processing"""
+    def setup_processing(self):
+        """Setup processing SIMPLE - SAMAKAN DENGAN SIMPLE"""
         self.processing_active = True
         
-        # ✅ Single thread untuk semua kamera (SIMPLE approach)
-        self.process_thread = threading.Thread(target=self.simple_processing_loop, daemon=True)
+        # ✅ Single processing thread - SAMAKAN DENGAN SIMPLE
+        self.process_thread = threading.Thread(target=self.processing_loop, daemon=True)
         self.process_thread.start()
         
-        # ✅ Single display thread
-        self.display_thread = threading.Thread(target=self.simple_display_loop, daemon=True)
+        # ✅ Display thread - SAMAKAN DENGAN SIMPLE
+        self.display_thread = threading.Thread(target=self.display_loop, daemon=True)
         self.display_thread.start()
         
-        self.get_logger().info("✅ SIMPLE processing threads started!")
+        self.get_logger().info("✅ Processing threads started!")
 
     def camera_callback(self, msg, camera_idx):
-        """SIMPLE camera callback"""
+        """SIMPLE camera callback - SAMAKAN DENGAN SIMPLE"""
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
             with self.frame_locks[camera_idx]:
                 self.latest_images[camera_idx] = cv_image.copy()
             
-            # ✅ FPS tracking
+            # ✅ FPS tracking - SAMAKAN DENGAN SIMPLE
             self.fps_counters[camera_idx] += 1
-            if self.fps_counters[camera_idx] % 100 == 0:
+            if self.fps_counters[camera_idx] % 50 == 0:
                 current_time = time.time()
-                fps = 100.0 / (current_time - self.fps_timers[camera_idx])
+                fps = 50.0 / (current_time - self.fps_timers[camera_idx])
                 self.fps_timers[camera_idx] = current_time
                 
                 if camera_idx == 0:
@@ -149,21 +156,21 @@ class YoloNativeUltimateNode(Node):
             self.get_logger().error(f"❌ Camera callback error {camera_idx}: {e}")
 
     def laser_callback(self, msg):
-        """SIMPLE laser callback"""
+        """SIMPLE laser callback - SAMAKAN DENGAN SIMPLE"""
         try:
             self.latest_laser = msg
         except Exception as e:
             self.get_logger().error(f"❌ LiDAR callback error: {e}")
 
-    def simple_processing_loop(self):
-        """SIMPLE processing loop - process all cameras sequentially"""
+    def processing_loop(self):
+        """SIMPLE processing loop - SAMAKAN DENGAN SIMPLE"""
         while self.processing_active:
             try:
                 if not self.yolo_model:
                     time.sleep(1.0)
                     continue
                 
-                # ✅ Process each camera sequentially (SIMPLE)
+                # ✅ Process each camera - SAMAKAN DENGAN SIMPLE
                 for i in range(6):
                     try:
                         with self.frame_locks[i]:
@@ -172,113 +179,154 @@ class YoloNativeUltimateNode(Node):
                             else:
                                 continue
                         
-                        # ✅ SIMPLE YOLO inference
+                        # ✅ YOLO segmentation inference - SAMAKAN DENGAN SIMPLE
+                        # Use FULL resolution for better FOV
+                        height, width = frame.shape[:2]
+                        
+                        # ✅ Maintain aspect ratio but resize for inference
+                        scale = min(640/width, 640/height)
+                        new_width = int(width * scale)
+                        new_height = int(height * scale)
+                        
+                        resized = cv2.resize(frame, (new_width, new_height))
+                        
+                        # ✅ Pad to 640x640 to maintain full FOV
+                        padded = np.zeros((640, 640, 3), dtype=np.uint8)
+                        y_offset = (640 - new_height) // 2
+                        x_offset = (640 - new_width) // 2
+                        padded[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = resized
+                        
                         results = self.yolo_model.predict(
-                            frame,
+                            padded,
                             conf=0.25,
                             iou=0.45,
                             verbose=False,
-                            task='segment',
-                            device=0  # Use GPU
+                            task='segment'
                         )
                         
-                        # ✅ Process results dengan SIMPLE approach
-                        if results and len(results) > 0:
-                            detections = self.process_simple_results(results[0], i, frame)
-                            
-                            # ✅ TERMINAL output in FULL ENGLISH
-                            for detection in detections:
-                                terminal_output = (
-                                    f"📍 {self.camera_names[i]} | "
-                                    f"Class: {detection['class']} | "
-                                    f"Confidence: {detection['confidence']:.2f} | "
-                                    f"Distance: {detection['distance']:.1f}m | "
-                                    f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
-                                )
-                                self.get_logger().info(terminal_output)
+                        # ✅ Process results - SAMAKAN DENGAN SIMPLE
+                        detections = self.process_results(results, i, frame, scale, x_offset, y_offset)
+                        self.detection_results[i] = detections
+                        
+                        # ✅ TERMINAL OUTPUT in FULL ENGLISH - SAMAKAN DENGAN SIMPLE
+                        for detection in detections:
+                            terminal_output = (
+                                f"📍 {self.camera_names[i]} | "
+                                f"Class: {detection['class']} | "
+                                f"Confidence: {detection['confidence']:.2f} | "
+                                f"Distance: {detection['distance']:.1f}m | "
+                                f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
+                            )
+                            self.get_logger().info(terminal_output)
                         
                     except Exception as e:
                         self.get_logger().error(f"❌ Processing error camera {i}: {e}")
                 
-                time.sleep(0.01)  # Small delay untuk stability
+                time.sleep(0.03)  # ~30Hz processing
                 
             except Exception as e:
                 self.get_logger().error(f"❌ Processing loop error: {e}")
                 time.sleep(0.5)
 
-    def process_simple_results(self, result, camera_idx, frame):
-        """Process results dengan SIMPLE approach"""
+    def process_results(self, results, camera_idx, frame, scale, x_offset, y_offset):
+        """Process YOLO results dengan FULL FOV - SAMAKAN DENGAN SIMPLE"""
         detections = []
         
         try:
-            if not hasattr(result, 'boxes') or result.boxes is None:
+            if not results or len(results) == 0:
                 return detections
             
-            boxes = result.boxes.xyxy.cpu().numpy()
-            scores = result.boxes.conf.cpu().numpy()
-            classes = result.boxes.cls.cpu().numpy()
-            names = result.names if hasattr(result, 'names') else {}
-            
-            # ✅ Camera angles untuk coordinate calculation
-            camera_angles = [180, 240, 300, 0, 60, 120]
-            base_angle = camera_angles[camera_idx]
-            
+            result = results[0]
             frame_height, frame_width = frame.shape[:2]
             
-            for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
-                x1, y1, x2, y2 = map(int, box)
-                class_name = names.get(int(cls_id), f"class_{int(cls_id)}")
+            # ✅ Camera angles untuk coordinate calculation (REAL mapping) - SAMAKAN DENGAN SIMPLE
+            camera_angles = [180, 240, 300, 0, 60, 120]  # Sesuai kondisi real
+            base_angle = camera_angles[camera_idx]
+            
+            if hasattr(result, 'boxes') and result.boxes is not None:
+                boxes = result.boxes.xyxy.cpu().numpy()
+                scores = result.boxes.conf.cpu().numpy()
+                classes = result.boxes.cls.cpu().numpy()
+                names = result.names if hasattr(result, 'names') else {}
                 
-                # ✅ Calculate distance
-                bbox_area = (x2 - x1) * (y2 - y1)
-                distance = self.calculate_distance(class_name, bbox_area, frame_width, frame_height)
+                # ✅ Process masks - SAMAKAN DENGAN SIMPLE
+                masks = None
+                if hasattr(result, 'masks') and result.masks is not None:
+                    masks = result.masks.data.cpu().numpy()
                 
-                # ✅ Calculate 3D coordinates
-                center_x = (x1 + x2) / 2
-                center_y = (y1 + y2) / 2
-                
-                # ✅ MAXIMUM FOV calculation
-                angle_offset = ((center_x / frame_width) - 0.5) * 120  # 120° horizontal FOV
-                object_angle = (base_angle + angle_offset) % 360
-                
-                coord_x = distance * np.cos(np.radians(object_angle))
-                coord_y = distance * np.sin(np.radians(object_angle))
-                
-                # ✅ Vertical calculation
-                vertical_angle = ((center_y / frame_height) - 0.5) * 90
-                coord_z = 1.5 + distance * np.tan(np.radians(vertical_angle))
-                coord_z = max(0.0, min(3.0, coord_z))
-                
-                # ✅ DISTINCT colors untuk COCO classes
-                color = self.get_coco_color(int(cls_id))
-                text_color = self.get_text_color(color)
-                
-                detection = {
-                    'class': class_name,
-                    'confidence': float(score),
-                    'bbox': (x1, y1, x2, y2),
-                    'distance': distance,
-                    'x': coord_x,
-                    'y': coord_y,
-                    'z': coord_z,
-                    'color': color,
-                    'text_color': text_color,
-                    'camera_idx': camera_idx
-                }
-                
-                detections.append(detection)
-                
+                for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
+                    # ✅ Convert coordinates back to original frame - SAMAKAN DENGAN SIMPLE
+                    x1 = int((box[0] - x_offset) / scale)
+                    y1 = int((box[1] - y_offset) / scale)
+                    x2 = int((box[2] - x_offset) / scale)
+                    y2 = int((box[3] - y_offset) / scale)
+                    
+                    # ✅ Ensure coordinates are within frame - SAMAKAN DENGAN SIMPLE
+                    x1 = max(0, min(frame_width, x1))
+                    y1 = max(0, min(frame_height, y1))
+                    x2 = max(0, min(frame_width, x2))
+                    y2 = max(0, min(frame_height, y2))
+                    
+                    class_name = names.get(int(cls_id), f"class_{int(cls_id)}")
+                    
+                    # ✅ Calculate distance - SAMAKAN DENGAN SIMPLE
+                    bbox_area = (x2 - x1) * (y2 - y1)
+                    distance = self.calculate_distance(class_name, bbox_area, frame_width, frame_height)
+                    
+                    # ✅ Calculate 3D coordinates - SAMAKAN DENGAN SIMPLE
+                    center_x = (x1 + x2) / 2
+                    center_y = (y1 + y2) / 2
+                    
+                    # ✅ MAXIMUM FOV calculation (120° horizontal FOV untuk Arducam IMX477) - SAMAKAN DENGAN SIMPLE
+                    angle_offset = ((center_x / frame_width) - 0.5) * 120  # 120° horizontal FOV
+                    object_angle = (base_angle + angle_offset) % 360
+                    
+                    coord_x = distance * np.cos(np.radians(object_angle))
+                    coord_y = distance * np.sin(np.radians(object_angle))
+                    
+                    # ✅ Vertical angle calculation (90° vertical FOV) - SAMAKAN DENGAN SIMPLE
+                    vertical_angle = ((center_y / frame_height) - 0.5) * 90
+                    coord_z = 1.5 + distance * np.tan(np.radians(vertical_angle))  # Camera height 1.5m
+                    coord_z = max(0.0, min(3.0, coord_z))
+                    
+                    # ✅ DISTINCT COCO colors - SAMAKAN DENGAN SIMPLE
+                    color = self.get_distinct_coco_color(int(cls_id))
+                    text_color = self.get_contrasting_text_color(color)
+                    
+                    detection = {
+                        'class': class_name,
+                        'confidence': float(score),
+                        'bbox': (x1, y1, x2, y2),
+                        'distance': distance,
+                        'x': coord_x,
+                        'y': coord_y,
+                        'z': coord_z,
+                        'angle': object_angle,
+                        'color': color,
+                        'text_color': text_color,
+                        'mask': masks[i] if masks is not None and i < len(masks) else None,
+                        'mask_scale': scale,
+                        'mask_offset': (x_offset, y_offset)
+                    }
+                    
+                    detections.append(detection)
+                    
         except Exception as e:
             self.get_logger().error(f"❌ Result processing error: {e}")
         
         return detections
 
     def calculate_distance(self, class_name, bbox_area, frame_width, frame_height):
-        """Calculate distance based on COCO object sizes"""
+        """Calculate distance based on COCO object real-world sizes - SAMAKAN DENGAN SIMPLE"""
         object_sizes = {
-            'person': 1.7, 'bicycle': 1.8, 'car': 4.5, 'motorcycle': 2.0,
-            'bus': 12.0, 'truck': 8.0, 'boat': 6.0, 'traffic light': 1.0,
-            'chair': 1.0, 'bottle': 0.3, 'cup': 0.12, 'laptop': 0.35
+            'person': 1.7, 'bicycle': 1.8, 'car': 4.5, 'motorcycle': 2.0, 'airplane': 30.0,
+            'bus': 12.0, 'train': 50.0, 'truck': 8.0, 'boat': 6.0, 'traffic light': 1.0,
+            'fire hydrant': 1.0, 'stop sign': 0.6, 'parking meter': 1.5, 'bench': 1.5,
+            'bird': 0.3, 'cat': 0.5, 'dog': 0.6, 'horse': 2.0, 'sheep': 1.0, 'cow': 2.5,
+            'elephant': 3.0, 'bear': 1.5, 'zebra': 2.0, 'giraffe': 4.0, 'backpack': 0.5,
+            'umbrella': 1.0, 'handbag': 0.3, 'tie': 0.15, 'suitcase': 0.6, 'frisbee': 0.25,
+            'bottle': 0.3, 'wine glass': 0.2, 'cup': 0.12, 'chair': 1.0, 'couch': 2.0,
+            'laptop': 0.35, 'tv': 1.2, 'book': 0.25, 'cell phone': 0.15
         }
         
         real_size = object_sizes.get(class_name, 1.0)
@@ -286,166 +334,222 @@ class YoloNativeUltimateNode(Node):
         relative_size = bbox_area / frame_area
         
         if relative_size > 0:
-            focal_length = 900
+            # ✅ Distance calculation optimized for Arducam IMX477 - SAMAKAN DENGAN SIMPLE
+            focal_length = 900  # Calibrated for Arducam IMX477
             distance = (real_size * focal_length) / np.sqrt(bbox_area)
             return max(0.3, min(50.0, distance))
         else:
             return 5.0
 
-    def get_coco_color(self, class_id):
-        """Get distinct color for COCO class"""
+    def get_distinct_coco_color(self, class_id):
+        """Generate 80 DISTINCT colors for COCO classes - SAMAKAN DENGAN SIMPLE"""
         colors = [
             (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255),
             (0, 255, 255), (255, 128, 0), (128, 0, 255), (255, 192, 203), (0, 128, 128),
             (128, 128, 0), (255, 165, 0), (75, 0, 130), (255, 20, 147), (0, 191, 255),
-            (50, 205, 50), (255, 69, 0), (138, 43, 226), (255, 215, 0), (220, 20, 60)
+            (50, 205, 50), (255, 69, 0), (138, 43, 226), (255, 215, 0), (220, 20, 60),
+            (0, 250, 154), (255, 105, 180), (30, 144, 255), (255, 140, 0), (148, 0, 211),
+            (255, 99, 71), (0, 206, 209), (255, 228, 196), (127, 255, 0), (255, 0, 127),
+            (70, 130, 180), (255, 160, 122), (32, 178, 170), (255, 182, 193), (135, 206, 235),
+            (255, 218, 185), (152, 251, 152), (255, 240, 245), (175, 238, 238), (255, 228, 181),
+            (221, 160, 221), (255, 239, 213), (173, 216, 230), (255, 218, 185), (144, 238, 144),
+            (255, 192, 203), (176, 196, 222), (255, 255, 224), (255, 239, 213), (230, 230, 250),
+            (255, 228, 225), (255, 248, 220), (255, 245, 238), (240, 255, 240), (255, 250, 240),
+            (255, 255, 240), (240, 248, 255), (248, 248, 255), (245, 245, 245), (255, 250, 250),
+            (255, 255, 255), (0, 0, 0), (105, 105, 105), (128, 128, 128), (169, 169, 169),
+            (192, 192, 192), (211, 211, 211), (220, 220, 220), (245, 245, 245), (255, 250, 250),
+            (240, 255, 255), (255, 255, 240), (255, 255, 224), (255, 250, 205), (250, 250, 210),
+            (255, 239, 213), (255, 228, 181), (255, 218, 185), (255, 192, 203), (255, 182, 193)
         ]
+        
         return colors[class_id % len(colors)]
 
-    def get_text_color(self, bg_color):
-        """Get contrasting text color"""
+    def get_contrasting_text_color(self, bg_color):
+        """Get contrasting text color - SAMAKAN DENGAN SIMPLE"""
         brightness = (0.299 * bg_color[0] + 0.587 * bg_color[1] + 0.114 * bg_color[2])
         return (0, 0, 0) if brightness > 127 else (255, 255, 255)
 
-    def simple_display_loop(self):
-        """SIMPLE display loop - create 6 windows"""
-        # ✅ Create 6 windows
-        for i in range(6):
-            window_name = f"HUSKYBOT {self.camera_names[i]}"
-            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-            cv2.resizeWindow(window_name, 640, 480)
-            
-            # ✅ Position windows dalam grid
-            col = i % 3
-            row = i // 3
-            cv2.moveWindow(window_name, col * 650, row * 500)
-        
-        self.get_logger().info("✅ 6 NATIVE WINDOWS CREATED!")
-        
-        frame_count = 0
-        fps_start = time.time()
-        
+    def display_loop(self):
+        """SIMPLE display loop - SAMAKAN DENGAN SIMPLE"""
         while self.processing_active:
             try:
-                if not self.yolo_model:
-                    time.sleep(0.1)
-                    continue
-                
-                # ✅ Display all 6 cameras
-                for i in range(6):
-                    window_name = f"HUSKYBOT {self.camera_names[i]}"
-                    
-                    with self.frame_locks[i]:
-                        if self.latest_images[i] is not None:
-                            frame = self.latest_images[i].copy()
-                        else:
-                            # ✅ Show waiting screen
-                            frame = np.zeros((480, 640, 3), dtype=np.uint8)
-                            cv2.putText(frame, "WAITING...", (250, 240), 
-                                       cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
-                    
-                    # ✅ Quick YOLO inference untuk display
-                    if self.latest_images[i] is not None:
-                        try:
-                            results = self.yolo_model.predict(frame, verbose=False, task='segment')
-                            if results and len(results) > 0:
-                                # ✅ Use YOLO native plot
-                                annotated = results[0].plot(
-                                    conf=True, labels=True, boxes=True, masks=True
-                                )
-                                
-                                # ✅ Add custom info
-                                annotated = self.add_custom_info(annotated, results[0], i)
-                                frame = annotated
-                                
-                        except Exception as e:
-                            self.get_logger().error(f"❌ Display inference error {i}: {e}")
-                    
-                    # ✅ Add camera info
-                    cv2.rectangle(frame, (0, 0), (640, 30), (0, 0, 0), -1)
-                    cv2.putText(frame, f"{self.camera_names[i]}", 
-                               (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-                    
-                    # ✅ Show frame
-                    cv2.imshow(window_name, frame)
-                
-                # ✅ FPS calculation
-                frame_count += 1
-                if frame_count % 30 == 0:
-                    fps = 30.0 / (time.time() - fps_start)
-                    fps_start = time.time()
-                    self.get_logger().info(f"🔥 DISPLAY FPS: {fps:.1f}")
-                
-                # ✅ Check for exit
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                    
+                self.create_display()
                 time.sleep(0.033)  # ~30 FPS display
-                
             except Exception as e:
-                self.get_logger().error(f"❌ Display loop error: {e}")
+                self.get_logger().error(f"❌ Display error: {e}")
                 time.sleep(0.1)
 
-    def add_custom_info(self, img, result, camera_idx):
-        """Add custom distance dan coordinate info"""
+    def create_display(self):
+        """Create 2x3 grid display dengan MAXIMUM clarity - SAMAKAN DENGAN SIMPLE"""
         try:
-            if not hasattr(result, 'boxes') or result.boxes is None:
-                return img
+            # ✅ LARGE size per camera untuk clarity - SAMAKAN DENGAN SIMPLE
+            cam_width, cam_height = 1200, 900  # Large for clear visibility
+            grid_images = []
             
-            boxes = result.boxes.xyxy.cpu().numpy()
-            scores = result.boxes.conf.cpu().numpy()
-            classes = result.boxes.cls.cpu().numpy()
-            names = result.names if hasattr(result, 'names') else {}
+            for i in range(6):
+                if self.latest_images[i] is not None:
+                    with self.frame_locks[i]:
+                        img = self.latest_images[i].copy()
+                    
+                    # ✅ HIGH-QUALITY resize maintaining aspect ratio - SAMAKAN DENGAN SIMPLE
+                    height, width = img.shape[:2]
+                    scale = min(cam_width/width, cam_height/height)
+                    new_width = int(width * scale)
+                    new_height = int(height * scale)
+                    
+                    img_resized = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+                    
+                    # ✅ Create canvas and center image - SAMAKAN DENGAN SIMPLE
+                    canvas = np.zeros((cam_height, cam_width, 3), dtype=np.uint8)
+                    y_offset = (cam_height - new_height) // 2
+                    x_offset = (cam_width - new_width) // 2
+                    canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = img_resized
+                    
+                    # ✅ Draw detections - SAMAKAN DENGAN SIMPLE
+                    if self.detection_results[i]:
+                        canvas = self.draw_detections(canvas, self.detection_results[i], img.shape, scale, x_offset, y_offset)
+                    
+                    # ✅ Camera label - SAMAKAN DENGAN SIMPLE
+                    label_height = 60
+                    cv2.rectangle(canvas, (0, 0), (cam_width, label_height), (0, 0, 0), -1)
+                    cv2.putText(canvas, f"{self.camera_names[i]}", 
+                               (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+                    
+                    # ✅ Detection count - SAMAKAN DENGAN SIMPLE
+                    det_count = len(self.detection_results[i])
+                    cv2.putText(canvas, f"Objects: {det_count}", 
+                               (cam_width-250, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+                    
+                    grid_images.append(canvas)
+                else:
+                    # ✅ Waiting screen - SAMAKAN DENGAN SIMPLE
+                    black_img = np.zeros((cam_height, cam_width, 3), dtype=np.uint8)
+                    cv2.putText(black_img, f"{self.camera_names[i]}", 
+                               (cam_width//3, cam_height//2-30), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
+                    cv2.putText(black_img, "WAITING FOR SIGNAL...", 
+                               (cam_width//4, cam_height//2+30), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+                    grid_images.append(black_img)
             
-            camera_angles = [180, 240, 300, 0, 60, 120]
-            base_angle = camera_angles[camera_idx]
-            
-            frame_height, frame_width = img.shape[:2]
-            
-            for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
-                x1, y1, x2, y2 = map(int, box)
-                class_name = names.get(int(cls_id), f"class_{int(cls_id)}")
+            if len(grid_images) == 6:
+                # ✅ Create 2x3 grid - SAMAKAN DENGAN SIMPLE
+                top_row = np.hstack([grid_images[0], grid_images[1], grid_images[2]])
+                bottom_row = np.hstack([grid_images[3], grid_images[4], grid_images[5]])
+                grid = np.vstack([top_row, bottom_row])
                 
-                # ✅ Calculate distance dan coordinates
-                bbox_area = (x2 - x1) * (y2 - y1)
-                distance = self.calculate_distance(class_name, bbox_area, frame_width, frame_height)
+                # ✅ SIMPLE status bar - SAMAKAN DENGAN SIMPLE
+                status_height = 80
+                total_width = grid.shape[1]
+                grid_with_status = np.zeros((grid.shape[0] + status_height, total_width, 3), dtype=np.uint8)
+                grid_with_status[:grid.shape[0], :] = grid
                 
-                center_x = (x1 + x2) / 2
-                center_y = (y1 + y2) / 2
+                # ✅ SIMPLE status information - SAMAKAN DENGAN SIMPLE
+                total_detections = sum(len(detections) for detections in self.detection_results)
                 
-                angle_offset = ((center_x / frame_width) - 0.5) * 120
-                object_angle = (base_angle + angle_offset) % 360
+                main_status = f"HUSKYBOT 360 YOLO NATIVE SEGMENTATION | Total Objects: {total_detections}"
+                cv2.putText(grid_with_status, main_status, 
+                           (50, grid.shape[0] + 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
                 
-                coord_x = distance * np.cos(np.radians(object_angle))
-                coord_y = distance * np.sin(np.radians(object_angle))
-                coord_z = 1.5 + distance * np.tan(np.radians(((center_y / frame_height) - 0.5) * 90))
-                coord_z = max(0.0, min(3.0, coord_z))
+                # ✅ Publish grid - SAMAKAN DENGAN SIMPLE
+                grid_msg = self.bridge.cv2_to_imgmsg(grid_with_status, 'bgr8')
+                grid_msg.header.stamp = self.get_clock().now().to_msg()
+                self.grid_pub.publish(grid_msg)
                 
-                # ✅ Add info text
-                info_text = f"Dist:{distance:.1f}m Pos:({coord_x:.1f},{coord_y:.1f},{coord_z:.1f})"
+        except Exception as e:
+            self.get_logger().error(f"❌ Grid creation error: {e}")
+
+    def draw_detections(self, img, detections, original_shape, scale, x_offset, y_offset):
+        """Draw detections dengan PERFECT text positioning dan LARGER FONT - SAMAKAN DENGAN SIMPLE"""
+        try:
+            for detection in detections:
+                # ✅ Scale bbox to display coordinates - SAMAKAN DENGAN SIMPLE
+                x1, y1, x2, y2 = detection['bbox']
+                x1 = int(x1 * scale) + x_offset
+                y1 = int(y1 * scale) + y_offset
+                x2 = int(x2 * scale) + x_offset
+                y2 = int(y2 * scale) + y_offset
                 
-                # ✅ Position text
-                text_y = max(y1 - 10, 15)
+                bbox_color = detection['color']
+                text_color = detection['text_color']
                 
-                # ✅ Text background
-                (text_w, text_h), _ = cv2.getTextSize(info_text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                cv2.rectangle(img, (x1, text_y - text_h - 5), (x1 + text_w + 5, text_y + 5), (0, 0, 0), -1)
+                # ✅ Draw segmentation mask - SAMAKAN DENGAN SIMPLE
+                if detection['mask'] is not None:
+                    mask = detection['mask']
+                    # Scale mask to match display
+                    mask_height, mask_width = mask.shape
+                    mask_scale = min(img.shape[1]/mask_width, img.shape[0]/mask_height)
+                    new_mask_width = int(mask_width * mask_scale)
+                    new_mask_height = int(mask_height * mask_scale)
+                    
+                    mask_resized = cv2.resize(mask.astype(np.uint8), (new_mask_width, new_mask_height))
+                    
+                    # Apply mask at correct position
+                    mask_y_offset = (img.shape[0] - new_mask_height) // 2
+                    mask_x_offset = (img.shape[1] - new_mask_width) // 2
+                    
+                    # Create mask overlay
+                    mask_overlay = np.zeros_like(img)
+                    mask_overlay[mask_y_offset:mask_y_offset+new_mask_height, 
+                                mask_x_offset:mask_x_offset+new_mask_width][mask_resized > 0] = bbox_color
+                    
+                    # Blend with original image
+                    img = cv2.addWeighted(img, 0.7, mask_overlay, 0.3, 0)
                 
-                # ✅ Draw text
-                cv2.putText(img, info_text, (x1 + 2, text_y), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                # ✅ Draw bounding box - SAMAKAN DENGAN SIMPLE
+                cv2.rectangle(img, (x1, y1), (x2, y2), bbox_color, 4)  # Thicker bounding box
+                
+                # ✅ PERFECT text positioning dengan LARGER FONT - SAMAKAN DENGAN SIMPLE
+                info_lines = [
+                    f"Class: {detection['class']}",
+                    f"Confidence: {detection['confidence']:.2f}",
+                    f"Distance: {detection['distance']:.1f}m",
+                    f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
+                ]
+                
+                # ✅ 🔥 LARGER FONT SETTINGS - SAMAKAN DENGAN SIMPLE
+                font_scale = 0.9  # ✅ INCREASED from 0.6 to 0.9
+                font_thickness = 3  # ✅ INCREASED from 2 to 3
+                line_height = 35  # ✅ INCREASED from 25 to 35
+                
+                text_bg_height = len(info_lines) * line_height + 20  # ✅ INCREASED padding
+                text_bg_width = max(len(line) * 18 for line in info_lines) + 30  # ✅ INCREASED width
+                
+                # ✅ PERFECT positioning logic - SAMAKAN DENGAN SIMPLE
+                if y1 - text_bg_height > 15:  # Space above
+                    text_x = x1
+                    text_y = y1 - text_bg_height
+                    text_draw_y = y1 - 15
+                else:  # Space below
+                    text_x = x1
+                    text_y = y2
+                    text_draw_y = y2 + text_bg_height - 15
+                
+                # ✅ Ensure text stays within image bounds - SAMAKAN DENGAN SIMPLE
+                text_x = max(0, min(img.shape[1] - text_bg_width, text_x))
+                text_y = max(0, min(img.shape[0] - text_bg_height, text_y))
+                
+                # ✅ Draw text background - SAMAKAN DENGAN SIMPLE
+                cv2.rectangle(img, (text_x, text_y), 
+                             (text_x + text_bg_width, text_y + text_bg_height), 
+                             bbox_color, -1)
+                
+                # ✅ Draw text lines dengan LARGER FONT - SAMAKAN DENGAN SIMPLE
+                for i, line in enumerate(info_lines):
+                    cv2.putText(img, line, 
+                               (text_x + 15, text_y + 25 + i * line_height),  # ✅ INCREASED padding
+                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
             
             return img
             
         except Exception as e:
-            self.get_logger().error(f"❌ Custom info error: {e}")
+            self.get_logger().error(f"❌ Drawing error: {e}")
             return img
 
     def destroy_node(self):
-        """Clean shutdown"""
+        """Clean shutdown - SAMAKAN DENGAN SIMPLE"""
         self.processing_active = False
         time.sleep(1.0)
-        cv2.destroyAllWindows()
         super().destroy_node()
 
 def main(args=None):

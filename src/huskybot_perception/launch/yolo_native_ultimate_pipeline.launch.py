@@ -11,21 +11,82 @@ import os
 def generate_launch_description():
     return LaunchDescription([
         
-        # ✅ 1. FIXED POWER OPTIMIZATION
+        # ✅ 1. ULTRA POWER OPTIMIZATION untuk 100+ FPS
         ExecuteProcess(
             cmd=['bash', '-c', 
-                 'echo "🔧 ULTRA POWER OPTIMIZATION..." && '
-                 'sudo nvpmodel -m 0 && '
-                 'sudo jetson_clocks --fan && '
-                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
-                 'echo "⚡ POWER OPTIMIZED FOR 100+ FPS!"'],
+                 'echo "🔧 ULTRA POWER OPTIMIZATION FOR 100+ FPS..." && '
+                 'sudo nvpmodel -m 0 && '  # MAX-N mode
+                 'sudo jetson_clocks --fan && '  # Enable fan + max clocks
+                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '  # Performance mode
+                 'sudo sh -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" && '  # CPU boost
+                 'sudo sh -c "echo 0 > /proc/sys/kernel/numa_balancing" && '  # Disable NUMA
+                 'sudo sh -c "echo 1 > /proc/sys/vm/swappiness" && '  # Minimize swap
+                 'echo "⚡ ULTRA POWER OPTIMIZED FOR 100+ FPS!"'],
             output='screen',
             name='ultra_power_optimization'
         ),
         
-        # ✅ 2. Start Velodyne LiDAR
+        # ✅ 2. Create RViz config untuk LiDAR
+        ExecuteProcess(
+            cmd=['bash', '-c', 
+                 'mkdir -p /tmp && '
+                 'echo "Creating RViz config for LiDAR..." && '
+                 'cat > /tmp/huskybot_lidar_config.rviz << EOF\n'
+                 'Panels:\n'
+                 '  - Class: rviz_common/Displays\n'
+                 '    Property Tree Widget:\n'
+                 '      Expanded:\n'
+                 '        - /LaserScan1\n'
+                 '      Splitter Ratio: 0.5\n'
+                 '    Tree Height: 549\n'
+                 'Visualization Manager:\n'
+                 '  Class: ""\n'
+                 '  Displays:\n'
+                 '    - Alpha: 1\n'
+                 '      Class: rviz_default_plugins/LaserScan\n'
+                 '      Color: 255; 255; 255\n'
+                 '      Name: LaserScan\n'
+                 '      Topic:\n'
+                 '        Depth: 5\n'
+                 '        Durability Policy: Volatile\n'
+                 '        Filter size: 10\n'
+                 '        History Policy: Keep Last\n'
+                 '        Reliability Policy: Best Effort\n'
+                 '        Value: /scan\n'
+                 '  Enabled: true\n'
+                 '  Global Options:\n'
+                 '    Background Color: 48; 48; 48\n'
+                 '    Fixed Frame: laser\n'
+                 '    Frame Rate: 30\n'
+                 '  Name: root\n'
+                 '  Tools:\n'
+                 '    - Class: rviz_default_plugins/Interact\n'
+                 '    - Class: rviz_default_plugins/MoveCamera\n'
+                 '    - Class: rviz_default_plugins/Select\n'
+                 '  Value: true\n'
+                 '  Views:\n'
+                 '    Current:\n'
+                 '      Class: rviz_default_plugins/Orbit\n'
+                 '      Distance: 30\n'
+                 '      Name: Current View\n'
+                 '      Focal Point:\n'
+                 '        X: 0\n'
+                 '        Y: 0\n'
+                 '        Z: 0\n'
+                 '      Pitch: 0.7854\n'
+                 '      Target Frame: <Fixed Frame>\n'
+                 '      Yaw: 0.7854\n'
+                 '    Saved: ~\n'
+                 'Window Geometry:\n'
+                 '  Width: 1200\n'
+                 '  Height: 800\n'
+                 'EOF'],
+            output='screen'
+        ),
+        
+        # ✅ 3. Start Velodyne LiDAR
         TimerAction(
-            period=2.0,
+            period=3.0,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -36,9 +97,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 3. Start cameras
+        # ✅ 4. Start cameras dengan HIGH PERFORMANCE
         TimerAction(
-            period=10.0,
+            period=12.0,
             actions=[
                 IncludeLaunchDescription(
                     PythonLaunchDescriptionSource([
@@ -49,9 +110,9 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 4. Start YOLO NATIVE ULTIMATE node - FIXED
+        # ✅ 5. Start YOLO NATIVE ULTIMATE node - OPTIMIZED FOR 100+ FPS
         TimerAction(
-            period=20.0,
+            period=25.0,
             actions=[
                 Node(
                     package='huskybot_perception',
@@ -59,43 +120,56 @@ def generate_launch_description():
                     name='yolo_native_ultimate_node',
                     output='screen',
                     respawn=True,
-                    respawn_delay=3.0,
+                    respawn_delay=2.0,
                     parameters=[
                         {'use_sim_time': False}
-                    ]
-                    # ✅ REMOVED problematic prefix
+                    ],
+                    # ✅ ULTRA HIGH PRIORITY untuk 100+ FPS
+                    prefix=['sudo', 'nice', '-n', '-20', 'ionice', '-c', '1', '-n', '4']
                 )
             ]
         ),
         
-        # ✅ 5. RViz2 auto-popup untuk LiDAR (delayed)
+        # ✅ 6. RViz2 auto-popup untuk LiDAR
         TimerAction(
-            period=240.0,  # 4 minutes delay
+            period=180.0,  # 3 minutes delay
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
                          'echo "🚀 Starting RViz2 for LiDAR..." && '
                          'export DISPLAY=:0 && '
-                         'rviz2 -d /tmp/huskybot_lidar_config.rviz || rviz2 &'],
+                         'rviz2 -d /tmp/huskybot_lidar_config.rviz &'],
                     output='screen'
                 )
             ]
         ),
         
-        # ✅ 6. FIXED Performance monitoring
+        # ✅ 7. ULTRA Performance monitoring
         TimerAction(
             period=30.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🎯 YOLO NATIVE Performance Status:" && '
+                         'echo "🎯 YOLO NATIVE ULTRA Performance Status:" && '
                          'echo "📡 Camera topics:" && timeout 3 ros2 topic list | grep image_raw | wc -l && '
                          'echo "🔥 GPU Status:" && (nvidia-smi --query-gpu=utilization.gpu,memory.used,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "GPU: Not available") && '
                          'echo "💻 CPU Usage:" && top -bn1 | grep "Cpu(s)" && '
-                         'echo "✅ CHECKING YOLO NATIVE WINDOWS..." && '
-                         'echo "🎯 TARGET: 100+ FPS dengan YOLO NATIVE DISPLAY"'],
+                         'echo "🧠 Memory:" && free -h | grep Mem && '
+                         'echo "🎯 TARGET: 100+ FPS with YOLO NATIVE DISPLAY" && '
+                         'echo "✅ Check: Grid 2x3 Display with Full Segmentation"'],
                     output='screen'
                 )
             ]
+        ),
+        
+        # ✅ 8. GPU Memory optimization
+        ExecuteProcess(
+            cmd=['bash', '-c', 
+                 'echo "🔧 GPU Memory optimization..." && '
+                 'export CUDA_VISIBLE_DEVICES=0 && '
+                 'export CUDA_LAUNCH_BLOCKING=0 && '
+                 'export CUDA_DEVICE_ORDER=PCI_BUS_ID && '
+                 'export PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH'],
+            output='screen'
         ),
     ])
