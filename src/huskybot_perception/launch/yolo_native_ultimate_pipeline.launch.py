@@ -15,12 +15,12 @@ def generate_launch_description():
         ExecuteProcess(
             cmd=['bash', '-c', 
                  'echo "🔧 ULTRA POWER OPTIMIZATION FOR 100+ FPS..." && '
-                 'sudo nvpmodel -m 0 && '  # MAX-N mode
-                 'sudo jetson_clocks --fan && '  # Enable fan + max clocks
-                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '  # Performance mode
-                 'sudo sh -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" && '  # CPU boost
-                 'sudo sh -c "echo 0 > /proc/sys/kernel/numa_balancing" && '  # Disable NUMA
-                 'sudo sh -c "echo 1 > /proc/sys/vm/swappiness" && '  # Minimize swap
+                 'sudo nvpmodel -m 0 && '
+                 'sudo jetson_clocks --fan && '
+                 'sudo sh -c "echo performance > /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor" && '
+                 'sudo sh -c "echo 1 > /sys/devices/system/cpu/cpufreq/boost" && '
+                 'sudo sh -c "echo 0 > /proc/sys/kernel/numa_balancing" && '
+                 'sudo sh -c "echo 1 > /proc/sys/vm/swappiness" && '
                  'echo "⚡ ULTRA POWER OPTIMIZED FOR 100+ FPS!"'],
             output='screen',
             name='ultra_power_optimization'
@@ -110,7 +110,7 @@ def generate_launch_description():
             ]
         ),
         
-        # ✅ 5. Start YOLO NATIVE ULTIMATE node - OPTIMIZED FOR 100+ FPS
+        # ✅ 5. Start YOLO NATIVE ULTIMATE node - FIXED PREFIX
         TimerAction(
             period=25.0,
             actions=[
@@ -123,9 +123,8 @@ def generate_launch_description():
                     respawn_delay=2.0,
                     parameters=[
                         {'use_sim_time': False}
-                    ],
-                    # ✅ ULTRA HIGH PRIORITY untuk 100+ FPS
-                    prefix=['sudo', 'nice', '-n', '-20', 'ionice', '-c', '1', '-n', '4']
+                    ]
+                    # ✅ REMOVED problematic prefix - SAMA SEPERTI SIMPLE
                 )
             ]
         ),
