@@ -97,10 +97,10 @@ class Ultimate100FPSNode(Node):
             
             # ✅ Try TensorRT engine first (FASTEST)
             model_paths = [
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",
                 "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",
-                "yolo11m-seg.pt"
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",
+                "yolo11x-seg.pt"
             ]
             
             self.yolo_model = None

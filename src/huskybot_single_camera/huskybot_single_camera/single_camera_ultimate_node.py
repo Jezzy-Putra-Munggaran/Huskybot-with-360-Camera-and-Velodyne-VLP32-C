@@ -47,9 +47,9 @@ class SingleCameraUltimateNode(Node):
             
             # ✅ Try models berdasarkan priority - 100% SAMA DENGAN SIMPLE
             model_paths = [
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",  # TensorRT FASTEST
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",     # PyTorch
-                "yolo11m-seg.pt",                                    # Auto-download
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",  # TensorRT FASTEST
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",     # PyTorch
+                "yolo11x-seg.pt",                                    # Auto-download
                 "yolo11n-seg.pt"                                     # Lightweight
             ]
             

@@ -97,9 +97,9 @@ class Ultimate100FPSNodeFixed(Node):
             
             # ✅ Try different model paths dengan priority pada speed
             model_paths = [
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",  # TensorRT engine FASTEST
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",     # PyTorch model
-                "yolo11m-seg.pt",                                    # Download if needed
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",  # TensorRT engine FASTEST
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",     # PyTorch model
+                "yolo11x-seg.pt",                                    # Download if needed
                 "yolo11n-seg.pt"                                     # Nano for speed
             ]
             

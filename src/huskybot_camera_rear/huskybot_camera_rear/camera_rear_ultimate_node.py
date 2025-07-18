@@ -48,9 +48,9 @@ class CameraRearUltimateNode(Node):
             
             # ✅ Model paths priority - 100% MIRIP SIMPLE
             model_paths = [
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",  # TensorRT
-                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",     # PyTorch
-                "yolo11m-seg.pt",                                    # Auto-download
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",  # TensorRT
+                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",     # PyTorch
+                "yolo11x-seg.pt",                                    # Auto-download
                 "yolo11n-seg.pt"                                     # Lightweight
             ]
             
