@@ -12,37 +12,43 @@ import threading
 import os
 
 class SingleCameraProcessor(Node):
-    def __init__(self, camera_name, camera_topic, camera_real_name, camera_idx):
-        super().__init__(f'{camera_name}_processor')
+    def __init__(self):
+        super().__init__('single_camera_processor')
         
         self.bridge = CvBridge()
         
-        # ✅ Camera configuration
-        self.camera_name = camera_name
-        self.camera_topic = camera_topic
-        self.camera_real_name = camera_real_name
-        self.camera_idx = camera_idx
+        # ✅ Get parameters from ROS2 parameter server - FIXED
+        self.declare_parameter('camera_name', 'camera_rear')
+        self.declare_parameter('camera_topic', '/camera_rear/image_raw')
+        self.declare_parameter('camera_real_name', 'CAMERA FRONT')
+        self.declare_parameter('camera_idx', 3)
         
-        # ✅ Data storage - SAMA DENGAN TEMPLATE
+        # ✅ Camera configuration - FIXED
+        self.camera_name = self.get_parameter('camera_name').get_parameter_value().string_value
+        self.camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
+        self.camera_real_name = self.get_parameter('camera_real_name').get_parameter_value().string_value
+        self.camera_idx = self.get_parameter('camera_idx').get_parameter_value().integer_value
+        
+        # ✅ Data storage
         self.latest_image = None
         self.detection_result = []
         self.frame_lock = threading.Lock()
         self.fps_counter = 0
         self.fps_timer = time.time()
         
-        # ✅ Setup YOLO - SAMA DENGAN TEMPLATE
+        # ✅ Setup YOLO
         self.setup_yolo()
         
-        # ✅ Setup connections - SAMA DENGAN TEMPLATE
+        # ✅ Setup connections
         self.setup_connections()
         
-        # ✅ Setup processing - SAMA DENGAN TEMPLATE
+        # ✅ Setup processing
         self.setup_processing()
         
         self.get_logger().info(f"🚀 {self.camera_real_name} PROCESSOR STARTED!")
 
     def setup_yolo(self):
-        """Setup YOLO - SAMA DENGAN TEMPLATE"""
+        """Setup YOLO - FIXED"""
         try:
             from ultralytics import YOLO
             
@@ -79,7 +85,7 @@ class SingleCameraProcessor(Node):
             self.yolo_model = None
 
     def setup_connections(self):
-        """Setup connections - SAMA DENGAN TEMPLATE"""
+        """Setup connections - FIXED"""
         try:
             self.camera_sub = self.create_subscription(
                 Image, self.camera_topic, self.camera_callback, 10)
@@ -94,14 +100,14 @@ class SingleCameraProcessor(Node):
             self.get_logger().error(f"❌ Connection setup failed: {e}")
 
     def setup_processing(self):
-        """Setup processing - SAMA DENGAN TEMPLATE"""
+        """Setup processing"""
         self.processing_active = True
         self.process_thread = threading.Thread(target=self.processing_loop, daemon=True)
         self.process_thread.start()
         self.get_logger().info(f"✅ {self.camera_real_name} processing thread started!")
 
     def camera_callback(self, msg):
-        """Camera callback - SAMA DENGAN TEMPLATE"""
+        """Camera callback"""
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
             
@@ -120,7 +126,7 @@ class SingleCameraProcessor(Node):
             self.get_logger().error(f"❌ Camera callback error: {e}")
 
     def processing_loop(self):
-        """Processing loop - SAMA DENGAN TEMPLATE"""
+        """Processing loop"""
         while self.processing_active:
             try:
                 if not self.yolo_model:
@@ -196,7 +202,7 @@ class SingleCameraProcessor(Node):
                 time.sleep(0.5)
 
     def process_results(self, results, camera_idx, original_frame, processing_scale):
-        """Process results - SAMA DENGAN TEMPLATE"""
+        """Process results"""
         detections = []
         
         try:
@@ -302,7 +308,7 @@ class SingleCameraProcessor(Node):
             return None
 
     def calculate_distance(self, class_name, bbox_area, frame_width, frame_height):
-        """Calculate distance - SAMA DENGAN TEMPLATE"""
+        """Calculate distance"""
         object_sizes = {
             'person': 1.7, 'bicycle': 1.8, 'car': 4.5, 'motorcycle': 2.0, 'airplane': 30.0,
             'bus': 12.0, 'train': 50.0, 'truck': 8.0, 'boat': 6.0, 'traffic light': 1.0,
@@ -411,13 +417,28 @@ class SingleCameraProcessor(Node):
             self.get_logger().error(f"❌ Processed image creation error: {e}")
             return None
 
-    def get_detection_result(self):
-        """Get current detection result"""
-        with self.frame_lock:
-            return self.detection_result.copy()
-
     def destroy_node(self):
         """Clean shutdown"""
         self.processing_active = False
         time.sleep(0.5)
         super().destroy_node()
+
+def main(args=None):
+    """Main function - FIXED"""
+    rclpy.init(args=args)
+    
+    node = None
+    try:
+        node = SingleCameraProcessor()
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        print("🛑 Shutting down single camera processor...")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+    finally:
+        if node:
+            node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

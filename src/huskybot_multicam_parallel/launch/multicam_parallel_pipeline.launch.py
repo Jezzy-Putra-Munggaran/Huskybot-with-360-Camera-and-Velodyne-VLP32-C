@@ -96,7 +96,7 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 4. Start Individual Camera Processors (PARALLEL)
+    # ✅ 4. Start Individual Camera Processors (PARALLEL) - FIXED
     base_delay = 15.0
     for i, config in enumerate(camera_configs):
         launch_actions.append(
