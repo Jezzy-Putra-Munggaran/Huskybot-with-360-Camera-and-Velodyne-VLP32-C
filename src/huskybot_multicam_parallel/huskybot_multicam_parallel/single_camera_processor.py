@@ -53,9 +53,9 @@ class SingleCameraProcessor(Node):
             from ultralytics import YOLO
             
             model_paths = [
-                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.engine",
-                "/home/kmp-orin/jezzy/huskybot/yolo11x-seg.pt",
-                "yolo11x-seg.pt",
+                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.engine",
+                "/home/kmp-orin/jezzy/huskybot/yolo11m-seg.pt",
+                "yolo11m-seg.pt",
                 "yolo11n-seg.pt"
             ]
             
@@ -436,7 +436,7 @@ class SingleCameraProcessor(Node):
         return (0, 0, 0) if brightness > 127 else (255, 255, 255)
 
     def create_processed_image(self, original_frame, detections):
-        """Create processed image with annotations - FINAL MEGA LARGE FONTS"""
+        """Create processed image with annotations - CLEAN SINGLE SHADOW"""
         try:
             canvas = original_frame.copy()
             
@@ -484,7 +484,7 @@ class SingleCameraProcessor(Node):
                 cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 8)  # Increased from 6
                 cv2.rectangle(canvas, (x1-3, y1-3), (x2+3, y2+3), (255, 255, 255), 3)  # White outer border
                 
-                # ✅ FINAL MEGA LARGE FONTS: Draw text WITHOUT "Camera" but MAXIMUM SIZE
+                # ✅ CLEAN SINGLE SHADOW: Draw text WITHOUT multiple layers
                 info_lines = [
                     f"Class: {detection['class']}",
                     f"Confidence: {detection['confidence']:.2f}",
@@ -492,10 +492,10 @@ class SingleCameraProcessor(Node):
                     f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
                 ]
                 
-                # ✅ FINAL MEGA TEXT SIZE - ABSOLUTELY MAXIMUM
-                font_scale = 2.2  # MEGA LARGE from 1.8
-                font_thickness = 8  # MEGA THICK from 6
-                line_height = 80  # MEGA TALL from 65
+                # ✅ CLEAN TEXT SIZE - LARGE but CLEAN
+                font_scale = 2.0  # LARGE but not excessive
+                font_thickness = 6  # THICK but clean
+                line_height = 75  # TALL but clean
                 
                 # Calculate text background size
                 max_line_width = 0
@@ -503,56 +503,48 @@ class SingleCameraProcessor(Node):
                     (line_width, line_height_single), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
                     max_line_width = max(max_line_width, line_width)
                 
-                text_bg_height = len(info_lines) * line_height + 50
-                text_bg_width = max_line_width + 80
+                text_bg_height = len(info_lines) * line_height + 40
+                text_bg_width = max_line_width + 60
                 
                 # Smart text positioning
-                if y1 - text_bg_height > 25:
+                if y1 - text_bg_height > 20:
                     text_x = x1
                     text_y = y1 - text_bg_height
                 else:
                     text_x = x1
-                    text_y = y2 + 25
+                    text_y = y2 + 20
                 
                 # Keep text within frame
-                text_x = max(15, min(canvas.shape[1] - text_bg_width - 15, text_x))
-                text_y = max(15, min(canvas.shape[0] - text_bg_height - 15, text_y))
+                text_x = max(10, min(canvas.shape[1] - text_bg_width - 10, text_x))
+                text_y = max(10, min(canvas.shape[0] - text_bg_height - 10, text_y))
                 
-                # Draw text background - MEGA ULTRA THICK with ADVANCED gradient effect
-                # Ultra shadow background
-                cv2.rectangle(canvas, (text_x-12, text_y-12), 
-                             (text_x + text_bg_width + 12, text_y + text_bg_height + 12), 
-                             (0, 0, 0), -1)  # Black ultra shadow
+                # ✅ CLEAN BACKGROUND - SIMPLE but EFFECTIVE
+                # Single clean shadow background
+                cv2.rectangle(canvas, (text_x-8, text_y-8), 
+                             (text_x + text_bg_width + 8, text_y + text_bg_height + 8), 
+                             (0, 0, 0), -1)  # Clean black shadow
                 
-                # Main background with advanced gradient
-                cv2.rectangle(canvas, (text_x-6, text_y-6), 
-                             (text_x + text_bg_width + 6, text_y + text_bg_height + 6), 
-                             bbox_color, -1)  # Colored background
-                
-                # Advanced border with multiple layers
+                # Main background
                 cv2.rectangle(canvas, (text_x-3, text_y-3), 
                              (text_x + text_bg_width + 3, text_y + text_bg_height + 3), 
-                             (255, 255, 255), 5)  # White border
+                             bbox_color, -1)  # Colored background
+                
+                # Clean border
                 cv2.rectangle(canvas, (text_x, text_y), 
                              (text_x + text_bg_width, text_y + text_bg_height), 
-                             (0, 0, 0), 2)  # Black inner border
+                             (255, 255, 255), 3)  # Clean white border
                 
-                # Draw text lines - MEGA LARGE with ADVANCED SHADOW
+                # ✅ CLEAN TEXT - SINGLE CLEAN SHADOW
                 for i, line in enumerate(info_lines):
-                    text_pos_x = text_x + 40
-                    text_pos_y = text_y + 60 + i * line_height
+                    text_pos_x = text_x + 30
+                    text_pos_y = text_y + 50 + i * line_height
                     
-                    # Draw ultra shadow text - multiple layers
-                    cv2.putText(canvas, line, 
-                               (text_pos_x + 5, text_pos_y + 5),
-                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 4)
-                    
-                    # Draw medium shadow text
+                    # ✅ FIXED: Single clean shadow - NO MORE "mata rabun" effect
                     cv2.putText(canvas, line, 
                                (text_pos_x + 2, text_pos_y + 2),
-                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (50, 50, 50), font_thickness + 2)
+                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 2)  # Single clean shadow
                     
-                    # Draw main text - MEGA SIZE
+                    # Draw main text - CLEAN and SHARP
                     cv2.putText(canvas, line, 
                                (text_pos_x, text_pos_y),
                                cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
