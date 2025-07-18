@@ -16,43 +16,43 @@ class MultiCamParallelNode(Node):
         
         self.bridge = CvBridge()
         
-        # ✅ Camera configuration - REAL MAPPING dengan FIXED labels
+        # ✅ Camera configuration - REAL MAPPING
         self.camera_configs = [
             {
                 'name': 'camera_front',
                 'topic': '/camera_front_processed',
-                'real_name': 'REAR CAMERA',  # FIXED: Real life mapping
-                'position': (0, 0)  # Top-left in 2x3 grid
+                'real_name': 'REAR CAMERA',
+                'position': (0, 0)
             },
             {
                 'name': 'camera_front_left', 
                 'topic': '/camera_front_left_processed',
-                'real_name': 'LEFT REAR CAMERA',  # FIXED: Real life mapping
-                'position': (0, 1)  # Top-middle in 2x3 grid
+                'real_name': 'LEFT REAR CAMERA',
+                'position': (0, 1)
             },
             {
                 'name': 'camera_left',
                 'topic': '/camera_left_processed', 
-                'real_name': 'LEFT FRONT CAMERA',  # FIXED: Real life mapping
-                'position': (0, 2)  # Top-right in 2x3 grid
+                'real_name': 'LEFT FRONT CAMERA',
+                'position': (0, 2)
             },
             {
                 'name': 'camera_rear',
                 'topic': '/camera_rear_processed',
-                'real_name': 'FRONT CAMERA',  # FIXED: Real life mapping
-                'position': (1, 0)  # Bottom-left in 2x3 grid
+                'real_name': 'FRONT CAMERA',
+                'position': (1, 0)
             },
             {
                 'name': 'camera_rear_right',
                 'topic': '/camera_rear_right_processed',
-                'real_name': 'RIGHT FRONT CAMERA',  # FIXED: Real life mapping
-                'position': (1, 1)  # Bottom-middle in 2x3 grid
+                'real_name': 'RIGHT FRONT CAMERA',
+                'position': (1, 1)
             },
             {
                 'name': 'camera_right',
                 'topic': '/camera_right_processed',
-                'real_name': 'RIGHT REAR CAMERA',  # FIXED: Real life mapping
-                'position': (1, 2)  # Bottom-right in 2x3 grid
+                'real_name': 'RIGHT REAR CAMERA',
+                'position': (1, 2)
             }
         ]
         
@@ -60,6 +60,18 @@ class MultiCamParallelNode(Node):
         self.latest_images = {}
         self.image_locks = {}
         self.subscribers = {}
+        
+        # ✅ FIXED: Constant canvas size to prevent resizing
+        self.CELL_WIDTH = 800  # FIXED SIZE
+        self.CELL_HEIGHT = 600  # FIXED SIZE
+        self.HEADER_HEIGHT = 80  # FIXED SIZE
+        self.TITLE_HEIGHT = 100  # FIXED SIZE
+        self.GRID_ROWS = 2
+        self.GRID_COLS = 3
+        
+        # Calculate total canvas size once
+        self.CANVAS_WIDTH = self.GRID_COLS * self.CELL_WIDTH
+        self.CANVAS_HEIGHT = self.GRID_ROWS * (self.CELL_HEIGHT + self.HEADER_HEIGHT) + self.TITLE_HEIGHT
         
         # ✅ Setup subscribers
         self.setup_subscribers()
@@ -119,17 +131,21 @@ class MultiCamParallelNode(Node):
     def create_grid_display(self):
         """Create 2x3 grid display - FIXED ALL ISSUES"""
         try:
-            # ✅ Grid configuration - LARGER SIZE for better visibility
-            grid_rows = 2
-            grid_cols = 3
-            cell_width = 720  # INCREASED from 640
-            cell_height = 540  # INCREASED from 480
-            header_height = 60  # Height for camera labels
+            # ✅ FIXED: Create canvas with FIXED SIZE
+            canvas = np.zeros((self.CANVAS_HEIGHT, self.CANVAS_WIDTH, 3), dtype=np.uint8)
             
-            # ✅ Create grid canvas with headers
-            canvas_width = grid_cols * cell_width
-            canvas_height = grid_rows * (cell_height + header_height)
-            canvas = np.zeros((canvas_height, canvas_width, 3), dtype=np.uint8)
+            # ✅ FIXED: Add title - CENTERED
+            title_canvas = canvas[:self.TITLE_HEIGHT, :, :]
+            title_text = "HUSKYBOT MULTICAM SEGMENTATION"
+            
+            # Calculate center position for title
+            (text_width, text_height), _ = cv2.getTextSize(title_text, cv2.FONT_HERSHEY_SIMPLEX, 2.0, 4)
+            title_x = (self.CANVAS_WIDTH - text_width) // 2  # PERFECTLY CENTERED
+            title_y = (self.TITLE_HEIGHT + text_height) // 2
+            
+            cv2.putText(title_canvas, title_text, 
+                       (title_x, title_y), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 255), 4)
             
             # ✅ Fill grid with camera images and headers
             for config in self.camera_configs:
@@ -144,58 +160,58 @@ class MultiCamParallelNode(Node):
                     else:
                         img = None
                 
-                # Calculate cell position with header
-                x_start = col * cell_width
-                y_start = row * (cell_height + header_height)
-                x_end = x_start + cell_width
-                y_end = y_start + cell_height + header_height
+                # ✅ FIXED: Calculate positions with FIXED sizes
+                x_start = col * self.CELL_WIDTH
+                y_start = self.TITLE_HEIGHT + row * (self.CELL_HEIGHT + self.HEADER_HEIGHT)
+                x_end = x_start + self.CELL_WIDTH
+                y_end = y_start + self.HEADER_HEIGHT + self.CELL_HEIGHT
                 
                 # ✅ FIXED: Draw camera label header
                 header_y_start = y_start
-                header_y_end = y_start + header_height
+                header_y_end = y_start + self.HEADER_HEIGHT
                 
-                # Header background
-                cv2.rectangle(canvas, (x_start, header_y_start), (x_end, header_y_end), (40, 40, 40), -1)
+                # Header background - DARK GRAY
+                cv2.rectangle(canvas, (x_start, header_y_start), (x_end, header_y_end), (50, 50, 50), -1)
                 
-                # Header text - BRIGHT and LARGE
-                text_x = x_start + 20
-                text_y = header_y_start + 40
+                # ✅ FIXED: Header text - CENTERED and BRIGHT
+                (header_text_width, header_text_height), _ = cv2.getTextSize(real_name, cv2.FONT_HERSHEY_SIMPLEX, 1.5, 3)
+                header_text_x = x_start + (self.CELL_WIDTH - header_text_width) // 2  # CENTERED
+                header_text_y = header_y_start + (self.HEADER_HEIGHT + header_text_height) // 2
+                
                 cv2.putText(canvas, real_name, 
-                           (text_x, text_y), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+                           (header_text_x, header_text_y), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
                 
                 # Image area
-                img_y_start = y_start + header_height
+                img_y_start = y_start + self.HEADER_HEIGHT
                 img_y_end = y_end
                 
                 if img is not None:
-                    # Resize image to fit cell
-                    img_resized = cv2.resize(img, (cell_width, cell_height))
+                    # ✅ FIXED: Resize image to EXACT cell size
+                    img_resized = cv2.resize(img, (self.CELL_WIDTH, self.CELL_HEIGHT))
                     canvas[img_y_start:img_y_end, x_start:x_end] = img_resized
                 else:
-                    # Create waiting image
-                    waiting_img = np.zeros((cell_height, cell_width, 3), dtype=np.uint8)
-                    cv2.putText(waiting_img, "WAITING FOR SIGNAL...", 
-                               (cell_width//6, cell_height//2), 
+                    # Create waiting image with FIXED size
+                    waiting_img = np.zeros((self.CELL_HEIGHT, self.CELL_WIDTH, 3), dtype=np.uint8)
+                    waiting_text = "WAITING FOR SIGNAL..."
+                    
+                    # Center waiting text
+                    (wait_text_width, wait_text_height), _ = cv2.getTextSize(waiting_text, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)
+                    wait_x = (self.CELL_WIDTH - wait_text_width) // 2
+                    wait_y = (self.CELL_HEIGHT + wait_text_height) // 2
+                    
+                    cv2.putText(waiting_img, waiting_text, 
+                               (wait_x, wait_y), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
                     canvas[img_y_start:img_y_end, x_start:x_end] = waiting_img
                 
-                # Draw grid lines
-                cv2.rectangle(canvas, (x_start, y_start), (x_end-1, y_end-1), (100, 100, 100), 3)
+                # ✅ Draw grid lines - THICKER
+                cv2.rectangle(canvas, (x_start, y_start), (x_end-1, y_end-1), (150, 150, 150), 4)
             
-            # ✅ FIXED: Add title - REMOVED "100+ FPS"
-            title_height = 80
-            title_canvas = np.zeros((title_height, canvas_width, 3), dtype=np.uint8)
-            cv2.putText(title_canvas, "HUSKYBOT MULTICAM SEGMENTATION", 
-                       (canvas_width//6, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 255, 255), 4)
-            
-            # ✅ Combine title and grid
-            final_canvas = np.vstack([title_canvas, canvas])
-            
-            # ✅ Display full screen
+            # ✅ FIXED: Display with FIXED window size
             cv2.namedWindow('HUSKYBOT MULTICAM PARALLEL', cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('HUSKYBOT MULTICAM PARALLEL', 1920, 1080)
-            cv2.imshow('HUSKYBOT MULTICAM PARALLEL', final_canvas)
+            cv2.resizeWindow('HUSKYBOT MULTICAM PARALLEL', self.CANVAS_WIDTH, self.CANVAS_HEIGHT)
+            cv2.imshow('HUSKYBOT MULTICAM PARALLEL', canvas)
             cv2.waitKey(1)
             
         except Exception as e:
