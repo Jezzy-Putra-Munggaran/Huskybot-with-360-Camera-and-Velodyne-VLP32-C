@@ -8,42 +8,42 @@ import os
 
 def generate_launch_description():
     
-    # ✅ Camera configuration - REAL MAPPING
+    # ✅ Camera configuration - FIXED REAL MAPPING
     camera_configs = [
         {
             'name': 'camera_front',
             'topic': '/camera_front/image_raw',
-            'real_name': 'CAMERA BACK',
+            'real_name': 'REAR CAMERA',  # FIXED: Real life mapping
             'idx': 0
         },
         {
             'name': 'camera_front_left',
             'topic': '/camera_front_left/image_raw', 
-            'real_name': 'CAMERA BACK LEFT',
+            'real_name': 'LEFT REAR CAMERA',  # FIXED: Real life mapping
             'idx': 1
         },
         {
             'name': 'camera_left',
             'topic': '/camera_left/image_raw',
-            'real_name': 'CAMERA FRONT LEFT', 
+            'real_name': 'LEFT FRONT CAMERA',  # FIXED: Real life mapping
             'idx': 2
         },
         {
             'name': 'camera_rear',
             'topic': '/camera_rear/image_raw',
-            'real_name': 'CAMERA FRONT',
+            'real_name': 'FRONT CAMERA',  # FIXED: Real life mapping
             'idx': 3
         },
         {
             'name': 'camera_rear_right',
             'topic': '/camera_rear_right/image_raw',
-            'real_name': 'CAMERA FRONT RIGHT',
+            'real_name': 'RIGHT FRONT CAMERA',  # FIXED: Real life mapping
             'idx': 4
         },
         {
             'name': 'camera_right',
             'topic': '/camera_right/image_raw',
-            'real_name': 'CAMERA BACK RIGHT',
+            'real_name': 'RIGHT REAR CAMERA',  # FIXED: Real life mapping
             'idx': 5
         }
     ]

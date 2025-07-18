@@ -16,42 +16,42 @@ class MultiCamParallelNode(Node):
         
         self.bridge = CvBridge()
         
-        # ✅ Camera configuration - REAL MAPPING
+        # ✅ Camera configuration - REAL MAPPING dengan FIXED labels
         self.camera_configs = [
             {
                 'name': 'camera_front',
                 'topic': '/camera_front_processed',
-                'real_name': 'CAMERA BACK',
+                'real_name': 'REAR CAMERA',  # FIXED: Real life mapping
                 'position': (0, 0)  # Top-left in 2x3 grid
             },
             {
                 'name': 'camera_front_left', 
                 'topic': '/camera_front_left_processed',
-                'real_name': 'CAMERA BACK LEFT',
+                'real_name': 'LEFT REAR CAMERA',  # FIXED: Real life mapping
                 'position': (0, 1)  # Top-middle in 2x3 grid
             },
             {
                 'name': 'camera_left',
                 'topic': '/camera_left_processed', 
-                'real_name': 'CAMERA FRONT LEFT',
+                'real_name': 'LEFT FRONT CAMERA',  # FIXED: Real life mapping
                 'position': (0, 2)  # Top-right in 2x3 grid
             },
             {
                 'name': 'camera_rear',
                 'topic': '/camera_rear_processed',
-                'real_name': 'CAMERA FRONT',
+                'real_name': 'FRONT CAMERA',  # FIXED: Real life mapping
                 'position': (1, 0)  # Bottom-left in 2x3 grid
             },
             {
                 'name': 'camera_rear_right',
                 'topic': '/camera_rear_right_processed',
-                'real_name': 'CAMERA FRONT RIGHT',
+                'real_name': 'RIGHT FRONT CAMERA',  # FIXED: Real life mapping
                 'position': (1, 1)  # Bottom-middle in 2x3 grid
             },
             {
                 'name': 'camera_right',
                 'topic': '/camera_right_processed',
-                'real_name': 'CAMERA BACK RIGHT',
+                'real_name': 'RIGHT REAR CAMERA',  # FIXED: Real life mapping
                 'position': (1, 2)  # Bottom-right in 2x3 grid
             }
         ]
@@ -117,20 +117,21 @@ class MultiCamParallelNode(Node):
                 time.sleep(0.1)
 
     def create_grid_display(self):
-        """Create 2x3 grid display"""
+        """Create 2x3 grid display - FIXED ALL ISSUES"""
         try:
-            # ✅ Grid configuration
+            # ✅ Grid configuration - LARGER SIZE for better visibility
             grid_rows = 2
             grid_cols = 3
-            cell_width = 640
-            cell_height = 480
+            cell_width = 720  # INCREASED from 640
+            cell_height = 540  # INCREASED from 480
+            header_height = 60  # Height for camera labels
             
-            # ✅ Create grid canvas
+            # ✅ Create grid canvas with headers
             canvas_width = grid_cols * cell_width
-            canvas_height = grid_rows * cell_height
+            canvas_height = grid_rows * (cell_height + header_height)
             canvas = np.zeros((canvas_height, canvas_width, 3), dtype=np.uint8)
             
-            # ✅ Fill grid with camera images
+            # ✅ Fill grid with camera images and headers
             for config in self.camera_configs:
                 name = config['name']
                 real_name = config['real_name']
@@ -143,35 +144,50 @@ class MultiCamParallelNode(Node):
                     else:
                         img = None
                 
-                # Calculate cell position
+                # Calculate cell position with header
                 x_start = col * cell_width
-                y_start = row * cell_height
+                y_start = row * (cell_height + header_height)
                 x_end = x_start + cell_width
-                y_end = y_start + cell_height
+                y_end = y_start + cell_height + header_height
+                
+                # ✅ FIXED: Draw camera label header
+                header_y_start = y_start
+                header_y_end = y_start + header_height
+                
+                # Header background
+                cv2.rectangle(canvas, (x_start, header_y_start), (x_end, header_y_end), (40, 40, 40), -1)
+                
+                # Header text - BRIGHT and LARGE
+                text_x = x_start + 20
+                text_y = header_y_start + 40
+                cv2.putText(canvas, real_name, 
+                           (text_x, text_y), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+                
+                # Image area
+                img_y_start = y_start + header_height
+                img_y_end = y_end
                 
                 if img is not None:
                     # Resize image to fit cell
                     img_resized = cv2.resize(img, (cell_width, cell_height))
-                    canvas[y_start:y_end, x_start:x_end] = img_resized
+                    canvas[img_y_start:img_y_end, x_start:x_end] = img_resized
                 else:
                     # Create waiting image
                     waiting_img = np.zeros((cell_height, cell_width, 3), dtype=np.uint8)
-                    cv2.putText(waiting_img, real_name, 
-                               (cell_width//4, cell_height//2-20), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
-                    cv2.putText(waiting_img, "WAITING...", 
-                               (cell_width//4, cell_height//2+20), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-                    canvas[y_start:y_end, x_start:x_end] = waiting_img
+                    cv2.putText(waiting_img, "WAITING FOR SIGNAL...", 
+                               (cell_width//6, cell_height//2), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+                    canvas[img_y_start:img_y_end, x_start:x_end] = waiting_img
                 
                 # Draw grid lines
-                cv2.rectangle(canvas, (x_start, y_start), (x_end-1, y_end-1), (100, 100, 100), 2)
+                cv2.rectangle(canvas, (x_start, y_start), (x_end-1, y_end-1), (100, 100, 100), 3)
             
-            # ✅ Add title
-            title_height = 60
+            # ✅ FIXED: Add title - REMOVED "100+ FPS"
+            title_height = 80
             title_canvas = np.zeros((title_height, canvas_width, 3), dtype=np.uint8)
-            cv2.putText(title_canvas, "HUSKYBOT MULTICAM PARALLEL SEGMENTATION - 100+ FPS", 
-                       (50, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+            cv2.putText(title_canvas, "HUSKYBOT MULTICAM SEGMENTATION", 
+                       (canvas_width//6, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 255, 255), 4)
             
             # ✅ Combine title and grid
             final_canvas = np.vstack([title_canvas, canvas])

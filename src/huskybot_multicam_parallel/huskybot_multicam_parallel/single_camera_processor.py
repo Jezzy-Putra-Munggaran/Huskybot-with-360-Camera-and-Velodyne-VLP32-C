@@ -17,13 +17,13 @@ class SingleCameraProcessor(Node):
         
         self.bridge = CvBridge()
         
-        # ✅ Get parameters from ROS2 parameter server - FIXED
+        # ✅ Get parameters from ROS2 parameter server
         self.declare_parameter('camera_name', 'camera_rear')
         self.declare_parameter('camera_topic', '/camera_rear/image_raw')
-        self.declare_parameter('camera_real_name', 'CAMERA FRONT')
+        self.declare_parameter('camera_real_name', 'FRONT CAMERA')
         self.declare_parameter('camera_idx', 3)
         
-        # ✅ Camera configuration - FIXED
+        # ✅ Camera configuration
         self.camera_name = self.get_parameter('camera_name').get_parameter_value().string_value
         self.camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
         self.camera_real_name = self.get_parameter('camera_real_name').get_parameter_value().string_value
@@ -48,7 +48,7 @@ class SingleCameraProcessor(Node):
         self.get_logger().info(f"🚀 {self.camera_real_name} PROCESSOR STARTED!")
 
     def setup_yolo(self):
-        """Setup YOLO - FIXED"""
+        """Setup YOLO"""
         try:
             from ultralytics import YOLO
             
@@ -85,7 +85,7 @@ class SingleCameraProcessor(Node):
             self.yolo_model = None
 
     def setup_connections(self):
-        """Setup connections - FIXED"""
+        """Setup connections"""
         try:
             self.camera_sub = self.create_subscription(
                 Image, self.camera_topic, self.camera_callback, 10)
@@ -171,10 +171,10 @@ class SingleCameraProcessor(Node):
                     with self.frame_lock:
                         self.detection_result = detections
                     
-                    # Terminal output
+                    # ✅ FIXED: Terminal output dengan format yang diminta
                     for detection in detections:
                         terminal_output = (
-                            f"📍 {self.camera_real_name} | "
+                            f"Camera: {self.camera_real_name} | "
                             f"Class: {detection['class']} | "
                             f"Confidence: {detection['confidence']:.2f} | "
                             f"Distance: {detection['distance']:.1f}m | "
@@ -202,7 +202,7 @@ class SingleCameraProcessor(Node):
                 time.sleep(0.5)
 
     def process_results(self, results, camera_idx, original_frame, processing_scale):
-        """Process results"""
+        """Process results - FIXED MASK PROCESSING"""
         detections = []
         
         try:
@@ -222,13 +222,13 @@ class SingleCameraProcessor(Node):
                 classes = result.boxes.cls.cpu().numpy()
                 names = result.names if hasattr(result, 'names') else {}
                 
-                # Process masks
+                # ✅ FIXED: Process masks dengan proper scaling
                 masks = None
                 if hasattr(result, 'masks') and result.masks is not None:
                     masks = result.masks.data.cpu().numpy()
                 
                 for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
-                    # Scale coordinates back to original frame
+                    # Scale coordinates back to original frame - FIXED
                     x1 = int(box[0] / processing_scale)
                     y1 = int(box[1] / processing_scale)
                     x2 = int(box[2] / processing_scale)
@@ -266,12 +266,18 @@ class SingleCameraProcessor(Node):
                     color = self.get_distinct_coco_color(int(cls_id))
                     text_color = self.get_contrasting_text_color(color)
                     
-                    # Process mask
+                    # ✅ FIXED: Process mask with proper coordinates
                     processed_mask = None
                     if masks is not None and i < len(masks):
-                        processed_mask = self.process_mask_for_original_frame(
-                            masks[i], processing_scale, original_width, original_height
+                        # Resize mask to match original frame dimensions
+                        mask = masks[i]
+                        mask_resized = cv2.resize(
+                            mask.astype(np.uint8), 
+                            (original_width, original_height), 
+                            interpolation=cv2.INTER_NEAREST
                         )
+                        # Create binary mask
+                        processed_mask = (mask_resized > 0.5).astype(np.uint8)
                     
                     detection = {
                         'class': class_name,
@@ -293,19 +299,6 @@ class SingleCameraProcessor(Node):
             self.get_logger().error(f"❌ Result processing error: {e}")
         
         return detections
-
-    def process_mask_for_original_frame(self, mask, processing_scale, original_width, original_height):
-        """Process mask for original frame"""
-        try:
-            mask_resized = cv2.resize(
-                mask.astype(np.uint8), 
-                (original_width, original_height), 
-                interpolation=cv2.INTER_NEAREST
-            )
-            return mask_resized
-        except Exception as e:
-            self.get_logger().error(f"❌ Mask processing error: {e}")
-            return None
 
     def calculate_distance(self, class_name, bbox_area, frame_width, frame_height):
         """Calculate distance"""
@@ -350,7 +343,7 @@ class SingleCameraProcessor(Node):
         return (0, 0, 0) if brightness > 127 else (255, 255, 255)
 
     def create_processed_image(self, original_frame, detections):
-        """Create processed image with annotations"""
+        """Create processed image with annotations - FIXED ALL ISSUES"""
         try:
             canvas = original_frame.copy()
             
@@ -360,37 +353,42 @@ class SingleCameraProcessor(Node):
                 bbox_color = detection['color']
                 text_color = detection['text_color']
                 
-                # Draw mask
+                # ✅ FIXED: Draw mask PROPERLY
                 if detection['mask'] is not None:
                     try:
                         mask = detection['mask']
-                        mask_overlay = np.zeros_like(canvas)
-                        mask_overlay[mask > 0] = bbox_color
-                        canvas = cv2.addWeighted(canvas, 0.7, mask_overlay, 0.3, 0)
+                        # Create colored mask overlay
+                        mask_colored = np.zeros_like(canvas)
+                        mask_colored[mask == 1] = bbox_color
+                        
+                        # Apply mask dengan alpha blending yang proper
+                        alpha = 0.4
+                        canvas = cv2.addWeighted(canvas, 1-alpha, mask_colored, alpha, 0)
+                        
                     except Exception as e:
                         self.get_logger().error(f"❌ Mask drawing error: {e}")
                 
-                # Draw bounding box
-                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 3)
+                # Draw bounding box - THICKER
+                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 4)
                 
-                # Draw text
+                # ✅ FIXED: Draw text WITHOUT "Camera" (sesuai permintaan)
                 info_lines = [
-                    f"Camera: {self.camera_real_name}",
                     f"Class: {detection['class']}",
                     f"Confidence: {detection['confidence']:.2f}",
                     f"Distance: {detection['distance']:.1f}m",
                     f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
                 ]
                 
-                font_scale = 0.5
-                font_thickness = 2
-                line_height = 20
+                # ✅ FIXED: LARGER text size
+                font_scale = 0.8  # INCREASED from 0.5
+                font_thickness = 3  # INCREASED from 2
+                line_height = 35  # INCREASED from 20
                 
-                text_bg_height = len(info_lines) * line_height + 10
-                text_bg_width = max(len(line) * 10 for line in info_lines) + 20
+                text_bg_height = len(info_lines) * line_height + 20
+                text_bg_width = max(len(line) * 15 for line in info_lines) + 30
                 
                 # Text positioning
-                if y1 - text_bg_height > 5:
+                if y1 - text_bg_height > 10:
                     text_x = x1
                     text_y = y1 - text_bg_height
                 else:
@@ -400,15 +398,15 @@ class SingleCameraProcessor(Node):
                 text_x = max(0, min(canvas.shape[1] - text_bg_width, text_x))
                 text_y = max(0, min(canvas.shape[0] - text_bg_height, text_y))
                 
-                # Draw text background
+                # Draw text background - THICKER
                 cv2.rectangle(canvas, (text_x, text_y), 
                              (text_x + text_bg_width, text_y + text_bg_height), 
                              bbox_color, -1)
                 
-                # Draw text lines
+                # Draw text lines - LARGER
                 for i, line in enumerate(info_lines):
                     cv2.putText(canvas, line, 
-                               (text_x + 10, text_y + 15 + i * line_height),
+                               (text_x + 15, text_y + 25 + i * line_height),
                                cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
             
             return canvas
@@ -424,7 +422,7 @@ class SingleCameraProcessor(Node):
         super().destroy_node()
 
 def main(args=None):
-    """Main function - FIXED"""
+    """Main function"""
     rclpy.init(args=args)
     
     node = None
