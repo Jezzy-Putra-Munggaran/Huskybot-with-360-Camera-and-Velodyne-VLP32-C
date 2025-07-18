@@ -202,7 +202,7 @@ class SingleCameraProcessor(Node):
                 time.sleep(0.5)
 
     def process_results(self, results, camera_idx, original_frame, processing_scale):
-        """Process results - COMPLETELY FIXED MASK PROCESSING"""
+        """Process results - ULTRA ADVANCED MASK PROCESSING"""
         detections = []
         
         try:
@@ -222,7 +222,7 @@ class SingleCameraProcessor(Node):
                 classes = result.boxes.cls.cpu().numpy()
                 names = result.names if hasattr(result, 'names') else {}
                 
-                # ✅ COMPLETELY FIXED: Process masks dengan ultra precise scaling
+                # ✅ ULTRA ADVANCED: Process masks dengan multiple methods
                 masks = None
                 original_masks = None
                 if hasattr(result, 'masks') and result.masks is not None:
@@ -270,13 +270,12 @@ class SingleCameraProcessor(Node):
                     color = self.get_distinct_coco_color(int(cls_id))
                     text_color = self.get_contrasting_text_color(color)
                     
-                    # ✅ COMPLETELY FIXED: Process mask with ULTRA PRECISE coordinates
+                    # ✅ ULTRA ADVANCED: Process mask dengan MULTIPLE PRECISION METHODS
                     processed_mask = None
                     if masks is not None and i < len(masks):
                         try:
-                            # Method 1: Use polygon coordinates if available
+                            # Method 1: Use polygon coordinates if available (HIGHEST PRECISION)
                             if original_masks is not None and i < len(original_masks):
-                                # Create mask from polygon coordinates
                                 polygon_coords = original_masks[i]
                                 if len(polygon_coords) > 0:
                                     # Scale polygon to original frame
@@ -287,17 +286,47 @@ class SingleCameraProcessor(Node):
                                     pts = scaled_coords.astype(np.int32)
                                     cv2.fillPoly(processed_mask, [pts], 1)
                             
-                            # Method 2: Fallback to direct mask resizing
+                            # Method 2: Advanced interpolation resizing (HIGH PRECISION)
                             if processed_mask is None:
                                 mask = masks[i]
-                                # Ultra precise resizing with proper interpolation
-                                mask_resized = cv2.resize(
-                                    mask.astype(np.float32), 
-                                    (original_width, original_height), 
-                                    interpolation=cv2.INTER_CUBIC
-                                )
-                                # Apply threshold for clean binary mask
-                                processed_mask = (mask_resized > 0.3).astype(np.uint8)
+                                
+                                # Multi-step resizing for ultra precision
+                                if processing_scale < 0.5:
+                                    # For very small scales, use multi-step resizing
+                                    intermediate_scale = 0.5
+                                    intermediate_size = (int(original_width * intermediate_scale), 
+                                                       int(original_height * intermediate_scale))
+                                    
+                                    # First step: resize to intermediate
+                                    mask_intermediate = cv2.resize(
+                                        mask.astype(np.float32), 
+                                        intermediate_size, 
+                                        interpolation=cv2.INTER_CUBIC
+                                    )
+                                    
+                                    # Second step: resize to final
+                                    mask_resized = cv2.resize(
+                                        mask_intermediate, 
+                                        (original_width, original_height), 
+                                        interpolation=cv2.INTER_CUBIC
+                                    )
+                                else:
+                                    # Direct resizing with best interpolation
+                                    mask_resized = cv2.resize(
+                                        mask.astype(np.float32), 
+                                        (original_width, original_height), 
+                                        interpolation=cv2.INTER_CUBIC
+                                    )
+                                
+                                # Apply morphological operations for cleaner mask
+                                mask_binary = (mask_resized > 0.2).astype(np.uint8)
+                                
+                                # Clean up mask with morphological operations
+                                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+                                mask_cleaned = cv2.morphologyEx(mask_binary, cv2.MORPH_CLOSE, kernel)
+                                mask_cleaned = cv2.morphologyEx(mask_cleaned, cv2.MORPH_OPEN, kernel)
+                                
+                                processed_mask = mask_cleaned
                         
                         except Exception as e:
                             self.get_logger().error(f"❌ Mask processing error: {e}")
@@ -367,7 +396,7 @@ class SingleCameraProcessor(Node):
         return (0, 0, 0) if brightness > 127 else (255, 255, 255)
 
     def create_processed_image(self, original_frame, detections):
-        """Create processed image with annotations - COMPLETELY FIXED ALL ISSUES"""
+        """Create processed image with annotations - ULTRA LARGE FONTS"""
         try:
             canvas = original_frame.copy()
             
@@ -377,7 +406,7 @@ class SingleCameraProcessor(Node):
                 bbox_color = detection['color']
                 text_color = detection['text_color']
                 
-                # ✅ COMPLETELY FIXED: Draw mask ULTRA PRECISELY
+                # ✅ ULTRA ADVANCED: Draw mask with smooth gradients
                 if detection['mask'] is not None:
                     try:
                         mask = detection['mask']
@@ -386,27 +415,30 @@ class SingleCameraProcessor(Node):
                         mask_colored = np.zeros_like(canvas, dtype=np.uint8)
                         mask_colored[mask == 1] = bbox_color
                         
-                        # Apply mask dengan smooth alpha blending
-                        alpha = 0.5  # Increased opacity for better visibility
+                        # Apply mask dengan smooth alpha blending + gradient effects
+                        alpha = 0.6  # Higher opacity for better visibility
                         
                         # Only apply mask where mask exists
                         mask_indices = mask == 1
-                        canvas[mask_indices] = cv2.addWeighted(
-                            canvas[mask_indices], 1-alpha, 
-                            mask_colored[mask_indices], alpha, 0
-                        )
+                        if np.any(mask_indices):
+                            canvas[mask_indices] = cv2.addWeighted(
+                                canvas[mask_indices], 1-alpha, 
+                                mask_colored[mask_indices], alpha, 0
+                            )
                         
-                        # Add contour for better definition
+                        # Add contour with double lines for better definition
                         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                        cv2.drawContours(canvas, contours, -1, bbox_color, 3)
+                        cv2.drawContours(canvas, contours, -1, bbox_color, 4)  # Thicker outer contour
+                        cv2.drawContours(canvas, contours, -1, (255, 255, 255), 2)  # White inner contour
                         
                     except Exception as e:
                         self.get_logger().error(f"❌ Mask drawing error: {e}")
                 
-                # Draw bounding box - THICKER
-                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 5)
+                # Draw bounding box - ULTRA THICK
+                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 6)
+                cv2.rectangle(canvas, (x1-2, y1-2), (x2+2, y2+2), (255, 255, 255), 2)  # White outer border
                 
-                # ✅ COMPLETELY FIXED: Draw text WITHOUT "Camera" but MUCH LARGER
+                # ✅ ULTRA LARGE FONTS: Draw text WITHOUT "Camera" but MAXIMUM SIZE
                 info_lines = [
                     f"Class: {detection['class']}",
                     f"Confidence: {detection['confidence']:.2f}",
@@ -414,10 +446,10 @@ class SingleCameraProcessor(Node):
                     f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
                 ]
                 
-                # ✅ COMPLETELY FIXED: MUCH LARGER text size
-                font_scale = 1.2  # MUCH LARGER from 0.8
-                font_thickness = 4  # MUCH THICKER from 3
-                line_height = 45  # MUCH TALLER from 35
+                # ✅ MAXIMUM TEXT SIZE - ULTRA LARGE
+                font_scale = 1.8  # ULTRA LARGE from 1.2
+                font_thickness = 6  # ULTRA THICK from 4
+                line_height = 65  # ULTRA TALL from 45
                 
                 # Calculate text background size
                 max_line_width = 0
@@ -425,33 +457,48 @@ class SingleCameraProcessor(Node):
                     (line_width, line_height_single), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
                     max_line_width = max(max_line_width, line_width)
                 
-                text_bg_height = len(info_lines) * line_height + 30
-                text_bg_width = max_line_width + 40
+                text_bg_height = len(info_lines) * line_height + 40
+                text_bg_width = max_line_width + 60
                 
                 # Smart text positioning
-                if y1 - text_bg_height > 15:
+                if y1 - text_bg_height > 20:
                     text_x = x1
                     text_y = y1 - text_bg_height
                 else:
                     text_x = x1
-                    text_y = y2 + 15
+                    text_y = y2 + 20
                 
                 # Keep text within frame
-                text_x = max(5, min(canvas.shape[1] - text_bg_width - 5, text_x))
-                text_y = max(5, min(canvas.shape[0] - text_bg_height - 5, text_y))
+                text_x = max(10, min(canvas.shape[1] - text_bg_width - 10, text_x))
+                text_y = max(10, min(canvas.shape[0] - text_bg_height - 10, text_y))
                 
-                # Draw text background - THICKER with ROUNDED effect
-                cv2.rectangle(canvas, (text_x-5, text_y-5), 
-                             (text_x + text_bg_width + 5, text_y + text_bg_height + 5), 
-                             (0, 0, 0), -1)  # Black background
+                # Draw text background - ULTRA THICK with GRADIENT effect
+                # Shadow background
+                cv2.rectangle(canvas, (text_x-8, text_y-8), 
+                             (text_x + text_bg_width + 8, text_y + text_bg_height + 8), 
+                             (0, 0, 0), -1)  # Black shadow
+                # Main background
+                cv2.rectangle(canvas, (text_x-3, text_y-3), 
+                             (text_x + text_bg_width + 3, text_y + text_bg_height + 3), 
+                             bbox_color, -1)  # Colored background
+                # Border
                 cv2.rectangle(canvas, (text_x, text_y), 
                              (text_x + text_bg_width, text_y + text_bg_height), 
-                             bbox_color, -1)  # Colored background
+                             (255, 255, 255), 3)  # White border
                 
-                # Draw text lines - MUCH LARGER
+                # Draw text lines - ULTRA LARGE with SHADOW
                 for i, line in enumerate(info_lines):
+                    text_pos_x = text_x + 30
+                    text_pos_y = text_y + 50 + i * line_height
+                    
+                    # Draw shadow text
                     cv2.putText(canvas, line, 
-                               (text_x + 20, text_y + 35 + i * line_height),
+                               (text_pos_x + 3, text_pos_y + 3),
+                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 2)
+                    
+                    # Draw main text
+                    cv2.putText(canvas, line, 
+                               (text_pos_x, text_pos_y),
                                cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)
             
             return canvas
