@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # filepath: /home/jezzy/huskybot/src/huskybot_multicam_parallel/huskybot_multicam_parallel/single_camera_processor.py
-
+ 
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
