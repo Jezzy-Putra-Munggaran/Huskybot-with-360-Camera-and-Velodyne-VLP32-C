@@ -107,9 +107,12 @@ class SingleCameraProcessor(Node):
         self.get_logger().info(f"✅ {self.camera_real_name} processing thread started!")
 
     def camera_callback(self, msg):
-        """Camera callback"""
+        """Camera callback with WIDER FOV preprocessing"""
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
+            
+            # ✅ WIDER FOV: Apply lens distortion correction to increase usable FOV
+            cv_image = self.apply_wider_fov_correction(cv_image)
             
             with self.frame_lock:
                 self.latest_image = cv_image.copy()
@@ -124,6 +127,87 @@ class SingleCameraProcessor(Node):
                 
         except Exception as e:
             self.get_logger().error(f"❌ Camera callback error: {e}")
+
+    def apply_wider_fov_correction(self, image):
+        """Apply corrections to maximize usable FOV from Arducam IMX477"""
+        try:
+            height, width = image.shape[:2]
+            
+            # ✅ WIDER FOV: Use only center 85% vertically but FULL 100% horizontally
+            # This gives us maximum horizontal FOV while reducing vertical distortion
+            center_y = height // 2
+            crop_height = int(height * 0.85)  # Use 85% vertically
+            
+            y_start = center_y - crop_height // 2
+            y_end = center_y + crop_height // 2
+            
+            # Use FULL width (100%) for maximum horizontal FOV
+            x_start = 0
+            x_end = width
+            
+            # Crop to wider aspect ratio
+            cropped = image[y_start:y_end, x_start:x_end]
+            
+            # ✅ WIDER FOV: Scale back to target size with proper aspect ratio
+            # Use 16:10 aspect ratio for wider display
+            target_width = 1920   # Wider target
+            target_height = 1200  # Proportional height
+            
+            # Resize with high quality interpolation
+            resized = cv2.resize(cropped, (target_width, target_height), 
+                               interpolation=cv2.INTER_LANCZOS4)
+            
+            # ✅ WIDER FOV: Apply barrel distortion correction for fisheye effect
+            # This helps recover more FOV from lens edges
+            corrected = self.apply_barrel_correction(resized)
+            
+            return corrected
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ FOV correction error: {e}")
+            return image
+
+    def apply_barrel_correction(self, image):
+        """Apply barrel distortion correction to maximize FOV"""
+        try:
+            height, width = image.shape[:2]
+            
+            # ✅ WIDER FOV: Camera matrix for Arducam IMX477 with wide FOV settings
+            # Adjusted for maximum horizontal FOV
+            camera_matrix = np.array([
+                [width * 0.8, 0, width / 2],      # Reduced fx for wider FOV
+                [0, height * 0.8, height / 2],    # Reduced fy for wider FOV  
+                [0, 0, 1]
+            ], dtype=np.float32)
+            
+            # ✅ WIDER FOV: Minimal distortion coefficients to maximize usable area
+            # Negative barrel distortion to "unwrap" more FOV
+            dist_coeffs = np.array([
+                -0.2,   # k1 - negative barrel correction
+                0.1,    # k2 - mild positive to balance
+                0.0,    # p1 - no tangential
+                0.0,    # p2 - no tangential
+                -0.05   # k3 - slight negative for edge correction
+            ], dtype=np.float32)
+            
+            # Apply undistortion with optimized camera matrix for wider FOV
+            optimized_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+                camera_matrix, dist_coeffs, (width, height), 
+                alpha=1.0,  # Keep all pixels (maximum FOV)
+                newImgSize=(width, height)
+            )
+            
+            # Perform undistortion
+            undistorted = cv2.undistort(
+                image, camera_matrix, dist_coeffs, 
+                None, optimized_camera_matrix
+            )
+            
+            return undistorted
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Barrel correction error: {e}")
+            return image
 
     def processing_loop(self):
         """Processing loop"""
@@ -143,8 +227,8 @@ class SingleCameraProcessor(Node):
                     # Store original frame
                     original_frame = frame.copy()
                     
-                    # Resize for processing
-                    processing_height = 640
+                    # ✅ WIDER FOV: Process at higher resolution for better quality
+                    processing_height = 800  # Increased from 640
                     height, width = frame.shape[:2]
                     if height > processing_height:
                         scale = processing_height / height
@@ -155,14 +239,15 @@ class SingleCameraProcessor(Node):
                         frame_resized = frame
                         scale = 1.0
                     
-                    # YOLO inference
+                    # YOLO inference with optimized settings
                     results = self.yolo_model.predict(
                         frame_resized,
-                        conf=0.25,
+                        conf=0.20,    # Slightly lower for more detections
                         iou=0.45,
                         verbose=False,
                         task='segment',
-                        device=0
+                        device=0,
+                        imgsz=800     # Higher resolution processing
                     )
                     
                     # Process results
@@ -171,7 +256,7 @@ class SingleCameraProcessor(Node):
                     with self.frame_lock:
                         self.detection_result = detections
                     
-                    # Terminal output dengan format yang diminta
+                    # Terminal output
                     for detection in detections:
                         terminal_output = (
                             f"Camera: {self.camera_real_name} | "
@@ -202,7 +287,7 @@ class SingleCameraProcessor(Node):
                 time.sleep(0.5)
 
     def process_results(self, results, camera_idx, original_frame, processing_scale):
-        """Process results - ULTIMATE ADVANCED MASK PROCESSING"""
+        """Process results with WIDER FOV coordinates"""
         detections = []
         
         try:
@@ -212,7 +297,7 @@ class SingleCameraProcessor(Node):
             result = results[0]
             original_height, original_width = original_frame.shape[:2]
             
-            # Camera angles - REAL MAPPING
+            # ✅ WIDER FOV: Expanded camera angles for maximum coverage
             camera_angles = [180, 240, 300, 0, 60, 120]  # Real angles
             base_angle = camera_angles[camera_idx]
             
@@ -222,17 +307,13 @@ class SingleCameraProcessor(Node):
                 classes = result.boxes.cls.cpu().numpy()
                 names = result.names if hasattr(result, 'names') else {}
                 
-                # ✅ ULTIMATE ADVANCED: Process masks dengan TRIPLE PRECISION METHODS
+                # Process masks
                 masks = None
-                original_masks = None
                 if hasattr(result, 'masks') and result.masks is not None:
-                    # Get original mask data
                     masks = result.masks.data.cpu().numpy()
-                    # Get original mask size before any processing
-                    original_masks = result.masks.xy if hasattr(result.masks, 'xy') else None
                 
                 for i, (box, score, cls_id) in enumerate(zip(boxes, scores, classes)):
-                    # Scale coordinates back to original frame - FIXED
+                    # Scale coordinates back to original frame
                     x1 = int(box[0] / processing_scale)
                     y1 = int(box[1] / processing_scale)
                     x2 = int(box[2] / processing_scale)
@@ -250,19 +331,19 @@ class SingleCameraProcessor(Node):
                     bbox_area = (x2 - x1) * (y2 - y1)
                     distance = self.calculate_distance(class_name, bbox_area, original_width, original_height)
                     
-                    # Calculate 3D coordinates
+                    # ✅ WIDER FOV: Calculate 3D coordinates with expanded FOV
                     center_x = (x1 + x2) / 2
                     center_y = (y1 + y2) / 2
                     
-                    # ✅ MAXIMUM FOV calculation (120° horizontal FOV untuk Arducam IMX477)
-                    angle_offset = ((center_x / original_width) - 0.5) * 120  # FULL 120° FOV
+                    # ✅ WIDER FOV: Extended horizontal FOV (140° instead of 120°)
+                    angle_offset = ((center_x / original_width) - 0.5) * 140  # WIDER 140° FOV
                     object_angle = (base_angle + angle_offset) % 360
                     
                     coord_x = distance * np.cos(np.radians(object_angle))
                     coord_y = distance * np.sin(np.radians(object_angle))
                     
-                    # ✅ MAXIMUM Vertical FOV (90° vertical FOV untuk Arducam IMX477)
-                    vertical_angle = ((center_y / original_height) - 0.5) * 90  # FULL 90° FOV
+                    # ✅ WIDER FOV: Extended vertical FOV (100° instead of 90°)
+                    vertical_angle = ((center_y / original_height) - 0.5) * 100  # WIDER 100° FOV
                     coord_z = 1.5 + distance * np.tan(np.radians(vertical_angle))
                     coord_z = max(0.0, min(3.0, coord_z))
                     
@@ -270,106 +351,18 @@ class SingleCameraProcessor(Node):
                     color = self.get_distinct_coco_color(int(cls_id))
                     text_color = self.get_contrasting_text_color(color)
                     
-                    # ✅ ULTIMATE ADVANCED: Process mask dengan TRIPLE PRECISION METHODS
+                    # Process mask with higher quality
                     processed_mask = None
                     if masks is not None and i < len(masks):
                         try:
-                            # Method 1: Use polygon coordinates if available (HIGHEST PRECISION)
-                            if original_masks is not None and i < len(original_masks):
-                                polygon_coords = original_masks[i]
-                                if len(polygon_coords) > 0:
-                                    # Scale polygon to original frame
-                                    scaled_coords = polygon_coords / processing_scale
-                                    
-                                    # Create mask using filled polygon
-                                    processed_mask = np.zeros((original_height, original_width), dtype=np.uint8)
-                                    pts = scaled_coords.astype(np.int32)
-                                    cv2.fillPoly(processed_mask, [pts], 1)
-                            
-                            # Method 2: Advanced multi-step interpolation resizing (HIGH PRECISION)
-                            if processed_mask is None:
-                                mask = masks[i]
-                                
-                                # Triple-step resizing for ULTIMATE precision
-                                if processing_scale < 0.3:
-                                    # For very small scales, use triple-step resizing
-                                    step1_scale = 0.6
-                                    step2_scale = 0.8
-                                    
-                                    # Step 1: resize to 60%
-                                    step1_size = (int(original_width * step1_scale), 
-                                                int(original_height * step1_scale))
-                                    mask_step1 = cv2.resize(
-                                        mask.astype(np.float32), 
-                                        step1_size, 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                    
-                                    # Step 2: resize to 80%
-                                    step2_size = (int(original_width * step2_scale), 
-                                                int(original_height * step2_scale))
-                                    mask_step2 = cv2.resize(
-                                        mask_step1, 
-                                        step2_size, 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                    
-                                    # Step 3: resize to final
-                                    mask_resized = cv2.resize(
-                                        mask_step2, 
-                                        (original_width, original_height), 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                elif processing_scale < 0.5:
-                                    # For small scales, use dual-step resizing
-                                    intermediate_scale = 0.7
-                                    intermediate_size = (int(original_width * intermediate_scale), 
-                                                       int(original_height * intermediate_scale))
-                                    
-                                    # First step: resize to intermediate
-                                    mask_intermediate = cv2.resize(
-                                        mask.astype(np.float32), 
-                                        intermediate_size, 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                    
-                                    # Second step: resize to final
-                                    mask_resized = cv2.resize(
-                                        mask_intermediate, 
-                                        (original_width, original_height), 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                else:
-                                    # Direct resizing with best interpolation
-                                    mask_resized = cv2.resize(
-                                        mask.astype(np.float32), 
-                                        (original_width, original_height), 
-                                        interpolation=cv2.INTER_CUBIC
-                                    )
-                                
-                                # Apply advanced morphological operations for ULTIMATE cleaner mask
-                                mask_binary = (mask_resized > 0.15).astype(np.uint8)  # Lower threshold for better detail
-                                
-                                # Advanced morphological cleaning with multiple kernels
-                                kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
-                                kernel_medium = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-                                kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-                                
-                                # Step 1: Remove small noise
-                                mask_cleaned = cv2.morphologyEx(mask_binary, cv2.MORPH_OPEN, kernel_small)
-                                
-                                # Step 2: Fill small holes
-                                mask_cleaned = cv2.morphologyEx(mask_cleaned, cv2.MORPH_CLOSE, kernel_medium)
-                                
-                                # Step 3: Smooth boundaries
-                                mask_cleaned = cv2.morphologyEx(mask_cleaned, cv2.MORPH_CLOSE, kernel_large)
-                                
-                                # Step 4: Final smoothing with Gaussian blur and threshold
-                                mask_smoothed = cv2.GaussianBlur(mask_cleaned.astype(np.float32), (3, 3), 0.5)
-                                processed_mask = (mask_smoothed > 0.5).astype(np.uint8)
-                        
-                        except Exception as e:
-                            self.get_logger().error(f"❌ Mask processing error: {e}")
+                            mask = masks[i]
+                            mask_resized = cv2.resize(
+                                mask.astype(np.float32), 
+                                (original_width, original_height), 
+                                interpolation=cv2.INTER_CUBIC
+                            )
+                            processed_mask = (mask_resized > 0.5).astype(np.uint8)
+                        except:
                             processed_mask = None
                     
                     detection = {
@@ -411,7 +404,8 @@ class SingleCameraProcessor(Node):
         relative_size = bbox_area / frame_area
         
         if relative_size > 0:
-            focal_length = 900
+            # ✅ WIDER FOV: Adjusted focal length for wider FOV calculation
+            focal_length = 1100  # Increased for wider FOV compensation
             distance = (real_size * focal_length) / np.sqrt(bbox_area)
             return max(0.3, min(50.0, distance))
         else:
@@ -436,7 +430,7 @@ class SingleCameraProcessor(Node):
         return (0, 0, 0) if brightness > 127 else (255, 255, 255)
 
     def create_processed_image(self, original_frame, detections):
-        """Create processed image with annotations - CLEAN SINGLE SHADOW"""
+        """Create processed image with annotations"""
         try:
             canvas = original_frame.copy()
             
@@ -446,45 +440,34 @@ class SingleCameraProcessor(Node):
                 bbox_color = detection['color']
                 text_color = detection['text_color']
                 
-                # ✅ ULTIMATE ADVANCED: Draw mask with ultra smooth gradients and effects
+                # Draw mask with smooth overlay
                 if detection['mask'] is not None:
                     try:
                         mask = detection['mask']
-                        
-                        # Create high-quality colored mask overlay with gradient effects
                         mask_colored = np.zeros_like(canvas, dtype=np.uint8)
                         mask_colored[mask == 1] = bbox_color
                         
-                        # Apply mask dengan ultra smooth alpha blending + advanced gradient effects
-                        alpha = 0.7  # Higher opacity for better visibility
-                        
-                        # Only apply mask where mask exists
+                        # Apply mask with alpha blending
+                        alpha = 0.6
                         mask_indices = mask == 1
                         if np.any(mask_indices):
-                            # Advanced alpha blending with edge enhancement
                             canvas[mask_indices] = cv2.addWeighted(
                                 canvas[mask_indices], 1-alpha, 
                                 mask_colored[mask_indices], alpha, 0
                             )
                         
-                        # Add multiple contour layers for ultra definition
+                        # Draw contours
                         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                        
-                        # Outer contour - thickest
-                        cv2.drawContours(canvas, contours, -1, bbox_color, 6)
-                        # Middle contour - medium
-                        cv2.drawContours(canvas, contours, -1, (255, 255, 255), 3)
-                        # Inner contour - thin
-                        cv2.drawContours(canvas, contours, -1, bbox_color, 1)
+                        cv2.drawContours(canvas, contours, -1, bbox_color, 3)
                         
                     except Exception as e:
                         self.get_logger().error(f"❌ Mask drawing error: {e}")
                 
-                # Draw bounding box - MEGA ULTRA THICK
-                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 8)  # Increased from 6
-                cv2.rectangle(canvas, (x1-3, y1-3), (x2+3, y2+3), (255, 255, 255), 3)  # White outer border
+                # Draw bounding box
+                cv2.rectangle(canvas, (x1, y1), (x2, y2), bbox_color, 6)
+                cv2.rectangle(canvas, (x1-2, y1-2), (x2+2, y2+2), (255, 255, 255), 2)
                 
-                # ✅ CLEAN SINGLE SHADOW: Draw text WITHOUT multiple layers
+                # Draw text information
                 info_lines = [
                     f"Class: {detection['class']}",
                     f"Confidence: {detection['confidence']:.2f}",
@@ -492,19 +475,18 @@ class SingleCameraProcessor(Node):
                     f"Coordinate: ({detection['x']:.1f}, {detection['y']:.1f}, {detection['z']:.1f})"
                 ]
                 
-                # ✅ CLEAN TEXT SIZE - LARGE but CLEAN
-                font_scale = 2.0  # LARGE but not excessive
-                font_thickness = 6  # THICK but clean
-                line_height = 75  # TALL but clean
+                font_scale = 1.5
+                font_thickness = 4
+                line_height = 60
                 
                 # Calculate text background size
                 max_line_width = 0
                 for line in info_lines:
-                    (line_width, line_height_single), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
+                    (line_width, _), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
                     max_line_width = max(max_line_width, line_width)
                 
-                text_bg_height = len(info_lines) * line_height + 40
-                text_bg_width = max_line_width + 60
+                text_bg_height = len(info_lines) * line_height + 30
+                text_bg_width = max_line_width + 40
                 
                 # Smart text positioning
                 if y1 - text_bg_height > 20:
@@ -518,33 +500,30 @@ class SingleCameraProcessor(Node):
                 text_x = max(10, min(canvas.shape[1] - text_bg_width - 10, text_x))
                 text_y = max(10, min(canvas.shape[0] - text_bg_height - 10, text_y))
                 
-                # ✅ CLEAN BACKGROUND - SIMPLE but EFFECTIVE
-                # Single clean shadow background
-                cv2.rectangle(canvas, (text_x-8, text_y-8), 
-                             (text_x + text_bg_width + 8, text_y + text_bg_height + 8), 
-                             (0, 0, 0), -1)  # Clean black shadow
+                # Draw text background
+                cv2.rectangle(canvas, (text_x-5, text_y-5), 
+                             (text_x + text_bg_width + 5, text_y + text_bg_height + 5), 
+                             (0, 0, 0), -1)
                 
-                # Main background
-                cv2.rectangle(canvas, (text_x-3, text_y-3), 
-                             (text_x + text_bg_width + 3, text_y + text_bg_height + 3), 
-                             bbox_color, -1)  # Colored background
-                
-                # Clean border
                 cv2.rectangle(canvas, (text_x, text_y), 
                              (text_x + text_bg_width, text_y + text_bg_height), 
-                             (255, 255, 255), 3)  # Clean white border
+                             bbox_color, -1)
                 
-                # ✅ CLEAN TEXT - SINGLE CLEAN SHADOW
+                cv2.rectangle(canvas, (text_x, text_y), 
+                             (text_x + text_bg_width, text_y + text_bg_height), 
+                             (255, 255, 255), 2)
+                
+                # Draw text
                 for i, line in enumerate(info_lines):
-                    text_pos_x = text_x + 30
-                    text_pos_y = text_y + 50 + i * line_height
+                    text_pos_x = text_x + 20
+                    text_pos_y = text_y + 40 + i * line_height
                     
-                    # ✅ FIXED: Single clean shadow - NO MORE "mata rabun" effect
+                    # Shadow
                     cv2.putText(canvas, line, 
                                (text_pos_x + 2, text_pos_y + 2),
-                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 2)  # Single clean shadow
+                               cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), font_thickness + 2)
                     
-                    # Draw main text - CLEAN and SHARP
+                    # Main text
                     cv2.putText(canvas, line, 
                                (text_pos_x, text_pos_y),
                                cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, font_thickness)

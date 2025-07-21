@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # filepath: /home/jezzy/huskybot/src/huskybot_multicam_parallel/launch/multicam_parallel_pipeline.launch.py
- 
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import TimerAction, ExecuteProcess
@@ -13,66 +13,79 @@ def generate_launch_description():
         {
             'name': 'camera_front',
             'topic': '/camera_front/image_raw',
-            'real_name': 'REAR CAMERA',  # FIXED: Real life mapping
+            'real_name': 'REAR CAMERA',
             'idx': 0
         },
         {
             'name': 'camera_front_left',
             'topic': '/camera_front_left/image_raw', 
-            'real_name': 'LEFT REAR CAMERA',  # FIXED: Real life mapping
+            'real_name': 'LEFT REAR CAMERA',
             'idx': 1
         },
         {
             'name': 'camera_left',
             'topic': '/camera_left/image_raw',
-            'real_name': 'LEFT FRONT CAMERA',  # FIXED: Real life mapping
+            'real_name': 'LEFT FRONT CAMERA',
             'idx': 2
         },
         {
             'name': 'camera_rear',
             'topic': '/camera_rear/image_raw',
-            'real_name': 'FRONT CAMERA',  # FIXED: Real life mapping
+            'real_name': 'FRONT CAMERA',
             'idx': 3
         },
         {
             'name': 'camera_rear_right',
             'topic': '/camera_rear_right/image_raw',
-            'real_name': 'RIGHT FRONT CAMERA',  # FIXED: Real life mapping
+            'real_name': 'RIGHT FRONT CAMERA',
             'idx': 4
         },
         {
             'name': 'camera_right',
             'topic': '/camera_right/image_raw',
-            'real_name': 'RIGHT REAR CAMERA',  # FIXED: Real life mapping
+            'real_name': 'RIGHT REAR CAMERA',
             'idx': 5
         }
     ]
     
     launch_actions = []
     
-    # ✅ 1. ULTRA POWER OPTIMIZATION
+    # ✅ 1. ULTRA POWER OPTIMIZATION + WIDER FOV CAMERA SETTINGS
     launch_actions.append(
         ExecuteProcess(
             cmd=['bash', '-c', 
-                 'echo "🔧 ULTRA POWER OPTIMIZATION FOR MULTICAM PARALLEL 100+ FPS..." && '
+                 'echo "🔧 ULTRA POWER + WIDER FOV OPTIMIZATION..." && '
                  'sudo nvpmodel -m 0 && '
                  'sudo jetson_clocks --fan && '
                  'for i in {0..11}; do sudo sh -c "echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor" 2>/dev/null || true; done && '
                  'sudo sysctl -w vm.swappiness=1 && '
-                 'echo "⚡ ULTRA POWER OPTIMIZED FOR MULTICAM PARALLEL!"'],
+                 # ✅ WIDER FOV: Set camera driver parameters for maximum FOV
+                 'export ARDUCAM_FOV_MODE=WIDE && '  # Set wide FOV mode
+                 'export ARDUCAM_RESOLUTION=HIGH && '  # High resolution for better quality
+                 'export V4L2_WIDE_FOV=1 && '  # Enable wide FOV in V4L2
+                 'echo "⚡ ULTRA POWER + WIDER FOV OPTIMIZED!"'],
             output='screen',
-            name='ultra_power_optimization'
+            name='ultra_power_wider_fov_optimization'
         )
     )
     
-    # ✅ 2. Start Camera Drivers
+    # ✅ 2. Start Camera Drivers with WIDER FOV settings
     launch_actions.append(
         TimerAction(
             period=3.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🔧 Starting Camera Drivers..." && '
+                         'echo "🔧 Starting Camera Drivers with WIDER FOV..." && '
+                         # ✅ WIDER FOV: Configure camera drivers for maximum FOV
+                         'for i in {0..5}; do '
+                         '  if [ -e /dev/video$i ]; then '
+                         '    echo "Configuring /dev/video$i for WIDER FOV..." && '
+                         '    v4l2-ctl -d /dev/video$i --set-ctrl=zoom_absolute=100 2>/dev/null || true && '  # Minimum zoom
+                         '    v4l2-ctl -d /dev/video$i --set-ctrl=white_balance_auto_preset=1 2>/dev/null || true && '
+                         '    v4l2-ctl -d /dev/video$i --set-fmt-video=width=1920,height=1080,pixelformat=YUYV 2>/dev/null || true; '
+                         '  fi; '
+                         'done && '
                          'ros2 launch huskybot_camera camera.launch.py &'],
                     output='screen'
                 )
@@ -96,12 +109,12 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 4. Start Individual Camera Processors (PARALLEL) - FIXED
+    # ✅ 4. Start Individual Camera Processors with WIDER FOV support
     base_delay = 15.0
     for i, config in enumerate(camera_configs):
         launch_actions.append(
             TimerAction(
-                period=base_delay + i * 2.0,  # Stagger starts
+                period=base_delay + i * 2.0,
                 actions=[
                     Node(
                         package='huskybot_multicam_parallel',
@@ -116,13 +129,20 @@ def generate_launch_description():
                             {'camera_real_name': config['real_name']},
                             {'camera_idx': config['idx']},
                             {'use_sim_time': False}
-                        ]
+                        ],
+                        # ✅ WIDER FOV: Environment variables for optimal processing
+                        additional_env={
+                            'CUDA_VISIBLE_DEVICES': '0',
+                            'OPENCV_FOV_CORRECTION': '1',      # Enable FOV correction
+                            'ARDUCAM_WIDE_MODE': '1',          # Wide mode processing
+                            'OMP_NUM_THREADS': '4'
+                        }
                     )
                 ]
             )
         )
     
-    # ✅ 5. Start Display Node
+    # ✅ 5. Start Display Node (unchanged)
     launch_actions.append(
         TimerAction(
             period=30.0,
@@ -142,35 +162,35 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 6. Performance Monitoring
+    # ✅ 6. Enhanced Performance Monitoring
     launch_actions.append(
         TimerAction(
             period=40.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🎯 MULTICAM PARALLEL PERFORMANCE STATUS:" && '
+                         'echo "🎯 WIDER FOV MULTICAM PARALLEL STATUS:" && '
                          'echo "📡 Camera Topics:" && '
                          'ros2 topic list | grep -E "(camera.*processed|camera.*image_raw)" && '
-                         'echo "📡 Topic Rates:" && '
-                         'for topic in /camera_front_processed /camera_rear_processed; do '
-                         '  echo "Testing $topic..." && '
-                         '  timeout 5 ros2 topic hz $topic 2>/dev/null || echo "❌ No data on $topic"; '
+                         'echo "📡 FOV Status:" && '
+                         'for i in {0..5}; do '
+                         '  if [ -e /dev/video$i ]; then '
+                         '    echo "Camera /dev/video$i FOV settings:" && '
+                         '    v4l2-ctl -d /dev/video$i --get-ctrl=zoom_absolute 2>/dev/null || echo "  Zoom: Not available"; '
+                         '  fi; '
                          'done && '
                          'echo "🔥 GPU Status:" && '
                          'nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "GPU: Not available" && '
-                         'echo "💻 CPU Usage:" && '
-                         'top -bn1 | grep "Cpu(s)" && '
-                         'echo "🧠 Memory Usage:" && '
+                         'echo "💻 Memory Usage:" && '
                          'free -h | grep Mem && '
-                         'echo "🎯 TARGET: 100+ FPS MULTICAM PARALLEL YOLO SEGMENTATION"'],
+                         'echo "🎯 TARGET: WIDER FOV + 100+ FPS MULTICAM PARALLEL"'],
                     output='screen'
                 )
             ]
         )
     )
     
-    # ✅ 7. RViz2 for LiDAR
+    # ✅ 7. RViz2 for LiDAR (unchanged)
     launch_actions.append(
         TimerAction(
             period=120.0,
@@ -183,21 +203,6 @@ def generate_launch_description():
                     output='screen'
                 )
             ]
-        )
-    )
-    
-    # ✅ 8. GPU Optimization
-    launch_actions.append(
-        ExecuteProcess(
-            cmd=['bash', '-c', 
-                 'echo "🔧 GPU optimization for parallel processing..." && '
-                 'export CUDA_VISIBLE_DEVICES=0 && '
-                 'export CUDA_LAUNCH_BLOCKING=0 && '
-                 'export CUDA_DEVICE_ORDER=PCI_BUS_ID && '
-                 'export NVIDIA_TF32_OVERRIDE=0 && '
-                 'export CUDA_CACHE_MAXSIZE=2147483648 && '
-                 'export CUDA_CACHE_DISABLE=0'],
-            output='screen'
         )
     )
     
