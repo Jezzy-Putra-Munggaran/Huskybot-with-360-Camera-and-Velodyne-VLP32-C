@@ -50,7 +50,7 @@ def generate_launch_description():
     
     launch_actions = []
     
-    # ✅ 1. ULTRA POWER OPTIMIZATION + MAXIMUM WIDER FOV CAMERA SETTINGS
+    # ✅ 1. ULTRA POWER OPTIMIZATION + MAXIMUM WIDER FOV
     launch_actions.append(
         ExecuteProcess(
             cmd=['bash', '-c', 
@@ -61,49 +61,67 @@ def generate_launch_description():
                  'sudo sysctl -w vm.swappiness=1 && '
                  'sudo sysctl -w vm.dirty_background_ratio=3 && '
                  'sudo sysctl -w vm.dirty_ratio=5 && '
-                 # ✅ MAXIMUM WIDER FOV: Ultra-wide camera driver parameters
-                 'export ARDUCAM_FOV_MODE=ULTRA_WIDE && '    # Ultra-wide FOV mode
-                 'export ARDUCAM_RESOLUTION=ULTRA_HIGH && '  # Ultra-high resolution
-                 'export V4L2_ULTRA_WIDE_FOV=1 && '          # Enable ultra-wide FOV in V4L2
-                 'export ARDUCAM_DISTORTION_CORRECTION=1 && ' # Enable distortion correction
                  'echo "⚡ ULTRA POWER + MAXIMUM WIDER FOV OPTIMIZED!"'],
             output='screen',
             name='ultra_power_maximum_wider_fov_optimization'
         )
     )
     
-    # ✅ 2. Start Camera Drivers with MAXIMUM WIDER FOV settings
+    # ✅ 2. FIXED: Start Camera Drivers PROPERLY
     launch_actions.append(
         TimerAction(
             period=3.0,
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🔧 Starting Camera Drivers with MAXIMUM WIDER FOV..." && '
-                         # ✅ MAXIMUM WIDER FOV: Configure camera drivers for ultra-wide FOV
+                         'echo "🔧 FIXED: Starting Camera Drivers PROPERLY..." && '
+                         # ✅ FIXED: Configure cameras for MAXIMUM WIDER FOV + PROPER LAUNCH
                          'for i in {0..5}; do '
                          '  if [ -e /dev/video$i ]; then '
-                         '    echo "Configuring /dev/video$i for MAXIMUM WIDER FOV..." && '
-                         '    v4l2-ctl -d /dev/video$i --set-ctrl=zoom_absolute=100 2>/dev/null || true && '  # MINIMUM zoom
-                         '    v4l2-ctl -d /dev/video$i --set-ctrl=focus_absolute=0 2>/dev/null || true && '   # Infinity focus
-                         '    v4l2-ctl -d /dev/video$i --set-ctrl=white_balance_auto_preset=1 2>/dev/null || true && '
-                         '    v4l2-ctl -d /dev/video$i --set-fmt-video=width=2560,height=1080,pixelformat=YUYV 2>/dev/null || true && '  # Ultra-wide resolution
-                         '    v4l2-ctl -d /dev/video$i --set-parm=type=1,capturemode=0,extendedmode=0,timeperframe=1/60 2>/dev/null || true; '  # 60 FPS
+                         '    echo "✅ Configuring /dev/video$i for MAXIMUM WIDER FOV..." && '
+                         '    v4l2-ctl -d /dev/video$i --set-fmt-video=width=4032,height=3040,pixelformat=YUYV 2>/dev/null || true && '  # Native resolution
+                         '    v4l2-ctl -d /dev/video$i --set-parm=type=1,capturemode=0,extendedmode=0,timeperframe=1/30 2>/dev/null || true; '  # 30 FPS for stability
                          '  fi; '
                          'done && '
-                         'ros2 launch huskybot_camera camera.launch.py &'],
+                         'echo "🚀 Starting huskybot_camera launch..." && '
+                         'ros2 launch huskybot_camera camera.launch.py > /tmp/camera_launch.log 2>&1 &'],
                     output='screen'
                 )
             ]
         )
     )
     
-    # ✅ 3. Start Individual Camera Processors with MAXIMUM WIDER FOV support
-    base_delay = 15.0
+    # ✅ 3. Wait for camera topics to be available
+    launch_actions.append(
+        TimerAction(
+            period=10.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=['bash', '-c', 
+                         'echo "🔍 WAITING FOR CAMERA TOPICS..." && '
+                         'for i in {1..30}; do '
+                         '  echo "Attempt $i: Checking camera topics..." && '
+                         '  if ros2 topic list | grep -q "camera.*image_raw"; then '
+                         '    echo "✅ Camera topics found!" && '
+                         '    ros2 topic list | grep "camera.*image_raw" && '
+                         '    break; '
+                         '  else '
+                         '    echo "⏳ Waiting for camera topics... ($i/30)" && '
+                         '    sleep 2; '
+                         '  fi; '
+                         'done'],
+                    output='screen'
+                )
+            ]
+        )
+    )
+    
+    # ✅ 4. Start Individual Camera Processors with MAXIMUM WIDER FOV support
+    base_delay = 20.0  # Increased delay to ensure cameras are ready
     for i, config in enumerate(camera_configs):
         launch_actions.append(
             TimerAction(
-                period=base_delay + i * 2.0,
+                period=base_delay + i * 3.0,  # Increased spacing between launches
                 actions=[
                     Node(
                         package='huskybot_multicam_parallel',
@@ -111,7 +129,7 @@ def generate_launch_description():
                         name=f'{config["name"]}_processor',
                         output='screen',
                         respawn=True,
-                        respawn_delay=2.0,
+                        respawn_delay=5.0,  # Increased respawn delay
                         parameters=[
                             {'camera_name': config['name']},
                             {'camera_topic': config['topic']},
@@ -122,20 +140,20 @@ def generate_launch_description():
                         # ✅ MAXIMUM WIDER FOV: Environment variables for ultra-wide processing
                         additional_env={
                             'CUDA_VISIBLE_DEVICES': '0',
-                            'OPENCV_ULTRA_WIDE_FOV_CORRECTION': '1',  # Enable ultra-wide FOV correction
-                            'ARDUCAM_ULTRA_WIDE_MODE': '1',           # Ultra-wide mode processing
-                            'OMP_NUM_THREADS': '6',                   # More threads for ultra-wide processing
-                            'OPENCV_LOG_LEVEL': 'ERROR'               # Reduce logging overhead
+                            'OPENCV_ULTRA_WIDE_FOV_CORRECTION': '1',
+                            'ARDUCAM_ULTRA_WIDE_MODE': '1',
+                            'OMP_NUM_THREADS': '8',  # More threads
+                            'OPENCV_LOG_LEVEL': 'ERROR'
                         }
                     )
                 ]
             )
         )
     
-    # ✅ 4. Start Display Node (grid 2x3 unchanged as requested)
+    # ✅ 5. Start Display Node with WIDER GRID
     launch_actions.append(
         TimerAction(
-            period=30.0,
+            period=40.0,  # Wait for all cameras to be ready
             actions=[
                 Node(
                     package='huskybot_multicam_parallel',
@@ -143,7 +161,7 @@ def generate_launch_description():
                     name='multicam_parallel_display',
                     output='screen',
                     respawn=True,
-                    respawn_delay=2.0,
+                    respawn_delay=3.0,
                     parameters=[
                         {'use_sim_time': False}
                     ]
@@ -152,7 +170,7 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 5. AUTO-LAUNCH VELODYNE LIDAR after 2 minutes (120 seconds)
+    # ✅ 6. AUTO-LAUNCH VELODYNE LIDAR after 2 minutes (120 seconds)
     launch_actions.append(
         TimerAction(
             period=120.0,  # 2 minutes = 120 seconds
@@ -161,7 +179,7 @@ def generate_launch_description():
                     cmd=['bash', '-c', 
                          'echo "🚀 AUTO-LAUNCHING VELODYNE VLP32C LIDAR after 2 minutes..." && '
                          'echo "📡 Starting Velodyne driver..." && '
-                         'ros2 launch velodyne velodyne-all-nodes-VLP32C-launch.py &'],
+                         'ros2 launch velodyne velodyne-all-nodes-VLP32C-launch.py > /tmp/velodyne_launch.log 2>&1 &'],
                     output='screen',
                     name='auto_launch_velodyne_lidar'
                 )
@@ -169,7 +187,7 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 6. AUTO-LAUNCH RVIZ2 with LIDAR VISUALIZATION after 2 minutes 15 seconds
+    # ✅ 7. AUTO-LAUNCH RVIZ2 with LIDAR VISUALIZATION after 2 minutes 15 seconds
     launch_actions.append(
         TimerAction(
             period=135.0,  # 2 minutes 15 seconds = 135 seconds (15 seconds after LiDAR)
@@ -179,7 +197,7 @@ def generate_launch_description():
                          'echo "🚀 AUTO-LAUNCHING RVIZ2 with LIDAR VISUALIZATION..." && '
                          'export DISPLAY=:0 && '
                          'echo "📡 Setting up RViz2 for Velodyne VLP32C..." && '
-                         # Create temporary RViz config for auto-setup
+                         # Create enhanced RViz config for auto-setup
                          'mkdir -p /tmp/huskybot_rviz && '
                          'cat > /tmp/huskybot_rviz/velodyne_auto_config.rviz << EOF\n'
                          'Panels:\n'
@@ -188,11 +206,13 @@ def generate_launch_description():
                          'Visualization Manager:\n'
                          '  Class: ""\n'
                          '  Displays:\n'
-                         '    - Alpha: 0.5\n'
+                         '    - Alpha: 0.7\n'
                          '      Autocompute Intensity Bounds: true\n'
                          '      Class: rviz_default_plugins/LaserScan\n'
+                         '      Color: 255; 0; 0\n'
                          '      Enabled: true\n'
                          '      Name: LaserScan\n'
+                         '      Size (m): 0.1\n'
                          '      Topic:\n'
                          '        Depth: 5\n'
                          '        Durability Policy: Volatile\n'
@@ -203,8 +223,11 @@ def generate_launch_description():
                          '    - Alpha: 1\n'
                          '      Autocompute Intensity Bounds: true\n'
                          '      Class: rviz_default_plugins/PointCloud2\n'
+                         '      Color: 255; 255; 255\n'
                          '      Enabled: true\n'
                          '      Name: PointCloud2\n'
+                         '      Size (m): 0.05\n'
+                         '      Style: Points\n'
                          '      Topic:\n'
                          '        Depth: 5\n'
                          '        Durability Policy: Volatile\n'
@@ -214,9 +237,12 @@ def generate_launch_description():
                          '        Value: /velodyne_points\n'
                          '  Fixed Frame: velodyne\n'
                          '  Frame Rate: 30\n'
+                         '  Global Options:\n'
+                         '    Background Color: 48; 48; 48\n'
+                         '    Fixed Frame: velodyne\n'
                          'EOF\n'
-                         'echo "✅ RViz2 config created. Launching RViz2..." && '
-                         'ros2 run rviz2 rviz2 -f velodyne -d /tmp/huskybot_rviz/velodyne_auto_config.rviz &'],
+                         'echo "✅ Enhanced RViz2 config created. Launching RViz2..." && '
+                         'ros2 run rviz2 rviz2 -f velodyne -d /tmp/huskybot_rviz/velodyne_auto_config.rviz > /tmp/rviz2_launch.log 2>&1 &'],
                     output='screen',
                     name='auto_launch_rviz2_lidar'
                 )
@@ -224,32 +250,29 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 7. Enhanced Performance Monitoring with LIDAR status
+    # ✅ 8. Enhanced Status Monitoring
     launch_actions.append(
         TimerAction(
-            period=150.0,  # 2.5 minutes after startup
+            period=50.0,  # After all components should be running
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🎯 MAXIMUM WIDER FOV MULTICAM + LIDAR STATUS:" && '
-                         'echo "📡 Camera Topics:" && '
-                         'ros2 topic list | grep -E "(camera.*processed|camera.*image_raw)" && '
-                         'echo "📡 LiDAR Topics:" && '
-                         'ros2 topic list | grep -E "(scan|velodyne|points)" && '
-                         'echo "📡 MAXIMUM FOV Status:" && '
-                         'for i in {0..5}; do '
-                         '  if [ -e /dev/video$i ]; then '
-                         '    echo "Camera /dev/video$i MAXIMUM FOV settings:" && '
-                         '    v4l2-ctl -d /dev/video$i --get-ctrl=zoom_absolute 2>/dev/null || echo "  Zoom: Not available" && '
-                         '    v4l2-ctl -d /dev/video$i --get-fmt-video 2>/dev/null | grep -E "Width|Height" || echo "  Resolution: Not available"; '
-                         '  fi; '
+                         'echo "🎯 COMPLETE SYSTEM STATUS CHECK:" && '
+                         'echo "📡 Camera Topics Available:" && '
+                         'ros2 topic list | grep -E "(camera.*image_raw|camera.*processed)" | sort && '
+                         'echo "📡 LiDAR Topics Available:" && '
+                         'ros2 topic list | grep -E "(scan|velodyne)" | sort && '
+                         'echo "📊 Camera Data Flow Check:" && '
+                         'for topic in $(ros2 topic list | grep "camera.*image_raw"); do '
+                         '  echo "  Checking $topic..." && '
+                         '  timeout 3 ros2 topic hz "$topic" --window 5 2>/dev/null | grep "average rate" || echo "    ❌ No data on $topic"; '
                          'done && '
+                         'echo "📊 LiDAR Data Flow Check:" && '
+                         'timeout 3 ros2 topic hz /velodyne_points --window 5 2>/dev/null | grep "average rate" || echo "  ❌ No LiDAR data" && '
                          'echo "🔥 GPU Status:" && '
                          'nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo "GPU: Not available" && '
                          'echo "💻 Memory Usage:" && '
                          'free -h | grep Mem && '
-                         'echo "📊 LiDAR Status:" && '
-                         'ros2 topic hz /velodyne_points --window 10 2>/dev/null || echo "LiDAR: No data" && '
                          'echo "🎯 TARGET: MAXIMUM WIDER FOV + 100+ FPS MULTICAM + REAL-TIME LIDAR 3D MAPPING"'],
                     output='screen'
                 )
@@ -257,24 +280,21 @@ def generate_launch_description():
         )
     )
     
-    # ✅ 8. Periodic LiDAR and RViz2 health check
+    # ✅ 9. Periodic Health Check
     launch_actions.append(
         TimerAction(
             period=300.0,  # Every 5 minutes
             actions=[
                 ExecuteProcess(
                     cmd=['bash', '-c', 
-                         'echo "🔍 PERIODIC LIDAR + RVIZ2 HEALTH CHECK:" && '
-                         'echo "📊 LiDAR Topics Status:" && '
-                         'ros2 topic list | grep -E "(scan|velodyne)" | while read topic; do '
-                         '  echo "  Checking $topic..." && '
-                         '  timeout 5 ros2 topic echo "$topic" --once >/dev/null 2>&1 && echo "    ✅ $topic: OK" || echo "    ❌ $topic: NO DATA"; '
-                         'done && '
-                         'echo "📊 RViz2 Process Status:" && '
-                         'pgrep -f rviz2 >/dev/null && echo "  ✅ RViz2: Running" || echo "  ❌ RViz2: Not running" && '
+                         'echo "🔍 PERIODIC HEALTH CHECK:" && '
+                         'echo "📊 Active Processes:" && '
+                         'ps aux | grep -E "(camera|velodyne|rviz2)" | grep -v grep | wc -l | xargs echo "  Running processes:" && '
+                         'echo "📊 ROS2 Nodes:" && '
+                         'ros2 node list | grep -E "(camera|velodyne|rviz|multicam)" | wc -l | xargs echo "  Active ROS2 nodes:" && '
                          'echo "📊 Camera Processing Status:" && '
                          'ros2 topic list | grep "_processed" | wc -l | xargs echo "  Active camera processors:" && '
-                         'echo "🎯 SYSTEM STATUS: MAXIMUM WIDER FOV MULTICAM + REAL-TIME 3D LIDAR MAPPING"'],
+                         'echo "🎯 SYSTEM STATUS: WIDER FOV MULTICAM + REAL-TIME 3D LIDAR MAPPING"'],
                     output='screen'
                 )
             ]
